@@ -1,0 +1,4 @@
+.env.production
+.env.production.local
+.env.staging
+.env.staging.local

@@ -1,0 +1,81 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+/.source
+
+# production
+/build
+packages/*/dist
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.staging
+.env.production
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+
+# VSCode
+.vscode
+
+# Cypress
+cypress/videos
+cypress/screenshots
+
+# Robots.txt
+robots.txt
+
+# yarn berry
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# storybook
+/.out
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# MongoDB keyfile
+docker/mongodb/mongodb-keyfile
+
+# Python
+__pycache__/
+.pytest_cache/
+*.pyc
+.ruff_cache/
+.coverage
+
+data/communes.json
+data/structures.json
+data/*.pem

@@ -1,0 +1,36 @@
+.fr-collapse,
+.fr-collapse--expanded,
+.fr-collapsing,
+.fr-collapse::before {
+  transition: none !important;
+}
+
+.MuiAutocomplete-inputRoot {
+  padding-right: 0px !important;
+}
+
+.MuiAutocomplete-paper {
+  font-family: Marianne, arial, sans-serif !important;
+}
+
+.MuiAutocomplete-option.Mui-focused {
+  background-color: var(--background-alt-blue-france-active) !important;
+}
+
+@media (min-width: 768px) {
+  .fr-footer__logo {
+    max-width: 210px !important;
+  }
+}
+
+html,
+body {
+  min-width: 320px;
+}
+
+@media (max-width: 768px) {
+  .st-bienvenue-page .fr-card--shadow {
+    filter: none !important;
+    padding: 0px !important;
+  }
+}
