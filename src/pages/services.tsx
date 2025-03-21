@@ -18,7 +18,7 @@ const SERVICES_DATA = [
         Une plateforme sécurisée de services mutualisés. Elle s&rsquo;adresse
         aux communes de moins de 3&nbsp;500 habitants et aux EPCI de moins de
         15&nbsp;000 habitants qui ne sont pas encore équipés. Elle est également
-        accessible à toute collectivité adhérante d&rsquo;une structure de
+        accessible à toute collectivité adhérente d&rsquo;une structure de
         mutualisation partenaire.
       </>
     ),
@@ -297,7 +297,7 @@ const SERVICES_DATA = [
     title: <>Messagerie, les adresses mail professionnelles</>,
     description: (
       <>
-        Envoyez ou recevez des emails et gérez et votre calendrier professionnel
+        Envoyez ou recevez des emails et gérez votre calendrier professionnel
         dans un environnement sécurisé.
       </>
     ),
