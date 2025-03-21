@@ -191,7 +191,7 @@ export default function Home() {
             target="_blank"
             rel="noopener"
           >
-            la cartographie interactive des cyberattaques du réseau Déclic
+            cartographie interactive des cyberattaques du réseau Déclic
           </Link>
           .
         </>
@@ -274,7 +274,7 @@ export default function Home() {
         <>
           Les principales conséquences d&rsquo;une cyberattaque sont
           l&rsquo;interruption d&rsquo;activité et de service (35%), la
-          destruction ou le vol de données (24%), la perte financière lié au
+          destruction ou le vol de données (24%), la perte financière liée au
           paiement d&rsquo;une rançon et l&rsquo;atteinte à la réputation (10%).
           <br />
           <br />
