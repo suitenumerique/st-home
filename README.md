@@ -40,37 +40,18 @@ L'application utilise une base de données des communes françaises. Vous pouvez
 
 ```bash
 # Importer les données de test (un petit ensemble de communes)
-npm run import:communes:test
+npm run seed:communes:local
 
-# Importer les données de production (fournir les chemins vers vos fichiers JSON)
-npm run import:communes:prod /chemin/vers/votre/communes.json /chemin/vers/votre/structures.json
+# Générer les données complètes avec toutes les communes de France (nécessite une clé Grist)
+npm run gen:communes:docker
+
+# Puis importer ces données en local
+npm run seed:communes:local:full
 ```
-
-Par exemple :
-
-```bash
-npm run import:communes:prod ./data/communes.json ./data/structures.json
-```
-
-Le script va :
-
-1. Lire le fichier JSON contenant les données des communes
-2. Importer les structures de mutualisation depuis le fichier structures.json spécifié
-3. Créer ou mettre à jour les communes (organisations) et les lier à leurs structures respectives
-4. Gérer les erreurs et afficher la progression
 
 ### Tests
 
 ```
-# lancer les tests unitaires
-npm run test
-
-# lancer les tests end-to-end
-npm run e2e --ui
+# lancer tous les tests
+npm test
 ```
-
-### Documentation
-
-La documentation est disponible dans le dossier `docs`.
-
-- [Architecture](docs/architecture.md)

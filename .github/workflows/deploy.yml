@@ -1,0 +1,26 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: ["Tests"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    # Deploy if the tests passed and the branch is main
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.ref == 'main' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - run:
+        name: Add Scalingo to known_hosts
+        command: mkdir -p ~/.ssh && ssh-keyscan -H ssh.osc-secnum-fr1.scalingo.com >> ~/.ssh/known_hosts
+      - run:
+        name: Deploy on Scalingo
+        env:
+          SCALINGO_PRIVATE_KEY_BASE64: ${{ secrets.SCALINGO_PRIVATE_KEY_BASE64 }}
+          SCALINGO_APP: ${{ secrets.SCALINGO_APP }}
+        command: |
+          SSH_PRIVATE_KEY=`echo "$SCALINGO_PRIVATE_KEY_BASE64" | base64 -d` git push -f git@ssh.osc-secnum-fr1.scalingo.com:${SCALINGO_APP}.git

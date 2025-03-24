@@ -1,17 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, test } from "vitest";
-import Page from "../src/pages/index";
-import "./onboarding.spec";
+import Page from "@/pages/index";
 
 test("Has index page", () => {
   render(<Page />);
   expect(
-    screen.getByRole("heading", { level: 1, name: "Template" }),
+    screen.getByRole("heading", { level: 1, name: "La Suite territoriale" }),
   ).toBeDefined();
-});
-
-describe("Test Suite", () => {
-  it("should run all tests", () => {
-    expect(true).toBe(true);
-  });
 });

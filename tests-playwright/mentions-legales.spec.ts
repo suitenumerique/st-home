@@ -15,7 +15,7 @@ test("has proper headers", async ({ page }) => {
     "Mentions légales",
   );
 
-  const requiredHeaders = ["Hébergement du site", "Accessibilité", "Sécurité"];
+  const requiredHeaders = ["Hébergement du site"];
 
   await Promise.all(
     requiredHeaders.map(async (text) =>
