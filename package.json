@@ -25,6 +25,7 @@
     "test:lint": "prettier '**/*.{ts,tsx,css,md,mdx,mjs,js}' --list-different && next lint --no-cache && npm run test:types",
     "test:links": "start-server-and-test 'npm run dev' 3000 'linkinator 'http://localhost:3000' --recurse --skip \"^(?!http://localhost:3000)\"'",
     "test:types": "tsc --noEmit",
+    "test:e2e:install": "playwright install",
     "test:e2e": "playwright test",
     "test:playwright": "NEXT_PUBLIC_BASE_PATH='' NODE_ENV=production npm run build && playwright test",
     "db:reset:local": "npm run db:drop:local && npm run db:push:local && npm run seed:communes:local",
