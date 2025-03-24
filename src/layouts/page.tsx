@@ -184,7 +184,11 @@ export function PageLayout({ children }: LayoutProps) {
             .
             <br />
             Le{" "}
-            <Link href={process.env.NEXT_PUBLIC_APP_REPOSITORY_URL || ""}>
+            <Link
+              href={process.env.NEXT_PUBLIC_APP_REPOSITORY_URL || ""}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               code source
             </Link>{" "}
             de ce site web est disponible en licence libre.

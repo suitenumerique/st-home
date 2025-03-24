@@ -5,7 +5,7 @@ const url = "/accessibilite";
 test("has title", async ({ page }) => {
   await page.goto(url);
 
-  await expect(page).toHaveTitle(/Déclaration d’accessibilité | template/);
+  await expect(page).toHaveTitle(/Déclaration d’accessibilité - La Suite territoriale/);
 });
 
 test("has proper headers", async ({ page }) => {

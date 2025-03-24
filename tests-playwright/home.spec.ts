@@ -5,25 +5,23 @@ const url = "/";
 test("has title", async ({ page }) => {
   await page.goto(url);
 
-  await expect(page).toHaveTitle(/Suite territoriale/);
+  await expect(page).toHaveTitle(/La Suite territoriale/);
 });
 
 test("has commune search", async ({ page }) => {
   await page.goto(url);
 
   await expect(
-    page.getByRole("searchbox", { name: /Rechercher une commune/i }),
+    page.getByPlaceholder("Renseignez le nom ou le code postal de votre commune"),
   ).toBeVisible();
-  await expect(page.getByRole("button", { name: "Accéder" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Rechercher" })).toBeVisible();
 });
 
 test("has services section", async ({ page }) => {
   await page.goto(url);
 
   await expect(
-    page.getByRole("heading", { name: "Nos services" }),
+    page.getByRole("heading", { name: "Des outils professionnels pour votre collectivité" }),
   ).toBeVisible();
-  await expect(page.getByText("Démarches Simplifiées")).toBeVisible();
-  await expect(page.getByText("France Connect")).toBeVisible();
-  await expect(page.getByText("Data.gouv.fr")).toBeVisible();
+  await expect(page.getByText("Un socle de services essentiels")).toBeVisible();
 });

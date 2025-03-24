@@ -7,7 +7,7 @@ const Accessibilite: NextPage = () => {
   return (
     <>
       <NextSeo
-        title="Accessibilité"
+        title="Déclaration d&rsquo;accessibilité"
         description="Déclaration d&rsquo;accessibilité du site suiteterritoriale.anct.gouv.fr"
       />
 

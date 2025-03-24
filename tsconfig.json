@@ -39,7 +39,9 @@
     "src/**/*.mjs",
     "src/**/*.ts",
     "src/**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "tests-vitest/**/*.ts",
+    "tests-vitest/**/*.tsx"
   ],
   "exclude": [
     "node_modules"
