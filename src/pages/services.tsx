@@ -52,16 +52,19 @@ const SERVICES_DATA = [
         answer: (
           <>
             Le socle de services essentiels de la Suite territoriale est mis à
-            disposition à titre gracieux aux communes de moins de 3&nbsp;500 habitants
-            ou intercommunalités de moins de 15&nbsp;000 habitants non adhérentes à
-            une structure de mutualisation. Il s&rsquo;accompagne d&rsquo;un niveau
-            d&rsquo;accompagnement et de support minimal de l&rsquo;ANCT.
-            <br/><br/>
-            Si vous souhaitez bénéficier d&rsquo;outils et d&rsquo;un accompagnement
-            plus complets, nous vous recommandons d&rsquo;accéder à la Suite
-            territoriale par l&rsquo;intermédiaire d&rsquo;une structure de mutualisation
-            partenaire (association d&rsquo;élus, OPSN, intercommunalité, etc).
-            Le coût associé dépendra alors des tarifs fixés par cette structure.
+            disposition à titre gracieux aux communes de moins de 3&nbsp;500
+            habitants ou intercommunalités de moins de 15&nbsp;000 habitants non
+            adhérentes à une structure de mutualisation. Il s&rsquo;accompagne
+            d&rsquo;un niveau d&rsquo;accompagnement et de support minimal de
+            l&rsquo;ANCT.
+            <br />
+            <br />
+            Si vous souhaitez bénéficier d&rsquo;outils et d&rsquo;un
+            accompagnement plus complets, nous vous recommandons d&rsquo;accéder
+            à la Suite territoriale par l&rsquo;intermédiaire d&rsquo;une
+            structure de mutualisation partenaire (association d&rsquo;élus,
+            OPSN, intercommunalité, etc). Le coût associé dépendra alors des
+            tarifs fixés par cette structure.
           </>
         ),
       },
@@ -251,15 +254,22 @@ const SERVICES_DATA = [
       },
       {
         question: (
-          <>Comment raccorder mon nom de domaine existant à la Suite territoriale ?</>
+          <>
+            Comment raccorder mon nom de domaine existant à la Suite
+            territoriale ?
+          </>
         ),
         answer: (
           <>
             Une fois inscrits, nous vous proposerons depuis La Régie
             d&rsquo;ajouter des enregistrements DNS pour raccorder votre nom de
-            domaine existant à la Suite territoriale. Cette opération peut être effectuée
-            par toute personne ayant accès à la configuration technique de votre nom de domaine, comme le détaille l&rsquo;<Link href="https://collectivite.fr/faq" target="_blank">Annuaire des Collectivités</Link>.
-            Dans tous les cas, vous en conservez la propriété et la gestion.
+            domaine existant à la Suite territoriale. Cette opération peut être
+            effectuée par toute personne ayant accès à la configuration
+            technique de votre nom de domaine, comme le détaille l&rsquo;
+            <Link href="https://collectivite.fr/faq" target="_blank">
+              Annuaire des Collectivités
+            </Link>
+            . Dans tous les cas, vous en conservez la propriété et la gestion.
           </>
         ),
       },
@@ -409,9 +419,9 @@ const SERVICES_DATA = [
         question: <>A quelle capacité de stockage ai-je accès ?</>,
         answer: (
           <>
-            Fichiers dispose d&rsquo;une capacité de stockage couvrant
-            les besoins des professionnels de la sphère publique territoriale.
-            Le quota maximum et la tarification précise dépendront de votre
+            Fichiers dispose d&rsquo;une capacité de stockage couvrant les
+            besoins des professionnels de la sphère publique territoriale. Le
+            quota maximum et la tarification précise dépendront de votre
             fournisseur (structure de mutualisation ou ANCT).
           </>
         ),
@@ -440,8 +450,8 @@ const SERVICES_DATA = [
           <>
             Oui, si ces documents relèvent bien de votre activité
             professionnelle en tant qu&rsquo;agent public ou élu de
-            collectivité. Votre structure de mutualisation pourra
-            vous accompagner dans cette démarche.
+            collectivité. Votre structure de mutualisation pourra vous
+            accompagner dans cette démarche.
           </>
         ),
       },

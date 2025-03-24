@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, test } from "vitest";
 import Page from "@/pages/index";
+import { render, screen } from "@testing-library/react";
+import { expect, test } from "vitest";
 
 test("Has index page", () => {
   render(<Page />);
