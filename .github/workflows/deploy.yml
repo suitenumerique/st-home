@@ -6,11 +6,16 @@ on:
     types:
       - completed
 
+concurrency:
+  group: production
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-24.04
     # Deploy if the tests passed and the branch is main
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' }}
+    environment: production
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
