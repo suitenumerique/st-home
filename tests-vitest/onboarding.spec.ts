@@ -15,7 +15,7 @@ function prepareTestCommune(
     siren: communeData.SIREN,
     name: communeData.nom,
     name_unaccent: communeData.nom,
-    slug: communeData.nom.toLowerCase().replace(/\s+/g, '-'),
+    slug: communeData.nom.toLowerCase().replace(/\s+/g, "-"),
     insee_geo: communeData.insee_geo,
     zipcode: communeData.cp,
     population: communeData.pmun_2024,
@@ -69,8 +69,6 @@ const activeInRegieCommune = prepareTestCommune(testCommunes[0]);
 const proConnectEnabledCommune = prepareTestCommune(testCommunes[0]);
 
 describe("determineOnboardingCase", () => {
-
-
   it("should return COMING_SOON when comingSoon option is true", () => {
     const result = determineOnboardingCase(smallCommune, { comingSoon: true });
     expect(result.onboardingCase).toBe(OnboardingCase.COMING_SOON);
