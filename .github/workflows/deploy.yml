@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy main in production
 
 on:
   workflow_run:
@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Add Scalingo to known_hosts
         run: mkdir -p ~/.ssh && ssh-keyscan -H ssh.osc-secnum-fr1.scalingo.com >> ~/.ssh/known_hosts
       - name: Setup SSH key
