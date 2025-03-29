@@ -1,6 +1,7 @@
 import type { Commune } from "@/lib/onboarding";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion";
+import type { AlertProps } from "@codegouvfr/react-dsfr/Alert";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import Link from "next/link";
 
@@ -8,12 +9,61 @@ type CommuneInfoProps = {
   commune: Commune;
 };
 
+const getBadge = (severity: AlertProps.Severity, label: string) => {
+  return (
+    <Badge
+      severity={severity}
+      small
+      style={{ marginBottom: "0.25rem", marginTop: "0.25rem" }}
+    >
+      {label}
+    </Badge>
+  );
+};
+
+/*
+
+WEBSITE_DECLARED_HTTP = "WEBSITE_DECLARED_HTTP"  # Website declared as HTTP
+    EMAIL_DOMAIN_MISMATCH = "EMAIL_DOMAIN_MISMATCH"  # Email domain does not match website domain
+    EMAIL_DOMAIN_GENERIC = "EMAIL_DOMAIN_GENERIC"  # Email domain is generic
+    EMAIL_DOMAIN_EXTENSION = "EMAIL_DOMAIN_EXTENSION"  # Email domain extension not allowed
+
+    # Issues that are tested in check_website
+    WEBSITE_DOWN = "WEBSITE_DOWN"  # timeout, unreachable, 404, ..
+    WEBSITE_SSL = "WEBSITE_SSL"  # SSL certificate issues
+    WEBSITE_DOMAIN_REDIRECT = "WEBSITE_DOMAIN_REDIRECT"  # website redirects to a different domain
+    WEBSITE_HTTP_REDIRECT = "WEBSITE_HTTP_REDIRECT"  # website does not redirect to HTTPS
+    WEBSITE_HTTPS_NOWWW = "WEBSITE_HTTPS_NOWWW"  # HTTPS URL without "www" doesn't work/redirect
+    WEBSITE_HTTP_NOWWW = "WEBSITE_HTTP_NOWWW"  # HTTP URL without "www" does not work or redirect
+
+    # Issues that are tested in check_dns
+    DNS_DOWN = "DNS_DOWN"  # DNS lookup failed on the email domain
+    DNS_MX_MISSING = "DNS_MX_MISSING"  # MX record missing on the email domain
+    DNS_SPF_MISSING = "DNS_SPF_MISSING"  # SPF record missing on the email domain
+    DNS_DMARC_MISSING = "DNS_DMARC_MISSING"  # DMARC record missing, or p=none
+    DNS_DMARC_WEAK = "DNS_DMARC_WEAK"  # DMARC record is too weak: anything below p=quarantine;pct=100. relaxed alignment is okay for now.
+
+*/
+
 /**
  * Component showing detailed commune information in expandable sections
  */
 export default function CommuneInfo({ commune }: CommuneInfoProps) {
-  const isEligible =
-    commune.population <= 3500 || (commune.epci_population || 0) <= 15000;
+  const isEligible = commune.st_eligible;
+
+  const issues = commune.issues || ["IN_PROGRESS"];
+
+  const inProgress = issues.includes("IN_PROGRESS");
+
+  const websiteMissing =
+    issues.includes("WEBSITE_MISSING") || issues.includes("WEBSITE_MALFORMED");
+  const websiteCompliant =
+    !websiteMissing && !issues.includes("WEBSITE_DOMAIN_EXTENSION");
+
+  const emailMissing =
+    issues.includes("EMAIL_MISSING") || issues.includes("EMAIL_MALFORMED");
+  const emailCompliant =
+    !emailMissing && !issues.includes("EMAIL_DOMAIN_EXTENSION");
 
   return (
     <div className={fr.cx("fr-mb-4w")}>
@@ -39,40 +89,20 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   "fr-badges-group--sm",
                 )}
               >
-                {!commune.website_domain ? (
-                  <Badge
-                    severity="error"
-                    small
-                    style={{ marginBottom: "0.25rem", marginTop: "0.25rem" }}
-                  >
-                    Manquant
-                  </Badge>
-                ) : (
-                  <>
-                    {commune.website_compliant !== null && (
-                      <Badge
-                        severity={
-                          commune.website_compliant ? "success" : "error"
-                        }
-                        small
-                        style={{
-                          marginBottom: "0.25rem",
-                          marginTop: "0.25rem",
-                        }}
-                      >
-                        {commune.website_compliant
-                          ? "Conforme"
-                          : "Non conforme"}
-                      </Badge>
-                    )}
-                  </>
-                )}
+                {inProgress &&
+                  !websiteMissing &&
+                  getBadge("warning", "Vérifications en cours")}
+                {websiteMissing
+                  ? getBadge("error", "Manquant")
+                  : websiteCompliant
+                    ? getBadge("success", "Conforme")
+                    : getBadge("error", "Non conforme")}
               </div>
             </div>
           }
         >
           <div className={fr.cx("fr-py-1w")}>
-            {!commune.website_domain ? (
+            {websiteMissing && (
               <>
                 <p>
                   <span
@@ -117,78 +147,69 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   </p>
                 )}
               </>
-            ) : (
-              <>
-                {commune.website_compliant ? (
-                  <p>
-                    <span
-                      className={fr.cx(
-                        "fr-icon-success-line",
-                        "fr-label--success",
-                        "fr-mr-1w",
-                      )}
-                      aria-hidden="true"
-                    ></span>
-                    L&rsquo;extension <strong>.{commune.website_tld}</strong> du
-                    nom de domaine{" "}
-                    <Link
-                      href={commune.website_url || ""}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {commune.website_domain}
-                    </Link>{" "}
-                    est conforme aux recommandations de l&rsquo;ANCT.
-                  </p>
-                ) : (
-                  <p>
-                    <span
-                      className={fr.cx(
-                        "fr-icon-error-line",
-                        "fr-label--error",
-                        "fr-mr-1w",
-                      )}
-                      aria-hidden="true"
-                    ></span>
-                    L&rsquo;extension <strong>.{commune.website_tld}</strong> du
-                    domaine{" "}
-                    <Link
-                      href={commune.website_url || ""}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {commune.website_domain}
-                    </Link>{" "}
-                    n&rsquo;est pas conforme aux recommandations de l&rsquo;ANCT
-                    dans le cadre de la Suite territoriale.
-                  </p>
-                )}
+            )}
 
-                {!commune.website_compliant && isEligible && (
-                  <p>
-                    <Badge severity="success" noIcon as="span">
-                      Bonne nouvelle !
-                    </Badge>{" "}
-                    La Suite territoriale peut vous aider à obtenir un nom de
-                    domaine conforme.
-                  </p>
-                )}
+            {!websiteMissing &&
+              !issues.includes("WEBSITE_DOMAIN_EXTENSION") && (
+                <p>
+                  <span
+                    className={fr.cx(
+                      "fr-icon-success-line",
+                      "fr-label--success",
+                      "fr-mr-1w",
+                    )}
+                    aria-hidden="true"
+                  ></span>
+                  L&rsquo;extension <strong>.{commune.website_tld}</strong> du
+                  nom de domaine{" "}
+                  <Link
+                    href={commune.website_url || ""}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {commune.website_domain}
+                  </Link>{" "}
+                  est conforme aux recommandations de l&rsquo;ANCT.
+                </p>
+              )}
 
-                {commune.website_compliant && isEligible && (
-                  <p>
-                    <span
-                      className={fr.cx(
-                        "fr-icon-success-line",
-                        "fr-label--success",
-                        "fr-mr-1w",
-                      )}
-                      aria-hidden="true"
-                    ></span>
-                    Vous pourrez réutiliser ce domaine au sein de la Suite
-                    territoriale !
-                  </p>
-                )}
-              </>
+            {!websiteMissing && issues.includes("WEBSITE_DOMAIN_EXTENSION") && (
+              <p>
+                <span
+                  className={fr.cx(
+                    "fr-icon-error-line",
+                    "fr-label--error",
+                    "fr-mr-1w",
+                  )}
+                  aria-hidden="true"
+                ></span>
+                L&rsquo;extension <strong>.{commune.website_tld}</strong> du
+                domaine{" "}
+                <Link
+                  href={commune.website_url || ""}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {commune.website_domain}
+                </Link>{" "}
+                n&rsquo;est pas conforme aux recommandations de l&rsquo;ANCT
+                dans le cadre de la Suite territoriale.
+              </p>
+            )}
+
+            {websiteCompliant && isEligible && (
+              <p>
+                <span
+                  className={fr.cx(
+                    "fr-icon-success-line",
+                    "fr-label--success",
+                    "fr-mr-1w",
+                  )}
+                  aria-hidden="true"
+                ></span>
+                Vous pourrez réutiliser ce domaine au sein de la Suite
+                territoriale !
+              </p>
             )}
           </div>
         </Accordion>
@@ -213,31 +234,20 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   "fr-badges-group--sm",
                 )}
               >
-                {!commune.email_official ? (
-                  <Badge
-                    severity="error"
-                    small
-                    style={{ marginBottom: "0.25rem", marginTop: "0.25rem" }}
-                  >
-                    Manquante
-                  </Badge>
-                ) : (
-                  commune.email_compliant !== null && (
-                    <Badge
-                      severity={commune.email_compliant ? "success" : "error"}
-                      small
-                      style={{ marginBottom: "0.25rem", marginTop: "0.25rem" }}
-                    >
-                      {commune.email_compliant ? "Conforme" : "Non conforme"}
-                    </Badge>
-                  )
-                )}
+                {inProgress &&
+                  !emailMissing &&
+                  getBadge("warning", "Vérifications en cours")}
+                {emailMissing
+                  ? getBadge("error", "Manquante")
+                  : emailCompliant
+                    ? getBadge("success", "Conforme")
+                    : getBadge("error", "Non conforme")}
               </div>
             </div>
           }
         >
           <div className={fr.cx("fr-py-1w")}>
-            {!commune.email_official ? (
+            {emailMissing && (
               <>
                 <p>
                   <span
@@ -287,58 +297,59 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   </p>
                 )}
               </>
-            ) : (
-              <>
-                {commune.email_compliant ? (
-                  <p>
-                    <span
-                      className={fr.cx("fr-icon-success-line", "fr-mr-1w")}
-                      style={{ color: "var(--text-default-success)" }}
-                      aria-hidden="true"
-                    ></span>
-                    L&rsquo;adresse de messagerie utilise un domaine{" "}
-                    <strong>{commune.email_domain}</strong> conforme aux
-                    recommandations de l&rsquo;ANCT.
-                  </p>
-                ) : (
-                  <p>
-                    <span
-                      className={fr.cx("fr-icon-error-line", "fr-mr-1w")}
-                      style={{ color: "var(--text-default-error)" }}
-                      aria-hidden="true"
-                    ></span>
-                    Le domaine <strong>{commune.email_domain}</strong> générique
-                    n&rsquo;est pas conforme aux recommandations de l&rsquo;ANCT
-                    dans le cadre de la Suite territoriale.
-                  </p>
-                )}
-
-                {commune.website_domain &&
-                  commune.email_compliant &&
-                  commune.email_domain !== commune.website_domain && (
-                    <p>
-                      <span
-                        className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
-                        style={{ color: "var(--text-default-warning)" }}
-                        aria-hidden="true"
-                      ></span>
-                      L&rsquo;adresse de messagerie utilise un domaine{" "}
-                      <strong>{commune.email_domain}</strong> différent de celui
-                      du site web <strong>{commune.website_domain}</strong>.
-                    </p>
-                  )}
-
-                {!commune.email_compliant && isEligible && (
-                  <p className={fr.cx("fr-text--bold")}>
-                    <Badge severity="success" noIcon as="span">
-                      Bonne nouvelle !
-                    </Badge>{" "}
-                    La Suite territoriale peut vous aider à obtenir une adresse
-                    de messagerie conforme.
-                  </p>
-                )}
-              </>
             )}
+
+            {!emailMissing && !issues.includes("EMAIL_DOMAIN_EXTENSION") && (
+              <p>
+                <span
+                  className={fr.cx("fr-icon-success-line", "fr-mr-1w")}
+                  style={{ color: "var(--text-default-success)" }}
+                  aria-hidden="true"
+                ></span>
+                L&rsquo;adresse de messagerie utilise un domaine{" "}
+                <strong>{commune.email_domain}</strong> conforme aux
+                recommandations de l&rsquo;ANCT.
+              </p>
+            )}
+
+            {!emailMissing && issues.includes("EMAIL_DOMAIN_EXTENSION") && (
+              <p>
+                <span
+                  className={fr.cx("fr-icon-error-line", "fr-mr-1w")}
+                  style={{ color: "var(--text-default-error)" }}
+                  aria-hidden="true"
+                ></span>
+                Le domaine <strong>{commune.email_domain}</strong> générique
+                n&rsquo;est pas conforme aux recommandations de l&rsquo;ANCT
+                dans le cadre de la Suite territoriale.
+              </p>
+            )}
+
+            {!emailMissing && issues.includes("EMAIL_DOMAIN_MISMATCH") && (
+              <p>
+                <span
+                  className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
+                  style={{ color: "var(--text-default-warning)" }}
+                  aria-hidden="true"
+                ></span>
+                L&rsquo;adresse de messagerie utilise un domaine{" "}
+                <strong>{commune.email_domain}</strong> différent de celui du
+                site web <strong>{commune.website_domain}</strong>.
+              </p>
+            )}
+
+            {(emailMissing ||
+              issues.includes("EMAIL_DOMAIN_MISMATCH") ||
+              issues.includes("EMAIL_DOMAIN_EXTENSION")) &&
+              isEligible && (
+                <p className={fr.cx("fr-text--bold")}>
+                  <Badge severity="success" noIcon as="span">
+                    Bonne nouvelle !
+                  </Badge>{" "}
+                  La Suite territoriale peut vous aider à obtenir une adresse de
+                  messagerie conforme.
+                </p>
+              )}
           </div>
         </Accordion>
 
@@ -353,23 +364,9 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
               />
               Éligible à la Suite territoriale :&nbsp;
               <div className={fr.cx("fr-ml-2w")}>
-                {isEligible ? (
-                  <Badge
-                    severity="success"
-                    small
-                    style={{ marginBottom: "0.25rem", marginTop: "0.25rem" }}
-                  >
-                    Oui
-                  </Badge>
-                ) : (
-                  <Badge
-                    severity="info"
-                    small
-                    style={{ marginBottom: "0.25rem", marginTop: "0.25rem" }}
-                  >
-                    Nous contacter
-                  </Badge>
-                )}
+                {isEligible
+                  ? getBadge("success", "Oui")
+                  : getBadge("info", "Nous contacter")}
               </div>
             </div>
           }

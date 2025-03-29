@@ -51,7 +51,7 @@ export function determineOnboardingCase(
   }
 
   // Check if organization is active in Régie
-  if (commune.active_in_regie) {
+  if (commune.st_active) {
     return {
       onboardingCase: OnboardingCase.ACTIVE_IN_REGIE,
     };

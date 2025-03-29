@@ -1,0 +1,66 @@
+[project]
+name = "st-home-data"
+version = "0.1.0"
+description = "Data pipeline for Suite territoriale communes"
+requires-python = ">=3.13"
+dependencies = [
+    "pygrister==0.6.0",
+    "requests==2.32.3",
+    "celery[redis]==5.4.0",
+    "dnspython==2.7.0",
+    "psycopg2-binary==2.9.10",
+]
+
+[project.optional-dependencies]
+local = [
+    "pytest-cov==6.0.0",
+    "flower==2.0.1",
+    "watchdog==6.0.0",
+    "pytest==8.3.5",
+    "certifi==2025.1.31",
+    "ruff==0.11.2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.ruff]
+exclude = [
+    ".git",
+    ".venv",
+    "build",
+    "venv",
+    "dumps",
+    ".pytest_cache",
+    "__pycache__",
+    "*/migrations/*",
+]
+line-length = 99
+
+
+[tool.ruff.lint]
+ignore = ["DJ001", "PLR2004", "S101", "PLR0913", "PLR0911", "BLE001", "S113"]
+select = [
+    "B",     # flake8-bugbear
+    "BLE",   # flake8-blind-except
+    "C4",    # flake8-comprehensions
+    "DJ",    # flake8-django
+    "I",     # isort
+    "PLC",   # pylint-convention
+    "PLE",   # pylint-error
+    "PLR",   # pylint-refactoring
+    "PLW",   # pylint-warning
+    "RUF100", # Ruff unused-noqa
+    "RUF200", # Ruff check pyproject.toml
+    "S",     # flake8-bandit
+    "SLF",   # flake8-self
+    "T20",   # flake8-print
+]
+
+[tool.ruff.lint.isort]
+section-order = ["future","standard-library","third-party","first-party","local-folder"]
+extra-standard-library = ["tomllib"]

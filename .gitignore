@@ -76,6 +76,7 @@ __pycache__/
 .ruff_cache/
 .coverage
 
-data/communes.json
-data/structures.json
-data/*.pem
+*.pem
+data/dumps/*.json
+!data/dumps/sample-structures.json
+!data/dumps/sample-communes.json

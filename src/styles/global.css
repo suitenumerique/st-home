@@ -23,6 +23,23 @@
   }
 }
 
+.rcint-section h3 {
+  color: var(--text-title-blue-france) !important;
+}
+
+.rcint-section .fr-card__end {
+  margin-top: 0 !important;
+}
+
+.rcint-section ul,
+.rcint-section ol {
+  margin-left: 1rem;
+}
+
+.rcint-section p {
+  margin: 0 !important;
+}
+
 html,
 body {
   min-width: 320px;
