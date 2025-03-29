@@ -10,7 +10,7 @@ import {
 
 // Organization table
 export const organizations = pgTable(
-  "organizations",
+  "st_organizations",
   {
     siret: text("siret").primaryKey(),
     siren: text("siren").notNull(),
@@ -23,19 +23,19 @@ export const organizations = pgTable(
     website_url: text("website_url"),
     website_domain: text("website_domain"),
     website_tld: text("website_tld"),
-    website_compliant: boolean("website_compliant"),
-    domain_ownership: integer("domain_ownership"),
+    issues: text("issues").array(),
     email_official: text("email_official"),
     email_domain: text("email_domain"),
-    email_compliant: boolean("email_compliant"),
+    email_tld: text("email_tld"),
     epci_name: text("epci_name"),
     epci_siren: text("epci_siren"),
     epci_population: integer("epci_population"),
-    active_in_regie: boolean("active_in_regie").notNull().default(false),
+    st_eligible: boolean("st_eligible").notNull().default(false),
+    st_active: boolean("st_active").notNull().default(false),
     url_service_public: text("url_service_public"),
   },
   (table) => [
-    index("organizations_name_search_index").using(
+    index("st_organizations_name_search_index").using(
       "gin",
       sql`to_tsvector('french', ${table.name_unaccent})`,
     ),
@@ -44,7 +44,7 @@ export const organizations = pgTable(
 
 // MutualizationStructure table
 export const mutualizationStructures = pgTable(
-  "mutualization_structures",
+  "st_mutualization_structures",
   {
     id: text("id").primaryKey(),
     name: text("name").notNull(),
@@ -54,7 +54,7 @@ export const mutualizationStructures = pgTable(
     website: text("website"),
   },
   (table) => [
-    index("mutualizationstructures_name_search_index").using(
+    index("st_mutualizationstructures_name_search_index").using(
       "gin",
       sql`to_tsvector('french', ${table.name_unaccent})`,
     ),
@@ -63,7 +63,7 @@ export const mutualizationStructures = pgTable(
 
 // Organization to MutualizationStructure many-to-many relation table
 export const organizationsToStructures = pgTable(
-  "organizations_to_structures",
+  "st_organizations_to_structures",
   {
     organizationSiret: text("organization_siret")
       .notNull()
