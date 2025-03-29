@@ -1,1 +1,1 @@
-npm run test:lint && npm run test:unit
+npm run lint:check && npm run test:unit && npm run lint:data:check && npm run test:data

@@ -15,20 +15,58 @@ services:
       - "1081:1080"
       - "1025:1025"
 
-  gencommunes:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  # Don't launch this with "docker compose up"
+  data_tests:
     profiles:
       - tools
+    volumes:
+      - ./data:/app/data
     build:
-      context: .
-      dockerfile: data/Dockerfile
+      context: data/
+      dockerfile: Dockerfile.local
     pull_policy: build
+    environment:
+      - PYTHONPATH=/app/data
+    command: pytest tests/ -v
+
+  worker:
+    build:
+      context: data/
+      dockerfile: Dockerfile.local
+    pull_policy: build
+    depends_on:
+      - postgresql
+      - redis
     volumes:
       - ./data:/app/data
     environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - DATABASE_URL=postgresql://usr:pwd@postgresql:5432/st_home_local
       - GRIST_API_KEY=${GRIST_API_KEY}
       - GRIST_DOC_ID=${GRIST_DOC_ID}
       - GRIST_SELF_MANAGED=${GRIST_SELF_MANAGED}
       - GRIST_SELF_MANAGED_HOME=${GRIST_SELF_MANAGED_HOME}
       - GRIST_SELF_MANAGED_SINGLE_ORG=${GRIST_SELF_MANAGED_SINGLE_ORG}
       - GRIST_TEAM_SITE=${GRIST_TEAM_SITE}
-    command: python gencommunes.py
+    command: watchmedo auto-restart --patterns="*.py" --recursive -- celery -A celery_app worker  -Q celery,check_website,check_dns --loglevel=debug --concurrency=2
+
+  flower:
+    build:
+      context: data/
+      dockerfile: Dockerfile.local
+    depends_on:
+      - redis
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - FLOWER_UNAUTHENTICATED_API=true
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "5556:5556"
+    command: celery flower --port=5556

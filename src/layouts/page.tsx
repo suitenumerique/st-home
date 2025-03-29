@@ -156,6 +156,24 @@ export function PageLayout({ children }: LayoutProps) {
             },
             isActive: router.asPath.startsWith("/services"),
           },
+          {
+            text: "Conformité",
+            isActive: router.asPath.startsWith("/conformite"),
+            menuLinks: [
+              {
+                text: "Référentiel",
+                linkProps: {
+                  href: "/conformite/referentiel",
+                },
+              },
+              {
+                text: "Cartographie",
+                linkProps: {
+                  href: "/conformite/cartographie",
+                },
+              },
+            ],
+          },
           // {
           //   text: "Cartographie de conformité",
           //   linkProps: {

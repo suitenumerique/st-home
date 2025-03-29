@@ -4,27 +4,27 @@ import { pool } from "../src/lib/db";
 import { unaccent } from "../src/lib/string";
 
 interface Commune {
-  nom: string;
+  name: string;
   slug: string;
   insee_geo: string;
-  SIREN: string;
+  siren: string;
   siret: string;
-  pmun_2024: number;
-  cp: string;
-  Courriel: string;
+  population: number;
+  zipcode: string;
+  email_official: string;
   structures: number[];
-  Site_web: string;
-  protocole_declare: string;
-  domaine_web: string;
-  domaine_messagerie: string;
-  tld: string;
-  tld_conforme: string;
-  messagerie_ko: string;
-  owner_qualite: number | null;
-  insee_epci_libelle: string;
+  website_url: string | null;
+  issues: string[];
+  website_domain: string | null;
+  email_domain: string | null;
+  website_tld: string | null;
+  email_tld: string | null;
+  epci_name: string;
   epci_siren: string;
-  epci_pop: number;
+  epci_population: number;
   url_service_public: string;
+  st_eligible: boolean;
+  st_active: boolean;
 }
 
 interface Structure {
@@ -68,10 +68,13 @@ async function importCommunes(filePath: string) {
     console.log(`Found ${communes.length} communes to import.`);
 
     // Get structures data
-    const structuresPath = filePath.replace("communes.json", "structures.json");
+    const structuresPath = filePath.replace(
+      /[a-z0-9]+.json/,
+      "structures.json",
+    );
     console.log(`Reading structures from ${structuresPath}...`);
 
-    if (!fs.existsSync(structuresPath)) {
+    if (!fs.existsSync(structuresPath) || structuresPath === filePath) {
       console.error(`Structures file not found: ${structuresPath}`);
       process.exit(1);
     }
@@ -79,11 +82,18 @@ async function importCommunes(filePath: string) {
     const structuresData = fs.readFileSync(structuresPath, "utf8");
     const structuresList: Structure[] = JSON.parse(structuresData);
 
+    // Filter out structures that are not mutualization structures
+    const mutualizationStructures = structuresList.filter(
+      (structure) =>
+        structure.Typologie.indexOf("OPSN") !== -1 ||
+        structure.Typologie.indexOf("Centre de gestion") !== -1,
+    );
+
     // Get a client for transaction
     client = await pool.connect();
 
     // Prepare bulk insert data
-    const structureValues = structuresList.map((structure) => ({
+    const structureValues = mutualizationStructures.map((structure) => ({
       id: String(structure.id),
       name: structure.Nom,
       name_unaccent: unaccent(structure.Nom),
@@ -93,7 +103,9 @@ async function importCommunes(filePath: string) {
     }));
 
     // Keep track of valid organizations and structures
-    const validStructureIds = new Set(structuresList.map((s) => String(s.id)));
+    const validStructureIds = new Set(
+      mutualizationStructures.map((s) => String(s.id)),
+    );
     const seenSirets = new Set<string>();
     let structureRelations: {
       organization_siret: string;
@@ -103,10 +115,10 @@ async function importCommunes(filePath: string) {
     // Filter and transform organizations
     const organizationValues = communes
       .filter((commune) => {
-        if (!commune.siret || commune.pmun_2024 === 0) return false;
+        if (!commune.siret || commune.population === 0) return false;
         if (seenSirets.has(commune.siret)) {
           console.log(
-            `Skipping duplicate SIRET: ${commune.siret} (${commune.nom})`,
+            `Skipping duplicate SIRET: ${commune.siret} (${commune.name})`,
           );
           return false;
         }
@@ -127,53 +139,49 @@ async function importCommunes(filePath: string) {
       })
       .map((commune) => ({
         siret: commune.siret,
-        siren: commune.SIREN,
-        name: commune.nom,
-        name_unaccent: unaccent(commune.nom),
+        siren: commune.siren,
+        name: commune.name,
+        name_unaccent: unaccent(commune.name),
         slug: commune.slug,
         insee_geo: commune.insee_geo,
-        zipcode: commune.cp,
-        population: commune.pmun_2024,
-        url_service_public: commune.url_service_public,
-        email_official: commune.Courriel || null,
-        website_url: commune.Site_web !== "/" ? commune.Site_web : null,
-        website_domain:
-          commune.domaine_web !== "/" ? commune.domaine_web : null,
-        website_tld: commune.tld !== "/" ? commune.tld : null,
-        website_compliant: commune.tld_conforme === "True",
-        domain_ownership: commune.owner_qualite,
-        email_domain:
-          commune.domaine_messagerie !== "/"
-            ? commune.domaine_messagerie
-            : null,
-        email_compliant: commune.messagerie_ko !== "True",
-        epci_name: commune.insee_epci_libelle || null,
+        zipcode: commune.zipcode,
+        population: commune.population,
+        website_url: commune.website_url || null,
+        website_domain: commune.website_domain || null,
+        website_tld: commune.website_tld || null,
+        issues: commune.issues,
+        email_official: commune.email_official || null,
+        email_domain: commune.email_domain || null,
+        email_tld: commune.email_tld || null,
+        epci_name: commune.epci_name || null,
         epci_siren: commune.epci_siren || null,
-        epci_population: commune.epci_pop || null,
-        active_in_regie: false,
+        epci_population: commune.epci_population || null,
+        st_eligible: commune.st_eligible || false,
+        st_active: commune.st_active || false,
+        url_service_public: commune.url_service_public,
       }));
 
     // Start transaction and replace all data
     await client.query("BEGIN");
 
     // Clear existing data
-    await client.query("TRUNCATE TABLE organizations_to_structures");
-    await client.query("TRUNCATE TABLE organizations CASCADE");
-    await client.query("TRUNCATE TABLE mutualization_structures CASCADE");
+    await client.query("TRUNCATE TABLE st_organizations_to_structures");
+    await client.query("TRUNCATE TABLE st_organizations CASCADE");
+    await client.query("TRUNCATE TABLE st_mutualization_structures CASCADE");
 
     // Bulk insert structures
     console.log(`Bulk inserting ${structureValues.length} structures...`);
     const structureQuery = `
-      INSERT INTO mutualization_structures
-      SELECT * FROM json_populate_recordset(null::mutualization_structures, $1)
+      INSERT INTO st_mutualization_structures
+      SELECT * FROM json_populate_recordset(null::st_mutualization_structures, $1)
     `;
     await client.query(structureQuery, [JSON.stringify(structureValues)]);
 
     // Bulk insert organizations
     console.log(`Bulk inserting ${organizationValues.length} organizations...`);
     const orgQuery = `
-      INSERT INTO organizations
-      SELECT * FROM json_populate_recordset(null::organizations, $1)
+      INSERT INTO st_organizations
+      SELECT * FROM json_populate_recordset(null::st_organizations, $1)
     `;
     await client.query(orgQuery, [JSON.stringify(organizationValues)]);
 
@@ -183,8 +191,8 @@ async function importCommunes(filePath: string) {
         `Bulk inserting ${structureRelations.length} structure relations...`,
       );
       const relationsQuery = `
-        INSERT INTO organizations_to_structures (organization_siret, structure_id)
-        SELECT * FROM json_populate_recordset(null::organizations_to_structures, $1)
+        INSERT INTO st_organizations_to_structures (organization_siret, structure_id)
+        SELECT * FROM json_populate_recordset(null::st_organizations_to_structures, $1)
       `;
       await client.query(relationsQuery, [JSON.stringify(structureRelations)]);
     }

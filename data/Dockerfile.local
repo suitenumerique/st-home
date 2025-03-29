@@ -4,4 +4,4 @@ WORKDIR /app/data
 
 # Install dependencies
 COPY pyproject.toml .
-RUN pip install .
+RUN pip install ".[local]"

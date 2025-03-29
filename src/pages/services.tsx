@@ -1,6 +1,6 @@
 import BackToTop from "@/components/BackToTop";
+import FaqList from "@/components/FaqList";
 import { fr } from "@codegouvfr/react-dsfr";
-import { Accordion } from "@codegouvfr/react-dsfr/Accordion";
 import { SideMenu } from "@codegouvfr/react-dsfr/SideMenu";
 import { NextSeo } from "next-seo";
 import Image from "next/image";
@@ -706,11 +706,7 @@ export default function ServicesPage() {
                   </div>
                 )}
 
-                {service.faqs.map((faq, index) => (
-                  <Accordion key={index} label={faq.question} titleAs="h2">
-                    {faq.answer}
-                  </Accordion>
-                ))}
+                <FaqList faqs={service.faqs} titleAs="h2" />
               </section>
             ))}
 

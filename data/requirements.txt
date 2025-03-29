@@ -1,3 +1,0 @@
-pygrister
-requests
-awesome-slugify
