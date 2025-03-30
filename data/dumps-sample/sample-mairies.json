@@ -1,0 +1,118 @@
+[
+  {
+    "siret": "21010001200017",
+    "siren": "210100012",
+    "dep": "01",
+    "slug": "abergement-clemenciat",
+    "name": "L'Abergement-Clémenciat",
+    "insee_geo": "01001",
+    "issues": [
+        "WEBSITE_MISSING",
+        "EMAIL_DOMAIN_GENERIC",
+        "EMAIL_DOMAIN_EXTENSION",
+        "IN_PROGRESS"
+    ],
+    "email_official": "mairieabergementclemenciat@gmail.com",
+    "website_url": null,
+    "website_domain": null,
+    "email_domain": "gmail.com",
+    "website_tld": null,
+    "email_tld": "com",
+    "zipcode": "01400",
+    "population": 859,
+    "epci_population": 40570,
+    "epci_name": "CC de la Dombes",
+    "epci_siren": "200069193",
+    "st_eligible": true,
+    "st_active": false,
+    "url_service_public": "https://lannuaire.service-public.fr/auvergne-rhone-alpes/ain/12705004-0d2a-4b54-bc10-d6cef127f68a",
+    "structures": [
+        2,
+        131
+    ]
+},
+{
+    "siret": "21010002000010",
+    "siren": "210100020",
+    "dep": "01",
+    "slug": "abergement-de-varey",
+    "name": "L'Abergement-de-Varey",
+    "insee_geo": "01002",
+    "issues": [
+        "IN_PROGRESS"
+    ],
+    "email_official": "mairie@abergement-de-varey.fr",
+    "website_url": "https://abergement-de-varey.fr",
+    "website_domain": "abergement-de-varey.fr",
+    "email_domain": "abergement-de-varey.fr",
+    "website_tld": "fr",
+    "email_tld": "fr",
+    "zipcode": "01640",
+    "population": 273,
+    "epci_population": 82840,
+    "epci_name": "CC de la Plaine de l'Ain",
+    "epci_siren": "240100883",
+    "st_eligible": true,
+    "st_active": false,
+    "url_service_public": "https://lannuaire.service-public.fr/auvergne-rhone-alpes/ain/2ea9d130-d969-4cf3-bf0b-676abafe68be",
+    "structures": []
+},
+{
+    "siret": "21010004600015",
+    "siren": "210100046",
+    "dep": "01",
+    "slug": "amberieu-en-bugey",
+    "name": "Ambérieu-en-Bugey",
+    "insee_geo": "01004",
+    "issues": [
+        "EMAIL_DOMAIN_MISMATCH"
+    ],
+    "email_official": "accueil@ville-amberieu.fr",
+    "website_url": "https://ville-amberieuenbugey.fr",
+    "website_domain": "ville-amberieuenbugey.fr",
+    "email_domain": "ville-amberieu.fr",
+    "website_tld": "fr",
+    "email_tld": "fr",
+    "zipcode": "01500",
+    "population": 15554,
+    "epci_population": 82840,
+    "epci_name": "CC de la Plaine de l'Ain",
+    "epci_siren": "240100883",
+    "st_eligible": false,
+    "st_active": false,
+    "url_service_public": "https://lannuaire.service-public.fr/auvergne-rhone-alpes/ain/8ef7a371-e10d-49d4-914e-2bf246247fb0",
+    "structures": [
+        2
+    ]
+},
+{
+    "siret": "21010005300011",
+    "siren": "210100053",
+    "dep": "01",
+    "slug": "amberieux-en-dombes",
+    "name": "Ambérieux-en-Dombes",
+    "insee_geo": "01005",
+    "issues": [
+        "WEBSITE_DECLARED_HTTP",
+        "IN_PROGRESS"
+    ],
+    "email_official": "mairie@amberieux-en-dombes.fr",
+    "website_url": "http://www.amberieux-en-dombes.fr",
+    "website_domain": "www.amberieux-en-dombes.fr",
+    "email_domain": "amberieux-en-dombes.fr",
+    "website_tld": "fr",
+    "email_tld": "fr",
+    "zipcode": "01330",
+    "population": 1917,
+    "epci_population": 40893,
+    "epci_name": "CC Dombes Saône Vallée",
+    "epci_siren": "200042497",
+    "st_eligible": true,
+    "st_active": true,
+    "url_service_public": "https://lannuaire.service-public.fr/auvergne-rhone-alpes/ain/3f7877b8-6e4a-47b5-abf4-5729a0db5759",
+    "structures": [
+        2,
+        131
+    ]
+}
+]

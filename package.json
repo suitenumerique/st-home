@@ -11,6 +11,7 @@
   "scripts": {
     "predev": "rm -rf .next && npm run only-include-used-icons && node -r @swc-node/register scripts/warm-api.ts &",
     "prebuild": "rm -rf .next && node -r @swc-node/register scripts/prebuild.ts && npm run only-include-used-icons",
+    "postinstall": "next telemetry disable",
     "only-include-used-icons": "node node_modules/@codegouvfr/react-dsfr/bin/only-include-used-icons.js",
     "dev": "next dev",
     "build": "next build && npm run prod:prune",
@@ -43,7 +44,7 @@
     "db:browse:staging": "dotenv -e .env.staging -- drizzle-kit studio",
     "db:push:local": "dotenv -e .env.local -- drizzle-kit push",
     "db:push:staging": "dotenv -e .env.staging -- drizzle-kit push",
-    "db:seed:local:sample": "dotenv -e .env.local -- node -r @swc-node/register scripts/seed-db.ts ./data/dumps/sample-mairies.json",
+    "db:seed:local:sample": "dotenv -e .env.local -- node -r @swc-node/register scripts/seed-db.ts ./data/dumps-sample/sample-mairies.json",
     "db:seed:local:full": "dotenv -e .env.local -- node -r @swc-node/register scripts/seed-db.ts ./data/dumps/mairies.json",
     "db:seed:staging": "dotenv -e .env.staging -- node -r @swc-node/register scripts/seed-db.ts ./data/dumps/mairies.json"
   },
