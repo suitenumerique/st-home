@@ -107,3 +107,20 @@ def get_issues_by_siret(all_issues, siret: str):
             issues[issue] = check["details"][idx]
 
     return issues
+
+
+def find_org_by_siret(siret: str):
+    """Find an organization by SIRET."""
+
+    with get_db() as db:
+        with db.cursor() as cur:
+            cur.execute("SELECT * FROM st_organizations WHERE siret = %s", (siret,))
+            return cur.fetchone()
+
+
+def list_all_orgs():
+    """List all organizations."""
+    with get_db() as db:
+        with db.cursor() as cur:
+            cur.execute("SELECT * FROM st_organizations")
+            return cur.fetchall()

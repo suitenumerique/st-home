@@ -1,3 +1,4 @@
+import logging
 import re
 from urllib.parse import urlparse, urlunparse
 
@@ -6,29 +7,35 @@ import requests
 from celery_app import app
 
 from .conformance import Issues, validate_conformance
-from .db import upsert_issues
-from .lib import get_org_by_siret, iter_dila
+from .db import find_org_by_siret, list_all_orgs, upsert_issues
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 @app.task
 def run(siret):
-    org = get_org_by_siret(siret)
+    org = find_org_by_siret(siret)
 
-    if len(org["website"]) > 0:
+    if not org:
+        logger.warning(f"Organization {siret} not found")
+        return
+
+    if len(org.get("website_url") or "") > 0:
         # Only run for non-malformed URLs
-        conformance_issues = validate_conformance("", org["website"])
+        conformance_issues = validate_conformance("", org["website_url"])
         if Issues.WEBSITE_MALFORMED in conformance_issues:
             return
 
-        issues = check_website(org["website"])
+        issues = check_website(org["website_url"])
         if issues is not None:
             upsert_issues(siret, "website", issues)
 
 
 @app.task
 def queue_all():
-    for mairie in iter_dila("mairie"):
-        run.apply_async(args=[mairie["siret"]], queue="check_website")
+    for org in list_all_orgs():
+        run.apply_async(args=[org["siret"]], queue="check_website")
 
 
 def check_website(url):
