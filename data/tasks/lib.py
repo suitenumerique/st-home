@@ -64,22 +64,3 @@ def iter_sirene():
         data = json.load(f)
     for row in data:
         yield row
-
-
-def get_org_by_siret(siret):
-    # TODO: DB query!
-    for mairie in iter_dila("mairie"):
-        if mairie["siret"] == siret:
-            return {
-                "type": "mairie",
-                "email": (
-                    mairie["adresse_courriel"][0]
-                    if len(mairie.get("adresse_courriel") or []) > 0
-                    else ""
-                ).strip(),
-                "website": (
-                    mairie["site_internet"][0].get("valeur", "")
-                    if len(mairie.get("site_internet") or []) > 0
-                    else ""
-                ).strip(),
-            }

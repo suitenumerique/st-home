@@ -1,3 +1,4 @@
+import logging
 import re
 
 import dns.exception
@@ -6,23 +7,29 @@ import dns.resolver
 from celery_app import app
 
 from .conformance import Issues, validate_conformance
-from .db import upsert_issues
-from .lib import get_org_by_siret, iter_dila
+from .db import find_org_by_siret, list_all_orgs, upsert_issues
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 @app.task
 def run(siret):
-    org = get_org_by_siret(siret)
+    org = find_org_by_siret(siret)
 
-    if len(org["email"]) > 0:
-        conformance_issues = validate_conformance(org["email"], "")
+    if not org:
+        logger.warning(f"Organization {siret} not found")
+        return
+
+    if len(org.get("email_official") or "") > 0:
+        conformance_issues = validate_conformance(org["email_official"], "")
         if (
             Issues.EMAIL_MALFORMED in conformance_issues
             or Issues.EMAIL_DOMAIN_GENERIC in conformance_issues
         ):
             return
 
-        issues = check_dns(org["email"].split("@")[1])
+        issues = check_dns(org["email_official"].split("@")[1])
 
         if issues is not None:  # Only store if we got results
             upsert_issues(siret, "dns", issues)
@@ -30,8 +37,8 @@ def run(siret):
 
 @app.task
 def queue_all():
-    for mairie in iter_dila("mairie"):
-        run.apply_async(args=[mairie["siret"]], queue="check_dns")
+    for org in list_all_orgs():
+        run.apply_async(args=[org["siret"]], queue="check_dns")
 
 
 def check_dns(email_domain):
