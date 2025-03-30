@@ -85,8 +85,9 @@ async function importCommunes(filePath: string) {
     // Filter out structures that are not mutualization structures
     const mutualizationStructures = structuresList.filter(
       (structure) =>
-        structure.Typologie.indexOf("OPSN") !== -1 ||
-        structure.Typologie.indexOf("Centre de gestion") !== -1,
+        structure.Typologie &&
+        (structure.Typologie.indexOf("OPSN") !== -1 ||
+          structure.Typologie.indexOf("Centre de gestion") !== -1),
     );
 
     // Get a client for transaction

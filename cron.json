@@ -1,0 +1,12 @@
+{
+  "jobs": [
+    {
+      "command": "0 1 * * * bash -c \"bash -c 'cd data && export HOME=/app/data && source .profile.d/python.sh && python -m tasks.sync' && npm run db:seed:local:full\"",
+      "size": "2XL"
+    },
+    {
+      "command": "0 2 * * * bash -c 'cd data && export HOME=/app/data && source .profile.d/python.sh && celery -A celery_app call tasks.check_website.queue_all && celery -A celery_app call tasks.check_dns.queue_all'",
+      "size": "M"
+    }
+  ]
+}
