@@ -77,6 +77,4 @@ __pycache__/
 .coverage
 
 *.pem
-data/dumps/*.json
-!data/dumps/sample-structures.json
-!data/dumps/sample-communes.json
+data/dumps/
