@@ -125,3 +125,5 @@ def dump_filtered_sirene(communes):
 
                         with open("dumps/sirene.json", "w") as f:
                             json.dump(rows, f, ensure_ascii=False, indent=4)
+
+    return len(rows)

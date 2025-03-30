@@ -4,6 +4,7 @@ import datetime
 import io
 import json
 import logging
+import os
 import re
 import tarfile
 from collections import defaultdict
@@ -11,7 +12,7 @@ from collections import defaultdict
 import requests
 
 from .conformance import Issues, validate_conformance
-from .db import get_all_issues, get_issues_by_siret
+from .db import get_all_issues, get_issues_by_siret, init_db
 from .defs import HARDCODED_COMMUNES
 from .dumps import dump_dila, dump_filtered_sirene, dump_insee_communes, dump_perimetre_epci
 from .lib import (
@@ -33,6 +34,10 @@ logging.basicConfig(level=logging.INFO)
 def run():
     """Main data sync workflow"""
 
+    # Create the "dumps/" directory if it doesn't exist
+    os.makedirs("dumps", exist_ok=True)
+    init_db()
+
     dump_insee_communes()
     dump_dila()
     dump_repertoire_structures()
@@ -45,7 +50,9 @@ def run():
 
     associate_epci_to_communes(communes)
 
-    dump_filtered_sirene(communes)
+    sirene_row_count = dump_filtered_sirene(communes)
+
+    logger.info("Dumped filtered sirene: %s rows", sirene_row_count)
 
     associate_siret_to_communes(communes)
 
