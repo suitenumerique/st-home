@@ -90,14 +90,13 @@ def get_all_data_checks():
     return all_data_checks
 
 
-def get_data_checks_by_siret(all_data_checks, siret: str):
+def get_data_checks_by_siret(all_data_checks, conformance_issues, siret: str):
     """Get issues from checks for a given SIRET. We must have at least one row of each type of check."""
 
-    issues_for_siret = []
     for check in all_data_checks.get(siret, []):
-        issues_for_siret.extend(check["issues"])
+        conformance_issues.extend(check["issues"])
 
-    expected_types = data_checks_doable(issues_for_siret)
+    expected_types = data_checks_doable(conformance_issues)
     checked_types = {check["type"] for check in all_data_checks.get(siret, [])}
     if not expected_types.issubset(checked_types):
         return {
