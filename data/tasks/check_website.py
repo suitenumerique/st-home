@@ -6,7 +6,7 @@ import requests
 
 from celery_app import app
 
-from .conformance import Issues, data_checks_needed, validate_conformance
+from .conformance import Issues, data_checks_doable, validate_conformance
 from .db import find_org_by_siret, list_all_orgs, upsert_issues
 
 logger = logging.getLogger(__name__)
@@ -23,7 +23,7 @@ def run(siret):
 
     if len(org.get("website_url") or "") > 0:
         conformance_issues = validate_conformance("", org["website_url"])
-        if "website" not in data_checks_needed(conformance_issues):
+        if "website" not in data_checks_doable(conformance_issues):
             return
 
         issues = check_website(org["website_url"])

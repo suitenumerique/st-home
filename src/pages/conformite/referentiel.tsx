@@ -128,7 +128,7 @@ const ReferentielConformite: ReferentielSection[] = [
             <div>Les extensions territoriales autorisées sont :</div>
             <ul>
               <li>
-                <strong>National</strong> : .fr, .gouv.fr
+                <strong>National</strong> : .fr
               </li>
               <li>
                 <strong>Régional</strong> : .alsace, .bzh, .corsica, .paris

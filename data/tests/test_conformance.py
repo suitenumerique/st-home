@@ -1,4 +1,9 @@
-from ..tasks.conformance import Issues, validate_conformance
+from ..tasks.conformance import Issues, data_checks_doable, validate_conformance
+
+
+def test_strict_email_and_website():
+    """Test str(Issue)"""
+    assert str(Issues.EMAIL_DOMAIN_MISMATCH) == "EMAIL_DOMAIN_MISMATCH"
 
 
 def test_valid_email_and_website():
@@ -92,3 +97,21 @@ def test_domain_extension():
 
     issues = validate_conformance("test@example.fr", "")
     assert Issues.EMAIL_DOMAIN_EXTENSION not in issues
+
+
+def test_data_checks_doable():
+    """Test that data_checks_doable returns the correct set of checks"""
+    issues = validate_conformance("", "https://example.com")
+    assert data_checks_doable(issues) == {"website"}
+
+    issues = validate_conformance("", "https://exa mple.com")
+    assert data_checks_doable(issues) == set()
+
+    issues = validate_conformance("azer  @ville.fr", "")
+    assert data_checks_doable(issues) == set()
+
+    issues = validate_conformance("azer@ville.fr", "")
+    assert data_checks_doable(issues) == {"dns"}
+
+    issues = validate_conformance("azer@ville.fr", "https://example.com")
+    assert data_checks_doable(issues) == {"dns", "website"}
