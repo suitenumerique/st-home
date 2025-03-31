@@ -34,6 +34,9 @@ class Issues(Enum):
     DNS_DMARC_MISSING = "DNS_DMARC_MISSING"  # DMARC record missing, or p=none
     DNS_DMARC_WEAK = "DNS_DMARC_WEAK"  # DMARC record is too weak: anything below p=quarantine;pct=100. relaxed alignment is okay for now.
 
+    def __str__(self):
+        return self.name
+
 
 # This regex is purposefully stricter than what is possible. But we want simple addresses for users.
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-z]{2,10}$")
@@ -86,24 +89,29 @@ def validate_conformance(email, website, bypass_website_regex=False):
     return issues
 
 
-def data_checks_needed(conformance_issues):
+def data_checks_doable(conformance_issues):
     needed = set()
 
     if (
         len(
             {
-                Issues.EMAIL_MISSING,
-                Issues.EMAIL_MALFORMED,
-                Issues.EMAIL_DOMAIN_GENERIC,
-            }.intersection(conformance_issues)
+                Issues.EMAIL_MISSING.name,
+                Issues.EMAIL_MALFORMED.name,
+                Issues.EMAIL_DOMAIN_GENERIC.name,
+            }.intersection([str(x) for x in conformance_issues])
         )
         == 0
     ):
-        needed.add("email")
+        needed.add("dns")
 
     if (
-        len({Issues.WEBSITE_MISSING, Issues.WEBSITE_MALFORMED}.intersection(conformance_issues))
-        > 0
+        len(
+            {
+                Issues.WEBSITE_MISSING.name,
+                Issues.WEBSITE_MALFORMED.name,
+            }.intersection([str(x) for x in conformance_issues])
+        )
+        == 0
     ):
         needed.add("website")
 

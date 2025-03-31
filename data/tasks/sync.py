@@ -12,7 +12,7 @@ from collections import defaultdict
 import requests
 
 from .conformance import Issues, validate_conformance
-from .db import get_all_issues, get_issues_by_siret, init_db
+from .db import get_all_data_checks, get_data_checks_by_siret, init_db
 from .defs import HARDCODED_COMMUNES
 from .dumps import dump_dila, dump_filtered_sirene, dump_insee_communes, dump_perimetre_epci
 from .lib import (
@@ -71,13 +71,13 @@ def run():
 
     compute_slug_for_communes(communes)
 
-    all_issues = get_all_issues()
+    all_data_checks = get_all_data_checks()
 
-    logger.info("Fetched data_checks for %d mairies", len(all_issues))
+    logger.info("Fetched data_checks for %d mairies", len(all_data_checks))
 
     for commune in communes:
         commune["_st_conformite"] = [
-            issue.name
+            str(issue)
             for issue in validate_conformance(
                 commune.get("_st_email") or "", commune.get("_st_website") or ""
             )
@@ -85,8 +85,10 @@ def run():
 
         # Add the issues added in asynchronous checks
         if commune.get("_st_siret"):
-            issues = get_issues_by_siret(all_issues, commune["_st_siret"])
-            commune["_st_conformite"].extend(issues.keys())
+            issues = get_data_checks_by_siret(
+                all_data_checks + commune["_st_conformite"], commune["_st_siret"]
+            )
+            commune["_st_conformite"].extend([str(x) for x in issues.keys()])
             commune["_st_conformite_checks"] = issues
 
     logger.info("Conformance statistics:")

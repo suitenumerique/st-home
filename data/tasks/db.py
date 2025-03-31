@@ -6,7 +6,7 @@ from typing import Any, Dict
 from psycopg2 import connect as pg_connect
 from psycopg2.extras import DictCursor
 
-from .conformance import Issues, data_checks_needed
+from .conformance import Issues, data_checks_doable
 
 
 def get_db():
@@ -76,25 +76,29 @@ def upsert_issues(siret: str, check_type: str, issues: Dict[Issues, str]):
         db.commit()
 
 
-def get_all_issues():
+def get_all_data_checks():
     """Get issues from checks for all SIRETs."""
 
-    all_issues = defaultdict(list)
+    all_data_checks = defaultdict(list)
 
     with get_db() as db:
         with db.cursor() as cur:
             cur.execute("SELECT siret, type, issues, details, dt FROM data_checks")
             for check in cur.fetchall():
-                all_issues[check["siret"]].append(check)
+                all_data_checks[check["siret"]].append(check)
 
-    return all_issues
+    return all_data_checks
 
 
-def get_issues_by_siret(all_issues, siret: str):
+def get_data_checks_by_siret(all_data_checks, siret: str):
     """Get issues from checks for a given SIRET. We must have at least one row of each type of check."""
 
-    expected_types = data_checks_needed(all_issues.get(siret, []))
-    checked_types = {check["type"] for check in all_issues.get(siret, [])}
+    issues_for_siret = []
+    for check in all_data_checks.get(siret, []):
+        issues_for_siret.extend(check["issues"])
+
+    expected_types = data_checks_doable(issues_for_siret)
+    checked_types = {check["type"] for check in all_data_checks.get(siret, [])}
     if not expected_types.issubset(checked_types):
         return {
             "IN_PROGRESS": "Checks still in progress: %s"
@@ -103,7 +107,7 @@ def get_issues_by_siret(all_issues, siret: str):
 
     issues = {}
 
-    for check in all_issues[siret]:
+    for check in all_data_checks[siret]:
         for idx, issue in enumerate(check["issues"]):
             issues[issue] = check["details"][idx]
 
