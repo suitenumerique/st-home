@@ -20,8 +20,9 @@
     "start:local": "dotenv -e .env.local -- next start",
     "prepare": "husky",
     "data:sync": "docker-compose run --rm worker python -m tasks.sync.run",
-    "data:queue_all": "docker-compose run --rm worker sh -c 'celery call tasks.check_website.queue_all && celery call tasks.check_dns.queue_all'",
-    "data:purge": "docker-compose run --rm worker sh -c 'celery purge -Q celery,check_website,check_dns -f'",
+    "data:queue_all": "docker-compose run --rm worker sh -c 'celery -A celery_app call tasks.check_website.queue_all && celery -A celery_app call tasks.check_dns.queue_all'",
+    "data:purge": "docker-compose run --rm worker sh -c 'celery -A celery_app purge -Q celery,check_website,check_dns -f'",
+    "flower:staging": "docker-compose run --rm --service-ports flower_staging",
     "lint": "prettier --write '**/*.{ts,tsx,css,md,mdx,mjs,js}' && next lint --no-cache && npm run lint:types",
     "lint:check": "prettier '**/*.{ts,tsx,css,md,mdx,mjs,js}' --list-different && next lint --no-cache && npm run lint:types",
     "lint:data": "docker-compose run -T --rm data_tests sh -c 'ruff check --fix . && ruff format .'",
@@ -44,9 +45,10 @@
     "db:browse:staging": "dotenv -e .env.staging -- drizzle-kit studio",
     "db:push:local": "dotenv -e .env.local -- drizzle-kit push",
     "db:push:staging": "dotenv -e .env.staging -- drizzle-kit push",
-    "db:seed:local:sample": "dotenv -e .env.local -- node -r @swc-node/register scripts/seed-db.ts ./data/dumps-sample/sample-mairies.json",
-    "db:seed:local:full": "dotenv -e .env.local -- node -r @swc-node/register scripts/seed-db.ts ./data/dumps/mairies.json",
-    "db:seed:staging": "dotenv -e .env.staging -- node -r @swc-node/register scripts/seed-db.ts ./data/dumps/mairies.json"
+    "db:seed:sample:local": "dotenv -e .env.local -- node -r @swc-node/register scripts/seed-db.ts ./data/dumps-sample/sample-mairies.json",
+    "db:seed:local": "dotenv -e .env.local -- npm run db:seed",
+    "db:seed:staging": "dotenv -e .env.staging -- npm run db:seed",
+    "db:seed": "node -r @swc-node/register scripts/seed-db.ts ./data/dumps/mairies.json"
   },
   "prettier": {
     "plugins": [

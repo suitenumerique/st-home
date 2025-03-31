@@ -22,9 +22,8 @@ def run(siret):
         return
 
     if len(org.get("website_url") or "") > 0:
-        # Only run for non-malformed URLs
         conformance_issues = validate_conformance("", org["website_url"])
-        if Issues.WEBSITE_MALFORMED in conformance_issues:
+        if "website" not in data_checks_needed(conformance_issues):
             return
 
         issues = check_website(org["website_url"])

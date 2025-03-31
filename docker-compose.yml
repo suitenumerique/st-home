@@ -54,7 +54,7 @@ services:
       - GRIST_SELF_MANAGED_HOME=${GRIST_SELF_MANAGED_HOME}
       - GRIST_SELF_MANAGED_SINGLE_ORG=${GRIST_SELF_MANAGED_SINGLE_ORG}
       - GRIST_TEAM_SITE=${GRIST_TEAM_SITE}
-    command: watchmedo auto-restart --patterns="*.py" --recursive -- celery -A celery_app worker  -Q celery,check_website,check_dns --loglevel=debug --concurrency=2
+    command: watchmedo auto-restart --patterns="*.py" --recursive -- celery -A celery_app worker -E -Q celery,check_website,check_dns --loglevel=debug --concurrency=2 -P gevent
 
   flower:
     build:
@@ -69,4 +69,21 @@ services:
       - ./data:/app/data
     ports:
       - "5556:5556"
-    command: celery flower --port=5556
+    command: celery -A celery_app flower --port=5556
+
+  flower_staging:
+    profiles:
+      - tools_staging
+    volumes:
+      - ./data:/app/data
+    build:
+      context: data/
+      dockerfile: Dockerfile.local
+    pull_policy: build
+    env_file:
+      - .env.staging
+    environment:
+      - FLOWER_UNAUTHENTICATED_API=true
+    ports:
+      - "5557:5557"
+    command: celery -A celery_app flower --port=5557

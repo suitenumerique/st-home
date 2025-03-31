@@ -23,20 +23,20 @@
   }
 }
 
-.rcint-section h3 {
+.rcpnt-section h3 {
   color: var(--text-title-blue-france) !important;
 }
 
-.rcint-section .fr-card__end {
+.rcpnt-section .fr-card__end {
   margin-top: 0 !important;
 }
 
-.rcint-section ul,
-.rcint-section ol {
+.rcpnt-section ul,
+.rcpnt-section ol {
   margin-left: 1rem;
 }
 
-.rcint-section p {
+.rcpnt-section p {
   margin: 0 !important;
 }
 

@@ -3,6 +3,7 @@ import csv
 import io
 import json
 import shutil
+import subprocess
 import tarfile
 import tempfile
 import zipfile
@@ -94,36 +95,29 @@ def dump_filtered_sirene(communes):
 
     url = "https://www.data.gouv.fr/fr/datasets/r/0651fb76-bcf3-4f6a-a38d-bc04fa708576"
 
-    # First download to a temporary file
-    with tempfile.NamedTemporaryFile(mode="wb", delete=True) as temp_zip:
-        with requests.get(url, stream=True) as r:
-            r.raise_for_status()
-            shutil.copyfileobj(r.raw, temp_zip)
-        temp_zip.flush()
+    # Start the process to stream data
+    process = subprocess.Popen(
+        f"curl -sL '{url}' | zcat | sed -n '1p;/84.11Z/p'",
+        shell=True,
+        stdout=subprocess.PIPE,
+        text=True,
+    )
 
-        # Process the ZIP file
-        with zipfile.ZipFile(temp_zip.name) as z:
-            # Process only CSV files in the ZIP
-            for name in z.namelist():
-                if name.endswith(".csv"):
-                    with z.open(name) as csv_file:
-                        # Create a CSV reader with proper encoding
-                        reader = csv.DictReader(
-                            io.TextIOWrapper(csv_file, encoding="utf-8"), delimiter=","
-                        )
+    # Create a CSV reader with proper encoding
+    reader = csv.DictReader(process.stdout, delimiter=",")
 
-                        rows = []
-                        # Process each row
-                        for row in reader:
-                            if (
-                                row["siren"] in mairies_sirens
-                                and row.get("etatAdministratifEtablissement") == "A"
-                                and row.get("etablissementSiege") == "true"
-                            ):
-                                rows.append(row)
-                                mairies_sirens.remove(row["siren"])
+    rows = []
+    # Process each row
+    for row in reader:
+        if (
+            row["siren"] in mairies_sirens
+            and row.get("etatAdministratifEtablissement") == "A"
+            and row.get("etablissementSiege") == "true"
+        ):
+            rows.append(row)
+            mairies_sirens.remove(row["siren"])
 
-                        with open("dumps/sirene.json", "w") as f:
-                            json.dump(rows, f, ensure_ascii=False, indent=4)
+    with open("dumps/sirene.json", "w") as f:
+        json.dump(rows, f, ensure_ascii=False, indent=4)
 
     return len(rows)

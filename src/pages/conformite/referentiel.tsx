@@ -549,9 +549,7 @@ const ReferentielConformite: ReferentielSection[] = [
               cruciale car :
             </p>
             <ul>
-              <li>
-                Elle renforce l&rsquo;identité numérique de la collectivité
-              </li>
+              <li>Elle renforce la présence numérique de la collectivité</li>
               <li>
                 Elle facilite l&rsquo;identification des communications
                 officielles
@@ -994,8 +992,8 @@ const ReferentielPage: NextPage = () => {
   return (
     <>
       <NextSeo
-        title="Référentiel de Conformité de l'Identité Numérique des Territoires"
-        description="Référentiel de Conformité de l'Identité Numérique des Territoires"
+        title="Référentiel de Conformité de la Présence Numérique des Territoires"
+        description="Référentiel de Conformité de la Présence Numérique des Territoires"
       />
 
       <HeroSection>
@@ -1006,10 +1004,10 @@ const ReferentielPage: NextPage = () => {
               style={{ color: "var(--text-title-blue-france)" }}
             >
               Référentiel de Conformité
-              <br /> de l&rsquo;Identité Numérique des Territoires
+              <br /> de la Présence Numérique des Territoires
             </h1>
             <p className={fr.cx("fr-text--lg")}>
-              RCINT version 0.1 - 31 Mars 2025
+              RCPNT version 0.1 - 31 Mars 2025
             </p>
             <h2
               className={fr.cx(
@@ -1071,7 +1069,7 @@ const ReferentielPage: NextPage = () => {
               </h2>
               <div className={fr.cx("fr-text--lg", "fr-mb-5w")}>
                 <p>
-                  Le Référentiel de Conformité de l&rsquo;Identité Numérique des
+                  Le Référentiel de Conformité de la Présence Numérique des
                   Territoires établit les critères fondamentaux pour garantir
                   une présence en ligne sécurisée et professionnelle des
                   collectivités territoriales.
@@ -1079,10 +1077,10 @@ const ReferentielPage: NextPage = () => {
                 <p>
                   Ce référentiel s&rsquo;articule autour de deux piliers
                   essentiels : le site internet institutionnel et la messagerie
-                  professionnelle. Ces éléments constituent le socle de
-                  l&rsquo;identité numérique d&rsquo;une collectivité et sont
-                  cruciaux pour maintenir la confiance des usagers et la
-                  sécurité des échanges numériques.
+                  professionnelle. Ces éléments constituent le socle de la
+                  présence numérique d&rsquo;une collectivité et sont cruciaux
+                  pour maintenir la confiance des usagers et la sécurité des
+                  échanges numériques.
                 </p>
                 <p>
                   Chaque critère est classé selon son niveau d&rsquo;importance
@@ -1098,7 +1096,7 @@ const ReferentielPage: NextPage = () => {
             </div>
 
             {ReferentielConformite.map((section) => (
-              <div key={section.id} id={section.id} className="rcint-section">
+              <div key={section.id} id={section.id} className="rcpnt-section">
                 <h2 className={fr.cx("fr-h2", "fr-mt-5w")}>{section.title}</h2>
                 {section.items.map((item) => (
                   <div
