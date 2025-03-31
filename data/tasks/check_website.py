@@ -6,7 +6,7 @@ import requests
 
 from celery_app import app
 
-from .conformance import Issues, validate_conformance
+from .conformance import Issues, data_checks_needed, validate_conformance
 from .db import find_org_by_siret, list_all_orgs, upsert_issues
 
 logger = logging.getLogger(__name__)
