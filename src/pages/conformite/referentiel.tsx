@@ -6,12 +6,13 @@ import { useSmallScreen } from "@/lib/hooks";
 import { Commune } from "@/types";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Card } from "@codegouvfr/react-dsfr/Card";
+import { Notice } from "@codegouvfr/react-dsfr/Notice";
 import { SideMenu } from "@codegouvfr/react-dsfr/SideMenu";
 import { NextPage } from "next";
 import { NextSeo } from "next-seo";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 type ReferentielItem = {
   num: string;
@@ -27,6 +28,37 @@ type ReferentielSection = {
   title: string;
   items: ReferentielItem[];
 };
+
+type ConformanceStats = {
+  issue: string;
+  count: number;
+  percentage: number;
+  sample_without_issue: Array<{
+    siret: string;
+    name: string;
+  }>;
+  sample_with_issue: Array<{
+    siret: string;
+    name: string;
+  }>;
+}[];
+
+const REF_TO_ISSUES = {
+  "1.1": ["WEBSITE_MISSING", "WEBSITE_MALFORMED", "WEBSITE_DOMAIN_REDIRECT"],
+  "1.2": ["WEBSITE_DOMAIN_EXTENSION"],
+  "1.3": ["WEBSITE_DOWN"],
+  "1.4": ["WEBSITE_HTTP_REDIRECT"],
+  "1.5": ["WEBSITE_SSL"],
+  "1.6": ["WEBSITE_HTTPS_NOWWW", "WEBSITE_HTTP_NOWWW"],
+  "1.7": ["WEBSITE_DECLARED_HTTP"],
+  "2.1": ["EMAIL_MISSING", "EMAIL_MALFORMED"],
+  "2.2": ["EMAIL_DOMAIN_GENERIC"],
+  "2.3": ["EMAIL_DOMAIN_MISMATCH"],
+  "2.4": ["DNS_MX_MISSING", "DNS_DOWN"],
+  "2.5": ["DNS_SPF_MISSING"],
+  "2.6": ["DNS_DMARC_MISSING"],
+  "2.7": ["DNS_DMARC_WEAK"],
+} as const;
 
 const ReferentielConformite: ReferentielSection[] = [
   {
@@ -981,6 +1013,29 @@ const menuItems = [
   },
 ];
 
+const getStatsForRef = (stats: ConformanceStats | null, ref: string) => {
+  if (!stats) return null;
+
+  const relevantStats = stats.filter((s) =>
+    REF_TO_ISSUES[ref as keyof typeof REF_TO_ISSUES]?.includes(
+      s.issue as never,
+    ),
+  );
+  if (!relevantStats.length) return null;
+
+  return {
+    percentage:
+      100 -
+      relevantStats.reduce(
+        (sum, s) =>
+          parseFloat(sum as never) + parseFloat(s.percentage as never),
+        0,
+      ),
+    sample_without_issue: relevantStats[0].sample_without_issue,
+    sample_with_issue: relevantStats[0].sample_with_issue,
+  };
+};
+
 const ReferentielPage: NextPage = () => {
   const router = useRouter();
   const isSmallScreen = useSmallScreen(1000);
@@ -988,6 +1043,15 @@ const ReferentielPage: NextPage = () => {
   const handleCommuneSelect = (selectedCommune: Commune) => {
     router.push(`/bienvenue/${selectedCommune.siret}`);
   };
+
+  const [stats, setStats] = useState<ConformanceStats | null>(null);
+
+  useEffect(() => {
+    fetch("/api/communes/conformance_stats")
+      .then((res) => res.json())
+      .then((data) => setStats(data))
+      .catch((err) => console.error("Error loading conformance stats:", err));
+  }, []);
 
   return (
     <>
@@ -1198,6 +1262,34 @@ const ReferentielPage: NextPage = () => {
                             Comment s&rsquo;y conformer ?
                           </h4>
                           <div>{item.howToFix}</div>
+
+                          <Notice
+                            className={fr.cx("fr-mt-3w")}
+                            title={
+                              !stats ? (
+                                "Chargement des statistiques..."
+                              ) : (
+                                <>
+                                  {getStatsForRef(stats, item.num)?.percentage}%
+                                </>
+                              )
+                            }
+                            description={
+                              stats &&
+                              getStatsForRef(stats, item.num) && (
+                                <>
+                                  des collectivités{" "}
+                                  {item.num.startsWith("1.") &&
+                                    item.num !== "1.1" &&
+                                    "ayant un site internet"}{" "}
+                                  {item.num.startsWith("2.") &&
+                                    item.num !== "2.1" &&
+                                    "ayant une adresse de messagerie"}{" "}
+                                  répondent à ce critère.
+                                </>
+                              )
+                            }
+                          />
                         </div>
                       }
                       border
