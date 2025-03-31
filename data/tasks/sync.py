@@ -86,7 +86,7 @@ def run():
         # Add the issues added in asynchronous checks
         if commune.get("_st_siret"):
             issues = get_data_checks_by_siret(
-                all_data_checks + commune["_st_conformite"], commune["_st_siret"]
+                all_data_checks, commune["_st_conformite"], commune["_st_siret"]
             )
             commune["_st_conformite"].extend([str(x) for x in issues.keys()])
             commune["_st_conformite_checks"] = issues

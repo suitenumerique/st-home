@@ -114,7 +114,10 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                     aria-hidden="true"
                   ></span>
                   La commune ne dispose pas encore d&rsquo;un nom de domaine
-                  officiel connu des services de l&rsquo;État.
+                  officiel connu des services de l&rsquo;État.{" "}
+                  <Link href="/conformite/referentiel#1.1">
+                    En savoir plus...
+                  </Link>
                 </p>
                 <p>
                   <span
@@ -169,7 +172,11 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   >
                     {commune.website_domain}
                   </Link>{" "}
-                  est conforme aux recommandations de l&rsquo;ANCT.
+                  répond au Référentiel de Conformité de la Présence Numérique
+                  des Territoires.{" "}
+                  <Link href="/conformite/referentiel#1.2">
+                    En savoir plus...
+                  </Link>
                 </p>
               )}
 
@@ -192,8 +199,11 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                 >
                   {commune.website_domain}
                 </Link>{" "}
-                n&rsquo;est pas conforme aux recommandations de l&rsquo;ANCT
-                dans le cadre de la Suite territoriale.
+                ne répond pas au Référentiel de Conformité de la Présence
+                Numérique des Territoires.{" "}
+                <Link href="/conformite/referentiel#1.2">
+                  En savoir plus...
+                </Link>
               </p>
             )}
 
@@ -259,7 +269,10 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                     aria-hidden="true"
                   ></span>
                   La commune ne dispose pas encore d&rsquo;une adresse de
-                  messagerie connue des services de l&rsquo;État.
+                  messagerie connue des services de l&rsquo;État.{" "}
+                  <Link href="/conformite/referentiel#2.1">
+                    En savoir plus...
+                  </Link>
                 </p>
                 <p>
                   <span
@@ -307,8 +320,12 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   aria-hidden="true"
                 ></span>
                 L&rsquo;adresse de messagerie utilise un domaine{" "}
-                <strong>{commune.email_domain}</strong> conforme aux
-                recommandations de l&rsquo;ANCT.
+                <strong>{commune.email_domain}</strong> qui répond au
+                Référentiel de Conformité de la Présence Numérique des
+                Territoires.{" "}
+                <Link href="/conformite/referentiel#2.2">
+                  En savoir plus...
+                </Link>
               </p>
             )}
 
@@ -319,9 +336,12 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   style={{ color: "var(--text-default-error)" }}
                   aria-hidden="true"
                 ></span>
-                Le domaine <strong>{commune.email_domain}</strong> générique
-                n&rsquo;est pas conforme aux recommandations de l&rsquo;ANCT
-                dans le cadre de la Suite territoriale.
+                Le domaine <strong>{commune.email_domain}</strong> générique ne
+                répond pas au Référentiel de Conformité de la Présence Numérique
+                des Territoires.{" "}
+                <Link href="/conformite/referentiel#2.2">
+                  En savoir plus...
+                </Link>
               </p>
             )}
 
@@ -334,10 +354,74 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                 ></span>
                 L&rsquo;adresse de messagerie utilise un domaine{" "}
                 <strong>{commune.email_domain}</strong> différent de celui du
-                site web <strong>{commune.website_domain}</strong>.
+                site web <strong>{commune.website_domain}</strong>.{" "}
+                <Link href="/conformite/referentiel#2.3">
+                  En savoir plus...
+                </Link>
               </p>
             )}
 
+            {!emailMissing && issues.includes("EMAIL_MX_MISSING") && (
+              <p>
+                <span
+                  className={fr.cx("fr-icon-error-line", "fr-mr-1w")}
+                  style={{ color: "var(--text-default-error)" }}
+                  aria-hidden="true"
+                ></span>
+                Aucun enregistrement MX n&rsquo;est configuré sur le domaine de
+                messagerie <strong>{commune.email_domain}</strong>. La
+                messagerie ne peut recevoir aucun email.{" "}
+                <Link href="/conformite/referentiel#2.4">
+                  En savoir plus...
+                </Link>
+              </p>
+            )}
+
+            {!emailMissing && issues.includes("EMAIL_SPF_MISSING") && (
+              <p>
+                <span
+                  className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
+                  style={{ color: "var(--text-default-warning)" }}
+                  aria-hidden="true"
+                ></span>
+                Aucun enregistrement SPF n&rsquo;est configuré sur le domaine de
+                messagerie <strong>{commune.email_domain}</strong>.{" "}
+                <Link href="/conformite/referentiel#2.5">
+                  En savoir plus...
+                </Link>
+              </p>
+            )}
+
+            {!emailMissing && issues.includes("EMAIL_DMARC_MISSING") && (
+              <p>
+                <span
+                  className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
+                  style={{ color: "var(--text-default-warning)" }}
+                  aria-hidden="true"
+                ></span>
+                Aucun enregistrement DMARC n&rsquo;est configuré sur le domaine
+                de messagerie <strong>{commune.email_domain}</strong>.{" "}
+                <Link href="/conformite/referentiel#2.6">
+                  En savoir plus...
+                </Link>
+              </p>
+            )}
+
+            {!emailMissing && issues.includes("EMAIL_DMARC_MISSING") && (
+              <p>
+                <span
+                  className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
+                  style={{ color: "var(--text-default-warning)" }}
+                  aria-hidden="true"
+                ></span>
+                Un enregistrement DMARC existe sur le domaine de messagerie{" "}
+                <strong>{commune.email_domain}</strong> mais il pourrait être
+                plus strict.{" "}
+                <Link href="/conformite/referentiel#2.7">
+                  En savoir plus...
+                </Link>
+              </p>
+            )}
             {(emailMissing ||
               issues.includes("EMAIL_DOMAIN_MISMATCH") ||
               issues.includes("EMAIL_DOMAIN_EXTENSION")) &&
