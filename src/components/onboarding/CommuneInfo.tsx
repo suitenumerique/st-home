@@ -38,8 +38,12 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
 
   const emailMissing =
     issues.includes("EMAIL_MISSING") || issues.includes("EMAIL_MALFORMED");
+
   const emailCompliant =
-    !emailMissing && !issues.includes("EMAIL_DOMAIN_EXTENSION");
+    !emailMissing &&
+    !issues.includes("EMAIL_DOMAIN_EXTENSION") &&
+    !issues.includes("EMAIL_DOMAIN_MISMATCH") &&
+    !issues.includes("EMAIL_DOMAIN_GENERIC");
 
   return (
     <div className={fr.cx("fr-mb-4w")}>
@@ -424,7 +428,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
               </>
             )}
 
-            {!emailMissing && !issues.includes("EMAIL_DOMAIN_EXTENSION") && (
+            {!emailMissing && issues.includes("EMAIL_DOMAIN_EXTENSION") && (
               <p>
                 <span
                   className={fr.cx("fr-icon-success-line", "fr-mr-1w")}
@@ -460,8 +464,8 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
             {!emailMissing && issues.includes("EMAIL_DOMAIN_MISMATCH") && (
               <p>
                 <span
-                  className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
-                  style={{ color: "var(--text-default-warning)" }}
+                  className={fr.cx("fr-icon-error-line", "fr-mr-1w")}
+                  style={{ color: "var(--text-default-error)" }}
                   aria-hidden="true"
                 ></span>
                 L&rsquo;adresse de messagerie utilise un domaine{" "}
