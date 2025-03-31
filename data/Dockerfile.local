@@ -2,6 +2,10 @@ FROM python:3.13.2-slim
 
 WORKDIR /app/data
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install dependencies
 COPY pyproject.toml .
 RUN pip install ".[local]"

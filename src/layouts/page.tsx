@@ -169,18 +169,13 @@ export function PageLayout({ children }: LayoutProps) {
               {
                 text: "Cartographie",
                 linkProps: {
-                  href: "/conformite/cartographie",
+                  href: "https://grist.incubateur.anct.gouv.fr/o/anct/gVoLeTsdJL8q/Suite-territoriale-Deploiement?embed=true",
+                  target: "_blank",
+                  // href: "/conformite/cartographie",
                 },
               },
             ],
           },
-          // {
-          //   text: "Cartographie de conformité",
-          //   linkProps: {
-          //     href: "/cartographie",
-          //   },
-          //   isActive: router.asPath.startsWith("/cartographie"),
-          // },
         ]}
       />
       <main role="main" id="content">

@@ -20,6 +20,7 @@
     "start:local": "dotenv -e .env.local -- next start",
     "prepare": "husky",
     "data:sync": "docker-compose run --rm worker python -m tasks.sync",
+    "data:sync:local": "dotenv -e .env.local -- docker-compose run --rm worker python -m tasks.sync",
     "data:queue_all": "docker-compose run --rm worker sh -c 'celery -A celery_app call tasks.check_website.queue_all && celery -A celery_app call tasks.check_dns.queue_all'",
     "data:purge": "docker-compose run --rm worker sh -c 'celery -A celery_app purge -Q celery,check_website,check_dns -f'",
     "data:purge:staging": "docker-compose run --rm flower_staging celery -A celery_app purge -Q celery,check_website,check_dns -f",
