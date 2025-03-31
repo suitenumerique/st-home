@@ -84,3 +84,27 @@ def validate_conformance(email, website, bypass_website_regex=False):
     # print("%s - %s : %s" % (email, website, ", ".join(str(x) for x in issues)))
 
     return issues
+
+
+def data_checks_needed(conformance_issues):
+    needed = set()
+
+    if (
+        len(
+            {
+                Issues.EMAIL_MISSING,
+                Issues.EMAIL_MALFORMED,
+                Issues.EMAIL_DOMAIN_GENERIC,
+            }.intersection(conformance_issues)
+        )
+        == 0
+    ):
+        needed.add("email")
+
+    if (
+        len({Issues.WEBSITE_MISSING, Issues.WEBSITE_MALFORMED}.intersection(conformance_issues))
+        > 0
+    ):
+        needed.add("website")
+
+    return needed

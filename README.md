@@ -40,13 +40,13 @@ L'application utilise une base de données des communes françaises. Vous pouvez
 
 ```bash
 # Importer les données de test (un petit ensemble de communes)
-npm run db:seed:local:sample
+npm run db:seed:sample:local
 
 # Générer les données complètes avec toutes les communes de France (nécessite une clé Grist)
 npm run data:sync
 
 # Puis importer ces données en local
-npm run db:seed:local:full
+npm run db:seed:local
 ```
 
 ### Tests

@@ -6,7 +6,7 @@ from typing import Any, Dict
 from psycopg2 import connect as pg_connect
 from psycopg2.extras import DictCursor
 
-from .conformance import Issues
+from .conformance import Issues, data_checks_needed
 
 
 def get_db():
@@ -93,14 +93,15 @@ def get_all_issues():
 def get_issues_by_siret(all_issues, siret: str):
     """Get issues from checks for a given SIRET. We must have at least one row of each type of check."""
 
-    expected_types = {"website", "dns"}
+    expected_types = data_checks_needed(all_issues.get(siret, []))
+    checked_types = {check["type"] for check in all_issues.get(siret, [])}
+    if not expected_types.issubset(checked_types):
+        return {
+            "IN_PROGRESS": "Checks still in progress: %s"
+            % ", ".join(expected_types - checked_types)
+        }
 
     issues = {}
-
-    # Check that we have at least one row for each expected type
-    for expected_type in expected_types:
-        if not any(check["type"] == expected_type for check in all_issues[siret]):
-            return {"IN_PROGRESS": "Check %s is in progress" % expected_type}
 
     for check in all_issues[siret]:
         for idx, issue in enumerate(check["issues"]):

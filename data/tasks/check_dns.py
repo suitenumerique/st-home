@@ -6,7 +6,7 @@ import dns.resolver
 
 from celery_app import app
 
-from .conformance import Issues, validate_conformance
+from .conformance import Issues, data_checks_needed, validate_conformance
 from .db import find_org_by_siret, list_all_orgs, upsert_issues
 
 logger = logging.getLogger(__name__)
@@ -23,10 +23,7 @@ def run(siret):
 
     if len(org.get("email_official") or "") > 0:
         conformance_issues = validate_conformance(org["email_official"], "")
-        if (
-            Issues.EMAIL_MALFORMED in conformance_issues
-            or Issues.EMAIL_DOMAIN_GENERIC in conformance_issues
-        ):
+        if "email" not in data_checks_needed(conformance_issues):
             return
 
         issues = check_dns(org["email_official"].split("@")[1])

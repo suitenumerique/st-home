@@ -34,6 +34,8 @@ logging.basicConfig(level=logging.INFO)
 def run():
     """Main data sync workflow"""
 
+    logger.info("Starting data sync workflow")
+
     # Create the "dumps/" directory if it doesn't exist
     os.makedirs("dumps", exist_ok=True)
     init_db()
@@ -70,6 +72,8 @@ def run():
     compute_slug_for_communes(communes)
 
     all_issues = get_all_issues()
+
+    logger.info("Fetched data_checks for %d mairies", len(all_issues))
 
     for commune in communes:
         commune["_st_conformite"] = [

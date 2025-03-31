@@ -100,9 +100,7 @@ export default function Bienvenue(props: PageProps) {
         >
           {commune.name}
         </h1>
-        <p>
-          Voici la situation du socle d&rsquo;identité numérique de la commune :
-        </p>
+        <p>Voici la situation de la présence numérique de la commune :</p>
         <CommuneInfo commune={commune} />
         {getCommuneContent(commune)}
       </div>
