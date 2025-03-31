@@ -44,6 +44,20 @@ def dump_dila():
     raise Exception("No JSON file found in the archive")
 
 
+def reset_dila_issues():
+    """Create a csv file on disk with headers "id", "type", "data", "details" """
+    with open("dumps/dila_issues.csv", "w") as f:
+        writer = csv.DictWriter(f, ["id", "type", "data", "details"])
+        writer.writeheader()
+
+
+def add_dila_issue(id, type, data, details=""):
+    """Add an issue to the dila issues csv file"""
+    with open("dumps/dila_issues.csv", "a") as f:
+        writer = csv.DictWriter(f, ["id", "type", "data", "details"])
+        writer.writerow({"id": id, "type": type, "data": data, "details": details})
+
+
 def dump_insee_communes():
     # https://www.insee.fr/fr/information/8377162
     if Path("dumps/insee_communes.json").exists():

@@ -1,5 +1,6 @@
 import logging
 import re
+import sys
 
 import dns.exception
 import dns.resolver
@@ -30,6 +31,8 @@ def run(siret):
 
         if issues is not None:  # Only store if we got results
             upsert_issues(siret, "dns", issues)
+
+        return [str(x) for x in issues.keys()]
 
 
 @app.task
@@ -127,3 +130,10 @@ def check_dmarc(email_domain, issues):
 
     except dns.exception.DNSException as e:
         issues[Issues.DNS_DMARC_MISSING] = f"No DMARC record found for {email_domain}"
+
+
+if __name__ == "__main__":
+    # Run with command line arguments
+    siret = sys.argv[1]
+    issues = run(siret)
+    logger.info(issues)

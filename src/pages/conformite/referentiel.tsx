@@ -336,7 +336,7 @@ const ReferentielConformite: ReferentielSection[] = [
         whyItsImportant: (
           <div>
             <div>
-              Les redirections sont essentielles pour plusieurs raisons :
+              Les redirections sont importantes pour plusieurs raisons :
             </div>
             <ul>
               <li>
@@ -646,7 +646,7 @@ const ReferentielConformite: ReferentielSection[] = [
         title: <>La protection SPF doit être activée</>,
         whyItsImportant: (
           <>
-            SPF (Sender Policy Framework) est un mécanisme essentiel de sécurité
+            SPF (Sender Policy Framework) est un mécanisme important de sécurité
             email qui :
             <ul>
               <li>
@@ -882,8 +882,8 @@ const FAQS = [
   {
     question: (
       <>
-        Pourquoi certains critères sont-ils recommandés et d&rsquo;autres
-        obligatoires ?
+        Pourquoi certains critères sont-ils essentiels et d&rsquo;autres
+        recommandés ?
       </>
     ),
     answer: (
@@ -891,7 +891,7 @@ const FAQS = [
         <p>Cette distinction reflète deux niveaux d&rsquo;exigence :</p>
         <ul>
           <li>
-            Les critères <strong>obligatoires</strong> correspondent au niveau
+            Les critères <strong>essentiels</strong> correspondent au niveau
             minimal de sécurité et de professionnalisme attendu d&rsquo;une
             collectivité
           </li>
@@ -903,7 +903,7 @@ const FAQS = [
         </ul>
         <p>
           Nous encourageons toutes les collectivités à viser la conformité avec
-          l&rsquo;ensemble des critères, obligatoires comme recommandés.
+          l&rsquo;ensemble des critères, essentiels comme recommandés.
         </p>
       </>
     ),
@@ -1076,7 +1076,7 @@ const ReferentielPage: NextPage = () => {
                 </p>
                 <p>
                   Ce référentiel s&rsquo;articule autour de deux piliers
-                  essentiels : le site internet institutionnel et la messagerie
+                  principaux : le site internet institutionnel et la messagerie
                   professionnelle. Ces éléments constituent le socle de la
                   présence numérique d&rsquo;une collectivité et sont cruciaux
                   pour maintenir la confiance des usagers et la sécurité des
@@ -1084,7 +1084,7 @@ const ReferentielPage: NextPage = () => {
                 </p>
                 <p>
                   Chaque critère est classé selon son niveau d&rsquo;importance
-                  (obligatoire ou recommandé) et son mode de vérification
+                  (essentiel ou recommandé) et son mode de vérification
                   (déclaratif ou testé quotidiennement).
                 </p>
                 <p>
@@ -1134,7 +1134,7 @@ const ReferentielPage: NextPage = () => {
                                 aria-hidden="true"
                               />
                               {item.level === "mandatory"
-                                ? "Obligatoire"
+                                ? "Essentiel"
                                 : "Recommandé"}
                             </span>
 
@@ -1188,7 +1188,7 @@ const ReferentielPage: NextPage = () => {
                               "fr-mt-3w",
                             )}
                           >
-                            Pourquoi c&rsquo;est important ?
+                            Pourquoi est-ce important ?
                           </h4>
                           <div className={fr.cx("fr-mb-2w")}>
                             {item.whyItsImportant}

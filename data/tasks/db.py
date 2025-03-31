@@ -43,8 +43,6 @@ def upsert_issues(siret: str, check_type: str, issues: Dict[Issues, str]):
         check_type: Type of check ('website' or 'dns')
         issues: Dictionary of Issues enum to explanation string
     """
-    if not issues:
-        return
 
     # Convert the issues dict to two parallel arrays
     issue_keys = []
@@ -128,3 +126,72 @@ def list_all_orgs():
         with db.cursor() as cur:
             cur.execute("SELECT * FROM st_organizations")
             return cur.fetchall()
+
+
+def update_data_issues_stats(communes: list):
+    """
+    Create and populate the data_issues_stats table with statistics about each issue.
+
+    Args:
+        communes: List of commune dictionaries containing conformance data
+    """
+    total_communes = len(communes)
+
+    with get_db() as db:
+        with db.cursor() as cur:
+            # Drop and recreate the table
+            cur.execute("""
+                DROP TABLE IF EXISTS data_issues_stats;
+                CREATE TABLE data_issues_stats (
+                    issue VARCHAR(64) PRIMARY KEY,
+                    count INTEGER NOT NULL,
+                    percentage DECIMAL(5,2) NOT NULL,
+                    sample_with_issue VARCHAR(14)[] NOT NULL,
+                    sample_without_issue VARCHAR(14)[] NOT NULL,
+                    last_updated TIMESTAMP WITH TIME ZONE NOT NULL
+                );
+            """)
+
+            # For each possible issue, compute stats
+            for issue in Issues:
+                # Get communes with and without this issue
+                with_issue = [
+                    c for c in communes if issue.name in c["_st_conformite"] and c.get("_st_siret")
+                ]
+                without_issue = [
+                    c
+                    for c in communes
+                    if issue.name not in c["_st_conformite"] and c.get("_st_siret")
+                ]
+
+                # Calculate count and percentage
+                count = len(with_issue)
+                percentage = (count / total_communes) * 100
+
+                # Get random samples (up to 3) of INSEE codes
+                import random
+
+                sample_with = (
+                    [c["_st_siret"] for c in random.sample(with_issue, min(3, len(with_issue)))]
+                    if with_issue
+                    else []
+                )
+                sample_without = (
+                    [
+                        c["_st_siret"]
+                        for c in random.sample(without_issue, min(3, len(without_issue)))
+                    ]
+                    if without_issue
+                    else []
+                )
+
+                # Insert the stats
+                cur.execute(
+                    """
+                    INSERT INTO data_issues_stats (issue, count, percentage, sample_with_issue, sample_without_issue, last_updated)
+                    VALUES (%s, %s, %s, %s, %s, now())
+                """,
+                    (issue.name, count, percentage, sample_with, sample_without),
+                )
+
+            db.commit()

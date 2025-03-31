@@ -12,9 +12,21 @@ from collections import defaultdict
 import requests
 
 from .conformance import Issues, validate_conformance
-from .db import get_all_data_checks, get_data_checks_by_siret, init_db
+from .db import (
+    get_all_data_checks,
+    get_data_checks_by_siret,
+    init_db,
+    update_data_issues_stats,
+)
 from .defs import HARDCODED_COMMUNES
-from .dumps import dump_dila, dump_filtered_sirene, dump_insee_communes, dump_perimetre_epci
+from .dumps import (
+    add_dila_issue,
+    dump_dila,
+    dump_filtered_sirene,
+    dump_insee_communes,
+    dump_perimetre_epci,
+    reset_dila_issues,
+)
 from .lib import (
     duplicates,
     iter_dila,
@@ -39,6 +51,7 @@ def run():
     # Create the "dumps/" directory if it doesn't exist
     os.makedirs("dumps", exist_ok=True)
     init_db()
+    reset_dila_issues()
 
     dump_insee_communes()
     dump_dila()
@@ -91,11 +104,49 @@ def run():
             commune["_st_conformite"].extend([str(x) for x in issues.keys()])
             commune["_st_conformite_checks"] = issues
 
+        # Report issues to Dila
+        if "EMAIL_MALFORMED" in commune["_st_conformite"]:
+            add_dila_issue(
+                commune.get("_st_dila", {}).get("id"),
+                "EMAIL_MALFORMED",
+                repr(commune["_st_email"]),
+            )
+        if "WEBSITE_MALFORMED" in commune["_st_conformite"]:
+            add_dila_issue(
+                commune.get("_st_dila", {}).get("id"),
+                "WEBSITE_MALFORMED",
+                repr(commune["_st_website"]),
+            )
+        if not commune.get("_st_dila"):
+            add_dila_issue("", "MISSING", commune["_st_insee"]["COM"], "")
+        else:
+            if commune.get("_st_siret") and commune["_st_siret"] != commune.get(
+                "_st_dila", {}
+            ).get("siret"):
+                add_dila_issue(
+                    commune.get("_st_dila", {}).get("id"),
+                    "SIRET_MISMATCH",
+                    commune["_st_siret"],
+                    "versus in DILA: %s" % commune.get("_st_dila", {}).get("siret"),
+                )
+            if commune["_st_insee"]["COM"] != commune.get("_st_dila", {}).get(
+                "code_insee_commune"
+            ):
+                add_dila_issue(
+                    commune.get("_st_dila", {}).get("id"),
+                    "INSEE_MISMATCH",
+                    commune["_st_insee"]["COM"],
+                    "versus in DILA: %s" % commune.get("_st_dila", {}).get("code_insee_commune"),
+                )
+
     logger.info("Conformance statistics:")
     for issue in Issues:
         logger.info(
             f" - {issue}: {sum(1 for commune in communes if issue.name in commune['_st_conformite'])}"
         )
+
+    # Update data issues statistics
+    update_data_issues_stats(communes)
 
     # Count mairies without issues
     percentage = (

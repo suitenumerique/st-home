@@ -100,7 +100,12 @@ export default function Bienvenue(props: PageProps) {
         >
           {commune.name}
         </h1>
-        <p>Voici la situation de la présence numérique de la commune :</p>
+        <p>
+          Voici la situation de la présence numérique de la commune, évaluée par
+          rapport à notre{" "}
+          <Link href="/conformite/referentiel">Référentiel de Conformité</Link>{" "}
+          :
+        </p>
         <CommuneInfo commune={commune} />
         {getCommuneContent(commune)}
       </div>

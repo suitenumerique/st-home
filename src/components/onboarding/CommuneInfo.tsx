@@ -21,30 +21,6 @@ const getBadge = (severity: AlertProps.Severity, label: string) => {
   );
 };
 
-/*
-
-WEBSITE_DECLARED_HTTP = "WEBSITE_DECLARED_HTTP"  # Website declared as HTTP
-    EMAIL_DOMAIN_MISMATCH = "EMAIL_DOMAIN_MISMATCH"  # Email domain does not match website domain
-    EMAIL_DOMAIN_GENERIC = "EMAIL_DOMAIN_GENERIC"  # Email domain is generic
-    EMAIL_DOMAIN_EXTENSION = "EMAIL_DOMAIN_EXTENSION"  # Email domain extension not allowed
-
-    # Issues that are tested in check_website
-    WEBSITE_DOWN = "WEBSITE_DOWN"  # timeout, unreachable, 404, ..
-    WEBSITE_SSL = "WEBSITE_SSL"  # SSL certificate issues
-    WEBSITE_DOMAIN_REDIRECT = "WEBSITE_DOMAIN_REDIRECT"  # website redirects to a different domain
-    WEBSITE_HTTP_REDIRECT = "WEBSITE_HTTP_REDIRECT"  # website does not redirect to HTTPS
-    WEBSITE_HTTPS_NOWWW = "WEBSITE_HTTPS_NOWWW"  # HTTPS URL without "www" doesn't work/redirect
-    WEBSITE_HTTP_NOWWW = "WEBSITE_HTTP_NOWWW"  # HTTP URL without "www" does not work or redirect
-
-    # Issues that are tested in check_dns
-    DNS_DOWN = "DNS_DOWN"  # DNS lookup failed on the email domain
-    DNS_MX_MISSING = "DNS_MX_MISSING"  # MX record missing on the email domain
-    DNS_SPF_MISSING = "DNS_SPF_MISSING"  # SPF record missing on the email domain
-    DNS_DMARC_MISSING = "DNS_DMARC_MISSING"  # DMARC record missing, or p=none
-    DNS_DMARC_WEAK = "DNS_DMARC_WEAK"  # DMARC record is too weak: anything below p=quarantine;pct=100. relaxed alignment is okay for now.
-
-*/
-
 /**
  * Component showing detailed commune information in expandable sections
  */
@@ -172,8 +148,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   >
                     {commune.website_domain}
                   </Link>{" "}
-                  répond au Référentiel de Conformité de la Présence Numérique
-                  des Territoires.{" "}
+                  est bien souveraine.{" "}
                   <Link href="/conformite/referentiel#1.2">
                     En savoir plus...
                   </Link>
@@ -199,9 +174,146 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                 >
                   {commune.website_domain}
                 </Link>{" "}
-                ne répond pas au Référentiel de Conformité de la Présence
-                Numérique des Territoires.{" "}
+                n&rsquo;est pas souveraine.{" "}
                 <Link href="/conformite/referentiel#1.2">
+                  En savoir plus...
+                </Link>
+              </p>
+            )}
+
+            {!websiteMissing && issues.includes("WEBSITE_DECLARED_HTTP") && (
+              <p>
+                <span
+                  className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
+                  style={{ color: "var(--text-default-warning)" }}
+                  aria-hidden="true"
+                ></span>
+                Le domaine{" "}
+                <Link
+                  href={commune.website_url || ""}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {commune.website_domain}
+                </Link>{" "}
+                est déclaré en HTTP (et non HTTPS) sur Service-Public.fr.{" "}
+                <Link href="/conformite/referentiel#1.7">
+                  En savoir plus...
+                </Link>
+              </p>
+            )}
+
+            {!websiteMissing && issues.includes("WEBSITE_HTTPS_NOWWW") && (
+              <p>
+                <span
+                  className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
+                  style={{ color: "var(--text-default-warning)" }}
+                  aria-hidden="true"
+                ></span>
+                L&rsquo;adresse{" "}
+                <strong>
+                  https://
+                  {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
+                </strong>{" "}
+                (sans www.) ne redirige pas correctement vers le site Internet
+                de la commune.{" "}
+                <Link href="/conformite/referentiel#1.7">
+                  En savoir plus...
+                </Link>
+              </p>
+            )}
+
+            {!websiteMissing && issues.includes("WEBSITE_HTTP_NOWWW") && (
+              <p>
+                <span
+                  className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
+                  style={{ color: "var(--text-default-warning)" }}
+                  aria-hidden="true"
+                ></span>
+                L&rsquo;adresse{" "}
+                <strong>
+                  http://
+                  {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
+                </strong>{" "}
+                (sans www.) ne redirige pas correctement vers le site Internet
+                de la commune.{" "}
+                <Link href="/conformite/referentiel#1.7">
+                  En savoir plus...
+                </Link>
+              </p>
+            )}
+
+            {!websiteMissing && issues.includes("WEBSITE_HTTP_REDIRECT") && (
+              <p>
+                <span
+                  className={fr.cx(
+                    "fr-icon-error-line",
+                    "fr-label--error",
+                    "fr-mr-1w",
+                  )}
+                  aria-hidden="true"
+                ></span>
+                L&rsquo;adresse en HTTP{" "}
+                <strong>
+                  http://
+                  {(commune.website_url || "").replace(/^https?:\/\//, "")}
+                </strong>{" "}
+                ne redirige pas correctement vers la version HTTPS du site
+                Internet de la commune.
+                <Link href="/conformite/referentiel#1.4">
+                  En savoir plus...
+                </Link>
+              </p>
+            )}
+
+            {!websiteMissing && issues.includes("WEBSITE_DOMAIN_REDIRECT") && (
+              <p>
+                <span
+                  className={fr.cx(
+                    "fr-icon-error-line",
+                    "fr-label--error",
+                    "fr-mr-1w",
+                  )}
+                  aria-hidden="true"
+                ></span>
+                L&rsquo;adresse <strong>{commune.website_url}</strong> redirige
+                vers un autre domaine non déclaré sur Service-Public.fr.{" "}
+                <Link href="/conformite/referentiel#1.1">
+                  En savoir plus...
+                </Link>
+              </p>
+            )}
+
+            {!websiteMissing && issues.includes("WEBSITE_SSL") && (
+              <p>
+                <span
+                  className={fr.cx(
+                    "fr-icon-error-line",
+                    "fr-label--error",
+                    "fr-mr-1w",
+                  )}
+                  aria-hidden="true"
+                ></span>
+                Le certificat SSL du site web de la commune n&rsquo;est pas
+                valide.{" "}
+                <Link href="/conformite/referentiel#1.5">
+                  En savoir plus...
+                </Link>
+              </p>
+            )}
+
+            {!websiteMissing && issues.includes("WEBSITE_DOWN") && (
+              <p>
+                <span
+                  className={fr.cx(
+                    "fr-icon-error-line",
+                    "fr-label--error",
+                    "fr-mr-1w",
+                  )}
+                  aria-hidden="true"
+                ></span>
+                Le site web de la commune n&rsquo;est pas joignable.{" "}
+                <Link href="/conformite/referentiel#1.3">
                   En savoir plus...
                 </Link>
               </p>
@@ -319,17 +431,17 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   style={{ color: "var(--text-default-success)" }}
                   aria-hidden="true"
                 ></span>
-                L&rsquo;adresse de messagerie utilise un domaine{" "}
-                <strong>{commune.email_domain}</strong> qui répond au
-                Référentiel de Conformité de la Présence Numérique des
-                Territoires.{" "}
-                <Link href="/conformite/referentiel#2.2">
+                L&rsquo;extension <strong>.{commune.email_tld}</strong> de
+                l&rsquo;adresse de messagerie{" "}
+                <strong>{commune.email_official}</strong> n&rsquo;est pas
+                souveraine.{" "}
+                <Link href="/conformite/referentiel#1.2">
                   En savoir plus...
                 </Link>
               </p>
             )}
 
-            {!emailMissing && issues.includes("EMAIL_DOMAIN_EXTENSION") && (
+            {!emailMissing && issues.includes("EMAIL_DOMAIN_GENERIC") && (
               <p>
                 <span
                   className={fr.cx("fr-icon-error-line", "fr-mr-1w")}
@@ -337,8 +449,8 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   aria-hidden="true"
                 ></span>
                 Le domaine <strong>{commune.email_domain}</strong> générique ne
-                répond pas au Référentiel de Conformité de la Présence Numérique
-                des Territoires.{" "}
+                permet pas aux usagers de vérifier l&rsquo;authenticité de la
+                messagerie.{" "}
                 <Link href="/conformite/referentiel#2.2">
                   En savoir plus...
                 </Link>
@@ -361,7 +473,23 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
               </p>
             )}
 
-            {!emailMissing && issues.includes("EMAIL_MX_MISSING") && (
+            {!emailMissing && issues.includes("DNS_DOWN") && (
+              <p>
+                <span
+                  className={fr.cx("fr-icon-error-line", "fr-mr-1w")}
+                  style={{ color: "var(--text-default-error)" }}
+                  aria-hidden="true"
+                ></span>
+                Le serveur DNS du domaine de messagerie{" "}
+                <strong>{commune.email_domain}</strong> n&rsquo;est pas
+                joignable.{" "}
+                <Link href="/conformite/referentiel#2.4">
+                  En savoir plus...
+                </Link>
+              </p>
+            )}
+
+            {!emailMissing && issues.includes("DNS_MX_MISSING") && (
               <p>
                 <span
                   className={fr.cx("fr-icon-error-line", "fr-mr-1w")}
@@ -377,7 +505,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
               </p>
             )}
 
-            {!emailMissing && issues.includes("EMAIL_SPF_MISSING") && (
+            {!emailMissing && issues.includes("DNS_SPF_MISSING") && (
               <p>
                 <span
                   className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
@@ -392,7 +520,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
               </p>
             )}
 
-            {!emailMissing && issues.includes("EMAIL_DMARC_MISSING") && (
+            {!emailMissing && issues.includes("DNS_DMARC_MISSING") && (
               <p>
                 <span
                   className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
@@ -407,7 +535,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
               </p>
             )}
 
-            {!emailMissing && issues.includes("EMAIL_DMARC_MISSING") && (
+            {!emailMissing && issues.includes("DNS_DMARC_MISSING") && (
               <p>
                 <span
                   className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
@@ -424,6 +552,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
             )}
             {(emailMissing ||
               issues.includes("EMAIL_DOMAIN_MISMATCH") ||
+              issues.includes("EMAIL_DOMAIN_GENERIC") ||
               issues.includes("EMAIL_DOMAIN_EXTENSION")) &&
               isEligible && (
                 <p className={fr.cx("fr-text--bold")}>

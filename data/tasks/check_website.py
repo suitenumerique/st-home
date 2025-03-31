@@ -30,6 +30,8 @@ def run(siret):
         if issues is not None:
             upsert_issues(siret, "website", issues)
 
+        return [str(x) for x in issues.keys()]
+
 
 @app.task
 def queue_all():
@@ -165,3 +167,10 @@ def check_non_www(urls_to_test, issues, request_kwargs):
                 issues[Issues.WEBSITE_HTTP_NOWWW] = f"HTTP error: {str(e)}"
             else:
                 issues[Issues.WEBSITE_HTTPS_NOWWW] = f"HTTPS error: {str(e)}"
+
+
+if __name__ == "__main__":
+    # Run with command line arguments
+    siret = sys.argv[1]
+    issues = run(siret)
+    logger.info(issues)
