@@ -1,15 +1,8 @@
-import bz2
-import csv
-import datetime
-import io
 import json
 import logging
 import os
 import re
-import tarfile
 from collections import defaultdict
-
-import requests
 
 from .conformance import Issues, validate_conformance
 from .db import (
