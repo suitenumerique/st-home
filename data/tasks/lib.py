@@ -1,5 +1,4 @@
 import json
-import re
 import unicodedata
 from collections import Counter
 from typing import Iterable

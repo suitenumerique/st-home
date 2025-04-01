@@ -1,7 +1,7 @@
 import datetime
 import os
 from collections import defaultdict
-from typing import Any, Dict
+from typing import Dict
 
 from psycopg2 import connect as pg_connect
 from psycopg2.extras import DictCursor

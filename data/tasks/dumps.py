@@ -2,11 +2,8 @@ import bz2
 import csv
 import io
 import json
-import shutil
 import subprocess
 import tarfile
-import tempfile
-import zipfile
 from pathlib import Path
 
 import requests
