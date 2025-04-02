@@ -239,3 +239,22 @@ def test_get_rcpnt_conformance():
 
     issues = validate_conformance("", "https://www.maville.com") + [Issues.WEBSITE_DOMAIN_REDIRECT]
     assert get_rcpnt_conformance(issues) == {"1.1", "1.3", "1.4", "1.5", "1.7", "1.8"}
+
+    # This is somewhat hacky, but in this case we don't validate 2.3 (email_domain=website_domain)
+    # because we want to somehow invalidate the email with .com
+    issues = validate_conformance("test@maville.com", "https://maville.com")
+    assert get_rcpnt_conformance(issues) == {
+        "1.1",
+        "1.3",
+        "1.4",
+        "1.5",
+        "1.6",
+        "1.7",
+        "1.8",
+        "2.1",
+        "2.2",
+        "2.4",
+        "2.5",
+        "2.6",
+        "2.7",
+    }

@@ -66,14 +66,296 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
   const issues = (commune.issues || ["IN_PROGRESS"]) as string[];
   const rcpnt = (commune.rcpnt || []) as string[];
 
+  // console.log("RCPNT data", rcpnt.join(", "), issues.join(", "));
+
   const inProgress = issues.includes("IN_PROGRESS");
 
-  const websiteMissing = issues.includes("WEBSITE_MISSING") || issues.includes("WEBSITE_MALFORMED");
+  const websiteMissing = !rcpnt.includes("1.1");
   const websiteCompliant = rcpnt.includes("1.a");
 
-  const emailMissing = issues.includes("EMAIL_MISSING") || issues.includes("EMAIL_MALFORMED");
-
+  const emailMissing = !rcpnt.includes("2.1");
   const emailCompliant = rcpnt.includes("2.a");
+
+  const lastChecked = commune.issues_last_checked
+    ? ` (testé pour la dernière fois le ${String(commune.issues_last_checked).substring(0, 10)})`
+    : "";
+
+  const dilaUpdateLink = (
+    <Link
+      href={commune.service_public_url + "/demande-de-mise-a-jour"}
+      target="_blank"
+      rel="noopener"
+    >
+      Service-Public.fr
+    </Link>
+  );
+
+  const websiteContent = (
+    <>
+      {issues.includes("WEBSITE_MISSING") && (
+        <>
+          <MessageLine severity="error" rcpnt="1.1">
+            La commune ne dispose pas encore d&rsquo;un nom de domaine connu des services de
+            l&rsquo;État.
+          </MessageLine>
+
+          <MessageLine severity="info">
+            Si vous en possédez un, vous devez le déclarer sur {dilaUpdateLink}.
+          </MessageLine>
+
+          {isEligible && (
+            <p className={fr.cx("fr-text--bold")}>
+              <Badge severity="success" noIcon as="span">
+                Bonne nouvelle !
+              </Badge>{" "}
+              Si vous n&rsquo;en possédez pas, la Suite territoriale peut vous accompagner à en
+              obtenir un.
+            </p>
+          )}
+        </>
+      )}
+
+      {issues.includes("WEBSITE_MALFORMED") && (
+        <MessageLine severity="error" rcpnt="1.1">
+          Un nom de domaine est déclaré pour la commune mais il n&rsquo;est pas formatté
+          correctement. Veuillez vérifier sur que votre nom de domaine correspond au format{" "}
+          <strong>https://domaine.extension</strong> et qu&rsquo;il ne comporte pas d&rsquo;accents.
+        </MessageLine>
+      )}
+
+      {rcpnt.includes("1.1") && (
+        <>
+          {rcpnt.includes("1.2") && (
+            <MessageLine severity="success" rcpnt="1.2">
+              L&rsquo;extension <strong>.{commune.website_tld}</strong> du domaine{" "}
+              <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
+                {commune.website_domain}
+              </Link>{" "}
+              est bien souveraine.
+            </MessageLine>
+          )}
+
+          {!rcpnt.includes("1.2") && (
+            <MessageLine severity="error" rcpnt="1.2">
+              L&rsquo;extension <strong>.{commune.website_tld}</strong> du domaine{" "}
+              <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
+                {commune.website_domain}
+              </Link>{" "}
+              n&rsquo;est pas souveraine.
+            </MessageLine>
+          )}
+
+          {!rcpnt.includes("1.3") && (
+            <MessageLine severity="error" rcpnt="1.3">
+              Le site internet de la commune n&rsquo;est pas joignable{lastChecked}.
+            </MessageLine>
+          )}
+
+          {issues.includes("WEBSITE_HTTP_REDIRECT") && (
+            <MessageLine severity="error" rcpnt="1.4">
+              L&rsquo;adresse en HTTP{" "}
+              <strong>
+                http://
+                {(commune.website_url || "").replace(/^https?:\/\//, "")}
+              </strong>{" "}
+              ne redirige pas correctement vers la version HTTPS du site internet de la commune
+              {lastChecked}.
+            </MessageLine>
+          )}
+
+          {!rcpnt.includes("1.5") && (
+            <MessageLine severity="error" rcpnt="1.5">
+              Le certificat SSL du site internet de la commune n&rsquo;est pas valide{lastChecked}.
+            </MessageLine>
+          )}
+
+          {rcpnt.includes("1.4") && rcpnt.includes("1.5") && (
+            <MessageLine severity="success" rcpnt="1.4">
+              Le site internet utilise bien HTTPS avec un certificat valide.
+            </MessageLine>
+          )}
+
+          {!rcpnt.includes("1.6") && (
+            <MessageLine severity="error" rcpnt="1.6">
+              L&rsquo;adresse <strong>{commune.website_url}</strong> redirige vers un autre domaine
+              non déclaré sur Service-Public.fr{lastChecked}.
+            </MessageLine>
+          )}
+
+          {!rcpnt.includes("1.7") && (
+            <MessageLine severity="warning" rcpnt="1.7">
+              Le domaine{" "}
+              <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
+                {commune.website_domain}
+              </Link>{" "}
+              est déclaré en HTTP (et non HTTPS) sur Service-Public.fr.
+            </MessageLine>
+          )}
+
+          {issues.includes("WEBSITE_HTTPS_NOWWW") && (
+            <MessageLine severity="warning" rcpnt="1.8">
+              L&rsquo;adresse{" "}
+              <strong>
+                https://
+                {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
+              </strong>{" "}
+              (sans www.) ne redirige pas correctement vers le site internet de la commune.
+            </MessageLine>
+          )}
+
+          {issues.includes("WEBSITE_HTTP_NOWWW") && (
+            <MessageLine severity="warning" rcpnt="1.8">
+              L&rsquo;adresse{" "}
+              <strong>
+                http://
+                {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
+              </strong>{" "}
+              (sans www.) ne redirige pas correctement vers le site internet de la commune.
+            </MessageLine>
+          )}
+
+          {websiteCompliant && isEligible && (
+            <MessageLine severity="success">
+              Vous pourrez réutiliser ce domaine au sein de la Suite territoriale !
+            </MessageLine>
+          )}
+        </>
+      )}
+    </>
+  );
+
+  const emailContent = (
+    <>
+      {emailMissing && (
+        <>
+          <MessageLine severity="error" rcpnt="2.1">
+            La commune ne dispose pas encore d&rsquo;une adresse de messagerie connue des services
+            de l&rsquo;État.
+          </MessageLine>
+          <MessageLine severity="info">
+            Si vous en possédez une, vous devez la déclarer sur {dilaUpdateLink}.
+          </MessageLine>
+
+          {isEligible && (
+            <MessageLine severity="success">
+              Si vous n&rsquo;en possédez pas, la Suite territoriale peut vous aider à en obtenir
+              une.
+            </MessageLine>
+          )}
+        </>
+      )}
+
+      {!emailMissing && (
+        <>
+          {issues.includes("EMAIL_DOMAIN_EXTENSION") && (
+            <MessageLine severity="error" rcpnt="1.2">
+              L&rsquo;extension <strong>.{commune.email_tld}</strong> du domaine de messagerie{" "}
+              <strong>{commune.email_domain}</strong> n&rsquo;est pas souveraine.
+            </MessageLine>
+          )}
+
+          {!issues.includes("EMAIL_DOMAIN_EXTENSION") && (
+            <MessageLine severity="success" rcpnt="1.2">
+              L&rsquo;extension <strong>.{commune.email_tld}</strong> du domaine de messagerie{" "}
+              <strong>{commune.email_domain}</strong> est bien souveraine.
+            </MessageLine>
+          )}
+
+          {!rcpnt.includes("2.2") && (
+            <MessageLine severity="error" rcpnt="2.2">
+              Le domaine <strong>{commune.email_domain}</strong> générique ne permet pas aux usagers
+              de vérifier l&rsquo;authenticité de la messagerie.
+            </MessageLine>
+          )}
+
+          {issues.includes("EMAIL_DOMAIN_MISMATCH") && (
+            <MessageLine severity="error" rcpnt="2.3">
+              L&rsquo;adresse de messagerie utilise un domaine{" "}
+              <strong>{commune.email_domain}</strong> différent de celui du site internet{" "}
+              <strong>{commune.website_domain}</strong>.
+            </MessageLine>
+          )}
+
+          {rcpnt.includes("2.3") && (
+            <MessageLine severity="success" rcpnt="2.3">
+              L&rsquo;adresse de messagerie utilise le même domaine que le site internet.
+            </MessageLine>
+          )}
+
+          {issues.includes("DNS_DOWN") && (
+            <MessageLine severity="error" rcpnt="2.4">
+              Le serveur DNS du domaine de messagerie <strong>{commune.email_domain}</strong>{" "}
+              n&rsquo;est pas joignable.
+            </MessageLine>
+          )}
+
+          {issues.includes("DNS_MX_MISSING") && (
+            <MessageLine severity="error" rcpnt="2.4">
+              Aucun enregistrement MX n&rsquo;est configuré sur le domaine de messagerie{" "}
+              <strong>{commune.email_domain}</strong>. La messagerie ne peut recevoir aucun email.
+            </MessageLine>
+          )}
+
+          {rcpnt.includes("2.5") && (
+            <MessageLine severity="success" rcpnt="2.5">
+              L&rsquo;enregistrement SPF du domaine <strong>{commune.email_domain}</strong> est
+              présent.
+            </MessageLine>
+          )}
+
+          {!rcpnt.includes("2.5") && (
+            <MessageLine severity="info" rcpnt="2.5">
+              Nous vous recommandons de configurer un enregistrement SPF sur le domaine de
+              messagerie <strong>{commune.email_domain}</strong>.
+            </MessageLine>
+          )}
+
+          {!rcpnt.includes("2.6") && (
+            <MessageLine severity="info" rcpnt="2.6">
+              Nous vous recommandons de configurer un enregistrement DMARC sur le domaine de
+              messagerie <strong>{commune.email_domain}</strong>.
+            </MessageLine>
+          )}
+
+          {rcpnt.includes("2.6") && !rcpnt.includes("2.7") && (
+            <MessageLine severity="success" rcpnt="2.6">
+              L&rsquo;enregistrement DMARC du domaine <strong>{commune.email_domain}</strong> est
+              présent.
+            </MessageLine>
+          )}
+
+          {rcpnt.includes("2.6") && !rcpnt.includes("2.7") && (
+            <MessageLine severity="info" rcpnt="2.7">
+              Nous vous recommandons d&rsquo;utiliser une politique de quarantaine DMARC plus
+              stricte.
+            </MessageLine>
+          )}
+
+          {rcpnt.includes("2.7") && (
+            <MessageLine severity="success" rcpnt="2.7">
+              L&rsquo;enregistrement DMARC du domaine <strong>{commune.email_domain}</strong>{" "}
+              utilise une politique de quarantaine stricte.
+            </MessageLine>
+          )}
+
+          {!emailCompliant && isEligible && (
+            <p className={fr.cx("fr-text--bold")}>
+              <Badge severity="success" noIcon as="span">
+                Bonne nouvelle !
+              </Badge>{" "}
+              La Suite territoriale peut vous aider à obtenir une adresse de messagerie conforme.
+            </p>
+          )}
+
+          {emailCompliant && isEligible && (
+            <MessageLine severity="success">
+              Vous pourrez réutiliser cette adresse de messagerie au sein de la Suite territoriale !
+            </MessageLine>
+          )}
+        </>
+      )}
+    </>
+  );
 
   return (
     <div className={fr.cx("fr-mb-4w")}>
@@ -98,125 +380,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
             </div>
           }
         >
-          <div className={fr.cx("fr-py-1w")}>
-            {websiteMissing && (
-              <MessageLine severity="error" rcpnt="1.1">
-                La commune ne dispose pas encore d&rsquo;un nom de domaine officiel connu des
-                services de l&rsquo;État.
-              </MessageLine>
-            )}
-            {websiteMissing && (
-              <MessageLine severity="info">
-                Si vous en possédez un, vous devez le déclarer sur{" "}
-                <Link
-                  href={commune.service_public_url + "/demande-de-mise-a-jour"}
-                  target="_blank"
-                  rel="noopener"
-                >
-                  Service-Public.fr
-                </Link>
-                .
-              </MessageLine>
-            )}
-
-            {websiteMissing && isEligible && (
-              <p className={fr.cx("fr-text--bold")}>
-                <Badge severity="success" noIcon as="span">
-                  Bonne nouvelle !
-                </Badge>{" "}
-                Si vous n&rsquo;en possédez pas, la Suite territoriale peut vous accompagner à en
-                obtenir un.
-              </p>
-            )}
-
-            {!websiteMissing && issues.includes("WEBSITE_DOMAIN_REDIRECT") && (
-              <MessageLine severity="error" rcpnt="1.1">
-                L&rsquo;adresse <strong>{commune.website_url}</strong> redirige vers un autre
-                domaine non déclaré sur Service-Public.fr.{" "}
-              </MessageLine>
-            )}
-
-            {!websiteMissing && rcpnt.includes("1.2") && (
-              <MessageLine severity="success" rcpnt="1.2">
-                L&rsquo;extension <strong>.{commune.website_tld}</strong> du nom de domaine{" "}
-                <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
-                  {commune.website_domain}
-                </Link>{" "}
-                est bien souveraine.
-              </MessageLine>
-            )}
-
-            {!websiteMissing && !rcpnt.includes("1.2") && (
-              <MessageLine severity="error" rcpnt="1.2">
-                L&rsquo;extension <strong>.{commune.website_tld}</strong> du domaine{" "}
-                <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
-                  {commune.website_domain}
-                </Link>{" "}
-                n&rsquo;est pas souveraine.
-              </MessageLine>
-            )}
-
-            {!websiteMissing && !rcpnt.includes("1.7") && (
-              <MessageLine severity="warning" rcpnt="1.7">
-                Le domaine{" "}
-                <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
-                  {commune.website_domain}
-                </Link>{" "}
-                est déclaré en HTTP (et non HTTPS) sur Service-Public.fr.
-              </MessageLine>
-            )}
-
-            {!websiteMissing && issues.includes("WEBSITE_HTTPS_NOWWW") && (
-              <MessageLine severity="warning" rcpnt="1.7">
-                L&rsquo;adresse{" "}
-                <strong>
-                  https://
-                  {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
-                </strong>{" "}
-                (sans www.) ne redirige pas correctement vers le site Internet de la commune.
-              </MessageLine>
-            )}
-
-            {!websiteMissing && issues.includes("WEBSITE_HTTP_NOWWW") && (
-              <MessageLine severity="warning" rcpnt="1.7">
-                L&rsquo;adresse{" "}
-                <strong>
-                  http://
-                  {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
-                </strong>{" "}
-                (sans www.) ne redirige pas correctement vers le site internet de la commune.
-              </MessageLine>
-            )}
-
-            {!websiteMissing && issues.includes("WEBSITE_HTTP_REDIRECT") && (
-              <MessageLine severity="error" rcpnt="1.4">
-                L&rsquo;adresse en HTTP{" "}
-                <strong>
-                  http://
-                  {(commune.website_url || "").replace(/^https?:\/\//, "")}
-                </strong>{" "}
-                ne redirige pas correctement vers la version HTTPS du site internet de la commune.
-              </MessageLine>
-            )}
-
-            {!websiteMissing && issues.includes("WEBSITE_SSL") && (
-              <MessageLine severity="error" rcpnt="1.5">
-                Le certificat SSL du site web de la commune n&rsquo;est pas valide.
-              </MessageLine>
-            )}
-
-            {!websiteMissing && issues.includes("WEBSITE_DOWN") && (
-              <MessageLine severity="error" rcpnt="1.3">
-                Le site web de la commune n&rsquo;est pas joignable.
-              </MessageLine>
-            )}
-
-            {websiteCompliant && isEligible && (
-              <MessageLine severity="success">
-                Vous pourrez réutiliser ce domaine au sein de la Suite territoriale !
-              </MessageLine>
-            )}
-          </div>
+          <div className={fr.cx("fr-py-1w")}>{websiteContent}</div>
         </Accordion>
 
         {/* Email */}
@@ -238,118 +402,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
             </div>
           }
         >
-          <div className={fr.cx("fr-py-1w")}>
-            {emailMissing && (
-              <>
-                <MessageLine severity="error" rcpnt="2.1">
-                  La commune ne dispose pas encore d&rsquo;une adresse de messagerie connue des
-                  services de l&rsquo;État.
-                </MessageLine>
-                <MessageLine severity="info">
-                  Si vous en possédez une, vous devez la déclarer sur{" "}
-                  <Link
-                    href={commune.service_public_url + "/demande-de-mise-a-jour"}
-                    target="_blank"
-                    rel="noopener"
-                  >
-                    Service-Public.fr
-                  </Link>
-                  .
-                </MessageLine>
-
-                {isEligible && (
-                  <MessageLine severity="success">
-                    Si vous n&rsquo;en possédez pas, la Suite territoriale peut vous aider à en
-                    obtenir une.
-                  </MessageLine>
-                )}
-              </>
-            )}
-
-            {!emailMissing && issues.includes("EMAIL_DOMAIN_EXTENSION") && (
-              <MessageLine severity="error" rcpnt="1.2">
-                L&rsquo;extension <strong>.{commune.email_tld}</strong> du domaine de messagerie{" "}
-                <strong>{commune.email_domain}</strong> n&rsquo;est pas souveraine.
-              </MessageLine>
-            )}
-
-            {!emailMissing && issues.includes("EMAIL_DOMAIN_GENERIC") && (
-              <MessageLine severity="error" rcpnt="2.2">
-                Le domaine <strong>{commune.email_domain}</strong> générique ne permet pas aux
-                usagers de vérifier l&rsquo;authenticité de la messagerie.
-              </MessageLine>
-            )}
-
-            {!emailMissing && issues.includes("EMAIL_DOMAIN_MISMATCH") && (
-              <MessageLine severity="error" rcpnt="2.3">
-                L&rsquo;adresse de messagerie utilise un domaine{" "}
-                <strong>{commune.email_domain}</strong> différent de celui du site web{" "}
-                <strong>{commune.website_domain}</strong>.
-              </MessageLine>
-            )}
-            {!emailMissing && issues.includes("DNS_DOWN") && (
-              <MessageLine severity="error" rcpnt="2.4">
-                Le serveur DNS du domaine de messagerie <strong>{commune.email_domain}</strong>{" "}
-                n&rsquo;est pas joignable.
-              </MessageLine>
-            )}
-
-            {!emailMissing && issues.includes("DNS_MX_MISSING") && (
-              <MessageLine severity="error" rcpnt="2.4">
-                Aucun enregistrement MX n&rsquo;est configuré sur le domaine de messagerie{" "}
-                <strong>{commune.email_domain}</strong>. La messagerie ne peut recevoir aucun email.
-              </MessageLine>
-            )}
-
-            {!emailMissing && rcpnt.includes("2.5") && (
-              <MessageLine severity="success" rcpnt="2.5">
-                L&rsquo;enregistrement SPF est correctement configuré sur le domaine de messagerie{" "}
-                <strong>{commune.email_domain}</strong>.
-              </MessageLine>
-            )}
-
-            {!emailMissing && rcpnt.includes("2.6") && !rcpnt.includes("2.7") && (
-              <MessageLine severity="success" rcpnt="2.6">
-                L&rsquo;enregistrement DMARC est correctement configuré sur le domaine de messagerie{" "}
-                <strong>{commune.email_domain}</strong>.
-              </MessageLine>
-            )}
-
-            {!emailMissing && rcpnt.includes("2.6") && !rcpnt.includes("2.7") && (
-              <MessageLine severity="info" rcpnt="2.7">
-                L&rsquo;enregistrement DMARC du domaine <strong>{commune.email_domain}</strong>{" "}
-                pourrait utiliser une politique de quarantaine plus stricte.
-              </MessageLine>
-            )}
-
-            {!emailMissing && rcpnt.includes("2.7") && (
-              <MessageLine severity="success" rcpnt="2.7">
-                L&rsquo;enregistrement DMARC du domaine <strong>{commune.email_domain}</strong>{" "}
-                utilise une politique de quarantaine appropriée.
-              </MessageLine>
-            )}
-
-            {(emailMissing ||
-              issues.includes("EMAIL_DOMAIN_MISMATCH") ||
-              issues.includes("EMAIL_DOMAIN_GENERIC") ||
-              issues.includes("EMAIL_DOMAIN_EXTENSION")) &&
-              isEligible && (
-                <p className={fr.cx("fr-text--bold")}>
-                  <Badge severity="success" noIcon as="span">
-                    Bonne nouvelle !
-                  </Badge>{" "}
-                  La Suite territoriale peut vous aider à obtenir une adresse de messagerie
-                  conforme.
-                </p>
-              )}
-
-            {emailCompliant && isEligible && (
-              <MessageLine severity="success">
-                Vous pourrez réutiliser cette adresse de messagerie au sein de la Suite territoriale
-                !
-              </MessageLine>
-            )}
-          </div>
+          <div className={fr.cx("fr-py-1w")}>{emailContent}</div>
         </Accordion>
 
         {/* Eligibility */}

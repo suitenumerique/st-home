@@ -172,7 +172,7 @@ const SERVICES_DATA = [
     features: [
       <>Obtenez un nom de domaine conforme simplement ;</>,
       <>Utilisez-le pour votre adresse de messagerie électronique ;</>,
-      <>Déployez un site web identifiable pour votre commune ;</>,
+      <>Déployez un site internet identifiable pour votre commune ;</>,
       <>Accédez à tous les services de la Suite territoriale.</>,
     ],
     faqs: [
