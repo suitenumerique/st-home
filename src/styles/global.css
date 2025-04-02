@@ -45,6 +45,17 @@ body {
   min-width: 320px;
 }
 
+/* Leaflet */
+
+path.leaflet-interactive:focus {
+  outline: none;
+}
+
+.leaflet-control-zoom a[href],
+.leaflet-control a[href] {
+  background-image: none !important;
+}
+
 @media (max-width: 768px) {
   .st-bienvenue-page .fr-card--shadow {
     filter: none !important;
