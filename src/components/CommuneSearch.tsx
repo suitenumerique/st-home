@@ -10,18 +10,21 @@ interface Commune {
   siret: string;
   name: string;
   insee_geo?: string;
-  zipcode: string;
+  zipcode?: string;
+  type: "commune" | "epci";
   population: number;
 }
 
 interface CommuneSearchProps {
   onSelect?: (commune: Commune) => void;
   placeholder?: string;
+  type?: "commune" | "epci" | "all";
 }
 
 interface SearchInputProps {
   id: string;
   placeholder?: string;
+  type: "commune" | "epci" | "all";
 }
 
 function CommuneSearchInput(
@@ -43,8 +46,8 @@ function CommuneSearchInput(
     }
 
     // Check cache first
-    if (searchCache.has(value)) {
-      setCommunes(searchCache.get(value) || []);
+    if (searchCache.has(props.type + "/" + value)) {
+      setCommunes(searchCache.get(props.type + "/" + value) || []);
       return;
     }
 
@@ -60,7 +63,7 @@ function CommuneSearchInput(
       setLoading(true);
       const response = await fetch(`/api/communes/search`, {
         method: "POST",
-        body: JSON.stringify({ q: value }),
+        body: JSON.stringify({ q: value, type: props.type }),
         headers: { "Content-Type": "application/json" },
         signal: abortControllerRef.current.signal,
         next: { revalidate: 3600 },
@@ -72,7 +75,7 @@ function CommuneSearchInput(
       // await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Cache the results
-      searchCache.set(value, data);
+      searchCache.set(props.type + "/" + value, data);
       setCommunes(data);
       setLoading(false);
     } catch (error) {
@@ -103,7 +106,9 @@ function CommuneSearchInput(
           ? "Saisissez au moins 1 caractère"
           : "Aucune commune trouvée"
       }
-      getOptionLabel={(option) => `${option.name} (${option.zipcode})`}
+      getOptionLabel={(option) =>
+        `${option.name} (${option.type === "commune" ? option.zipcode : "EPCI"})`
+      }
       filterOptions={(x) => x} // Disable client-side filtering
       onInputChange={(_, value) => {
         setInputValue(value);
@@ -123,7 +128,7 @@ function CommuneSearchInput(
                 className={fr.cx("fr-text--sm", "fr-ml-1w")}
                 style={{ color: "var(--text-mention-grey)" }}
               >
-                {option.zipcode}
+                {option.type === "commune" ? option.zipcode : "EPCI"}
               </span>
             </div>
           </li>
@@ -211,6 +216,7 @@ function CommuneSearchInput(
 export default function CommuneSearch({
   onSelect,
   placeholder,
+  type = "all",
 }: CommuneSearchProps) {
   return (
     <>
@@ -222,6 +228,7 @@ export default function CommuneSearch({
           <CommuneSearchInput
             id={id}
             placeholder={placeholder}
+            type={type}
             onOptionSelect={onSelect || (() => {})}
           />
         )}

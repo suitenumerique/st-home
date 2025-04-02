@@ -1,12 +1,13 @@
 import datetime
 import os
+import random
 from collections import defaultdict
 from typing import Dict
 
 from psycopg2 import connect as pg_connect
 from psycopg2.extras import DictCursor
 
-from .conformance import Issues, data_checks_doable
+from .conformance import Issues, RcpntRefs, data_checks_doable
 
 
 def get_db():
@@ -91,6 +92,8 @@ def get_all_data_checks():
 def get_data_checks_by_siret(all_data_checks, conformance_issues, siret: str):
     """Get issues from checks for a given SIRET. We must have at least one row of each type of check."""
 
+    min_dt = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
+
     for check in all_data_checks.get(siret, []):
         conformance_issues.extend(check["issues"])
 
@@ -100,15 +103,15 @@ def get_data_checks_by_siret(all_data_checks, conformance_issues, siret: str):
         return {
             "IN_PROGRESS": "Checks still in progress: %s"
             % ", ".join(expected_types - checked_types)
-        }
+        }, min_dt
 
     issues = {}
-
     for check in all_data_checks[siret]:
         for idx, issue in enumerate(check["issues"]):
             issues[issue] = check["details"][idx]
+        min_dt = min(min_dt, check["dt"])
 
-    return issues
+    return issues, min_dt.replace(microsecond=0)
 
 
 def find_org_by_siret(siret: str):
@@ -128,70 +131,146 @@ def list_all_orgs():
             return cur.fetchall()
 
 
-def update_data_issues_stats(communes: list):
+def calculate_stats_for_scope(communes, scope_communes):
     """
-    Create and populate the data_issues_stats table with statistics about each issue.
+    Calculate statistics for a given scope of communes.
 
     Args:
-        communes: List of commune dictionaries containing conformance data
+        communes: List of all communes for sampling without_issue
+        scope_communes: List of communes in this scope
+
+    Returns:
+        List of tuples (issue, count, total, sample_with, sample_without)
     """
-    total_communes = len(communes)
+    total = len(scope_communes)
+    stats = []
+
+    # Pre-compute siret lookup for scope_communes
+    scope_sirets = {c["_st_siret"] for c in scope_communes if c.get("_st_siret")}
+
+    # Pre-compute RCPNT conformance for all communes
+    conformity_map = defaultdict(set)
+    pop_map = {
+        c["_st_siret"]: int(c.get("_st_pmun", "0").replace(" ", ""))
+        for c in scope_communes
+        if c.get("_st_siret")
+    }
+    for c in scope_communes:
+        if not c.get("_st_siret"):
+            continue
+        for ref in c.get("_st_rcpnt", []):
+            conformity_map[ref].add(c["_st_siret"])
+
+    for ref in RcpntRefs:
+        valid = conformity_map.get(ref, set())
+        count = len(valid)
+        count_pop = sum(pop_map.get(siret, 0) for siret in valid)
+        total_pop = sum(pop_map.get(siret, 0) for siret in scope_sirets)
+
+        # Get samples - convert sets to lists for random.sample
+        sample_valid = random.sample(list(valid), min(3, count)) if valid else []
+        sample_invalid = []
+        invalid = scope_sirets - valid
+        if invalid:
+            sample_invalid = random.sample(list(invalid), min(3, len(invalid)))
+
+        stats.append((ref, count, total, count_pop, total_pop, sample_valid, sample_invalid))
+
+    return stats
+
+
+def update_rcpnt_stats(communes: list):
+    """
+    Create and populate the data_rcpnt_stats table with statistics about each RCPNT criterion,
+    segmented by different geographical scopes.
+    """
+
+    population_ranges = [200, 500, 1000, 2000, 3500, 5000, 10000, 20000, 50000, 100000]
+
+    def get_population_range(population):
+        min_pop = 0
+        for max_pop in population_ranges:
+            if population <= max_pop:
+                return f"{min_pop}-{max_pop}"
+            min_pop = max_pop
+        return "100000-"
+
+    # Define scopes configuration
+    scopes = [
+        {"name": "global", "group_by": lambda c: None},
+        {"name": "epci", "group_by": lambda c: c.get("_st_epci", {}).get("siren")},
+        {"name": "dep", "group_by": lambda c: c.get("_st_insee", {}).get("DEP")},
+        {"name": "reg", "group_by": lambda c: c.get("_st_insee", {}).get("REG")},
+        {
+            "name": "pop",
+            "group_by": lambda c: get_population_range(
+                int(c.get("_st_pmun", "0").replace(" ", ""))
+            ),
+        },
+    ]
 
     with get_db() as db:
         with db.cursor() as cur:
-            # Drop and recreate the table
+            # Drop and recreate the table with index
             cur.execute("""
-                DROP TABLE IF EXISTS data_issues_stats;
-                CREATE TABLE data_issues_stats (
-                    issue VARCHAR(64) PRIMARY KEY,
-                    count INTEGER NOT NULL,
-                    percentage DECIMAL(5,2) NOT NULL,
-                    sample_with_issue VARCHAR(14)[] NOT NULL,
-                    sample_without_issue VARCHAR(14)[] NOT NULL,
+                DROP TABLE IF EXISTS data_rcpnt_stats;
+                CREATE TABLE data_rcpnt_stats (
+                    scope VARCHAR(16) NOT NULL,
+                    scope_id VARCHAR(16),
+                    ref VARCHAR(8) NOT NULL,
+                    valid INTEGER NOT NULL,
+                    total INTEGER NOT NULL,
+                    valid_pop INTEGER NOT NULL,
+                    total_pop INTEGER NOT NULL,
+                    sample_valid VARCHAR(14)[] NOT NULL,
+                    sample_invalid VARCHAR(14)[] NOT NULL,
                     last_updated TIMESTAMP WITH TIME ZONE NOT NULL
                 );
+                CREATE INDEX idx_data_rcpnt_stats_scope ON data_rcpnt_stats (scope, scope_id);
+                CREATE INDEX idx_data_rcpnt_stats_ref ON data_rcpnt_stats (scope, ref);
             """)
 
-            # For each possible issue, compute stats
-            for issue in Issues:
-                # Get communes with and without this issue
-                with_issue = [
-                    c for c in communes if issue.name in c["_st_conformite"] and c.get("_st_siret")
-                ]
-                without_issue = [
-                    c
-                    for c in communes
-                    if issue.name not in c["_st_conformite"] and c.get("_st_siret")
-                ]
+            # Process each scope
+            for scope in scopes:
+                # Group communes by scope
+                if scope["name"] in ["global", "people"]:
+                    groups = {None: communes}
+                else:
+                    groups = defaultdict(list)
+                    for commune in communes:
+                        scope_id = scope["group_by"](commune)
+                        if scope_id:
+                            groups[scope_id].append(commune)
 
-                # Calculate count and percentage
-                count = len(with_issue)
-                percentage = (count / total_communes) * 100
-
-                # Get random samples (up to 3) of INSEE codes
-                import random
-
-                sample_with = (
-                    [c["_st_siret"] for c in random.sample(with_issue, min(3, len(with_issue)))]
-                    if with_issue
-                    else []
-                )
-                sample_without = (
-                    [
-                        c["_st_siret"]
-                        for c in random.sample(without_issue, min(3, len(without_issue)))
-                    ]
-                    if without_issue
-                    else []
-                )
-
-                # Insert the stats
-                cur.execute(
-                    """
-                    INSERT INTO data_issues_stats (issue, count, percentage, sample_with_issue, sample_without_issue, last_updated)
-                    VALUES (%s, %s, %s, %s, %s, now())
-                """,
-                    (issue.name, count, percentage, sample_with, sample_without),
-                )
+                # Calculate and insert stats for each group
+                for scope_id, scope_communes in groups.items():
+                    stats = calculate_stats_for_scope(communes, scope_communes)
+                    for (
+                        ref,
+                        valid,
+                        total,
+                        valid_pop,
+                        total_pop,
+                        sample_valid,
+                        sample_invalid,
+                    ) in stats:
+                        cur.execute(
+                            """
+                            INSERT INTO data_rcpnt_stats
+                            (scope, scope_id, ref, valid, total, valid_pop, total_pop, sample_valid, sample_invalid, last_updated)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, now())
+                            """,
+                            (
+                                scope["name"],
+                                scope_id,
+                                ref,
+                                valid,
+                                total,
+                                valid_pop,
+                                total_pop,
+                                sample_valid,
+                                sample_invalid,
+                            ),
+                        )
 
             db.commit()

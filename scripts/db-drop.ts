@@ -7,10 +7,9 @@ async function dropAllTables() {
 
     // Drop all tables in the correct order (respecting foreign key constraints)
     await db.execute(sql`
-      DROP TABLE IF EXISTS organizations_to_structures CASCADE;
-      DROP TABLE IF EXISTS mutualization_structures CASCADE;
-      DROP TABLE IF EXISTS organizations CASCADE;
-      DROP TABLE IF EXISTS drizzle_migrations CASCADE;
+      DROP TABLE IF EXISTS st_organizations_to_structures CASCADE;
+      DROP TABLE IF EXISTS st_mutualization_structures CASCADE;
+      DROP TABLE IF EXISTS st_organizations CASCADE;
     `);
 
     console.log("All tables dropped successfully.");
