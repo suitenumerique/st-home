@@ -11,9 +11,7 @@ type OPSNProConnectViewProps = {
 /**
  * View for OPSN organizations that can use ProConnect
  */
-export default function OPSNProConnectView({
-  commune,
-}: OPSNProConnectViewProps) {
+export default function OPSNProConnectView({ commune }: OPSNProConnectViewProps) {
   return (
     <>
       <Head>
@@ -21,8 +19,8 @@ export default function OPSNProConnectView({
       </Head>
 
       <p className={fr.cx("fr-text--lg", "fr-mb-3w")}>
-        Votre OPSN est compatible avec ProConnect. Vous pouvez vous connecter
-        directement pour activer la Régie.
+        Votre OPSN est compatible avec ProConnect. Vous pouvez vous connecter directement pour
+        activer la Régie.
       </p>
 
       <Alert
@@ -31,12 +29,11 @@ export default function OPSNProConnectView({
         description={
           <>
             <p>
-              En tant qu&rsquo;OPSN compatible avec ProConnect, vous pouvez vous
-              connecter avec votre email professionnel.
+              En tant qu&rsquo;OPSN compatible avec ProConnect, vous pouvez vous connecter avec
+              votre email professionnel.
             </p>
             <p>
-              Après la connexion, vous serez guidé pour activer la Régie pour
-              votre organisation.
+              Après la connexion, vous serez guidé pour activer la Régie pour votre organisation.
             </p>
           </>
         }
@@ -44,14 +41,8 @@ export default function OPSNProConnectView({
       />
 
       <div className={fr.cx("fr-stepper", "fr-mb-4w")}>
-        <h2 className={fr.cx("fr-stepper__title")}>
-          Les étapes d&rsquo;activation
-        </h2>
-        <div
-          className={fr.cx("fr-stepper__steps")}
-          data-fr-current-step="1"
-          data-fr-steps="2"
-        >
+        <h2 className={fr.cx("fr-stepper__title")}>Les étapes d&rsquo;activation</h2>
+        <div className={fr.cx("fr-stepper__steps")} data-fr-current-step="1" data-fr-steps="2">
           <div>
             <p className={fr.cx("fr-stepper__title")}>
               <span className={fr.cx("fr-stepper__state")}>Étape </span>

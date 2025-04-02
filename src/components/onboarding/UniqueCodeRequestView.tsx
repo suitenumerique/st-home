@@ -12,9 +12,7 @@ type UniqueCodeRequestViewProps = {
 /**
  * View for requesting a unique code
  */
-export default function UniqueCodeRequestView({
-  commune,
-}: UniqueCodeRequestViewProps) {
+export default function UniqueCodeRequestView({ commune }: UniqueCodeRequestViewProps) {
   return (
     <>
       <Head>
@@ -27,12 +25,11 @@ export default function UniqueCodeRequestView({
         description={
           <>
             <p>
-              En tant que commune de moins de 3500 habitants, vous pouvez
-              demander un code unique pour accéder à la Suite territoriale.
+              En tant que commune de moins de 3500 habitants, vous pouvez demander un code unique
+              pour accéder à la Suite territoriale.
             </p>
             <p>
-              Ce code vous sera envoyé par courrier à l&rsquo;adresse officielle
-              de votre mairie.
+              Ce code vous sera envoyé par courrier à l&rsquo;adresse officielle de votre mairie.
             </p>
           </>
         }
@@ -84,9 +81,7 @@ export default function UniqueCodeRequestView({
           />
         </div>
 
-        <div
-          className={fr.cx("fr-btns-group", "fr-btns-group--inline-reverse")}
-        >
+        <div className={fr.cx("fr-btns-group", "fr-btns-group--inline-reverse")}>
           <Button type="submit">Demander le code</Button>
           <Button
             priority="secondary"

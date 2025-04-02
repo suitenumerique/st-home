@@ -61,9 +61,7 @@ export function determineOnboardingCase(
   if (options.direct || commune.structures?.length === 0) {
     return {
       onboardingCase:
-        commune.population <= 3500
-          ? OnboardingCase.UNIQUE_CODE_REQUEST
-          : OnboardingCase.CONTACT_US,
+        commune.population <= 3500 ? OnboardingCase.UNIQUE_CODE_REQUEST : OnboardingCase.CONTACT_US,
       population: commune.population,
     };
   }
@@ -71,9 +69,7 @@ export function determineOnboardingCase(
   // If a structureId is provided, go directly to contact form
   if (options.structureId) {
     // Check if the ID belongs to a mutualization structure
-    const structure = commune.structures?.find(
-      (structure) => structure.id === options.structureId,
-    );
+    const structure = commune.structures?.find((structure) => structure.id === options.structureId);
     if (structure) {
       return {
         onboardingCase: OnboardingCase.CONTACT_US,

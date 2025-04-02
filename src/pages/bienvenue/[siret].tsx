@@ -8,6 +8,7 @@ import ActiveInRegieView from "@/components/onboarding/ActiveInRegieView";
 import ComingSoonView from "@/components/onboarding/ComingSoonView";
 import CommuneInfo from "@/components/onboarding/CommuneInfo";
 import ContactUsView from "@/components/onboarding/ContactUsView";
+import EpciInfo from "@/components/onboarding/EpciInfo";
 import ErrorView from "@/components/onboarding/ErrorView";
 import OPSNChoiceView from "@/components/onboarding/OPSNChoiceView";
 import OPSNProConnectView from "@/components/onboarding/OPSNProConnectView";
@@ -19,11 +20,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 
 // Import types and functions
-import {
-  determineOnboardingCase,
-  type Commune,
-  type OnboardingProps,
-} from "@/lib/onboarding";
+import { determineOnboardingCase, type Commune, type OnboardingProps } from "@/lib/onboarding";
 import { OnboardingCase } from "@/types/onboarding";
 
 interface PageProps extends OnboardingProps {
@@ -43,11 +40,7 @@ export default function Bienvenue(props: PageProps) {
         if (!_commune.structures) {
           return <ErrorView error="Configuration invalide" />;
         }
-        return (
-          <OPSNChoiceView
-            commune={{ ..._commune, structures: _commune.structures }}
-          />
-        );
+        return <OPSNChoiceView commune={{ ..._commune, structures: _commune.structures }} />;
       case OnboardingCase.OPSN_PROCONNECT:
         return <OPSNProConnectView commune={_commune} />;
       case OnboardingCase.CONTACT_US:
@@ -73,40 +66,61 @@ export default function Bienvenue(props: PageProps) {
           style={{ float: "right" }}
           className={fr.cx("fr-mt-1w", "fr-hidden", "fr-unhidden-sm")}
         >
-          <Tag>
-            <Link href={commune.url_service_public || ""} target="_blank">
-              Commune
-            </Link>
-          </Tag>
-          &nbsp;
-          <Tag>
-            <span
-              onClick={(e) => {
-                // Easter egg to go to the future page
-                e.preventDefault();
-                e.stopPropagation();
-                if (e.altKey) {
-                  router.push(`/bienvenue/${commune.siret}?futur=1`);
-                }
-              }}
-            >
-              {commune.zipcode}
-            </span>
-          </Tag>
+          {commune.type === "commune" && (
+            <>
+              <Tag>
+                <Link href={commune.service_public_url || ""} target="_blank">
+                  Commune
+                </Link>
+              </Tag>
+              &nbsp;
+              <Tag>
+                <span
+                  onClick={(e) => {
+                    // Easter egg to go to the future page
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (e.altKey) {
+                      router.push(`/bienvenue/${commune.siret}?futur=1`);
+                    }
+                  }}
+                >
+                  {commune.zipcode}
+                </span>
+              </Tag>
+            </>
+          )}
+          {commune.type === "epci" && (
+            <Tag>
+              <span
+                onClick={(e) => {
+                  // Easter egg to go to the future page
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (e.altKey) {
+                    router.push(`/bienvenue/${commune.siret}?futur=1`);
+                  }
+                }}
+              >
+                EPCI
+              </span>
+            </Tag>
+          )}
         </div>
-        <h1
-          className={fr.cx("fr-h1")}
-          style={{ color: "var(--text-title-blue-france)" }}
-        >
+        <h1 className={fr.cx("fr-h1")} style={{ color: "var(--text-title-blue-france)" }}>
           {commune.name}
         </h1>
-        <p>
-          Voici la situation de la présence numérique de la commune, évaluée par
-          rapport à notre{" "}
-          <Link href="/conformite/referentiel">Référentiel de Conformité</Link>{" "}
-          :
-        </p>
-        <CommuneInfo commune={commune} />
+        {commune.type === "commune" && (
+          <>
+            <p>
+              Voici la situation de la présence numérique de la commune, évaluée par rapport à notre{" "}
+              <Link href="/conformite/referentiel">Référentiel de Conformité</Link> :
+            </p>
+            <CommuneInfo commune={commune} />
+          </>
+        )}
+        {commune.type === "epci" && <EpciInfo commune={commune} />}
+
         {getCommuneContent(commune)}
       </div>
     );
@@ -114,14 +128,11 @@ export default function Bienvenue(props: PageProps) {
 
   const currentPageLabel = !commune?.name
     ? "Éligibilité"
-    : `Éligibilité de ${commune.name} (${commune.zipcode})`;
+    : `Éligibilité de ${commune.name} (${commune.type === "commune" ? commune.zipcode : "EPCI"})`;
 
   return (
     <div className={fr.cx("fr-container") + " st-bienvenue-page"}>
-      <NextSeo
-        title={currentPageLabel}
-        description="Test d'éligibilité à la Suite territoriale"
-      />
+      <NextSeo title={currentPageLabel} description="Test d'éligibilité à la Suite territoriale" />
       <div>
         <Breadcrumb
           currentPageLabel={currentPageLabel}
@@ -135,9 +146,7 @@ export default function Bienvenue(props: PageProps) {
           ]}
         />
       </div>
-      <div className={fr.cx("fr-card--shadow", "fr-p-4w", "fr-mb-4w")}>
-        {GetMainContent()}
-      </div>
+      <div className={fr.cx("fr-card--shadow", "fr-p-4w", "fr-mb-4w")}>{GetMainContent()}</div>
       <div className={fr.cx("fr-my-12w")}>
         <div className={fr.cx("fr-grid-row")}>
           <div className={fr.cx("fr-col-offset-lg-2", "fr-col-lg-8")}>
@@ -149,18 +158,12 @@ export default function Bienvenue(props: PageProps) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps<PageProps> = async (
-  context,
-) => {
+export const getServerSideProps: GetServerSideProps<PageProps> = async (context) => {
   const { siret, direct, structureId, isExistingMember, futur } = context.query;
 
   if (!siret || typeof siret !== "string") {
     return {
-      props: determineOnboardingCase(
-        null,
-        {},
-        "Identifiant de commune invalide",
-      ),
+      props: determineOnboardingCase(null, {}, "Identifiant de commune invalide"),
     };
   }
 

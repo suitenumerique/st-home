@@ -2,10 +2,9 @@ import { NextSeo } from "next-seo";
 import dynamic from "next/dynamic";
 import { useEffect } from "react";
 
-const CartographieConformite = dynamic(
-  () => import("@/components/map/CartographieConformite"),
-  { ssr: false },
-);
+const CartographieConformite = dynamic(() => import("@/components/map/CartographieConformite"), {
+  ssr: false,
+});
 
 export default function CartographiePage() {
   // Hide the footer on this page

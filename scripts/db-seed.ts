@@ -3,18 +3,28 @@ import path from "path";
 import { pool } from "../src/lib/db";
 import { unaccent } from "../src/lib/string";
 
-interface Commune {
+interface BaseOrganization {
   name: string;
   slug: string;
-  insee_geo: string;
   siren: string;
   siret: string;
   population: number;
+  insee_dep: string | null;
+  insee_reg: string | null;
+  st_eligible: boolean;
+  st_active: boolean;
+}
+
+interface Commune extends BaseOrganization {
+  type: "commune";
+  insee_geo: string;
   zipcode: string;
   email_official: string;
   structures: number[];
   website_url: string | null;
   issues: string[];
+  rcpnt: string[];
+  issues_last_checked: string;
   website_domain: string | null;
   email_domain: string | null;
   website_tld: string | null;
@@ -22,9 +32,12 @@ interface Commune {
   epci_name: string;
   epci_siren: string;
   epci_population: number;
-  url_service_public: string;
-  st_eligible: boolean;
-  st_active: boolean;
+  service_public_url: string;
+  service_public_id: string;
+}
+
+interface EPCI extends BaseOrganization {
+  type: "epci";
 }
 
 interface Structure {
@@ -49,36 +62,39 @@ async function testConnection() {
   }
 }
 
-async function importCommunes(filePath: string) {
+async function importOrganizations(dumpsDir: string) {
   let client;
   try {
     // Test connection first
     const connected = await testConnection();
     if (!connected) {
-      console.error(
-        "Database connection failed. Please check your DATABASE_URL and try again.",
-      );
+      console.error("Database connection failed. Please check your DATABASE_URL and try again.");
       process.exit(1);
     }
 
-    console.log(`Reading data from ${filePath}...`);
-    const data = fs.readFileSync(filePath, "utf8");
-    const communes: Commune[] = JSON.parse(data);
+    const communesPath = path.join(dumpsDir, "communes.json");
+    const epcisPath = path.join(dumpsDir, "epcis.json");
+    const structuresPath = path.join(dumpsDir, "structures.json");
 
-    console.log(`Found ${communes.length} communes to import.`);
+    // Verify all required files exist
+    for (const filePath of [communesPath, epcisPath, structuresPath]) {
+      if (!fs.existsSync(filePath)) {
+        console.error(`Required file not found: ${filePath}`);
+        process.exit(1);
+      }
+    }
 
-    // Get structures data
-    const structuresPath = filePath.replace(
-      /[a-z0-9]+.json/,
-      "structures.json",
-    );
+    console.log(`Reading communes data from ${communesPath}...`);
+    const communesData = fs.readFileSync(communesPath, "utf8");
+    const communes: Commune[] = JSON.parse(communesData);
+
+    console.log(`Reading EPCIs data from ${epcisPath}...`);
+    const epcisData = fs.readFileSync(epcisPath, "utf8");
+    const epcis: EPCI[] = JSON.parse(epcisData);
+
+    console.log(`Found ${communes.length} communes and ${epcis.length} EPCIs to import.`);
+
     console.log(`Reading structures from ${structuresPath}...`);
-
-    if (!fs.existsSync(structuresPath) || structuresPath === filePath) {
-      console.error(`Structures file not found: ${structuresPath}`);
-      process.exit(1);
-    }
-
     const structuresData = fs.readFileSync(structuresPath, "utf8");
     const structuresList: Structure[] = JSON.parse(structuresData);
 
@@ -90,7 +106,6 @@ async function importCommunes(filePath: string) {
           structure.Typologie.indexOf("Centre de gestion") !== -1),
     );
 
-    // Get a client for transaction
     client = await pool.connect();
 
     // Prepare bulk insert data
@@ -104,53 +119,37 @@ async function importCommunes(filePath: string) {
     }));
 
     // Keep track of valid organizations and structures
-    const validStructureIds = new Set(
-      mutualizationStructures.map((s) => String(s.id)),
-    );
-    const seenSirets = new Set<string>();
-    let structureRelations: {
-      organization_siret: string;
-      structure_id: string;
-    }[] = [];
+    const validStructureIds = new Set(mutualizationStructures.map((s) => String(s.id)));
 
-    // Filter and transform organizations
-    const organizationValues = communes
+    // Transform communes
+    const communeValues = communes
       .filter((commune) => {
-        if (!commune.siret || commune.population === 0) return false;
-        if (seenSirets.has(commune.siret)) {
-          console.log(
-            `Skipping duplicate SIRET: ${commune.siret} (${commune.name})`,
-          );
+        if (!commune.siret) {
+          console.log(`Skipping commune without SIRET: ${commune.name}`);
           return false;
-        }
-        seenSirets.add(commune.siret);
-
-        // Fill structure relations
-        if (commune.structures && commune.structures.length > 0) {
-          commune.structures.forEach((structureId) => {
-            if (validStructureIds.has(String(structureId))) {
-              structureRelations.push({
-                organization_siret: commune.siret,
-                structure_id: String(structureId),
-              });
-            }
-          });
         }
         return true;
       })
       .map((commune) => ({
         siret: commune.siret,
         siren: commune.siren,
+        type: "commune" as const,
         name: commune.name,
         name_unaccent: unaccent(commune.name),
         slug: commune.slug,
         insee_geo: commune.insee_geo,
+        insee_dep: commune.insee_dep || null,
+        insee_reg: commune.insee_reg || null,
         zipcode: commune.zipcode,
         population: commune.population,
         website_url: commune.website_url || null,
         website_domain: commune.website_domain || null,
         website_tld: commune.website_tld || null,
         issues: commune.issues,
+        issues_last_checked: commune.issues_last_checked
+          ? new Date(commune.issues_last_checked)
+          : null,
+        rcpnt: commune.rcpnt || [],
         email_official: commune.email_official || null,
         email_domain: commune.email_domain || null,
         email_tld: commune.email_tld || null,
@@ -159,8 +158,76 @@ async function importCommunes(filePath: string) {
         epci_population: commune.epci_population || null,
         st_eligible: commune.st_eligible || false,
         st_active: commune.st_active || false,
-        url_service_public: commune.url_service_public,
+        service_public_url: commune.service_public_url,
+        service_public_id: commune.service_public_id || null,
       }));
+
+    // Transform EPCIs, keeping track of duplicates
+    const seenSirets = new Set<string>();
+    const epciValues = epcis
+      .filter((epci) => {
+        if (!epci.siret) {
+          console.log(`Skipping EPCI without SIRET: ${epci.name}`);
+          return false;
+        }
+        if (seenSirets.has(epci.siret)) {
+          console.log(`Skipping duplicate SIRET in EPCIs: ${epci.siret} (${epci.name})`);
+          return false;
+        }
+        seenSirets.add(epci.siret);
+        return true;
+      })
+      .map((epci) => ({
+        siret: epci.siret,
+        siren: epci.siren,
+        type: "epci" as const,
+        name: epci.name,
+        name_unaccent: unaccent(epci.name),
+        slug: `epci-${epci.siren}`,
+        insee_geo: "",
+        insee_dep: epci.insee_dep || null,
+        insee_reg: epci.insee_reg || null,
+        zipcode: "",
+        population: epci.population,
+        website_url: null,
+        website_domain: null,
+        website_tld: null,
+        issues: [],
+        issues_last_checked: null,
+        rcpnt: [],
+        email_official: null,
+        email_domain: null,
+        email_tld: null,
+        epci_name: null,
+        epci_siren: null,
+        epci_population: null,
+        st_eligible: epci.st_eligible || false,
+        st_active: false,
+        service_public_url: null,
+        service_public_id: null,
+      }));
+
+    // Combine all organizations
+    const organizationValues = [...communeValues, ...epciValues];
+
+    // Fill structure relations for communes only
+    const structureRelations: {
+      organization_siret: string;
+      structure_id: string;
+    }[] = [];
+    communeValues.forEach((commune) => {
+      const originalCommune = communes.find((c) => c.siret === commune.siret);
+      if (originalCommune?.structures && originalCommune.structures.length > 0) {
+        originalCommune.structures.forEach((structureId) => {
+          if (validStructureIds.has(String(structureId))) {
+            structureRelations.push({
+              organization_siret: commune.siret,
+              structure_id: String(structureId),
+            });
+          }
+        });
+      }
+    });
 
     // Start transaction and replace all data
     await client.query("BEGIN");
@@ -188,9 +255,7 @@ async function importCommunes(filePath: string) {
 
     // Bulk insert relations
     if (structureRelations.length > 0) {
-      console.log(
-        `Bulk inserting ${structureRelations.length} structure relations...`,
-      );
+      console.log(`Bulk inserting ${structureRelations.length} structure relations...`);
       const relationsQuery = `
         INSERT INTO st_organizations_to_structures (organization_siret, structure_id)
         SELECT * FROM json_populate_recordset(null::st_organizations_to_structures, $1)
@@ -201,10 +266,10 @@ async function importCommunes(filePath: string) {
     await client.query("COMMIT");
 
     console.log(
-      `Successfully imported ${organizationValues.length} communes and ${structureValues.length} structures.`,
+      `Successfully imported ${communeValues.length} communes, ${epciValues.length} EPCIs and ${structureValues.length} structures.`,
     );
   } catch (error) {
-    console.error("Error importing communes:", error);
+    console.error("Error importing organizations:", error);
     if (client) {
       await client.query("ROLLBACK");
     }
@@ -231,19 +296,19 @@ process.on("SIGINT", async () => {
   process.exit();
 });
 
-// Get file path from command line arguments
-const filePath = process.argv[2];
+// Update the main execution
+const dumpsDir = process.argv[2];
 
-if (!filePath) {
-  console.error("Please provide a file path as an argument.");
+if (!dumpsDir) {
+  console.error("Please provide the dumps directory path as an argument.");
   process.exit(1);
 }
 
-const resolvedPath = path.resolve(process.cwd(), filePath);
+const resolvedDumpsDir = path.resolve(process.cwd(), dumpsDir);
 
-if (!fs.existsSync(resolvedPath)) {
-  console.error(`File not found: ${resolvedPath}`);
+if (!fs.existsSync(resolvedDumpsDir)) {
+  console.error(`Directory not found: ${resolvedDumpsDir}`);
   process.exit(1);
 }
 
-importCommunes(resolvedPath);
+importOrganizations(resolvedDumpsDir);

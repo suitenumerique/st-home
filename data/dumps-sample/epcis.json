@@ -1,0 +1,29 @@
+[
+  {
+      "siret": "20006919300015",
+      "siren": "200069193",
+      "name": "CC de la Dombes",
+      "insee_dep": "01",
+      "insee_reg": "84",
+      "population": 40570,
+      "st_eligible": false
+  },
+  {
+      "siret": "24010088300018",
+      "siren": "240100883",
+      "name": "CC de la Plaine de l'Ain",
+      "insee_dep": "01",
+      "insee_reg": "84",
+      "population": 82840,
+      "st_eligible": false
+  },
+  {
+      "siret": "24010088300018",
+      "siren": "240100883",
+      "name": "CC de la Plaine de l'Ain",
+      "insee_dep": "01",
+      "insee_reg": "84",
+      "population": 82840,
+      "st_eligible": false
+  }
+]

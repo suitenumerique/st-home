@@ -25,8 +25,8 @@
     "data:purge": "docker-compose run --rm worker sh -c 'celery -A celery_app purge -Q celery,check_website,check_dns -f'",
     "data:purge:staging": "docker-compose run --rm flower_staging celery -A celery_app purge -Q celery,check_website,check_dns -f",
     "flower:staging": "docker-compose run --rm --service-ports flower_staging",
-    "lint": "prettier --write '**/*.{ts,tsx,css,md,mdx,mjs,js}' && next lint --no-cache && npm run lint:types",
-    "lint:check": "prettier '**/*.{ts,tsx,css,md,mdx,mjs,js}' --list-different && next lint --no-cache && npm run lint:types",
+    "lint": "prettier --write '**/*.{ts,tsx,css,md,mdx,mjs,js}' --print-width 100 && next lint --no-cache && npm run lint:types",
+    "lint:check": "prettier '**/*.{ts,tsx,css,md,mdx,mjs,js}' --list-different --print-width 100 && next lint --no-cache && npm run lint:types",
     "lint:data": "docker-compose run -T --rm data_tests sh -c 'ruff check --fix . && ruff format .'",
     "lint:data:check": "docker-compose run -T --rm data_tests sh -c 'ruff check . && ruff format --check .'",
     "lint:types": "tsc --noEmit",
@@ -39,7 +39,8 @@
     "test:e2e": "playwright test",
     "test:data": "docker-compose run -T --rm data_tests",
     "test:playwright": "NEXT_PUBLIC_BASE_PATH='' NODE_ENV=production npm run build && playwright test",
-    "db:reset:local": "npm run db:drop:local && npm run db:push:local && npm run db:seed:local:sample",
+    "db:reset:local": "npm run db:drop:local && npm run db:push:local && npm run db:seed:local",
+    "db:reset:local:sample": "npm run db:drop:local && npm run db:push:local && npm run db:seed:local:sample",
     "db:reset:staging": "npm run db:drop:staging && npm run db:push:staging && npm run db:seed:staging",
     "db:drop:local": "dotenv -e .env.local -- node -r @swc-node/register scripts/db-drop.ts",
     "db:drop:staging": "dotenv -e .env.staging -- node -r @swc-node/register scripts/db-drop.ts",
@@ -47,10 +48,10 @@
     "db:browse:staging": "dotenv -e .env.staging -- drizzle-kit studio",
     "db:push:local": "dotenv -e .env.local -- drizzle-kit push",
     "db:push:staging": "dotenv -e .env.staging -- drizzle-kit push",
-    "db:seed:sample:local": "dotenv -e .env.local -- node -r @swc-node/register scripts/seed-db.ts ./data/dumps-sample/sample-mairies.json",
+    "db:seed:sample:local": "dotenv -e .env.local -- node -r @swc-node/register scripts/db-seed.ts ./data/dumps-sample",
     "db:seed:local": "dotenv -e .env.local -- npm run db:seed",
     "db:seed:staging": "dotenv -e .env.staging -- npm run db:seed",
-    "db:seed": "node -r @swc-node/register scripts/seed-db.ts ./data/dumps/mairies.json"
+    "db:seed": "node -r @swc-node/register scripts/db-seed.ts ./data/dumps"
   },
   "prettier": {
     "plugins": [

@@ -35,8 +35,7 @@ export function Step({ number, title, children, isLast }: StepProps) {
                 width: SIZE,
                 height: SIZE,
                 borderRadius: "50%",
-                backgroundColor:
-                  fr.colors.decisions.background.actionHigh.blueFrance.active,
+                backgroundColor: fr.colors.decisions.background.actionHigh.blueFrance.active,
                 color: "white",
                 display: "flex",
                 alignItems: "center",
@@ -57,8 +56,7 @@ export function Step({ number, title, children, isLast }: StepProps) {
                   top: SIZE,
                   height: "calc(100% + 1rem)",
                   width: "2px",
-                  backgroundColor:
-                    fr.colors.decisions.background.actionHigh.blueFrance.active,
+                  backgroundColor: fr.colors.decisions.background.actionHigh.blueFrance.active,
                   left: "50%",
                   transform: "translateX(-50%)",
                 }}

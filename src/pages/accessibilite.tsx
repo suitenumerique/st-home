@@ -17,14 +17,11 @@ const Accessibilite: NextPage = () => {
           Établie le <span>21 mars 2025</span>.
         </p>
         <p>
-          L&rsquo;Agence Nationale de la Cohésion des Territoires s&rsquo;engage
-          à rendre son service accessible, conformément à l&rsquo;article 47 de
-          la loi n° 2005-102 du 11 février 2005.
+          L&rsquo;Agence Nationale de la Cohésion des Territoires s&rsquo;engage à rendre son
+          service accessible, conformément à l&rsquo;article 47 de la loi n° 2005-102 du 11 février
+          2005.
         </p>
-        <p>
-          À cette fin, nous mettons en œuvre la stratégie et les actions
-          suivantes&nbsp;:
-        </p>
+        <p>À cette fin, nous mettons en œuvre la stratégie et les actions suivantes&nbsp;:</p>
         <ul>
           <li>
             <Link
@@ -63,8 +60,8 @@ const Accessibilite: NextPage = () => {
           </span>
         </p>
         <p>
-          Cependant, un audit de conformité est en cours et l&rsquo;état de
-          conformité sera mis à jour avant la fin de la version bêta.
+          Cependant, un audit de conformité est en cours et l&rsquo;état de conformité sera mis à
+          jour avant la fin de la version bêta.
         </p>
         <h2>Établissement de cette déclaration d&rsquo;accessibilité</h2>
         <p>
@@ -73,11 +70,10 @@ const Accessibilite: NextPage = () => {
 
         <h2>Amélioration et contact</h2>
         <p>
-          Si vous n&rsquo;arrivez pas à accéder à un contenu ou à un service,
-          vous pouvez contacter le responsable de{" "}
-          <span>La Suite territoriale - site vitrine</span>
-          pour être orienté vers une alternative accessible ou obtenir le
-          contenu sous une autre forme.
+          Si vous n&rsquo;arrivez pas à accéder à un contenu ou à un service, vous pouvez contacter
+          le responsable de <span>La Suite territoriale - site vitrine</span>
+          pour être orienté vers une alternative accessible ou obtenir le contenu sous une autre
+          forme.
         </p>
         <ul>
           <li>
@@ -92,11 +88,10 @@ const Accessibilite: NextPage = () => {
         </p>
         <h2>Voie de recours</h2>
         <p>
-          Cette procédure est à utiliser dans le cas suivant&nbsp;: vous avez
-          signalé au responsable du site internet un défaut
-          d&rsquo;accessibilité qui vous empêche d&rsquo;accéder à un contenu ou
-          à un des services du portail et vous n&rsquo;avez pas obtenu de
-          réponse satisfaisante.
+          Cette procédure est à utiliser dans le cas suivant&nbsp;: vous avez signalé au responsable
+          du site internet un défaut d&rsquo;accessibilité qui vous empêche d&rsquo;accéder à un
+          contenu ou à un des services du portail et vous n&rsquo;avez pas obtenu de réponse
+          satisfaisante.
         </p>
         <p>Vous pouvez&nbsp;:</p>
         <ul>
@@ -121,8 +116,7 @@ const Accessibilite: NextPage = () => {
             </Link>
           </li>
           <li>
-            Envoyer un courrier par la poste (gratuit, ne pas mettre de
-            timbre)&nbsp;:
+            Envoyer un courrier par la poste (gratuit, ne pas mettre de timbre)&nbsp;:
             <br />
             Défenseur des droits
             <br />
@@ -131,8 +125,7 @@ const Accessibilite: NextPage = () => {
         </ul>
         <hr />
         <p>
-          Cette déclaration d&rsquo;accessibilité a été créée le{" "}
-          <span>21 mars 2025</span> grâce au{" "}
+          Cette déclaration d&rsquo;accessibilité a été créée le <span>21 mars 2025</span> grâce au{" "}
           <Link
             href="https://betagouv.github.io/a11y-generateur-declaration/#create"
             target="_blank"

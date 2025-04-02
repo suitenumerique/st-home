@@ -86,7 +86,7 @@ def check_spf(email_domain, issues):
         if not spf_found:
             issues[Issues.DNS_SPF_MISSING] = f"No SPF record found for {email_domain}"
 
-    except dns.exception.DNSException as e:
+    except dns.exception.DNSException:
         issues[Issues.DNS_SPF_MISSING] = f"No SPF record found for {email_domain}"
 
 
@@ -128,7 +128,7 @@ def check_dmarc(email_domain, issues):
         if not dmarc_found:
             issues[Issues.DNS_DMARC_MISSING] = f"No DMARC record found for {email_domain}"
 
-    except dns.exception.DNSException as e:
+    except dns.exception.DNSException:
         issues[Issues.DNS_DMARC_MISSING] = f"No DMARC record found for {email_domain}"
 
 

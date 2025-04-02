@@ -1,4 +1,10 @@
-from ..tasks.conformance import Issues, data_checks_doable, validate_conformance
+from ..tasks.conformance import (
+    Issues,
+    RcpntRefs,
+    data_checks_doable,
+    get_rcpnt_conformance,
+    validate_conformance,
+)
 
 
 def test_strict_email_and_website():
@@ -61,6 +67,12 @@ def test_domain_mismatch():
     issues = validate_conformance("contact@example.com", "https://different-domain.com")
     assert Issues.EMAIL_DOMAIN_MISMATCH in issues
 
+    issues = validate_conformance("contact@example.com", "")
+    assert Issues.EMAIL_DOMAIN_MISMATCH not in issues
+
+    issues = validate_conformance("", "https://different-domain.com")
+    assert Issues.EMAIL_DOMAIN_MISMATCH not in issues
+
 
 def test_www_prefix_handling():
     """Test that www. prefix is properly handled in domain matching"""
@@ -115,3 +127,115 @@ def test_data_checks_doable():
 
     issues = validate_conformance("azer@ville.fr", "https://example.com")
     assert data_checks_doable(issues) == {"dns", "website"}
+
+
+def test_get_rcpnt_conformance():
+    """Test that get_rcpnt_conformance returns the correct set of conformance items"""
+
+    FULL_CONFORMANCE = RcpntRefs
+
+    issues = validate_conformance("", "")
+    assert Issues.EMAIL_MISSING in issues
+    assert Issues.WEBSITE_MISSING in issues
+    assert get_rcpnt_conformance(issues) == set()
+
+    issues = validate_conformance("valide@maville.fr", "")
+    assert get_rcpnt_conformance(issues) == {
+        "2.1",
+        "2.2",
+        "2.4",
+        "2.5",
+        "2.6",
+        "2.7",
+        "2.a",
+        "2.aa",
+    }
+
+    issues = validate_conformance("valide@maville.fr", "") + [Issues.DNS_DOWN]
+    assert get_rcpnt_conformance(issues) == {"2.1", "2.2"}
+
+    issues = validate_conformance("valide@maville.fr", "") + [Issues.DNS_DMARC_MISSING]
+    assert get_rcpnt_conformance(issues) == {"2.1", "2.2", "2.4", "2.5", "2.a"}
+
+    issues = validate_conformance("valide@maville.fr", "") + [
+        Issues.DNS_DMARC_MISSING,
+        Issues.IN_PROGRESS,
+    ]
+    assert get_rcpnt_conformance(issues) == {"2.1", "2.2", "2.4", "2.5", "2.a"}
+
+    issues = validate_conformance("valide@maville.fr", "https://www.maville.fr")
+    assert get_rcpnt_conformance(issues) == FULL_CONFORMANCE
+
+    issues = validate_conformance("valide@maville.fr", "https://www.maville.fr") + [
+        Issues.DNS_DMARC_WEAK
+    ]
+    assert get_rcpnt_conformance(issues) == FULL_CONFORMANCE - {"2.7", "2.aa", "aa"}
+
+    issues = validate_conformance("valide@maville.fr", "https://www.maville.fr") + [
+        Issues.WEBSITE_DECLARED_HTTP
+    ]
+    assert get_rcpnt_conformance(issues) == FULL_CONFORMANCE - {"1.8", "1.aa", "aa"}
+
+    issues = validate_conformance("", "https://www.maville.fr")
+    assert get_rcpnt_conformance(issues) == {
+        "1.1",
+        "1.2",
+        "1.3",
+        "1.4",
+        "1.5",
+        "1.6",
+        "1.7",
+        "1.8",
+        "1.a",
+        "1.aa",
+    }
+
+    issues = validate_conformance("", "https://www.maville.fr") + [Issues.WEBSITE_DOWN]
+    assert get_rcpnt_conformance(issues) == {"1.1", "1.2", "1.8"}
+
+    issues = validate_conformance("", "https://www.maville.com")
+    assert get_rcpnt_conformance(issues) == {"1.1", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8"}
+
+    issues = validate_conformance("test@maville.com", "")
+    assert get_rcpnt_conformance(issues) == {"2.1", "2.2", "2.4", "2.5", "2.6", "2.7"}
+
+    issues = validate_conformance("test@maville.fr", "https://www.monautreville.fr")
+    assert get_rcpnt_conformance(issues) == {
+        "2.1",
+        "2.2",
+        "2.4",
+        "2.5",
+        "2.6",
+        "2.7",
+        "1.1",
+        "1.2",
+        "1.3",
+        "1.4",
+        "1.5",
+        "1.6",
+        "1.7",
+        "1.8",
+        "1.a",
+        "1.aa",
+    }
+
+    issues = validate_conformance("test@maville.fr", "http://www.monautreville.com")
+    assert get_rcpnt_conformance(issues) == {
+        "2.1",
+        "2.2",
+        "2.4",
+        "2.5",
+        "2.6",
+        "2.7",
+        "1.1",
+        "1.3",
+        "1.4",
+        "1.5",
+        "1.6",
+        "1.7",
+        "2.a",
+        "2.aa",
+    }
+
+    issues = validate_conformance("", "https://www.maville.com") + [Issues.WEBSITE_DOMAIN_REDIRECT]
+    assert get_rcpnt_conformance(issues) == {"1.1", "1.3", "1.4", "1.5", "1.7", "1.8"}

@@ -1,5 +1,6 @@
 import logging
 import re
+import sys
 from urllib.parse import urlparse, urlunparse
 
 import requests

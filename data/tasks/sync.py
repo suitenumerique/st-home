@@ -1,22 +1,17 @@
-import bz2
-import csv
-import datetime
-import io
 import json
 import logging
 import os
 import re
-import tarfile
 from collections import defaultdict
 
-import requests
+from celery_app import app
 
-from .conformance import Issues, validate_conformance
+from .conformance import Issues, get_rcpnt_conformance, validate_conformance
 from .db import (
     get_all_data_checks,
     get_data_checks_by_siret,
     init_db,
-    update_data_issues_stats,
+    update_rcpnt_stats,
 )
 from .defs import HARDCODED_COMMUNES
 from .dumps import (
@@ -43,6 +38,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
+@app.task
 def run():
     """Main data sync workflow"""
 
@@ -98,11 +94,16 @@ def run():
 
         # Add the issues added in asynchronous checks
         if commune.get("_st_siret"):
-            issues = get_data_checks_by_siret(
+            issues, min_dt = get_data_checks_by_siret(
                 all_data_checks, commune["_st_conformite"], commune["_st_siret"]
             )
             commune["_st_conformite"].extend([str(x) for x in issues.keys()])
             commune["_st_conformite_checks"] = issues
+            commune["_st_conformite_checks_dt"] = min_dt
+
+        # Add the RCPNT conformance info
+        if commune.get("_st_siret"):
+            commune["_st_rcpnt"] = get_rcpnt_conformance(commune["_st_conformite"])
 
         # Report issues to Dila
         if "EMAIL_MALFORMED" in commune["_st_conformite"]:
@@ -146,17 +147,7 @@ def run():
         )
 
     # Update data issues statistics
-    update_data_issues_stats(communes)
-
-    # Count mairies without issues
-    percentage = (
-        sum(1 for commune in communes if len(commune["_st_conformite"]) == 0) / len(communes) * 100
-    )
-    logger.info(
-        "Communes without issues: %d (%.2f%%)",
-        sum(1 for commune in communes if len(commune["_st_conformite"]) == 0),
-        percentage,
-    )
+    update_rcpnt_stats(communes)
 
     # Count mairies without structures
     percentage = (
@@ -193,12 +184,15 @@ def run():
             email_tld = email_domain.split(".")[-1]
 
         pop = int(commune.get("_st_pmun", {}).replace(" ", "") or 0)
-        epci_pop = int(commune.get("_st_epci", {}).get("total_pop_mun", "").replace(" ", "") or 0)
+        commune["_st_epci_pop"] = int(
+            commune.get("_st_epci", {}).get("total_pop_mun", "").replace(" ", "") or 0
+        )
 
         url_sp = commune.get("_st_dila", {}).get("url_service_public") or None
+        id_sp = commune.get("_st_dila", {}).get("id") or None
 
         # Is it directly eligible for Suite territoriale ?
-        st_eligible = pop <= 3500 or epci_pop <= 15000
+        st_eligible = pop <= 3500 or commune["_st_epci_pop"] <= 15000
 
         # Is it currently active in Suite territoriale ?
         st_active = False
@@ -207,12 +201,14 @@ def run():
             {
                 "siret": commune.get("_st_siret") or None,
                 "siren": commune.get("_st_siren") or None,
-                "dep": commune["_st_insee"]["DEP"],
                 "slug": commune["_st_slug"],
                 "name": commune["_st_insee"]["LIBELLE"],
                 "insee_geo": commune["_st_insee"]["COM"],
+                "insee_dep": commune["_st_insee"]["DEP"],
+                "insee_reg": commune["_st_insee"]["REG"],
+                "rcpnt": list(commune["_st_rcpnt"]) if commune.get("_st_rcpnt") else None,
                 "issues": commune.get("_st_conformite"),
-                # "issues_last_checked"
+                "issues_last_checked": str(commune.get("_st_conformite_checks_dt") or ""),
                 "email_official": commune.get("_st_email") or None,
                 "website_url": commune.get("_st_website") or None,
                 "website_domain": website_domain,
@@ -221,18 +217,48 @@ def run():
                 "email_tld": email_tld,
                 "zipcode": commune.get("_st_zipcode") or None,
                 "population": pop,
-                "epci_population": epci_pop,
+                "epci_population": commune["_st_epci_pop"],
                 "epci_name": commune.get("_st_epci", {}).get("raison_sociale") or None,
                 "epci_siren": commune.get("_st_epci", {}).get("siren") or None,
-                "url_service_public": url_sp,
+                "service_public_url": url_sp,
+                "service_public_id": id_sp,
                 "st_eligible": st_eligible,
                 "st_active": st_active,
                 "structures": commune.get("_st_structures") or [],
             }
         )
 
-    with open("dumps/mairies.json", "w") as f:
+    logger.info("Dumping %d communes", len(final_data))
+
+    with open("dumps/communes.json", "w") as f:
         json.dump(final_data, f, ensure_ascii=False, indent=4)
+
+    # Do a second dump for the EPCIs
+    final_data_epci = {}  # Indexed by their SIREN
+    siren_siret_index = {row["siren"]: row["siret"] for row in iter_sirene()}
+    for commune in communes:
+        if not commune.get("_st_siren") or not commune.get("_st_epci"):
+            continue
+
+        # A bit late, but lookup the SIRET EPCI
+        if commune["_st_epci"]["siren"] not in siren_siret_index:
+            logger.warning(f"Missing SIRET for EPCI {commune['_st_epci']['siren']}")
+            continue
+
+        final_data_epci[commune["_st_epci"]["siren"]] = {
+            "siret": siren_siret_index[commune["_st_epci"]["siren"]],
+            "siren": commune["_st_epci"]["siren"],
+            "name": commune["_st_epci"]["raison_sociale"],
+            "insee_dep": commune["_st_insee"]["DEP"],
+            "insee_reg": commune["_st_insee"]["REG"],
+            "population": commune["_st_epci_pop"],
+            "st_eligible": commune["_st_epci_pop"] <= 15000,
+        }
+
+    logger.info("Dumping %d EPCIs", len(final_data_epci))
+
+    with open("dumps/epcis.json", "w") as f:
+        json.dump(list(final_data_epci.values()), f, ensure_ascii=False, indent=4)
 
 
 def associate_epci_to_communes(communes: list):

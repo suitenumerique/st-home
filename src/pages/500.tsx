@@ -22,8 +22,7 @@ const Error500: NextPage = () => {
               Un erreur s’est produite lors de l’execution de la page
             </p>
             <p className="fr-text--xl">
-              Nos équipes ont été notifiées et interviendront dans les meilleurs
-              délais.
+              Nos équipes ont été notifiées et interviendront dans les meilleurs délais.
               <br />
               Ré-essayez en passant par la <Link href="/">Page d’accueil</Link>.
             </p>
