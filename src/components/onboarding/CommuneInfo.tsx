@@ -4,6 +4,7 @@ import { Accordion } from "@codegouvfr/react-dsfr/Accordion";
 import type { AlertProps } from "@codegouvfr/react-dsfr/Alert";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import Link from "next/link";
+import { ReactNode } from "react";
 
 export type CommuneInfoProps = {
   commune: Commune;
@@ -14,6 +15,45 @@ export const getBadge = (severity: AlertProps.Severity, label: string) => {
     <Badge severity={severity} small style={{ marginBottom: "0.25rem", marginTop: "0.25rem" }}>
       {label}
     </Badge>
+  );
+};
+
+type MessageLineProps = {
+  children: ReactNode;
+  severity: AlertProps.Severity;
+  rcpnt?: string;
+};
+
+export const MessageLine = ({ children, severity, rcpnt }: MessageLineProps): ReactNode => {
+  return (
+    <p>
+      {severity === "info" && (
+        <span
+          className={fr.cx("fr-icon-info-line", "fr-label--info", "fr-mr-1w")}
+          aria-hidden="true"
+        />
+      )}
+      {severity === "success" && (
+        <span
+          className={fr.cx("fr-icon-success-line", "fr-label--success", "fr-mr-1w")}
+          aria-hidden="true"
+        />
+      )}
+      {severity === "error" && (
+        <span
+          className={fr.cx("fr-icon-error-line", "fr-label--error", "fr-mr-1w")}
+          aria-hidden="true"
+        />
+      )}
+      {severity === "warning" && (
+        <span
+          className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
+          style={{ color: "var(--text-default-warning)" }}
+          aria-hidden="true"
+        />
+      )}
+      {children} {rcpnt && <Link href={`/conformite/referentiel#${rcpnt}`}>En savoir plus...</Link>}
+    </p>
   );
 };
 
@@ -60,181 +100,121 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
         >
           <div className={fr.cx("fr-py-1w")}>
             {websiteMissing && (
-              <>
-                <p>
-                  <span
-                    className={fr.cx("fr-icon-error-line", "fr-label--error", "fr-mr-1w")}
-                    aria-hidden="true"
-                  ></span>
-                  La commune ne dispose pas encore d&rsquo;un nom de domaine officiel connu des
-                  services de l&rsquo;État.{" "}
-                  <Link href="/conformite/referentiel#1.1">En savoir plus...</Link>
-                </p>
-                <p>
-                  <span
-                    className={fr.cx("fr-icon-info-line", "fr-label--info", "fr-mr-1w")}
-                    aria-hidden="true"
-                  ></span>
-                  Si vous en possédez un, vous devez le déclarer sur{" "}
-                  <Link
-                    href={commune.service_public_url + "/demande-de-mise-a-jour"}
-                    target="_blank"
-                    rel="noopener"
-                  >
-                    Service-Public.fr
-                  </Link>
-                  .
-                </p>
-                {isEligible && (
-                  <p className={fr.cx("fr-text--bold")}>
-                    <Badge severity="success" noIcon as="span">
-                      Bonne nouvelle !
-                    </Badge>{" "}
-                    Si vous n&rsquo;en possédez pas, la Suite territoriale peut vous accompagner à
-                    en obtenir un.
-                  </p>
-                )}
-              </>
+              <MessageLine severity="error" rcpnt="1.1">
+                La commune ne dispose pas encore d&rsquo;un nom de domaine officiel connu des
+                services de l&rsquo;État.
+              </MessageLine>
+            )}
+            {websiteMissing && (
+              <MessageLine severity="info">
+                Si vous en possédez un, vous devez le déclarer sur{" "}
+                <Link
+                  href={commune.service_public_url + "/demande-de-mise-a-jour"}
+                  target="_blank"
+                  rel="noopener"
+                >
+                  Service-Public.fr
+                </Link>
+                .
+              </MessageLine>
             )}
 
-            {!websiteMissing && issues.includes("WEBSITE_DOMAIN_REDIRECT") && (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-error-line", "fr-label--error", "fr-mr-1w")}
-                  aria-hidden="true"
-                ></span>
-                L&rsquo;adresse <strong>{commune.website_url}</strong> redirige vers un autre
-                domaine non déclaré sur Service-Public.fr.{" "}
-                <Link href="/conformite/referentiel#1.1">En savoir plus...</Link>
+            {websiteMissing && isEligible && (
+              <p className={fr.cx("fr-text--bold")}>
+                <Badge severity="success" noIcon as="span">
+                  Bonne nouvelle !
+                </Badge>{" "}
+                Si vous n&rsquo;en possédez pas, la Suite territoriale peut vous accompagner à en
+                obtenir un.
               </p>
             )}
 
+            {!websiteMissing && issues.includes("WEBSITE_DOMAIN_REDIRECT") && (
+              <MessageLine severity="error" rcpnt="1.1">
+                L&rsquo;adresse <strong>{commune.website_url}</strong> redirige vers un autre
+                domaine non déclaré sur Service-Public.fr.{" "}
+              </MessageLine>
+            )}
+
             {!websiteMissing && rcpnt.includes("1.2") && (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-success-line", "fr-label--success", "fr-mr-1w")}
-                  aria-hidden="true"
-                ></span>
+              <MessageLine severity="success" rcpnt="1.2">
                 L&rsquo;extension <strong>.{commune.website_tld}</strong> du nom de domaine{" "}
                 <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
                   {commune.website_domain}
                 </Link>{" "}
-                est bien souveraine.{" "}
-                <Link href="/conformite/referentiel#1.2">En savoir plus...</Link>
-              </p>
+                est bien souveraine.
+              </MessageLine>
             )}
 
             {!websiteMissing && !rcpnt.includes("1.2") && (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-error-line", "fr-label--error", "fr-mr-1w")}
-                  aria-hidden="true"
-                ></span>
+              <MessageLine severity="error" rcpnt="1.2">
                 L&rsquo;extension <strong>.{commune.website_tld}</strong> du domaine{" "}
                 <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
                   {commune.website_domain}
                 </Link>{" "}
-                n&rsquo;est pas souveraine.{" "}
-                <Link href="/conformite/referentiel#1.2">En savoir plus...</Link>
-              </p>
+                n&rsquo;est pas souveraine.
+              </MessageLine>
             )}
 
-            {!websiteMissing && issues.includes("WEBSITE_DECLARED_HTTP") && (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
-                  style={{ color: "var(--text-default-warning)" }}
-                  aria-hidden="true"
-                ></span>
+            {!websiteMissing && !rcpnt.includes("1.7") && (
+              <MessageLine severity="warning" rcpnt="1.7">
                 Le domaine{" "}
                 <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
                   {commune.website_domain}
                 </Link>{" "}
-                est déclaré en HTTP (et non HTTPS) sur Service-Public.fr.{" "}
-                <Link href="/conformite/referentiel#1.7">En savoir plus...</Link>
-              </p>
+                est déclaré en HTTP (et non HTTPS) sur Service-Public.fr.
+              </MessageLine>
             )}
 
             {!websiteMissing && issues.includes("WEBSITE_HTTPS_NOWWW") && (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
-                  style={{ color: "var(--text-default-warning)" }}
-                  aria-hidden="true"
-                ></span>
+              <MessageLine severity="warning" rcpnt="1.7">
                 L&rsquo;adresse{" "}
                 <strong>
                   https://
                   {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
                 </strong>{" "}
-                (sans www.) ne redirige pas correctement vers le site Internet de la commune.{" "}
-                <Link href="/conformite/referentiel#1.7">En savoir plus...</Link>
-              </p>
+                (sans www.) ne redirige pas correctement vers le site Internet de la commune.
+              </MessageLine>
             )}
 
             {!websiteMissing && issues.includes("WEBSITE_HTTP_NOWWW") && (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
-                  style={{ color: "var(--text-default-warning)" }}
-                  aria-hidden="true"
-                ></span>
+              <MessageLine severity="warning" rcpnt="1.7">
                 L&rsquo;adresse{" "}
                 <strong>
                   http://
                   {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
                 </strong>{" "}
-                (sans www.) ne redirige pas correctement vers le site Internet de la commune.{" "}
-                <Link href="/conformite/referentiel#1.7">En savoir plus...</Link>
-              </p>
+                (sans www.) ne redirige pas correctement vers le site internet de la commune.
+              </MessageLine>
             )}
 
             {!websiteMissing && issues.includes("WEBSITE_HTTP_REDIRECT") && (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-error-line", "fr-label--error", "fr-mr-1w")}
-                  aria-hidden="true"
-                ></span>
+              <MessageLine severity="error" rcpnt="1.4">
                 L&rsquo;adresse en HTTP{" "}
                 <strong>
                   http://
                   {(commune.website_url || "").replace(/^https?:\/\//, "")}
                 </strong>{" "}
-                ne redirige pas correctement vers la version HTTPS du site Internet de la commune.
-                <Link href="/conformite/referentiel#1.4">En savoir plus...</Link>
-              </p>
+                ne redirige pas correctement vers la version HTTPS du site internet de la commune.
+              </MessageLine>
             )}
 
             {!websiteMissing && issues.includes("WEBSITE_SSL") && (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-error-line", "fr-label--error", "fr-mr-1w")}
-                  aria-hidden="true"
-                ></span>
-                Le certificat SSL du site web de la commune n&rsquo;est pas valide.{" "}
-                <Link href="/conformite/referentiel#1.5">En savoir plus...</Link>
-              </p>
+              <MessageLine severity="error" rcpnt="1.5">
+                Le certificat SSL du site web de la commune n&rsquo;est pas valide.
+              </MessageLine>
             )}
 
             {!websiteMissing && issues.includes("WEBSITE_DOWN") && (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-error-line", "fr-label--error", "fr-mr-1w")}
-                  aria-hidden="true"
-                ></span>
-                Le site web de la commune n&rsquo;est pas joignable.{" "}
-                <Link href="/conformite/referentiel#1.3">En savoir plus...</Link>
-              </p>
+              <MessageLine severity="error" rcpnt="1.3">
+                Le site web de la commune n&rsquo;est pas joignable.
+              </MessageLine>
             )}
 
             {websiteCompliant && isEligible && (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-success-line", "fr-label--success", "fr-mr-1w")}
-                  aria-hidden="true"
-                ></span>
+              <MessageLine severity="success">
                 Vous pourrez réutiliser ce domaine au sein de la Suite territoriale !
-              </p>
+              </MessageLine>
             )}
           </div>
         </Accordion>
@@ -261,20 +241,11 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
           <div className={fr.cx("fr-py-1w")}>
             {emailMissing && (
               <>
-                <p>
-                  <span
-                    className={fr.cx("fr-icon-error-line", "fr-label--error", "fr-mr-1w")}
-                    aria-hidden="true"
-                  ></span>
+                <MessageLine severity="error" rcpnt="2.1">
                   La commune ne dispose pas encore d&rsquo;une adresse de messagerie connue des
-                  services de l&rsquo;État.{" "}
-                  <Link href="/conformite/referentiel#2.1">En savoir plus...</Link>
-                </p>
-                <p>
-                  <span
-                    className={fr.cx("fr-icon-info-line", "fr-label--info", "fr-mr-1w")}
-                    aria-hidden="true"
-                  ></span>
+                  services de l&rsquo;État.
+                </MessageLine>
+                <MessageLine severity="info">
                   Si vous en possédez une, vous devez la déclarer sur{" "}
                   <Link
                     href={commune.service_public_url + "/demande-de-mise-a-jour"}
@@ -284,124 +255,80 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                     Service-Public.fr
                   </Link>
                   .
-                </p>
+                </MessageLine>
+
                 {isEligible && (
-                  <p>
-                    <span
-                      className={fr.cx("fr-icon-success-line", "fr-label--success", "fr-mr-1w")}
-                      aria-hidden="true"
-                    ></span>
+                  <MessageLine severity="success">
                     Si vous n&rsquo;en possédez pas, la Suite territoriale peut vous aider à en
                     obtenir une.
-                  </p>
+                  </MessageLine>
                 )}
               </>
             )}
 
             {!emailMissing && issues.includes("EMAIL_DOMAIN_EXTENSION") && (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-success-line", "fr-mr-1w")}
-                  style={{ color: "var(--text-default-success)" }}
-                  aria-hidden="true"
-                ></span>
-                L&rsquo;extension <strong>.{commune.email_tld}</strong> de l&rsquo;adresse de
-                messagerie <strong>{commune.email_official}</strong> n&rsquo;est pas souveraine.{" "}
-                <Link href="/conformite/referentiel#1.2">En savoir plus...</Link>
-              </p>
+              <MessageLine severity="error" rcpnt="1.2">
+                L&rsquo;extension <strong>.{commune.email_tld}</strong> du domaine de messagerie{" "}
+                <strong>{commune.email_domain}</strong> n&rsquo;est pas souveraine.
+              </MessageLine>
             )}
 
             {!emailMissing && issues.includes("EMAIL_DOMAIN_GENERIC") && (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-error-line", "fr-mr-1w")}
-                  style={{ color: "var(--text-default-error)" }}
-                  aria-hidden="true"
-                ></span>
+              <MessageLine severity="error" rcpnt="2.2">
                 Le domaine <strong>{commune.email_domain}</strong> générique ne permet pas aux
-                usagers de vérifier l&rsquo;authenticité de la messagerie.{" "}
-                <Link href="/conformite/referentiel#2.2">En savoir plus...</Link>
-              </p>
+                usagers de vérifier l&rsquo;authenticité de la messagerie.
+              </MessageLine>
             )}
 
             {!emailMissing && issues.includes("EMAIL_DOMAIN_MISMATCH") && (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-error-line", "fr-mr-1w")}
-                  style={{ color: "var(--text-default-error)" }}
-                  aria-hidden="true"
-                ></span>
+              <MessageLine severity="error" rcpnt="2.3">
                 L&rsquo;adresse de messagerie utilise un domaine{" "}
                 <strong>{commune.email_domain}</strong> différent de celui du site web{" "}
-                <strong>{commune.website_domain}</strong>.{" "}
-                <Link href="/conformite/referentiel#2.3">En savoir plus...</Link>
-              </p>
+                <strong>{commune.website_domain}</strong>.
+              </MessageLine>
             )}
-
             {!emailMissing && issues.includes("DNS_DOWN") && (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-error-line", "fr-mr-1w")}
-                  style={{ color: "var(--text-default-error)" }}
-                  aria-hidden="true"
-                ></span>
+              <MessageLine severity="error" rcpnt="2.4">
                 Le serveur DNS du domaine de messagerie <strong>{commune.email_domain}</strong>{" "}
-                n&rsquo;est pas joignable.{" "}
-                <Link href="/conformite/referentiel#2.4">En savoir plus...</Link>
-              </p>
+                n&rsquo;est pas joignable.
+              </MessageLine>
             )}
 
             {!emailMissing && issues.includes("DNS_MX_MISSING") && (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-error-line", "fr-mr-1w")}
-                  style={{ color: "var(--text-default-error)" }}
-                  aria-hidden="true"
-                ></span>
+              <MessageLine severity="error" rcpnt="2.4">
                 Aucun enregistrement MX n&rsquo;est configuré sur le domaine de messagerie{" "}
-                <strong>{commune.email_domain}</strong>. La messagerie ne peut recevoir aucun email.{" "}
-                <Link href="/conformite/referentiel#2.4">En savoir plus...</Link>
-              </p>
+                <strong>{commune.email_domain}</strong>. La messagerie ne peut recevoir aucun email.
+              </MessageLine>
             )}
 
-            {!emailMissing && issues.includes("DNS_SPF_MISSING") && (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
-                  style={{ color: "var(--text-default-warning)" }}
-                  aria-hidden="true"
-                ></span>
-                Aucun enregistrement SPF n&rsquo;est configuré sur le domaine de messagerie{" "}
-                <strong>{commune.email_domain}</strong>.{" "}
-                <Link href="/conformite/referentiel#2.5">En savoir plus...</Link>
-              </p>
+            {!emailMissing && rcpnt.includes("2.5") && (
+              <MessageLine severity="success" rcpnt="2.5">
+                L&rsquo;enregistrement SPF est correctement configuré sur le domaine de messagerie{" "}
+                <strong>{commune.email_domain}</strong>.
+              </MessageLine>
             )}
 
-            {!emailMissing && issues.includes("DNS_DMARC_MISSING") && (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
-                  style={{ color: "var(--text-default-warning)" }}
-                  aria-hidden="true"
-                ></span>
-                Aucun enregistrement DMARC n&rsquo;est configuré sur le domaine de messagerie{" "}
-                <strong>{commune.email_domain}</strong>.{" "}
-                <Link href="/conformite/referentiel#2.6">En savoir plus...</Link>
-              </p>
+            {!emailMissing && rcpnt.includes("2.6") && !rcpnt.includes("2.7") && (
+              <MessageLine severity="success" rcpnt="2.6">
+                L&rsquo;enregistrement DMARC est correctement configuré sur le domaine de messagerie{" "}
+                <strong>{commune.email_domain}</strong>.
+              </MessageLine>
             )}
 
-            {!emailMissing && issues.includes("DNS_DMARC_MISSING") && (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
-                  style={{ color: "var(--text-default-warning)" }}
-                  aria-hidden="true"
-                ></span>
-                Un enregistrement DMARC existe sur le domaine de messagerie{" "}
-                <strong>{commune.email_domain}</strong> mais il pourrait être plus strict.{" "}
-                <Link href="/conformite/referentiel#2.7">En savoir plus...</Link>
-              </p>
+            {!emailMissing && rcpnt.includes("2.6") && !rcpnt.includes("2.7") && (
+              <MessageLine severity="info" rcpnt="2.7">
+                L&rsquo;enregistrement DMARC du domaine <strong>{commune.email_domain}</strong>{" "}
+                pourrait utiliser une politique de quarantaine plus stricte.
+              </MessageLine>
             )}
+
+            {!emailMissing && rcpnt.includes("2.7") && (
+              <MessageLine severity="success" rcpnt="2.7">
+                L&rsquo;enregistrement DMARC du domaine <strong>{commune.email_domain}</strong>{" "}
+                utilise une politique de quarantaine appropriée.
+              </MessageLine>
+            )}
+
             {(emailMissing ||
               issues.includes("EMAIL_DOMAIN_MISMATCH") ||
               issues.includes("EMAIL_DOMAIN_GENERIC") ||
@@ -415,6 +342,13 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   conforme.
                 </p>
               )}
+
+            {emailCompliant && isEligible && (
+              <MessageLine severity="success">
+                Vous pourrez réutiliser cette adresse de messagerie au sein de la Suite territoriale
+                !
+              </MessageLine>
+            )}
           </div>
         </Accordion>
 
@@ -446,29 +380,19 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
           </ul>
           <div className={fr.cx("fr-mt-2w")}>
             {isEligible ? (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-success-line", "fr-mr-1w")}
-                  style={{ color: "var(--text-default-success)" }}
-                  aria-hidden="true"
-                ></span>
+              <MessageLine severity="success">
                 La commune est éligible à la Suite territoriale. Vous pouvez dès à présent rejoindre
                 le Groupe pilote ci-dessous.
-              </p>
+              </MessageLine>
             ) : (
-              <p>
-                <span
-                  className={fr.cx("fr-icon-info-line", "fr-mr-1w")}
-                  style={{ color: "var(--text-default-info)" }}
-                  aria-hidden="true"
-                ></span>
+              <MessageLine severity="info">
                 La commune n&rsquo;est pas directement éligible mais peut bénéficier d&rsquo;un
                 accompagnement spécifique.{" "}
                 <Link href="mailto:lasuiteterritoriale@anct.gouv.fr" className={fr.cx("fr-link")}>
                   Contactez-nous pour en discuter
                 </Link>{" "}
                 !
-              </p>
+              </MessageLine>
             )}
           </div>
         </Accordion>

@@ -107,6 +107,7 @@ export async function searchOrganizations(query: string, type: string, limit = 1
       type: organizations.type,
       zipcode: organizations.zipcode,
       insee_geo: organizations.insee_geo,
+      insee_dep: organizations.insee_dep,
       population: organizations.population,
     })
     .from(organizations)
