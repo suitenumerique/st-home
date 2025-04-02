@@ -57,19 +57,14 @@ files.forEach((file) => {
   const title = $("title").text().trim();
   const description = $('meta[name="description"]').attr("content") || "";
   const canonical = $('link[rel="canonical"]').attr("href") || "❌ MISSING";
-  const robots =
-    $('meta[name="robots"]').attr("content") ||
-    "✅ Indexable (no meta robots found)";
+  const robots = $('meta[name="robots"]').attr("content") || "✅ Indexable (no meta robots found)";
   const h1 = $("h1").first().text().trim() || "❌ MISSING";
   const incorrectH1 = "Paramètres d'affichage"; // Expected H1 for comparison
 
   // OpenGraph meta
-  const ogTitle =
-    $('meta[property="og:title"]').attr("content") || "❌ MISSING";
-  const ogDesc =
-    $('meta[property="og:description"]').attr("content") || "❌ MISSING";
-  const ogImage =
-    $('meta[property="og:image"]').attr("content") || "❌ MISSING";
+  const ogTitle = $('meta[property="og:title"]').attr("content") || "❌ MISSING";
+  const ogDesc = $('meta[property="og:description"]').attr("content") || "❌ MISSING";
+  const ogImage = $('meta[property="og:image"]').attr("content") || "❌ MISSING";
 
   // Image alt checks
   const images = $("img");
@@ -92,10 +87,7 @@ files.forEach((file) => {
   let pageHasIssues = false;
 
   const titleCheck = checkLength(title, 30, 60);
-  pageHasIssues |= updateIssueCount(
-    titleCheck,
-    title.length < 30 ? "shortTitle" : "longTitle",
-  );
+  pageHasIssues |= updateIssueCount(titleCheck, title.length < 30 ? "shortTitle" : "longTitle");
 
   const descriptionCheck = checkLength(description, 50, 160);
   if (!description) issues.missingDescription++;
@@ -145,9 +137,7 @@ files.forEach((file) => {
 
   if (pageHasIssues) pagesWithIssues++;
 
-  console.log(
-    `\n🔍 File: ${relativePath}${isSystemPage ? " (System Page)" : ""}`,
-  );
+  console.log(`\n🔍 File: ${relativePath}${isSystemPage ? " (System Page)" : ""}`);
   console.log(`  📌 Title: ${title} (${titleCheck})`);
   console.log(`  📝 Meta Description: ${description} (${descriptionCheck})`);
   console.log(`  🔗 Canonical: ${canonical}`);
@@ -202,17 +192,11 @@ console.log(`- Descriptions too long: ${issues.longDescription}`);
 console.log(`- Pages with noindex: ${issues.noindexDetected}`);
 
 console.log("\n✅ Recommendations:");
-if (issues.missingCanonical > 0)
-  console.log("- Add canonical links to all pages");
+if (issues.missingCanonical > 0) console.log("- Add canonical links to all pages");
 if (issues.incorrectH1 > 0)
   console.log("- Fix generic H1 tags (currently 'Paramètres d'affichage')");
-if (issues.shortTitle > 0)
-  console.log("- Improve short page titles (aim for 30-60 characters)");
-if (
-  issues.missingOgTitle > 0 ||
-  issues.missingOgDesc > 0 ||
-  issues.missingOgImage > 0
-)
+if (issues.shortTitle > 0) console.log("- Improve short page titles (aim for 30-60 characters)");
+if (issues.missingOgTitle > 0 || issues.missingOgDesc > 0 || issues.missingOgImage > 0)
   console.log("- Add Open Graph meta tags for better social sharing");
 if (issues.imagesWithoutAlt > 0)
   console.log("- Add alt text to all images for accessibility and SEO");

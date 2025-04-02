@@ -79,9 +79,7 @@ export default function StatsSlider({ stats }: StatsSliderProps) {
                 >
                   {stat.title}
                 </div>
-                <p className={fr.cx("fr-text--sm", "fr-my-2w")}>
-                  {stat.content}
-                </p>
+                <p className={fr.cx("fr-text--sm", "fr-my-2w")}>{stat.content}</p>
               </div>
             </div>
           ))}

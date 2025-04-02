@@ -37,11 +37,7 @@ function StructureCard({
           {structure.website && (
             <>
               Site web :{" "}
-              <Link
-                href={structure.website}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <Link href={structure.website} target="_blank" rel="noopener noreferrer">
                 {structure.website}
               </Link>
             </>
@@ -90,8 +86,8 @@ export default function OPSNChoiceView({ commune }: OPSNChoiceViewProps) {
       </p>
 
       <p className={fr.cx("fr-text--lg", "fr-mb-3w")}>
-        Cependant, votre territoire est couvert par des structures de
-        mutualisation, qui peuvent vous accompagner :
+        Cependant, votre territoire est couvert par des structures de mutualisation, qui peuvent
+        vous accompagner :
       </p>
 
       <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
@@ -103,9 +99,8 @@ export default function OPSNChoiceView({ commune }: OPSNChoiceViewProps) {
       </div>
 
       <p className={fr.cx("fr-text--lg", "fr-mt-4w")}>
-        Si vous ne souhaitez pas vous faire accompagner par une structure, et
-        que vous souhaitez vous inscrire à la ST directement auprès de
-        l&rsquo;ANCT,{" "}
+        Si vous ne souhaitez pas vous faire accompagner par une structure, et que vous souhaitez
+        vous inscrire à la ST directement auprès de l&rsquo;ANCT,{" "}
         <Button
           priority="tertiary"
           linkProps={{

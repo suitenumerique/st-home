@@ -1,14 +1,11 @@
 import { Commune, determineOnboardingCase } from "@/lib/onboarding";
 import { OnboardingCase } from "@/types/onboarding";
 import { describe, expect, it } from "vitest";
-import testCommunes from "../data/dumps-sample/sample-mairies.json";
-import testStructures from "../data/dumps-sample/sample-structures.json";
+import testCommunes from "../data/dumps-sample/communes.json";
+import testStructures from "../data/dumps-sample/structures.json";
 
 // Helper function to prepare test data
-function prepareTestCommune(
-  communeData: any,
-  structureIds: number[] = [],
-): Commune {
+function prepareTestCommune(communeData: any, structureIds: number[] = []): Commune {
   // Create base commune from test data
   const commune: Commune = {
     ...communeData,

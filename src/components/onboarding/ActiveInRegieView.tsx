@@ -23,11 +23,7 @@ export default function ActiveInRegieView({ commune }: ActiveInRegieViewProps) {
       <Alert
         severity="success"
         title="Votre organisation est déjà active dans la Régie"
-        description={
-          <p>
-            Vous pouvez vous connecter directement pour accéder à vos services.
-          </p>
-        }
+        description={<p>Vous pouvez vous connecter directement pour accéder à vos services.</p>}
         className={fr.cx("fr-mb-4w")}
       />
 

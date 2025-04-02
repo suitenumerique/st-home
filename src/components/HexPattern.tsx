@@ -2,20 +2,14 @@
 
 export default function HexPattern() {
   // Calculate positions for hexagons
-  const getHexPosition = (
-    leftOffset: number,
-    direction: string,
-    row: number,
-    col: number,
-  ) => {
+  const getHexPosition = (leftOffset: number, direction: string, row: number, col: number) => {
     const hexWidth = 56.5; // Width of a single hexagon
     const hexHeight = 64.5; // Height of a single hexagon
     const horizontalOffset = hexWidth * 1; // Overlap for hex grid
     const verticalOffset = hexHeight * 1; // Vertical spacing
 
     const coords: { [key: string]: number } = {};
-    coords[direction] =
-      leftOffset + col * horizontalOffset + (row % 2) * (hexWidth / 2);
+    coords[direction] = leftOffset + col * horizontalOffset + (row % 2) * (hexWidth / 2);
     coords["top"] = (row * verticalOffset) / 2 - (row % 2) * (hexHeight / 4); // + (row % 2) * (hexHeight / 2) - (Math.floor(row/2) % 2) * (hexHeight / 4),
     return coords;
   };

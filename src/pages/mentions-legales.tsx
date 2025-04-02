@@ -5,10 +5,7 @@ import { NextSeo } from "next-seo";
 const MentionsLegales: NextPage = () => {
   return (
     <>
-      <NextSeo
-        title="Mentions légales"
-        description="Mentions légales de la Suite territoriale"
-      />
+      <NextSeo title="Mentions légales" description="Mentions légales de la Suite territoriale" />
 
       <div className={fr.cx("fr-py-6w", "fr-container")}>
         <h1>Mentions légales</h1>
@@ -16,9 +13,8 @@ const MentionsLegales: NextPage = () => {
         <section className={fr.cx("fr-mt-4w")}>
           <h2>Éditeur de la plateforme</h2>
           <p>
-            La Suite territoriale est éditée au sein de l’Incubateur des
-            Territoires de l’Agence nationale de la cohésion des territoires
-            (ANCT) située :
+            La Suite territoriale est éditée au sein de l’Incubateur des Territoires de l’Agence
+            nationale de la cohésion des territoires (ANCT) située :
           </p>
           <blockquote>
             ANCT
@@ -36,8 +32,7 @@ const MentionsLegales: NextPage = () => {
         <section className={fr.cx("fr-mt-4w")}>
           <h2>Directeur de la publication</h2>
           <p>
-            Le directeur de publication est Monsieur Stanislas BOURRON,
-            Directeur général de l’ANCT
+            Le directeur de publication est Monsieur Stanislas BOURRON, Directeur général de l’ANCT
           </p>
         </section>
 
