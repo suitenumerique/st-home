@@ -380,7 +380,7 @@ export default function Home() {
                   color: "var(--text-title-blue-france)",
                 }}
               >
-                Ma commune est-elle éligible ?
+                Ma collectivité est-elle éligible ?
               </h2>
             </div>
           </div>
@@ -395,7 +395,7 @@ export default function Home() {
                   placeholder={
                     isSmallScreen
                       ? "Nom ou code postal"
-                      : "Renseignez le nom ou le code postal de votre commune"
+                      : "Renseignez le nom ou le code postal de votre collectivité"
                   }
                 />
               </div>

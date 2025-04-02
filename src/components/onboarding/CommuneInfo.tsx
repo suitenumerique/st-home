@@ -5,11 +5,11 @@ import type { AlertProps } from "@codegouvfr/react-dsfr/Alert";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import Link from "next/link";
 
-type CommuneInfoProps = {
+export type CommuneInfoProps = {
   commune: Commune;
 };
 
-const getBadge = (severity: AlertProps.Severity, label: string) => {
+export const getBadge = (severity: AlertProps.Severity, label: string) => {
   return (
     <Badge
       severity={severity}
@@ -27,23 +27,19 @@ const getBadge = (severity: AlertProps.Severity, label: string) => {
 export default function CommuneInfo({ commune }: CommuneInfoProps) {
   const isEligible = commune.st_eligible;
 
-  const issues = commune.issues || ["IN_PROGRESS"];
+  const issues = (commune.issues || ["IN_PROGRESS"]) as string[];
+  const rcpnt = (commune.rcpnt || []) as string[];
 
   const inProgress = issues.includes("IN_PROGRESS");
 
   const websiteMissing =
     issues.includes("WEBSITE_MISSING") || issues.includes("WEBSITE_MALFORMED");
-  const websiteCompliant =
-    !websiteMissing && !issues.includes("WEBSITE_DOMAIN_EXTENSION");
+  const websiteCompliant = rcpnt.includes("1.a");
 
   const emailMissing =
     issues.includes("EMAIL_MISSING") || issues.includes("EMAIL_MALFORMED");
 
-  const emailCompliant =
-    !emailMissing &&
-    !issues.includes("EMAIL_DOMAIN_EXTENSION") &&
-    !issues.includes("EMAIL_DOMAIN_MISMATCH") &&
-    !issues.includes("EMAIL_DOMAIN_GENERIC");
+  const emailCompliant = rcpnt.includes("2.a");
 
   return (
     <div className={fr.cx("fr-mb-4w")}>
@@ -111,7 +107,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   Si vous en possédez un, vous devez le déclarer sur{" "}
                   <Link
                     href={
-                      commune.url_service_public + "/demande-de-mise-a-jour"
+                      commune.service_public_url + "/demande-de-mise-a-jour"
                     }
                     target="_blank"
                     rel="noopener"
@@ -132,34 +128,51 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
               </>
             )}
 
-            {!websiteMissing &&
-              !issues.includes("WEBSITE_DOMAIN_EXTENSION") && (
-                <p>
-                  <span
-                    className={fr.cx(
-                      "fr-icon-success-line",
-                      "fr-label--success",
-                      "fr-mr-1w",
-                    )}
-                    aria-hidden="true"
-                  ></span>
-                  L&rsquo;extension <strong>.{commune.website_tld}</strong> du
-                  nom de domaine{" "}
-                  <Link
-                    href={commune.website_url || ""}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {commune.website_domain}
-                  </Link>{" "}
-                  est bien souveraine.{" "}
-                  <Link href="/conformite/referentiel#1.2">
-                    En savoir plus...
-                  </Link>
-                </p>
-              )}
+            {!websiteMissing && issues.includes("WEBSITE_DOMAIN_REDIRECT") && (
+              <p>
+                <span
+                  className={fr.cx(
+                    "fr-icon-error-line",
+                    "fr-label--error",
+                    "fr-mr-1w",
+                  )}
+                  aria-hidden="true"
+                ></span>
+                L&rsquo;adresse <strong>{commune.website_url}</strong> redirige
+                vers un autre domaine non déclaré sur Service-Public.fr.{" "}
+                <Link href="/conformite/referentiel#1.1">
+                  En savoir plus...
+                </Link>
+              </p>
+            )}
 
-            {!websiteMissing && issues.includes("WEBSITE_DOMAIN_EXTENSION") && (
+            {!websiteMissing && rcpnt.includes("1.2") && (
+              <p>
+                <span
+                  className={fr.cx(
+                    "fr-icon-success-line",
+                    "fr-label--success",
+                    "fr-mr-1w",
+                  )}
+                  aria-hidden="true"
+                ></span>
+                L&rsquo;extension <strong>.{commune.website_tld}</strong> du nom
+                de domaine{" "}
+                <Link
+                  href={commune.website_url || ""}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {commune.website_domain}
+                </Link>{" "}
+                est bien souveraine.{" "}
+                <Link href="/conformite/referentiel#1.2">
+                  En savoir plus...
+                </Link>
+              </p>
+            )}
+
+            {!websiteMissing && !rcpnt.includes("1.2") && (
               <p>
                 <span
                   className={fr.cx(
@@ -265,24 +278,6 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                 ne redirige pas correctement vers la version HTTPS du site
                 Internet de la commune.
                 <Link href="/conformite/referentiel#1.4">
-                  En savoir plus...
-                </Link>
-              </p>
-            )}
-
-            {!websiteMissing && issues.includes("WEBSITE_DOMAIN_REDIRECT") && (
-              <p>
-                <span
-                  className={fr.cx(
-                    "fr-icon-error-line",
-                    "fr-label--error",
-                    "fr-mr-1w",
-                  )}
-                  aria-hidden="true"
-                ></span>
-                L&rsquo;adresse <strong>{commune.website_url}</strong> redirige
-                vers un autre domaine non déclaré sur Service-Public.fr.{" "}
-                <Link href="/conformite/referentiel#1.1">
                   En savoir plus...
                 </Link>
               </p>
@@ -402,7 +397,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   Si vous en possédez une, vous devez la déclarer sur{" "}
                   <Link
                     href={
-                      commune.url_service_public + "/demande-de-mise-a-jour"
+                      commune.service_public_url + "/demande-de-mise-a-jour"
                     }
                     target="_blank"
                     rel="noopener"
@@ -634,14 +629,14 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
         </Accordion>
       </div>
 
-      {commune.url_service_public && (
+      {commune.service_public_url && (
         <p
           className={fr.cx("fr-mt-2w", "fr-text--xs", "fr-label--disabled")}
           style={{ textAlign: "right" }}
         >
           Mettre les informations à jour sur l&rsquo;
           <Link
-            href={commune.url_service_public + "/demande-de-mise-a-jour"}
+            href={commune.service_public_url + "/demande-de-mise-a-jour"}
             target="_blank"
             rel="noopener"
           >

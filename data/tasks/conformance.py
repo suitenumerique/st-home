@@ -38,6 +38,30 @@ class Issues(Enum):
         return self.name
 
 
+RcpntRefs = {
+    "1.1",
+    "1.2",
+    "1.3",
+    "1.4",
+    "1.5",
+    "1.6",
+    "1.7",
+    "1.8",
+    "2.1",
+    "2.2",
+    "2.3",
+    "2.4",
+    "2.5",
+    "2.6",
+    "2.7",
+    "1.a",
+    "1.aa",
+    "2.a",
+    "2.aa",
+    "a",
+    "aa",
+}
+
 # This regex is purposefully stricter than what is possible. But we want simple addresses for users.
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-z]{2,10}$")
 WEBSITE_REGEX = re.compile(
@@ -116,3 +140,115 @@ def data_checks_doable(conformance_issues):
         needed.add("website")
 
     return needed
+
+
+def get_rcpnt_conformance(issue_list):
+    """Transform a list of issues into RCPNT conformance items"""
+
+    issues = {str(x) for x in issue_list}
+
+    # List of groups of criteria
+    groups = {
+        "1.a": {"1.1", "1.2", "1.3", "1.4", "1.5", "1.6"},
+        "1.aa": {"1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8"},
+        "a": {"1.1", "1.2", "1.3", "1.4", "1.5", "2.1", "2.2", "2.3", "2.4", "2.5"},
+        "aa": {
+            "1.1",
+            "1.2",
+            "1.3",
+            "1.4",
+            "1.5",
+            "1.6",
+            "1.7",
+            "1.8",
+            "2.1",
+            "2.2",
+            "2.3",
+            "2.4",
+            "2.5",
+            "2.6",
+            "2.7",
+        },
+    }
+
+    if (
+        str(Issues.WEBSITE_MISSING) in issues
+        or str(Issues.WEBSITE_MALFORMED) in issues
+        or str(Issues.WEBSITE_DOMAIN_EXTENSION) in issues
+    ) and (str(Issues.EMAIL_DOMAIN_EXTENSION) not in issues):
+        # No need for 2.3 in this case
+        groups.update(
+            {
+                "2.a": {"2.1", "2.2", "2.4", "2.5"},
+                "2.aa": {"2.1", "2.2", "2.4", "2.5", "2.6", "2.7"},
+            }
+        )
+    else:
+        groups.update(
+            {
+                "2.a": {"2.1", "2.2", "2.3", "2.4", "2.5"},
+                "2.aa": {"2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7"},
+            }
+        )
+
+    # List of criterion that can't be valid if issues are absent (dependencies)
+    blocking_issues = {
+        # Declarative issues from DILA data
+        str(Issues.EMAIL_MISSING): {"2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7"},
+        str(Issues.EMAIL_MALFORMED): {"2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7"},
+        str(Issues.WEBSITE_MISSING): {
+            "1.1",
+            "1.2",
+            "1.3",
+            "1.4",
+            "1.5",
+            "1.6",
+            "1.7",
+            "1.8",
+            "2.3",
+        },
+        str(Issues.WEBSITE_MALFORMED): {
+            "1.1",
+            "1.2",
+            "1.3",
+            "1.4",
+            "1.5",
+            "1.6",
+            "1.7",
+            "1.8",
+            "2.3",
+        },
+        str(Issues.WEBSITE_DECLARED_HTTP): {"1.8"},
+        str(Issues.EMAIL_DOMAIN_MISMATCH): {"2.3"},
+        str(Issues.EMAIL_DOMAIN_GENERIC): {"2.2", "2.3", "2.4", "2.5", "2.6", "2.7"},
+        str(Issues.WEBSITE_DOMAIN_EXTENSION): {"1.2"},
+        str(Issues.EMAIL_DOMAIN_EXTENSION): {"2.3"},
+        # Issues that are tested in check_website
+        str(Issues.WEBSITE_DOWN): {"1.3", "1.4", "1.5", "1.6", "1.7"},
+        str(Issues.WEBSITE_SSL): {"1.5"},
+        str(Issues.WEBSITE_DOMAIN_REDIRECT): {"1.6"},
+        str(Issues.WEBSITE_HTTP_REDIRECT): {"1.4", "1.7"},
+        str(Issues.WEBSITE_HTTPS_NOWWW): {"1.7"},
+        str(Issues.WEBSITE_HTTP_NOWWW): {"1.7"},
+        # Issues that are tested in check_dns
+        str(Issues.DNS_DOWN): {"2.4", "2.5", "2.6", "2.7"},
+        str(Issues.DNS_MX_MISSING): {"2.4", "2.5", "2.6", "2.7"},
+        str(Issues.DNS_SPF_MISSING): {"2.5"},
+        str(Issues.DNS_DMARC_MISSING): {"2.6", "2.7"},
+        str(Issues.DNS_DMARC_WEAK): {"2.7"},
+    }
+
+    # By default we're AA
+    conformance_items = set(groups["aa"])
+
+    # Remove criteria that can't be valid if issues are absent
+    for issue, criteria in blocking_issues.items():
+        if issue in issues:
+            conformance_items.difference_update(criteria)
+
+    # Add group if all criteria are present
+    for group, criteria in groups.items():
+        if criteria.issubset(conformance_items):
+            conformance_items.add(group)
+
+    return conformance_items

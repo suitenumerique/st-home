@@ -1,4 +1,4 @@
-import { desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, desc, eq, like, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "./schema";
@@ -101,26 +101,50 @@ export async function findOrganizationsWithStructures(siret: string) {
   };
 }
 
-export async function searchOrganizations(query: string, limit = 10) {
+export async function searchOrganizations(
+  query: string,
+  type: string,
+  limit = 10,
+) {
   const searchQuery = query.trim();
 
-  return db
+  const baseQuery = db
     .select({
       siret: organizations.siret,
       name: organizations.name,
+      type: organizations.type,
       zipcode: organizations.zipcode,
+      insee_geo: organizations.insee_geo,
       population: organizations.population,
     })
     .from(organizations)
-    .where(
-      or(
-        sql`to_tsvector('french', ${organizations.name_unaccent}) @@ plainto_tsquery('french', ${unaccent(searchQuery)})`,
-        ilike(organizations.name_unaccent, `%${unaccent(searchQuery)}%`),
-        ilike(organizations.zipcode, `${searchQuery}%`),
-      ),
-    )
     .orderBy(desc(organizations.population))
     .limit(limit);
+
+  const addWhere = [];
+  if (type !== "all") {
+    addWhere.push(eq(organizations.type, type));
+  }
+
+  const whereSearches = [
+    like(organizations.zipcode, `${searchQuery}%`),
+    like(organizations.name_unaccent, `${unaccent(searchQuery)}%`),
+    like(organizations.name_unaccent, `%${unaccent(searchQuery)}%`),
+    sql`to_tsvector('french', ${organizations.name_unaccent}) @@ plainto_tsquery('french', ${unaccent(searchQuery)})`,
+  ];
+
+  // Do all searches sequentially, then concatenate the results and filter by unique siret
+  const allResults = [];
+  for (const whereSearch of whereSearches) {
+    const results = await baseQuery.where(and(...addWhere, whereSearch));
+    allResults.push(...results);
+  }
+
+  const uniqueResults = allResults.filter(
+    (result, index, self) =>
+      index === self.findIndex((t) => t.siret === result.siret),
+  );
+  return uniqueResults;
 }
 
 export const searchCommunes = searchOrganizations;

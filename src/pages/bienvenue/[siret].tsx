@@ -8,6 +8,7 @@ import ActiveInRegieView from "@/components/onboarding/ActiveInRegieView";
 import ComingSoonView from "@/components/onboarding/ComingSoonView";
 import CommuneInfo from "@/components/onboarding/CommuneInfo";
 import ContactUsView from "@/components/onboarding/ContactUsView";
+import EpciInfo from "@/components/onboarding/EpciInfo";
 import ErrorView from "@/components/onboarding/ErrorView";
 import OPSNChoiceView from "@/components/onboarding/OPSNChoiceView";
 import OPSNProConnectView from "@/components/onboarding/OPSNProConnectView";
@@ -73,26 +74,46 @@ export default function Bienvenue(props: PageProps) {
           style={{ float: "right" }}
           className={fr.cx("fr-mt-1w", "fr-hidden", "fr-unhidden-sm")}
         >
-          <Tag>
-            <Link href={commune.url_service_public || ""} target="_blank">
-              Commune
-            </Link>
-          </Tag>
-          &nbsp;
-          <Tag>
-            <span
-              onClick={(e) => {
-                // Easter egg to go to the future page
-                e.preventDefault();
-                e.stopPropagation();
-                if (e.altKey) {
-                  router.push(`/bienvenue/${commune.siret}?futur=1`);
-                }
-              }}
-            >
-              {commune.zipcode}
-            </span>
-          </Tag>
+          {commune.type === "commune" && (
+            <>
+              <Tag>
+                <Link href={commune.service_public_url || ""} target="_blank">
+                  Commune
+                </Link>
+              </Tag>
+              &nbsp;
+              <Tag>
+                <span
+                  onClick={(e) => {
+                    // Easter egg to go to the future page
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (e.altKey) {
+                      router.push(`/bienvenue/${commune.siret}?futur=1`);
+                    }
+                  }}
+                >
+                  {commune.zipcode}
+                </span>
+              </Tag>
+            </>
+          )}
+          {commune.type === "epci" && (
+            <Tag>
+              <span
+                onClick={(e) => {
+                  // Easter egg to go to the future page
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (e.altKey) {
+                    router.push(`/bienvenue/${commune.siret}?futur=1`);
+                  }
+                }}
+              >
+                EPCI
+              </span>
+            </Tag>
+          )}
         </div>
         <h1
           className={fr.cx("fr-h1")}
@@ -100,13 +121,21 @@ export default function Bienvenue(props: PageProps) {
         >
           {commune.name}
         </h1>
-        <p>
-          Voici la situation de la présence numérique de la commune, évaluée par
-          rapport à notre{" "}
-          <Link href="/conformite/referentiel">Référentiel de Conformité</Link>{" "}
-          :
-        </p>
-        <CommuneInfo commune={commune} />
+        {commune.type === "commune" && (
+          <>
+            <p>
+              Voici la situation de la présence numérique de la commune, évaluée
+              par rapport à notre{" "}
+              <Link href="/conformite/referentiel">
+                Référentiel de Conformité
+              </Link>{" "}
+              :
+            </p>
+            <CommuneInfo commune={commune} />
+          </>
+        )}
+        {commune.type === "epci" && <EpciInfo commune={commune} />}
+
         {getCommuneContent(commune)}
       </div>
     );
@@ -114,7 +143,7 @@ export default function Bienvenue(props: PageProps) {
 
   const currentPageLabel = !commune?.name
     ? "Éligibilité"
-    : `Éligibilité de ${commune.name} (${commune.zipcode})`;
+    : `Éligibilité de ${commune.name} (${commune.type === "commune" ? commune.zipcode : "EPCI"})`;
 
   return (
     <div className={fr.cx("fr-container") + " st-bienvenue-page"}>

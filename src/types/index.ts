@@ -10,6 +10,6 @@ export interface Commune {
   siret: string;
   name: string;
   insee_geo?: string;
-  zipcode: string;
+  zipcode?: string;
   population: number;
 }

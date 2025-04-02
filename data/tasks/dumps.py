@@ -103,10 +103,11 @@ def dump_filtered_sirene(communes):
     for commune in communes:
         if commune.get("_st_epci", {}).get("siren_membre"):
             mairies_sirens.add(commune["_st_epci"]["siren_membre"])
+            mairies_sirens.add(commune["_st_epci"]["siren"])
 
     url = "https://www.data.gouv.fr/fr/datasets/r/0651fb76-bcf3-4f6a-a38d-bc04fa708576"
 
-    # Start the process to stream data
+    # Start the process to stream data. We do this to avoid loading the whole file in memory.
     process = subprocess.Popen(
         f"curl -sL '{url}' | zcat | sed -n '1p;/84.11Z/p'",
         shell=True,

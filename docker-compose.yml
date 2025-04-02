@@ -32,7 +32,7 @@ services:
     pull_policy: build
     environment:
       - PYTHONPATH=/app/data
-    command: pytest tests/ -v
+    command: pytest tests/ -vv
 
   worker:
     build:
