@@ -5,10 +5,7 @@ import testCommunes from "../data/dumps-sample/communes.json";
 import testStructures from "../data/dumps-sample/structures.json";
 
 // Helper function to prepare test data
-function prepareTestCommune(
-  communeData: any,
-  structureIds: number[] = [],
-): Commune {
+function prepareTestCommune(communeData: any, structureIds: number[] = []): Commune {
   // Create base commune from test data
   const commune: Commune = {
     ...communeData,

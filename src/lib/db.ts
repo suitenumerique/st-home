@@ -2,11 +2,7 @@ import { and, desc, eq, like, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "./schema";
-import {
-  mutualizationStructures,
-  organizations,
-  organizationsToStructures,
-} from "./schema";
+import { mutualizationStructures, organizations, organizationsToStructures } from "./schema";
 import { unaccent } from "./string";
 
 function getConnectionString() {
@@ -101,11 +97,7 @@ export async function findOrganizationsWithStructures(siret: string) {
   };
 }
 
-export async function searchOrganizations(
-  query: string,
-  type: string,
-  limit = 10,
-) {
+export async function searchOrganizations(query: string, type: string, limit = 10) {
   const searchQuery = query.trim();
 
   const baseQuery = db
@@ -141,8 +133,7 @@ export async function searchOrganizations(
   }
 
   const uniqueResults = allResults.filter(
-    (result, index, self) =>
-      index === self.findIndex((t) => t.siret === result.siret),
+    (result, index, self) => index === self.findIndex((t) => t.siret === result.siret),
   );
   return uniqueResults;
 }

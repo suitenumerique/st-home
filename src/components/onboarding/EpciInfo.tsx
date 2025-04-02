@@ -18,15 +18,10 @@ export default function EpciInfo({ commune }: CommuneInfoProps) {
           defaultExpanded
           label={
             <div className={fr.cx("fr-grid-row", "fr-grid-row--middle")}>
-              <span
-                className={fr.cx("fr-icon-user-line", "fr-mr-1w")}
-                aria-hidden="true"
-              />
+              <span className={fr.cx("fr-icon-user-line", "fr-mr-1w")} aria-hidden="true" />
               Éligible à la Suite territoriale :&nbsp;
               <div className={fr.cx("fr-ml-2w")}>
-                {isEligible
-                  ? getBadge("success", "Oui")
-                  : getBadge("info", "Nous contacter")}
+                {isEligible ? getBadge("success", "Oui") : getBadge("info", "Nous contacter")}
               </div>
             </div>
           }
@@ -45,8 +40,8 @@ export default function EpciInfo({ commune }: CommuneInfoProps) {
                   style={{ color: "var(--text-default-success)" }}
                   aria-hidden="true"
                 ></span>
-                L&rsquo;EPCI est éligible à la Suite territoriale. Vous pouvez
-                dès à présent rejoindre le Groupe pilote ci-dessous.
+                L&rsquo;EPCI est éligible à la Suite territoriale. Vous pouvez dès à présent
+                rejoindre le Groupe pilote ci-dessous.
               </p>
             ) : (
               <p>
@@ -55,12 +50,9 @@ export default function EpciInfo({ commune }: CommuneInfoProps) {
                   style={{ color: "var(--text-default-info)" }}
                   aria-hidden="true"
                 ></span>
-                L&rsquo;EPCI n&rsquo;est pas directement éligible mais peut
-                bénéficier d&rsquo;un accompagnement spécifique.{" "}
-                <Link
-                  href="mailto:lasuiteterritoriale@anct.gouv.fr"
-                  className={fr.cx("fr-link")}
-                >
+                L&rsquo;EPCI n&rsquo;est pas directement éligible mais peut bénéficier d&rsquo;un
+                accompagnement spécifique.{" "}
+                <Link href="mailto:lasuiteterritoriale@anct.gouv.fr" className={fr.cx("fr-link")}>
                   Contactez-nous pour en discuter
                 </Link>{" "}
                 !

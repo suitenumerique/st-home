@@ -22,8 +22,8 @@ export default function ContactUsView({ commune }: ContactUsViewProps) {
       <h1 className={fr.cx("fr-h2", "fr-mb-3w")}>Bienvenue {commune.name} !</h1>
 
       <p className={fr.cx("fr-text--lg", "fr-mb-3w")}>
-        Pour vous accompagner dans votre démarche d&rsquo;adhésion à la Suite
-        territoriale, merci de nous laisser vos coordonnées.
+        Pour vous accompagner dans votre démarche d&rsquo;adhésion à la Suite territoriale, merci de
+        nous laisser vos coordonnées.
       </p>
 
       <form>
@@ -96,9 +96,7 @@ export default function ContactUsView({ commune }: ContactUsViewProps) {
           </Select>
         </div>
 
-        <div
-          className={fr.cx("fr-btns-group", "fr-btns-group--inline-reverse")}
-        >
+        <div className={fr.cx("fr-btns-group", "fr-btns-group--inline-reverse")}>
           <Button type="submit">Envoyer</Button>
           <Button
             priority="secondary"

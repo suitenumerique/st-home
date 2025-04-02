@@ -68,9 +68,7 @@ async function importOrganizations(dumpsDir: string) {
     // Test connection first
     const connected = await testConnection();
     if (!connected) {
-      console.error(
-        "Database connection failed. Please check your DATABASE_URL and try again.",
-      );
+      console.error("Database connection failed. Please check your DATABASE_URL and try again.");
       process.exit(1);
     }
 
@@ -94,9 +92,7 @@ async function importOrganizations(dumpsDir: string) {
     const epcisData = fs.readFileSync(epcisPath, "utf8");
     const epcis: EPCI[] = JSON.parse(epcisData);
 
-    console.log(
-      `Found ${communes.length} communes and ${epcis.length} EPCIs to import.`,
-    );
+    console.log(`Found ${communes.length} communes and ${epcis.length} EPCIs to import.`);
 
     console.log(`Reading structures from ${structuresPath}...`);
     const structuresData = fs.readFileSync(structuresPath, "utf8");
@@ -123,9 +119,7 @@ async function importOrganizations(dumpsDir: string) {
     }));
 
     // Keep track of valid organizations and structures
-    const validStructureIds = new Set(
-      mutualizationStructures.map((s) => String(s.id)),
-    );
+    const validStructureIds = new Set(mutualizationStructures.map((s) => String(s.id)));
 
     // Transform communes
     const communeValues = communes
@@ -177,9 +171,7 @@ async function importOrganizations(dumpsDir: string) {
           return false;
         }
         if (seenSirets.has(epci.siret)) {
-          console.log(
-            `Skipping duplicate SIRET in EPCIs: ${epci.siret} (${epci.name})`,
-          );
+          console.log(`Skipping duplicate SIRET in EPCIs: ${epci.siret} (${epci.name})`);
           return false;
         }
         seenSirets.add(epci.siret);
@@ -225,10 +217,7 @@ async function importOrganizations(dumpsDir: string) {
     }[] = [];
     communeValues.forEach((commune) => {
       const originalCommune = communes.find((c) => c.siret === commune.siret);
-      if (
-        originalCommune?.structures &&
-        originalCommune.structures.length > 0
-      ) {
+      if (originalCommune?.structures && originalCommune.structures.length > 0) {
         originalCommune.structures.forEach((structureId) => {
           if (validStructureIds.has(String(structureId))) {
             structureRelations.push({
@@ -266,9 +255,7 @@ async function importOrganizations(dumpsDir: string) {
 
     // Bulk insert relations
     if (structureRelations.length > 0) {
-      console.log(
-        `Bulk inserting ${structureRelations.length} structure relations...`,
-      );
+      console.log(`Bulk inserting ${structureRelations.length} structure relations...`);
       const relationsQuery = `
         INSERT INTO st_organizations_to_structures (organization_siret, structure_id)
         SELECT * FROM json_populate_recordset(null::st_organizations_to_structures, $1)

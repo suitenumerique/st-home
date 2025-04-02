@@ -4,17 +4,11 @@ import { sql } from "drizzle-orm";
 import { NextApiRequest, NextApiResponse } from "next";
 import { unstable_cache } from "next/cache";
 
-const getConformanceStatsInner = async (
-  scope: string,
-  refs: string,
-  dep?: string,
-) => {
+const getConformanceStatsInner = async (scope: string, refs: string, dep?: string) => {
   // Special case for commune scope - return raw organization data
   if (scope === "commune") {
     if (!dep) {
-      throw new Error(
-        "Department parameter (dep) is required when scope=commune",
-      );
+      throw new Error("Department parameter (dep) is required when scope=commune");
     }
 
     const { rows: communes } = await db.execute<{
@@ -93,17 +87,13 @@ const getConformanceStatsInner = async (
 const getConformanceStats =
   process.env.NODE_ENV === "production"
     ? unstable_cache(
-        (scope: string, refs: string, dep?: string) =>
-          getConformanceStatsInner(scope, refs, dep),
+        (scope: string, refs: string, dep?: string) => getConformanceStatsInner(scope, refs, dep),
         ["conformance-stats"],
         { revalidate: 3600 },
       )
     : getConformanceStatsInner;
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { scope = "global", refs = "1.a,2.a", dep } = req.query;
 
@@ -120,11 +110,7 @@ export default async function handler(
       res.setHeader("Cache-Control", "no-store");
     }
 
-    const stats = await getConformanceStats(
-      scope as string,
-      refs as string,
-      dep as string,
-    );
+    const stats = await getConformanceStats(scope as string, refs as string, dep as string);
     return res.status(200).json(stats);
   } catch (error) {
     console.error("Error fetching conformance stats:", error);
