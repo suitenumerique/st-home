@@ -11,11 +11,7 @@ export type CommuneInfoProps = {
 
 export const getBadge = (severity: AlertProps.Severity, label: string) => {
   return (
-    <Badge
-      severity={severity}
-      small
-      style={{ marginBottom: "0.25rem", marginTop: "0.25rem" }}
-    >
+    <Badge severity={severity} small style={{ marginBottom: "0.25rem", marginTop: "0.25rem" }}>
       {label}
     </Badge>
   );
@@ -32,12 +28,10 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
 
   const inProgress = issues.includes("IN_PROGRESS");
 
-  const websiteMissing =
-    issues.includes("WEBSITE_MISSING") || issues.includes("WEBSITE_MALFORMED");
+  const websiteMissing = issues.includes("WEBSITE_MISSING") || issues.includes("WEBSITE_MALFORMED");
   const websiteCompliant = rcpnt.includes("1.a");
 
-  const emailMissing =
-    issues.includes("EMAIL_MISSING") || issues.includes("EMAIL_MALFORMED");
+  const emailMissing = issues.includes("EMAIL_MISSING") || issues.includes("EMAIL_MALFORMED");
 
   const emailCompliant = rcpnt.includes("2.a");
 
@@ -49,25 +43,12 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
           titleAs="h2"
           label={
             <div className={fr.cx("fr-grid-row", "fr-grid-row--middle")}>
-              <span
-                className={fr.cx("fr-icon-earth-line", "fr-mr-1w")}
-                aria-hidden="true"
-              />
+              <span className={fr.cx("fr-icon-earth-line", "fr-mr-1w")} aria-hidden="true" />
               Nom de domaine :&nbsp;
-              <span className={fr.cx("fr-text--bold")}>
-                {commune.website_domain || ""}
-              </span>
+              <span className={fr.cx("fr-text--bold")}>{commune.website_domain || ""}</span>
               &nbsp;
-              <div
-                className={fr.cx(
-                  "fr-ml-2w",
-                  "fr-badges-group",
-                  "fr-badges-group--sm",
-                )}
-              >
-                {inProgress &&
-                  !websiteMissing &&
-                  getBadge("warning", "Vérifications en cours")}
+              <div className={fr.cx("fr-ml-2w", "fr-badges-group", "fr-badges-group--sm")}>
+                {inProgress && !websiteMissing && getBadge("warning", "Vérifications en cours")}
                 {websiteMissing
                   ? getBadge("error", "Manquant")
                   : websiteCompliant
@@ -82,33 +63,21 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
               <>
                 <p>
                   <span
-                    className={fr.cx(
-                      "fr-icon-error-line",
-                      "fr-label--error",
-                      "fr-mr-1w",
-                    )}
+                    className={fr.cx("fr-icon-error-line", "fr-label--error", "fr-mr-1w")}
                     aria-hidden="true"
                   ></span>
-                  La commune ne dispose pas encore d&rsquo;un nom de domaine
-                  officiel connu des services de l&rsquo;État.{" "}
-                  <Link href="/conformite/referentiel#1.1">
-                    En savoir plus...
-                  </Link>
+                  La commune ne dispose pas encore d&rsquo;un nom de domaine officiel connu des
+                  services de l&rsquo;État.{" "}
+                  <Link href="/conformite/referentiel#1.1">En savoir plus...</Link>
                 </p>
                 <p>
                   <span
-                    className={fr.cx(
-                      "fr-icon-info-line",
-                      "fr-label--info",
-                      "fr-mr-1w",
-                    )}
+                    className={fr.cx("fr-icon-info-line", "fr-label--info", "fr-mr-1w")}
                     aria-hidden="true"
                   ></span>
                   Si vous en possédez un, vous devez le déclarer sur{" "}
                   <Link
-                    href={
-                      commune.service_public_url + "/demande-de-mise-a-jour"
-                    }
+                    href={commune.service_public_url + "/demande-de-mise-a-jour"}
                     target="_blank"
                     rel="noopener"
                   >
@@ -121,8 +90,8 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                     <Badge severity="success" noIcon as="span">
                       Bonne nouvelle !
                     </Badge>{" "}
-                    Si vous n&rsquo;en possédez pas, la Suite territoriale peut
-                    vous accompagner à en obtenir un.
+                    Si vous n&rsquo;en possédez pas, la Suite territoriale peut vous accompagner à
+                    en obtenir un.
                   </p>
                 )}
               </>
@@ -131,70 +100,42 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
             {!websiteMissing && issues.includes("WEBSITE_DOMAIN_REDIRECT") && (
               <p>
                 <span
-                  className={fr.cx(
-                    "fr-icon-error-line",
-                    "fr-label--error",
-                    "fr-mr-1w",
-                  )}
+                  className={fr.cx("fr-icon-error-line", "fr-label--error", "fr-mr-1w")}
                   aria-hidden="true"
                 ></span>
-                L&rsquo;adresse <strong>{commune.website_url}</strong> redirige
-                vers un autre domaine non déclaré sur Service-Public.fr.{" "}
-                <Link href="/conformite/referentiel#1.1">
-                  En savoir plus...
-                </Link>
+                L&rsquo;adresse <strong>{commune.website_url}</strong> redirige vers un autre
+                domaine non déclaré sur Service-Public.fr.{" "}
+                <Link href="/conformite/referentiel#1.1">En savoir plus...</Link>
               </p>
             )}
 
             {!websiteMissing && rcpnt.includes("1.2") && (
               <p>
                 <span
-                  className={fr.cx(
-                    "fr-icon-success-line",
-                    "fr-label--success",
-                    "fr-mr-1w",
-                  )}
+                  className={fr.cx("fr-icon-success-line", "fr-label--success", "fr-mr-1w")}
                   aria-hidden="true"
                 ></span>
-                L&rsquo;extension <strong>.{commune.website_tld}</strong> du nom
-                de domaine{" "}
-                <Link
-                  href={commune.website_url || ""}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                L&rsquo;extension <strong>.{commune.website_tld}</strong> du nom de domaine{" "}
+                <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
                   {commune.website_domain}
                 </Link>{" "}
                 est bien souveraine.{" "}
-                <Link href="/conformite/referentiel#1.2">
-                  En savoir plus...
-                </Link>
+                <Link href="/conformite/referentiel#1.2">En savoir plus...</Link>
               </p>
             )}
 
             {!websiteMissing && !rcpnt.includes("1.2") && (
               <p>
                 <span
-                  className={fr.cx(
-                    "fr-icon-error-line",
-                    "fr-label--error",
-                    "fr-mr-1w",
-                  )}
+                  className={fr.cx("fr-icon-error-line", "fr-label--error", "fr-mr-1w")}
                   aria-hidden="true"
                 ></span>
-                L&rsquo;extension <strong>.{commune.website_tld}</strong> du
-                domaine{" "}
-                <Link
-                  href={commune.website_url || ""}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                L&rsquo;extension <strong>.{commune.website_tld}</strong> du domaine{" "}
+                <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
                   {commune.website_domain}
                 </Link>{" "}
                 n&rsquo;est pas souveraine.{" "}
-                <Link href="/conformite/referentiel#1.2">
-                  En savoir plus...
-                </Link>
+                <Link href="/conformite/referentiel#1.2">En savoir plus...</Link>
               </p>
             )}
 
@@ -206,17 +147,11 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   aria-hidden="true"
                 ></span>
                 Le domaine{" "}
-                <Link
-                  href={commune.website_url || ""}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
                   {commune.website_domain}
                 </Link>{" "}
                 est déclaré en HTTP (et non HTTPS) sur Service-Public.fr.{" "}
-                <Link href="/conformite/referentiel#1.7">
-                  En savoir plus...
-                </Link>
+                <Link href="/conformite/referentiel#1.7">En savoir plus...</Link>
               </p>
             )}
 
@@ -232,11 +167,8 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   https://
                   {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
                 </strong>{" "}
-                (sans www.) ne redirige pas correctement vers le site Internet
-                de la commune.{" "}
-                <Link href="/conformite/referentiel#1.7">
-                  En savoir plus...
-                </Link>
+                (sans www.) ne redirige pas correctement vers le site Internet de la commune.{" "}
+                <Link href="/conformite/referentiel#1.7">En savoir plus...</Link>
               </p>
             )}
 
@@ -252,22 +184,15 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   http://
                   {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
                 </strong>{" "}
-                (sans www.) ne redirige pas correctement vers le site Internet
-                de la commune.{" "}
-                <Link href="/conformite/referentiel#1.7">
-                  En savoir plus...
-                </Link>
+                (sans www.) ne redirige pas correctement vers le site Internet de la commune.{" "}
+                <Link href="/conformite/referentiel#1.7">En savoir plus...</Link>
               </p>
             )}
 
             {!websiteMissing && issues.includes("WEBSITE_HTTP_REDIRECT") && (
               <p>
                 <span
-                  className={fr.cx(
-                    "fr-icon-error-line",
-                    "fr-label--error",
-                    "fr-mr-1w",
-                  )}
+                  className={fr.cx("fr-icon-error-line", "fr-label--error", "fr-mr-1w")}
                   aria-hidden="true"
                 ></span>
                 L&rsquo;adresse en HTTP{" "}
@@ -275,61 +200,40 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   http://
                   {(commune.website_url || "").replace(/^https?:\/\//, "")}
                 </strong>{" "}
-                ne redirige pas correctement vers la version HTTPS du site
-                Internet de la commune.
-                <Link href="/conformite/referentiel#1.4">
-                  En savoir plus...
-                </Link>
+                ne redirige pas correctement vers la version HTTPS du site Internet de la commune.
+                <Link href="/conformite/referentiel#1.4">En savoir plus...</Link>
               </p>
             )}
 
             {!websiteMissing && issues.includes("WEBSITE_SSL") && (
               <p>
                 <span
-                  className={fr.cx(
-                    "fr-icon-error-line",
-                    "fr-label--error",
-                    "fr-mr-1w",
-                  )}
+                  className={fr.cx("fr-icon-error-line", "fr-label--error", "fr-mr-1w")}
                   aria-hidden="true"
                 ></span>
-                Le certificat SSL du site web de la commune n&rsquo;est pas
-                valide.{" "}
-                <Link href="/conformite/referentiel#1.5">
-                  En savoir plus...
-                </Link>
+                Le certificat SSL du site web de la commune n&rsquo;est pas valide.{" "}
+                <Link href="/conformite/referentiel#1.5">En savoir plus...</Link>
               </p>
             )}
 
             {!websiteMissing && issues.includes("WEBSITE_DOWN") && (
               <p>
                 <span
-                  className={fr.cx(
-                    "fr-icon-error-line",
-                    "fr-label--error",
-                    "fr-mr-1w",
-                  )}
+                  className={fr.cx("fr-icon-error-line", "fr-label--error", "fr-mr-1w")}
                   aria-hidden="true"
                 ></span>
                 Le site web de la commune n&rsquo;est pas joignable.{" "}
-                <Link href="/conformite/referentiel#1.3">
-                  En savoir plus...
-                </Link>
+                <Link href="/conformite/referentiel#1.3">En savoir plus...</Link>
               </p>
             )}
 
             {websiteCompliant && isEligible && (
               <p>
                 <span
-                  className={fr.cx(
-                    "fr-icon-success-line",
-                    "fr-label--success",
-                    "fr-mr-1w",
-                  )}
+                  className={fr.cx("fr-icon-success-line", "fr-label--success", "fr-mr-1w")}
                   aria-hidden="true"
                 ></span>
-                Vous pourrez réutiliser ce domaine au sein de la Suite
-                territoriale !
+                Vous pourrez réutiliser ce domaine au sein de la Suite territoriale !
               </p>
             )}
           </div>
@@ -340,24 +244,11 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
           titleAs="h2"
           label={
             <div className={fr.cx("fr-grid-row", "fr-grid-row--middle")}>
-              <span
-                className={fr.cx("fr-icon-mail-line", "fr-mr-1w")}
-                aria-hidden="true"
-              />
+              <span className={fr.cx("fr-icon-mail-line", "fr-mr-1w")} aria-hidden="true" />
               Adresse de messagerie :&nbsp;
-              <span className={fr.cx("fr-text--bold")}>
-                {commune.email_official || ""}
-              </span>
-              <div
-                className={fr.cx(
-                  "fr-ml-2w",
-                  "fr-badges-group",
-                  "fr-badges-group--sm",
-                )}
-              >
-                {inProgress &&
-                  !emailMissing &&
-                  getBadge("warning", "Vérifications en cours")}
+              <span className={fr.cx("fr-text--bold")}>{commune.email_official || ""}</span>
+              <div className={fr.cx("fr-ml-2w", "fr-badges-group", "fr-badges-group--sm")}>
+                {inProgress && !emailMissing && getBadge("warning", "Vérifications en cours")}
                 {emailMissing
                   ? getBadge("error", "Manquante")
                   : emailCompliant
@@ -372,33 +263,21 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
               <>
                 <p>
                   <span
-                    className={fr.cx(
-                      "fr-icon-error-line",
-                      "fr-label--error",
-                      "fr-mr-1w",
-                    )}
+                    className={fr.cx("fr-icon-error-line", "fr-label--error", "fr-mr-1w")}
                     aria-hidden="true"
                   ></span>
-                  La commune ne dispose pas encore d&rsquo;une adresse de
-                  messagerie connue des services de l&rsquo;État.{" "}
-                  <Link href="/conformite/referentiel#2.1">
-                    En savoir plus...
-                  </Link>
+                  La commune ne dispose pas encore d&rsquo;une adresse de messagerie connue des
+                  services de l&rsquo;État.{" "}
+                  <Link href="/conformite/referentiel#2.1">En savoir plus...</Link>
                 </p>
                 <p>
                   <span
-                    className={fr.cx(
-                      "fr-icon-info-line",
-                      "fr-label--info",
-                      "fr-mr-1w",
-                    )}
+                    className={fr.cx("fr-icon-info-line", "fr-label--info", "fr-mr-1w")}
                     aria-hidden="true"
                   ></span>
                   Si vous en possédez une, vous devez la déclarer sur{" "}
                   <Link
-                    href={
-                      commune.service_public_url + "/demande-de-mise-a-jour"
-                    }
+                    href={commune.service_public_url + "/demande-de-mise-a-jour"}
                     target="_blank"
                     rel="noopener"
                   >
@@ -409,15 +288,11 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                 {isEligible && (
                   <p>
                     <span
-                      className={fr.cx(
-                        "fr-icon-success-line",
-                        "fr-label--success",
-                        "fr-mr-1w",
-                      )}
+                      className={fr.cx("fr-icon-success-line", "fr-label--success", "fr-mr-1w")}
                       aria-hidden="true"
                     ></span>
-                    Si vous n&rsquo;en possédez pas, la Suite territoriale peut
-                    vous aider à en obtenir une.
+                    Si vous n&rsquo;en possédez pas, la Suite territoriale peut vous aider à en
+                    obtenir une.
                   </p>
                 )}
               </>
@@ -430,13 +305,9 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   style={{ color: "var(--text-default-success)" }}
                   aria-hidden="true"
                 ></span>
-                L&rsquo;extension <strong>.{commune.email_tld}</strong> de
-                l&rsquo;adresse de messagerie{" "}
-                <strong>{commune.email_official}</strong> n&rsquo;est pas
-                souveraine.{" "}
-                <Link href="/conformite/referentiel#1.2">
-                  En savoir plus...
-                </Link>
+                L&rsquo;extension <strong>.{commune.email_tld}</strong> de l&rsquo;adresse de
+                messagerie <strong>{commune.email_official}</strong> n&rsquo;est pas souveraine.{" "}
+                <Link href="/conformite/referentiel#1.2">En savoir plus...</Link>
               </p>
             )}
 
@@ -447,12 +318,9 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   style={{ color: "var(--text-default-error)" }}
                   aria-hidden="true"
                 ></span>
-                Le domaine <strong>{commune.email_domain}</strong> générique ne
-                permet pas aux usagers de vérifier l&rsquo;authenticité de la
-                messagerie.{" "}
-                <Link href="/conformite/referentiel#2.2">
-                  En savoir plus...
-                </Link>
+                Le domaine <strong>{commune.email_domain}</strong> générique ne permet pas aux
+                usagers de vérifier l&rsquo;authenticité de la messagerie.{" "}
+                <Link href="/conformite/referentiel#2.2">En savoir plus...</Link>
               </p>
             )}
 
@@ -464,11 +332,9 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   aria-hidden="true"
                 ></span>
                 L&rsquo;adresse de messagerie utilise un domaine{" "}
-                <strong>{commune.email_domain}</strong> différent de celui du
-                site web <strong>{commune.website_domain}</strong>.{" "}
-                <Link href="/conformite/referentiel#2.3">
-                  En savoir plus...
-                </Link>
+                <strong>{commune.email_domain}</strong> différent de celui du site web{" "}
+                <strong>{commune.website_domain}</strong>.{" "}
+                <Link href="/conformite/referentiel#2.3">En savoir plus...</Link>
               </p>
             )}
 
@@ -479,12 +345,9 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   style={{ color: "var(--text-default-error)" }}
                   aria-hidden="true"
                 ></span>
-                Le serveur DNS du domaine de messagerie{" "}
-                <strong>{commune.email_domain}</strong> n&rsquo;est pas
-                joignable.{" "}
-                <Link href="/conformite/referentiel#2.4">
-                  En savoir plus...
-                </Link>
+                Le serveur DNS du domaine de messagerie <strong>{commune.email_domain}</strong>{" "}
+                n&rsquo;est pas joignable.{" "}
+                <Link href="/conformite/referentiel#2.4">En savoir plus...</Link>
               </p>
             )}
 
@@ -495,12 +358,9 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   style={{ color: "var(--text-default-error)" }}
                   aria-hidden="true"
                 ></span>
-                Aucun enregistrement MX n&rsquo;est configuré sur le domaine de
-                messagerie <strong>{commune.email_domain}</strong>. La
-                messagerie ne peut recevoir aucun email.{" "}
-                <Link href="/conformite/referentiel#2.4">
-                  En savoir plus...
-                </Link>
+                Aucun enregistrement MX n&rsquo;est configuré sur le domaine de messagerie{" "}
+                <strong>{commune.email_domain}</strong>. La messagerie ne peut recevoir aucun email.{" "}
+                <Link href="/conformite/referentiel#2.4">En savoir plus...</Link>
               </p>
             )}
 
@@ -511,11 +371,9 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   style={{ color: "var(--text-default-warning)" }}
                   aria-hidden="true"
                 ></span>
-                Aucun enregistrement SPF n&rsquo;est configuré sur le domaine de
-                messagerie <strong>{commune.email_domain}</strong>.{" "}
-                <Link href="/conformite/referentiel#2.5">
-                  En savoir plus...
-                </Link>
+                Aucun enregistrement SPF n&rsquo;est configuré sur le domaine de messagerie{" "}
+                <strong>{commune.email_domain}</strong>.{" "}
+                <Link href="/conformite/referentiel#2.5">En savoir plus...</Link>
               </p>
             )}
 
@@ -526,11 +384,9 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   style={{ color: "var(--text-default-warning)" }}
                   aria-hidden="true"
                 ></span>
-                Aucun enregistrement DMARC n&rsquo;est configuré sur le domaine
-                de messagerie <strong>{commune.email_domain}</strong>.{" "}
-                <Link href="/conformite/referentiel#2.6">
-                  En savoir plus...
-                </Link>
+                Aucun enregistrement DMARC n&rsquo;est configuré sur le domaine de messagerie{" "}
+                <strong>{commune.email_domain}</strong>.{" "}
+                <Link href="/conformite/referentiel#2.6">En savoir plus...</Link>
               </p>
             )}
 
@@ -542,11 +398,8 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   aria-hidden="true"
                 ></span>
                 Un enregistrement DMARC existe sur le domaine de messagerie{" "}
-                <strong>{commune.email_domain}</strong> mais il pourrait être
-                plus strict.{" "}
-                <Link href="/conformite/referentiel#2.7">
-                  En savoir plus...
-                </Link>
+                <strong>{commune.email_domain}</strong> mais il pourrait être plus strict.{" "}
+                <Link href="/conformite/referentiel#2.7">En savoir plus...</Link>
               </p>
             )}
             {(emailMissing ||
@@ -558,8 +411,8 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   <Badge severity="success" noIcon as="span">
                     Bonne nouvelle !
                   </Badge>{" "}
-                  La Suite territoriale peut vous aider à obtenir une adresse de
-                  messagerie conforme.
+                  La Suite territoriale peut vous aider à obtenir une adresse de messagerie
+                  conforme.
                 </p>
               )}
           </div>
@@ -570,15 +423,10 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
           titleAs="h2"
           label={
             <div className={fr.cx("fr-grid-row", "fr-grid-row--middle")}>
-              <span
-                className={fr.cx("fr-icon-user-line", "fr-mr-1w")}
-                aria-hidden="true"
-              />
+              <span className={fr.cx("fr-icon-user-line", "fr-mr-1w")} aria-hidden="true" />
               Éligible à la Suite territoriale :&nbsp;
               <div className={fr.cx("fr-ml-2w")}>
-                {isEligible
-                  ? getBadge("success", "Oui")
-                  : getBadge("info", "Nous contacter")}
+                {isEligible ? getBadge("success", "Oui") : getBadge("info", "Nous contacter")}
               </div>
             </div>
           }
@@ -604,8 +452,8 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   style={{ color: "var(--text-default-success)" }}
                   aria-hidden="true"
                 ></span>
-                La commune est éligible à la Suite territoriale. Vous pouvez dès
-                à présent rejoindre le Groupe pilote ci-dessous.
+                La commune est éligible à la Suite territoriale. Vous pouvez dès à présent rejoindre
+                le Groupe pilote ci-dessous.
               </p>
             ) : (
               <p>
@@ -614,12 +462,9 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   style={{ color: "var(--text-default-info)" }}
                   aria-hidden="true"
                 ></span>
-                La commune n&rsquo;est pas directement éligible mais peut
-                bénéficier d&rsquo;un accompagnement spécifique.{" "}
-                <Link
-                  href="mailto:lasuiteterritoriale@anct.gouv.fr"
-                  className={fr.cx("fr-link")}
-                >
+                La commune n&rsquo;est pas directement éligible mais peut bénéficier d&rsquo;un
+                accompagnement spécifique.{" "}
+                <Link href="mailto:lasuiteterritoriale@anct.gouv.fr" className={fr.cx("fr-link")}>
                   Contactez-nous pour en discuter
                 </Link>{" "}
                 !

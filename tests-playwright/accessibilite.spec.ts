@@ -5,9 +5,7 @@ const url = "/accessibilite";
 test("has title", async ({ page }) => {
   await page.goto(url);
 
-  await expect(page).toHaveTitle(
-    /Déclaration d’accessibilité - La Suite territoriale/,
-  );
+  await expect(page).toHaveTitle(/Déclaration d’accessibilité - La Suite territoriale/);
 });
 
 test("has proper headers", async ({ page }) => {
@@ -25,9 +23,7 @@ test("has proper headers", async ({ page }) => {
 
   await Promise.all(
     requiredHeaders.map(async (text) =>
-      expect(
-        await page.getByRole("heading", { level: 2 }).getByText(text).count(),
-      ).toBe(1),
+      expect(await page.getByRole("heading", { level: 2 }).getByText(text).count()).toBe(1),
     ),
   );
 });

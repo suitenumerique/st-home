@@ -102,9 +102,7 @@ function CommuneSearchInput(
       clearOnEscape
       loadingText="Recherche en cours..."
       noOptionsText={
-        inputValue.length < 1
-          ? "Saisissez au moins 1 caractère"
-          : "Aucune commune trouvée"
+        inputValue.length < 1 ? "Saisissez au moins 1 caractère" : "Aucune commune trouvée"
       }
       getOptionLabel={(option) =>
         `${option.name} (${option.type === "commune" ? option.zipcode : "EPCI"})`
@@ -136,10 +134,7 @@ function CommuneSearchInput(
       }}
       renderInput={(params) => {
         return (
-          <div
-            ref={params.InputProps.ref}
-            className={params.InputProps.className}
-          >
+          <div ref={params.InputProps.ref} className={params.InputProps.className}>
             <Input
               label=""
               nativeInputProps={{
@@ -213,11 +208,7 @@ function CommuneSearchInput(
   );
 }
 
-export default function CommuneSearch({
-  onSelect,
-  placeholder,
-  type = "all",
-}: CommuneSearchProps) {
+export default function CommuneSearch({ onSelect, placeholder, type = "all" }: CommuneSearchProps) {
   return (
     <>
       <SearchBar

@@ -103,10 +103,7 @@ export function PageLayout({ children }: LayoutProps) {
     <>
       <Head>
         {contentSecurityPolicy && (
-          <meta
-            httpEquiv="Content-Security-Policy"
-            content={contentSecurityPolicy}
-          />
+          <meta httpEquiv="Content-Security-Policy" content={contentSecurityPolicy} />
         )}
         <link rel="icon" href="/favicon.ico" />
       </Head>

@@ -6,11 +6,7 @@ export default function BackToTop() {
     <div className={fr.cx("fr-mb-4w")} style={{ textAlign: "center" }}>
       <div className={fr.cx("fr-container")}>
         <Link
-          className={fr.cx(
-            "fr-link",
-            "fr-link--icon-left",
-            "fr-icon-arrow-up-fill",
-          )}
+          className={fr.cx("fr-link", "fr-link--icon-left", "fr-icon-arrow-up-fill")}
           href="#top"
           onClick={(e) => {
             e.preventDefault();

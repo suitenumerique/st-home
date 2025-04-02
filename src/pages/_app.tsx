@@ -35,17 +35,13 @@ const { withDsfr, dsfrDocumentApi } = createNextDsfrIntegrationApi({
 
 export { dsfrDocumentApi };
 
-const { withAppEmotionCache, augmentDocumentWithEmotionCache } =
-  createEmotionSsrAdvancedApproach({
-    key: "css",
-  });
+const { withAppEmotionCache, augmentDocumentWithEmotionCache } = createEmotionSsrAdvancedApproach({
+  key: "css",
+});
 
 export { augmentDocumentWithEmotionCache };
 
-function App({
-  Component,
-  pageProps: { /*session,*/ ...pageProps },
-}: AppProps) {
+function App({ Component, pageProps: { /*session,*/ ...pageProps } }: AppProps) {
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_MATOMO_SITE_ID) return;
     init({
@@ -63,13 +59,10 @@ function App({
         description="Un socle commun d'outils numériques pour les collectivités"
         openGraph={{
           title: "La Suite territoriale",
-          description:
-            "Un socle commun d'outils numériques pour les collectivités",
+          description: "Un socle commun d'outils numériques pour les collectivités",
           images: [
             {
-              url:
-                process.env.NEXT_PUBLIC_SITE_URL +
-                "/images/suite-territoriale-hero.png",
+              url: process.env.NEXT_PUBLIC_SITE_URL + "/images/suite-territoriale-hero.png",
               width: 1005,
               height: 368,
               alt: "La Suite territoriale",

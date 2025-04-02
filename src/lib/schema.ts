@@ -1,13 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import {
-  boolean,
-  index,
-  integer,
-  pgTable,
-  primaryKey,
-  text,
-  timestamp,
-} from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
 
 // Organization table
 export const organizations = pgTable(
@@ -98,12 +90,9 @@ export const organizationsRelations = relations(organizations, ({ many }) => ({
 }));
 
 // MutualizationStructure relations
-export const mutualizationStructuresRelations = relations(
-  mutualizationStructures,
-  ({ many }) => ({
-    organizations: many(organizationsToStructures),
-  }),
-);
+export const mutualizationStructuresRelations = relations(mutualizationStructures, ({ many }) => ({
+  organizations: many(organizationsToStructures),
+}));
 
 // OrganizationsToStructures relations
 export const organizationsToStructuresRelations = relations(

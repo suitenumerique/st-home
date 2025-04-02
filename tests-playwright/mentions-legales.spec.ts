@@ -11,17 +11,13 @@ test("has title", async ({ page }) => {
 test("has proper headers", async ({ page }) => {
   await page.goto(url);
 
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Mentions légales",
-  );
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Mentions légales");
 
   const requiredHeaders = ["Hébergement du site"];
 
   await Promise.all(
     requiredHeaders.map(async (text) =>
-      expect(
-        await page.getByRole("heading", { level: 2 }).getByText(text).count(),
-      ).toBe(1),
+      expect(await page.getByRole("heading", { level: 2 }).getByText(text).count()).toBe(1),
     ),
   );
 });

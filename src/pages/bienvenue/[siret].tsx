@@ -20,11 +20,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 
 // Import types and functions
-import {
-  determineOnboardingCase,
-  type Commune,
-  type OnboardingProps,
-} from "@/lib/onboarding";
+import { determineOnboardingCase, type Commune, type OnboardingProps } from "@/lib/onboarding";
 import { OnboardingCase } from "@/types/onboarding";
 
 interface PageProps extends OnboardingProps {
@@ -44,11 +40,7 @@ export default function Bienvenue(props: PageProps) {
         if (!_commune.structures) {
           return <ErrorView error="Configuration invalide" />;
         }
-        return (
-          <OPSNChoiceView
-            commune={{ ..._commune, structures: _commune.structures }}
-          />
-        );
+        return <OPSNChoiceView commune={{ ..._commune, structures: _commune.structures }} />;
       case OnboardingCase.OPSN_PROCONNECT:
         return <OPSNProConnectView commune={_commune} />;
       case OnboardingCase.CONTACT_US:
@@ -115,21 +107,14 @@ export default function Bienvenue(props: PageProps) {
             </Tag>
           )}
         </div>
-        <h1
-          className={fr.cx("fr-h1")}
-          style={{ color: "var(--text-title-blue-france)" }}
-        >
+        <h1 className={fr.cx("fr-h1")} style={{ color: "var(--text-title-blue-france)" }}>
           {commune.name}
         </h1>
         {commune.type === "commune" && (
           <>
             <p>
-              Voici la situation de la présence numérique de la commune, évaluée
-              par rapport à notre{" "}
-              <Link href="/conformite/referentiel">
-                Référentiel de Conformité
-              </Link>{" "}
-              :
+              Voici la situation de la présence numérique de la commune, évaluée par rapport à notre{" "}
+              <Link href="/conformite/referentiel">Référentiel de Conformité</Link> :
             </p>
             <CommuneInfo commune={commune} />
           </>
@@ -147,10 +132,7 @@ export default function Bienvenue(props: PageProps) {
 
   return (
     <div className={fr.cx("fr-container") + " st-bienvenue-page"}>
-      <NextSeo
-        title={currentPageLabel}
-        description="Test d'éligibilité à la Suite territoriale"
-      />
+      <NextSeo title={currentPageLabel} description="Test d'éligibilité à la Suite territoriale" />
       <div>
         <Breadcrumb
           currentPageLabel={currentPageLabel}
@@ -164,9 +146,7 @@ export default function Bienvenue(props: PageProps) {
           ]}
         />
       </div>
-      <div className={fr.cx("fr-card--shadow", "fr-p-4w", "fr-mb-4w")}>
-        {GetMainContent()}
-      </div>
+      <div className={fr.cx("fr-card--shadow", "fr-p-4w", "fr-mb-4w")}>{GetMainContent()}</div>
       <div className={fr.cx("fr-my-12w")}>
         <div className={fr.cx("fr-grid-row")}>
           <div className={fr.cx("fr-col-offset-lg-2", "fr-col-lg-8")}>
@@ -178,18 +158,12 @@ export default function Bienvenue(props: PageProps) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps<PageProps> = async (
-  context,
-) => {
+export const getServerSideProps: GetServerSideProps<PageProps> = async (context) => {
   const { siret, direct, structureId, isExistingMember, futur } = context.query;
 
   if (!siret || typeof siret !== "string") {
     return {
-      props: determineOnboardingCase(
-        null,
-        {},
-        "Identifiant de commune invalide",
-      ),
+      props: determineOnboardingCase(null, {}, "Identifiant de commune invalide"),
     };
   }
 

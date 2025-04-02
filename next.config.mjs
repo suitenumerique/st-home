@@ -14,12 +14,7 @@ const withMDX = createMDX({
       [
         rehypeRaw,
         {
-          passThrough: [
-            "mdxjsEsm",
-            "mdxFlowExpression",
-            "mdxJsxFlowElement",
-            "mdxJsxTextElement",
-          ],
+          passThrough: ["mdxjsEsm", "mdxFlowExpression", "mdxJsxFlowElement", "mdxJsxTextElement"],
         },
       ],
       rehypeSlug,

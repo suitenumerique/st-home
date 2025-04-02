@@ -34,20 +34,10 @@ export default function ContactUs() {
           right: 0,
         }}
       />
-      <div
-        className={fr.cx(
-          "fr-pt-7w",
-          "fr-pb-4w",
-          "fr-col-offset-sm-1",
-          "fr-col-sm-10",
-        )}
-      >
-        <h3 className={fr.cx("fr-h3", "fr-mb-2w")}>
-          Vous avez une question ? Une remarque ?
-        </h3>
+      <div className={fr.cx("fr-pt-7w", "fr-pb-4w", "fr-col-offset-sm-1", "fr-col-sm-10")}>
+        <h3 className={fr.cx("fr-h3", "fr-mb-2w")}>Vous avez une question ? Une remarque ?</h3>
         <p className={fr.cx("fr-mb-2w")}>
-          Vous souhaitez devenir partenaire de la Suite territoriale ou vous
-          avez une question sur{" "}
+          Vous souhaitez devenir partenaire de la Suite territoriale ou vous avez une question sur{" "}
           <Link href="/services" className={fr.cx("fr-link")}>
             nos services
           </Link>{" "}
@@ -55,10 +45,7 @@ export default function ContactUs() {
         </p>
         <p>
           Écrivez-nous à{" "}
-          <Link
-            href="mailto:lasuiteterritoriale@anct.gouv.fr"
-            className={fr.cx("fr-link")}
-          >
+          <Link href="mailto:lasuiteterritoriale@anct.gouv.fr" className={fr.cx("fr-link")}>
             lasuiteterritoriale@anct.gouv.fr
           </Link>
         </p>
