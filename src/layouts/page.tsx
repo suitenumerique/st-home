@@ -166,9 +166,7 @@ export function PageLayout({ children }: LayoutProps) {
               {
                 text: "Cartographie",
                 linkProps: {
-                  href: "https://grist.incubateur.anct.gouv.fr/o/anct/gVoLeTsdJL8q/Suite-territoriale-Deploiement?embed=true",
-                  target: "_blank",
-                  // href: "/conformite/cartographie",
+                  href: "/conformite/cartographie",
                 },
               },
             ],
