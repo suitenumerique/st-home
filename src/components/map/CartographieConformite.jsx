@@ -152,6 +152,12 @@ export default function CartographieConformite() {
       );
       if (!record) return feature;
 
+      const downLevel = {
+        country: 'region',
+        region: 'departement',
+        departement: 'epci',
+      }
+
       let score;
       console.log(stats, level, feature.properties)
       try {
@@ -160,11 +166,11 @@ export default function CartographieConformite() {
             return acc + (record.rcpnt.indexOf(ref) > -1 ? 1 : 0)
           }, 0)
         } else {
-          const stat = stats[level][feature.properties.CODE]
+          const stat = stats[downLevel[level]][feature.properties.CODE.replace(/^r/,"")][0]
           score = (stat.valid / stat.total) * 3
         }
       } catch (err) {
-        console.log('no score')
+        console.log('no score', err)
       }
 
       return {
@@ -444,8 +450,13 @@ export default function CartographieConformite() {
       setStats({ region: regionStats, departement: departementStats, epci: epciStats });
     }
     loadAllStats();
-    selectLevel("country", "00");
   }, []);
+
+  useEffect(() => {
+    if (Object.keys(stats).length > 0) {
+      selectLevel("country", "00");
+    }
+  }, [stats]);
 
   return (
     <div style={{ height: "100%", width: "100%", position: "relative" }}>

@@ -37,7 +37,10 @@ const moduleExports = {
   poweredByHeader: false,
   bundlePagesRouterDependencies: true,
   productionBrowserSourceMaps: false,
+
+  // This causes double-renders of pages in developement to avoid concurrency bugs!
   reactStrictMode: true,
+
   webpack: (config) => {
     config.module.rules.push({
       test: /\.(woff2|webmanifest)$/,
