@@ -6,9 +6,9 @@ import { unstable_cache } from "next/cache";
 
 const getConformanceStatsInner = async (scope: string, refs: string, dep?: string) => {
   // Special case for commune scope - return raw organization data
-  if (scope === "commune") {
+  if (scope === "list-commune" || scope === "list-epci") {
     if (!dep) {
-      throw new Error("Department parameter (dep) is required when scope=commune");
+      throw new Error("Department parameter (dep) is required when scope=list-*");
     }
 
     const { rows: communes } = await db.execute<{
@@ -28,7 +28,7 @@ const getConformanceStatsInner = async (scope: string, refs: string, dep?: strin
         rcpnt
       FROM ${organizations}
       WHERE insee_dep = ${dep}
-      AND type = 'commune'
+      AND type = ${scope === "list-commune" ? "commune" : "epci"}
       ORDER BY name
     `);
 
