@@ -3,7 +3,7 @@ services:
   postgresql:
     image: postgres:16.6
     environment:
-      - POSTGRES_DB=st_home
+      - POSTGRES_DB=st_home_local
       - POSTGRES_USER=usr
       - POSTGRES_PASSWORD=pwd
     ports:

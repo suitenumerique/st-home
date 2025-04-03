@@ -2,6 +2,7 @@ import * as d3 from "d3";
 import L from "leaflet";
 import { useEffect, useMemo, useState } from "react";
 import { GeoJSON, MapContainer, TileLayer, useMap } from "react-leaflet";
+import * as turf from "@turf/turf";
 
 import parentAreas from "../../../public/parent_areas.json";
 import CommuneSearch from "../CommuneSearch";
@@ -22,16 +23,19 @@ function MapViewHandler({ bounds }) {
 }
 
 export default function CartographieConformite() {
+  const displayedStatRefs = ['1.a', '2.a'];
+  const [stats, setStats] = useState({});
   const [currentLevel, setCurrentLevel] = useState("country");
   const [selectedAreas, setSelectedAreas] = useState({});
   const [departmentView, setDepartmentView] = useState("city");
   const [layerBounds, setLayerBounds] = useState(null);
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [communityToSelect, setCommunityToSelect] = useState(null);
 
   // const [dataIsLoaded, setDataIsLoaded] = useState(false);
   // const [periods, setPeriods] = useState([]);
   // const [period, setPeriod] = useState('last');
   // const [showInfo, setShowInfo] = useState(false);
-  // const [selectedCommunity, setSelectedCommunity] = useState([]);
 
   const mapConfig = {
     defaultViewCoords: [46.603354, 1.888334],
@@ -47,8 +51,8 @@ export default function CartographieConformite() {
 
   const colorsConfig = {
     domain: [0, 1, 2, 3],
-    range: ["#ef4444", "#f97316", "#eab308", "#22c55e"],
-    defaultColor: "#64748b",
+    range: ["#ef4444", "#f97316", "#22c55e"], // removed #eab308
+    defaultColor: "#000000",
   };
 
   const colorScale = d3
@@ -69,19 +73,29 @@ export default function CartographieConformite() {
   }, [currentLevel, departmentView]);
 
   // DATA LOADING
-  const loadDepartmentCities = async (departmentCode) => {
-    try {
-      const baseUrl =
-        "https://suite-territoriale-home-staging.osc-secnum-fr1.scalingo.io/api/rcpnt/stats";
-      const response = await fetch(
-        `${baseUrl}?scope=commune&dep=${departmentCode}`,
-      );
-      const data = await response.json();
-      return data;
-    } catch (err) {
-      console.error("Failed to load children:", err);
-      throw err;
+  const loadStats = async (level) => {
+    const scope = {
+      region: 'reg',
+      departement: 'dep',
+      epci: 'epci',
     }
+    const response = await fetch(`/api/rcpnt/stats?scope=${scope[level]}&ref=${displayedStatRefs.join(',')}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      next: { revalidate: 3600 },
+    });
+    const data = await response.json();
+    return data;
+  }
+
+  const loadDepartmentCities = async (departmentCode) => {
+    const response = await fetch(`/api/rcpnt/stats?scope=list-commune&dep=${departmentCode}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      next: { revalidate: 3600 },
+    });
+    const data = await response.json();
+    return data;
   };
 
   const fetchGeoJSON = async (level, code) => {
@@ -99,43 +113,36 @@ export default function CartographieConformite() {
   };
 
   // PROCESSING
-  const setSelectedArea = async (level, code) => {
+  const computeSelectedArea = async (level, code) => {
+    console.log('computeSelectedArea', level, code)
     let selectedArea;
     if (level === "country") {
       selectedArea = { name: "France" };
     } else {
       selectedArea = parentAreas.find((area) => area.insee_geo === code);
     }
-    if (!selectedArea.geoJSON) {
-      let childrenAreas;
-      if (level === "department") {
-        childrenAreas = await loadDepartmentCities(code);
-        selectedArea.childrenAreas = childrenAreas;
-      } else {
-        childrenAreas = {
-          country: parentAreas.filter((area) => area.typology === "Région"),
-          region: parentAreas.filter(
-            (area) =>
-              area.typology === "Département" && area.insee_region === code,
-          ),
-        }[level];
-      }
+    let childrenAreas;
+    if (level === "department") {
+      childrenAreas = await loadDepartmentCities(code);
+      selectedArea.childrenAreas = childrenAreas;
+    } else {
+      childrenAreas = {
+        country: parentAreas.filter((area) => area.type === "region"),
+        region: parentAreas.filter(
+          (area) =>
+            area.type === "department" && area.insee_reg === code,
+        ),
+      }[level];
+    }
+    if (level !== 'epci') {
       const geoJSON = await fetchGeoJSON(level, code);
       const processedGeoJSON = processGeoJSON(geoJSON, childrenAreas);
       selectedArea.geoJSON = processedGeoJSON;
-      // if (level === 'department') {
-      //   selectedArea.geoJSONEPCI = processGeoJSONEPCI(processedGeoJSON)
-      // }
+      if (level === 'department') {
+        selectedArea.geoJSONEPCI = processGeoJSONEPCI(processedGeoJSON)
+      }
     }
-    if (typeof selectedArea.Communes_par_score === "string") {
-      selectedArea.Communes_par_score = JSON.parse(
-        selectedArea.Communes_par_score,
-      );
-    }
-    setSelectedAreas({
-      ...selectedAreas,
-      [level]: selectedArea,
-    });
+    return selectedArea;
   };
 
   const processGeoJSON = (geoJSON, childrenAreas) => {
@@ -145,24 +152,24 @@ export default function CartographieConformite() {
       );
       if (!record) return feature;
 
-      const score = Math.random() * 3;
-
-      // const score = record.Typologie === 'Commune'
-      //   ? JSON.parse(record.Score)
-      //   : JSON.parse(record.Score_moyen);
-
+      let score;
+      try {
+        score = displayedStatRefs.reduce((acc, ref) => {
+          return acc + (record.rcpnt.indexOf(ref) > -1 ? 1 : 0)
+        }, 0)
+      } catch (err) {
+        console.log('no score')
+      }
       return {
         ...feature,
         properties: {
-          INSEE_GEO: feature.properties.CODE,
-          INSEE_REGION: record.Code_INSEE_region,
-          INSEE_DEPARTMENT: record.Code_INSEE_departement,
-          INSEE_EPCI: record.Code_INSEE_EPCI,
           NAME: feature.properties.NOM,
+          TYPE: record.type,
+          INSEE_GEO: feature.properties.CODE,
+          INSEE_REG: record.insee_reg,
+          INSEE_DEP: record.insee_dep,
+          EPCI_SIREN: record.epci_siren,
           SCORE: score,
-          TYPOLOGY: record.typology,
-          // COMPOSANTS_SCORE: JSON.parse(record.Composants_score || '{}'),
-          // LIEN_ANNUAIRE_SERVICE_PUBLIC: record.Lien_Annuaire_Service_Public
         },
       };
     });
@@ -173,64 +180,73 @@ export default function CartographieConformite() {
     };
   };
 
-  // const processGeoJSONEPCI = (geoJSON) => {
-  //   const features = geoJSON.features.map(f => JSON.parse(JSON.stringify(f)));
-  //   const groupedFeatures = d3.group(features, d => d.properties.CODE_INSEE_EPCI);
-  //   const processedGeoJSONFeatures = Array.from(groupedFeatures, ([epciCode, features]) => {
-  //     let merged;
-  //     if (features.length === 1) {
-  //       merged = features[0];
-  //     } else {
-  //       merged = turf.union(turf.featureCollection(features), {}, {
-  //         id: epciCode
-  //       })
-  //     }
-  //     const record = parentAreas.find(r => r.Code_INSEE_geographique === epciCode)
-  //     merged.properties = {
-  //       LIBELLE: record ? record. : 'EPCI inconnue',
-  //       CODE_INSEE_GEOGRAPHIQUE: record ? record.Code_INSEE_geographique : 'EPCI inconnue',
-  //       CODE_INSEE_REGION: record ? record.Code_INSEE_region : 'EPCI inconnue',
-  //       CODE_INSEE_DEPARTEMENT: record ? record.Code_INSEE_departement : 'EPCI inconnue',
-  //       SCORE: record ? JSON.parse(record.Score_moyen) : {},
-  //       TYPOLOGIE: record ? record.Typologie : 'EPCI inconnue',
-  //     }
-  //     return merged
-  //   });
-  //   return processedGeoJSONFeatures
-  // }
+  const processGeoJSONEPCI = (geoJSON) => {
+    const features = geoJSON.features.map(f => JSON.parse(JSON.stringify(f)));
+    const groupedFeatures = d3.group(features, d => d.properties.EPCI_SIREN);
+    const processedGeoJSONFeatures = Array.from(groupedFeatures, ([epciSiren, features]) => {
+      let merged;
+      if (features.length === 1) {
+        merged = features[0];
+      } else {
+        merged = turf.union(turf.featureCollection(features), {}, {
+          id: epciSiren
+        })
+      }
+      const record = parentAreas.find(r => r.insee_geo === epciSiren)
+      merged.properties = {
+        NAME: record ? record.name : 'EPCI inconnue',
+        TYPE: 'epci',
+        INSEE_GEO: record ? record.insee_geo : 'EPCI inconnue',
+        INSEE_REG: record ? record.insee_reg : 'EPCI inconnue',
+        INSEE_DEP: record ? record.insee_dep : 'EPCI inconnue',
+        // SCORE: record ? JSON.parse(record.Score_moyen) : {},
+      }
+      return merged
+    });
+    return processedGeoJSONFeatures
+  }
 
   // INTERACTIONS
+  const selectLevel = async (level, code) => {
+    console.log('selectLevel', level, code)
+    setCurrentLevel(level);
+
+    // const levels = ['country', 'region', 'department', 'epci', 'city']
+    // const newSelectedAreas = levels.reduce((acc, lev) => {
+    //   if (levels.indexOf(lev) > levels.indexOf(level)) {
+    //     acc[lev] = selectedAreas[lev]
+    //   }
+    //   return acc
+    // }, {})
+
+    let areasToAdd = {};
+    if (
+      (level === "department" && !selectedAreas["region"]) ||
+      (level === "epci" && !selectedAreas["department"])
+    ) {
+      const selectedAreaData = parentAreas.find((area) => area.insee_geo === code);
+      const parentLevel = level === "department" ? "region" : "department";
+      const parentCode = level === "department" ? selectedAreaData.insee_reg : selectedAreaData.insee_dep;
+      areasToAdd[parentLevel] = await computeSelectedArea(parentLevel, parentCode);
+    }
+    if (!selectedAreas[level]) {
+      areasToAdd[level] = await computeSelectedArea(level, code);
+    }
+    setSelectedAreas({
+      ...selectedAreas,
+      ...areasToAdd,
+    })
+  };
+
   const handleAreaClick = async (properties) => {
     if (
       (currentLevel === "department" && departmentView === "city") ||
       currentLevel === "epci"
     ) {
-      selectCity(properties);
+      setSelectedCity({ insee_geo: properties.INSEE_GEO, insee_dep: properties.INSEE_DEP });
       return;
     }
     await selectLevel(nextLevel, properties.INSEE_GEO);
-  };
-
-  const selectLevel = async (level, code) => {
-    console.log("selectLevel", level, code);
-    setCurrentLevel(level);
-    const selectedArea = parentAreas.find((area) => area.insee_geo === code);
-
-    if (
-      (level === "department" && !selectedAreas["region"]) ||
-      (level === "epci" && !selectedAreas["department"])
-    ) {
-      const parentLevel = level === "department" ? "region" : "department";
-      const parentCode =
-        level === "department"
-          ? selectedArea.insee_region
-          : selectedArea.insee_departement;
-      await setSelectedArea(parentLevel, parentCode);
-    }
-
-    if (!selectedAreas[level]) {
-      await setSelectedArea(level, code);
-    }
   };
 
   const getBackLevel = async (level) => {
@@ -253,66 +269,38 @@ export default function CartographieConformite() {
     }
   };
 
-  const selectCity = (properties) => {
-    setSelectedAreas({
-      ...selectedAreas,
-      city: {
-        insee_geo: properties.INSEE_GEO,
-        // Composants_score: properties.COMPOSANTS_SCORE || '{}',
-        score: properties.SCORE,
-        name: properties.NAME,
-        // Lien_Annuaire_Service_Public: properties.LIEN_ANNUAIRE_SERVICE_PUBLIC
-      },
-    });
-  };
-
   const handleQuickNav = async (community) => {
-    setTimeout(() => {
-      if (community.typology === "EPCI à fiscalité propre") {
-        setDepartmentView("epci");
-      } else {
-        setDepartmentView("city");
-      }
-    }, 300);
-    const level = {
-      Région: "region",
-      Département: "department",
-      Commune: "department",
-      "EPCI à fiscalité propre": "epci",
-    }[community.typology];
-    const codeKey = {
-      Région: "Code_INSEE_geographique",
-      Département: "Code_INSEE_geographique",
-      "EPCI à fiscalité propre": "Code_INSEE_geographique",
-      Commune: "Code_INSEE_departement",
-    }[community.typology];
+    if (community.type === "epci") {
+      setDepartmentView("epci");
+    } else {
+      setDepartmentView("city");
+    }
     setSelectedAreas({
       country: selectedAreas.country,
     });
-    await selectLevel(level, community[codeKey]);
-
-    if (community.typology === "Commune") {
-      const cityProperties = selectedAreas["department"].geoJSON.features.find(
-        (feature) => feature.properties.INSEE_GEO === community.insee_geo,
-      ).properties;
-      selectCity(cityProperties);
+    const level = community.type === 'commune' ? 'department' : community.type;
+    let code;
+    if (community.type === 'epci') {
+      code = community['siret'].slice(0, 9)
+    } else if (community.type === 'commune') {
+      code = community['insee_dep']
+    } else {
+      code = community['insee_geo']
     }
+    const cityInfo = community.type === 'commune' ? { insee_geo: community.insee_geo, insee_dep: community.insee_dep } : null
+    setCommunityToSelect({ level, code, cityInfo })
   };
 
   // RENDERING
   const getColor = (score) => {
-    return score === null ? colorsConfig.defaultColor : colorScale(score);
+    return score === null || score === undefined ? colorsConfig.defaultColor : colorScale(score);
   };
 
-  const geoJSONStyle = () => {
-    // const geoJSONStyle = (_feature) => {
-    const isSelected = false;
-    // const isSelected = selectedAreas?.city?.Code_INSEE_geographique === feature.properties.CODE_INSEE_GEOGRAPHIQUE;
-    // const score = getValueForPeriod(properties.SCORE, period.value)
-    const score = Math.random() * 3;
-
+  const geoJSONStyle = (feature) => {
+    const isSelected = selectedAreas?.city?.insee_geo === feature.properties.INSEE_GEO;
+    // const score = getValueForPeriod(feature.properties.SCORE, period.value)
     return {
-      fillColor: getColor(score),
+      fillColor: getColor(feature.properties.SCORE),
       weight: isSelected ? 3 : 2,
       opacity: 1,
       color: isSelected ? "#1E293B" : "#FFFFFF",
@@ -322,11 +310,11 @@ export default function CartographieConformite() {
 
   const onEachFeature = (feature, layer) => {
     const tooltipContent = `
-      <div class="bg-white p-2">
-        <p class="font-bold text-base text-slate-800">${feature.properties.NAME}</p>
+      <div style={{ backgroundColor: "white", padding: "0.5rem" }}>
+        <p style={{ fontWeight: "bold", fontSize: "1.2rem", color: "#1E293B" }}>${feature.properties.NAME}</p>
         ${
           currentLevel === "department" && departmentView === "city"
-            ? "<p>Cliquez pour afficher les détails</p>"
+            ? "<p style={{ fontSize: '0.8rem', color: '#64748B' }}>Cliquez pour afficher les détails</p>"
             : ""
         }
       </div>
@@ -360,11 +348,11 @@ export default function CartographieConformite() {
     let displayedGeoJSON;
     if (currentLevel === "department" && departmentView === "epci") {
       displayedGeoJSON = selectedAreas[currentLevel].geoJSONEPCI;
-    } else if (currentLevel === "epci") {
+    } else if (currentLevel === "epci" && selectedAreas["department"]?.geoJSON) {
       displayedGeoJSON = { ...selectedAreas["department"].geoJSON };
       displayedGeoJSON.features = displayedGeoJSON.features.filter(
         (feature) =>
-          feature.properties.INSEE_EPCI ===
+          feature.properties.EPCI_SIREN ===
           selectedAreas[currentLevel].insee_geo,
       );
     } else {
@@ -407,6 +395,48 @@ export default function CartographieConformite() {
   };
 
   useEffect(() => {
+    const selectCommunity = async () => {
+      if (communityToSelect) {
+        await selectLevel(communityToSelect.level, communityToSelect.code);
+        if (communityToSelect.cityInfo) {
+          setSelectedCity(communityToSelect.cityInfo);
+        }
+      }
+    }
+    selectCommunity();
+  }, [communityToSelect])
+
+  useEffect(() => {
+    if (selectedAreas?.city?.insee_geo === selectedCity?.insee_geo) {
+      return;
+    }
+    if (selectedCity && selectedAreas['department'] && selectedCity.insee_dep === selectedAreas['department'].insee_geo) {
+      const cityProperties = selectedAreas['department'].childrenAreas.find(
+        (feature) => feature.insee_geo === selectedCity.insee_geo,
+      );
+      if (!cityProperties) {
+        return;
+      }
+      setSelectedAreas({
+        ...selectedAreas,
+        city: {
+          insee_geo: cityProperties.insee_geo,
+          // Composants_score: properties.COMPOSANTS_SCORE || '{}',
+          score: cityProperties.score,
+          name: cityProperties.name,
+        },
+      });
+    }
+  }, [selectedCity, selectedAreas])
+
+  useEffect(() => {
+    // const loadAllStats = async () => {
+    //   const regionStats = await loadStats('region');
+    //   const departementStats = await loadStats('departement');
+    //   const epciStats = await loadStats('epci');
+    //   setStats({ region: regionStats, departement: departementStats, epci: epciStats });
+    // }
+    // loadAllStats();
     selectLevel("country", "00");
   }, []);
 
@@ -417,6 +447,7 @@ export default function CartographieConformite() {
           position: "absolute",
           zIndex: 1000,
           pointerEvents: "none",
+          top: 20,
           bottom: 20,
           left: 20,
           transformOrigin: "bottom left",
@@ -424,7 +455,7 @@ export default function CartographieConformite() {
       >
         <div
           style={{
-            height: "calc(100vh-2rem)",
+            height: "100%",
             overflow: "auto",
             width: "350px",
           }}
@@ -440,6 +471,8 @@ export default function CartographieConformite() {
             <AreaDisplay
               selectedAreas={selectedAreas}
               currentLevel={currentLevel}
+              departmentView={departmentView}
+              setDepartmentView={setDepartmentView}
               // period={period}
               periods={[
                 { value: "current", label: "Actuel" },
@@ -471,7 +504,7 @@ export default function CartographieConformite() {
           style={{
             height: "calc(100vh-2rem)",
             overflow: "auto",
-            width: "350px",
+            width: "300px",
           }}
         >
           <div
@@ -507,7 +540,7 @@ export default function CartographieConformite() {
 
         {currentGeoJSON && (
           <GeoJSON
-            key={`geojson-${currentLevel}-${JSON.stringify(Object.keys(selectedAreas))}`}
+            key={`geojson-${Object.keys(selectedAreas).map(key => `${key}-${selectedAreas[key]?.insee_geo || ''}`).join('-')}-${departmentView}`}
             data={currentGeoJSON}
             style={geoJSONStyle}
             onEachFeature={onEachFeature}
