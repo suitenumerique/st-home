@@ -70,6 +70,7 @@
     "@sentry/nextjs": "^8.54.0",
     "@socialgouv/matomo-next": "^1.9.2",
     "@swc-node/register": "^1.10.9",
+    "@turf/turf": "^7.2.0",
     "d3": "^7.9.0",
     "debounce": "^2.0.0",
     "dotenv": "^16.4.5",

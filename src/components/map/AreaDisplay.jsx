@@ -60,6 +60,8 @@ export default function AreaDisplay({
   period,
   // periods,
   getBackLevel,
+  departmentView,
+  setDepartmentView,
   getValueForPeriod,
   getColor,
   dataIsLoaded,
@@ -67,17 +69,16 @@ export default function AreaDisplay({
   // setShowInfo,
   // setPeriod,
 }) {
-  const [departmentView, setDepartmentView] = useState("city");
 
   // Styles
   const styles = {
     container: {
-      backgroundColor: "white",
       borderRadius: "0.75rem",
       boxShadow:
         "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
       padding: "1.5rem",
       pointerEvents: "auto",
+      backgroundColor: "white",
     },
     containerNoShadow: {
       backgroundColor: "white",
@@ -107,8 +108,9 @@ export default function AreaDisplay({
     },
     title: {
       fontWeight: "bold",
-      fontSize: "1.875rem",
+      fontSize: "1.6rem",
       color: "#1e293b",
+      lineHeight: "1.2",
       marginBottom: "0.5rem",
     },
     title2: {
@@ -122,13 +124,12 @@ export default function AreaDisplay({
       flexDirection: "row",
       alignItems: "center",
       columnGap: "1rem",
-      marginBottom: "1rem",
-      borderBottom: "1px solid #e2e8f0",
       paddingBottom: "1rem",
     },
     viewLabel: {
       fontSize: "1rem",
       color: "#64748b",
+      marginBottom: "0",
     },
     viewOption: {
       cursor: "pointer",
@@ -294,7 +295,6 @@ export default function AreaDisplay({
     <>
       <div
         style={{
-          backgroundColor: "white",
           borderRadius: "xl",
           boxShadow: "lg",
           padding: "6px",
@@ -309,7 +309,6 @@ export default function AreaDisplay({
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    marginBottom: "0.5rem",
                   }}
                 >
                   {currentLevel === "region" && (
@@ -317,7 +316,7 @@ export default function AreaDisplay({
                       onClick={() => getBackLevel("country")}
                       style={styles.backLink}
                     >
-                      <p style={{ display: "flex", alignItems: "center" }}>
+                      <p style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}>
                         <span style={{ marginRight: "0.5rem" }}>
                           <Undo2 />
                         </span>
@@ -336,6 +335,7 @@ export default function AreaDisplay({
                           display: "flex",
                           alignItems: "center",
                           textOverflow: "ellipsis",
+                          marginBottom: "0.5rem",
                         }}
                       >
                         <span style={{ marginRight: "0.5rem" }}>
@@ -356,6 +356,7 @@ export default function AreaDisplay({
                           display: "flex",
                           alignItems: "center",
                           textOverflow: "ellipsis",
+                          marginBottom: "0.5rem",
                         }}
                       >
                         <span style={{ marginRight: "0.5rem" }}>
@@ -390,12 +391,12 @@ export default function AreaDisplay({
                 </div>
               )}
 
-              <p style={styles.communesText}>
+              {/* <p style={styles.communesText}>
                 {formatNumber(selectedAreas[currentLevel].Nombre_de_communes)}{" "}
                 communes
-              </p>
+              </p> */}
 
-              <div style={styles.scoreContainer}>
+              {/* <div style={styles.scoreContainer}>
                 {["3", "2", "1", "0"].map((score) => {
                   const percentage = Math.round(
                     (getValueForPeriod(
@@ -430,7 +431,8 @@ export default function AreaDisplay({
                     </div>
                   );
                 })}
-              </div>
+              </div> */}
+
             </div>
           ) : (
             <div style={styles.pulse}>
@@ -463,9 +465,8 @@ export default function AreaDisplay({
           )}
         </div>
       </div>
-      <div
+      {/* <div
         style={{
-          backgroundColor: "white",
           borderRadius: "xl",
           boxShadow: "lg",
           padding: "6px",
@@ -478,63 +479,58 @@ export default function AreaDisplay({
               <div>
                 <p style={styles.title2}>{selectedAreas["city"].Libelle}</p>
                 <div>
-                  {/* TLD OK Indicator */}
                   <div style={styles.indicatorContainer}>
-                    {/* <span style={styles.indicatorCircle(
+                    <span style={styles.indicatorCircle(
                       getColor(getValueForPeriod(selectedAreas['city'].Composants_score, period).indexOf('TLD OK') < 0 ? 0 : 3)
                     )}>
                       <span style={styles.indicatorText}>
                         {getValueForPeriod(selectedAreas['city'].Composants_score, period).indexOf('TLD OK') < 0 ? '×' : '✓'}
                       </span>
-                    </span> */}
+                    </span>
                     <span style={styles.indicatorLabel}>
                       Domaine et extension conformes
                     </span>
                   </div>
 
-                  {/* PROP Indicator */}
                   <div style={styles.indicatorContainer}>
-                    {/* <span style={styles.indicatorCircle(
+                    <span style={styles.indicatorCircle(
                       getColor(getValueForPeriod(selectedAreas['city'].Composants_score, period).indexOf('PROP') < 0 ? 0 : 3)
                     )}>
                       <span style={styles.indicatorText}>
                         {getValueForPeriod(selectedAreas['city'].Composants_score, period).indexOf('PROP') < 0 ? '×' : '✓'}
                       </span>
-                    </span> */}
+                    </span>
                     <span style={styles.indicatorLabel}>
                       Propriété du domaine
                     </span>
                   </div>
 
-                  {/* HTTPS Indicator */}
                   <div style={styles.indicatorContainer}>
-                    {/* <span style={styles.indicatorCircle(
+                    <span style={styles.indicatorCircle(
                       getColor(getValueForPeriod(selectedAreas['city'].Composants_score, period).indexOf('HTTPS') < 0 ? 0 : 3)
                     )}>
                       <span style={styles.indicatorText}>
                         {getValueForPeriod(selectedAreas['city'].Composants_score, period).indexOf('HTTPS') < 0 ? '×' : '✓'}
                       </span>
-                    </span> */}
+                    </span>
                     <span style={styles.indicatorLabel}>
                       Site web conforme (HTTPS)
                     </span>
                   </div>
 
-                  {/* MAIL OK Indicator */}
                   <div style={styles.indicatorContainer}>
-                    {/* <span style={styles.indicatorCircle(
+                    <span style={styles.indicatorCircle(
                       getColor(getValueForPeriod(selectedAreas['city'].Composants_score, period).indexOf('MAIL OK') < 0 ? 0 : 3)
                     )}>
                       <span style={styles.indicatorText}>
                         {getValueForPeriod(selectedAreas['city'].Composants_score, period).indexOf('MAIL OK') < 0 ? '×' : '✓'}
                       </span>
-                    </span> */}
+                    </span>
                     <span style={styles.indicatorLabel}>
                       Messagerie conforme
                     </span>
                   </div>
 
-                  {/* Update Data Link */}
                   <p style={styles.updateText}>Mettre à jour les données</p>
                   <a
                     href={`${selectedAreas["city"].Lien_Annuaire_Service_Public}/demande-de-mise-a-jour`}
@@ -562,7 +558,7 @@ export default function AreaDisplay({
             )}
           </div>
         )}
-      </div>
+      </div> */}
       {/* <div style={{ backgroundColor: 'white', borderRadius: 'xl', boxShadow: 'lg', padding: '6px', pointerEvents: 'auto' }}>
         <div style={styles.containerWithShadow}>
           <div style={styles.dataHeader}>
