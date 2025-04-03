@@ -79,7 +79,7 @@ export default function CartographieConformite() {
       departement: 'dep',
       epci: 'epci',
     }
-    const response = await fetch(`/api/rcpnt/stats?scope=${scope[level]}&ref=${displayedStatRefs.join(',')}`, {
+    const response = await fetch(`/api/rcpnt/stats?scope=${scope[level]}&refs=a`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
       next: { revalidate: 3600 },
@@ -136,7 +136,7 @@ export default function CartographieConformite() {
     }
     if (level !== 'epci') {
       const geoJSON = await fetchGeoJSON(level, code);
-      const processedGeoJSON = processGeoJSON(geoJSON, childrenAreas);
+      const processedGeoJSON = processGeoJSON(level, geoJSON, childrenAreas);
       selectedArea.geoJSON = processedGeoJSON;
       if (level === 'department') {
         selectedArea.geoJSONEPCI = processGeoJSONEPCI(processedGeoJSON)
@@ -145,7 +145,7 @@ export default function CartographieConformite() {
     return selectedArea;
   };
 
-  const processGeoJSON = (geoJSON, childrenAreas) => {
+  const processGeoJSON = (level, geoJSON, childrenAreas) => {
     const features = geoJSON.features.map((feature) => {
       const record = childrenAreas.find(
         (r) => r.insee_geo === feature.properties.CODE,
@@ -153,13 +153,20 @@ export default function CartographieConformite() {
       if (!record) return feature;
 
       let score;
+      console.log(stats, level, feature.properties)
       try {
-        score = displayedStatRefs.reduce((acc, ref) => {
-          return acc + (record.rcpnt.indexOf(ref) > -1 ? 1 : 0)
-        }, 0)
+        if (level === 'department') {
+          score = displayedStatRefs.reduce((acc, ref) => {
+            return acc + (record.rcpnt.indexOf(ref) > -1 ? 1 : 0)
+          }, 0)
+        } else {
+          const stat = stats[level][feature.properties.CODE]
+          score = (stat.valid / stat.total) * 3
+        }
       } catch (err) {
         console.log('no score')
       }
+
       return {
         ...feature,
         properties: {
@@ -430,13 +437,13 @@ export default function CartographieConformite() {
   }, [selectedCity, selectedAreas])
 
   useEffect(() => {
-    // const loadAllStats = async () => {
-    //   const regionStats = await loadStats('region');
-    //   const departementStats = await loadStats('departement');
-    //   const epciStats = await loadStats('epci');
-    //   setStats({ region: regionStats, departement: departementStats, epci: epciStats });
-    // }
-    // loadAllStats();
+    const loadAllStats = async () => {
+      const regionStats = await loadStats('region');
+      const departementStats = await loadStats('departement');
+      const epciStats = await loadStats('epci');
+      setStats({ region: regionStats, departement: departementStats, epci: epciStats });
+    }
+    loadAllStats();
     selectLevel("country", "00");
   }, []);
 

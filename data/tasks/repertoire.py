@@ -13,7 +13,6 @@ def dump_repertoire_structures():
     records = GristApi().list_records(
         table_id="ORGANISATIONS"
     )  # ,filter={"Typologie":["OPSN","Centre de gestion"]})
-    print(records)
     if records[0] != 200:
         raise Exception("Failed to fetch organisations")
     with open("dumps/structures.json", "w", encoding="utf-8") as f:
