@@ -23,7 +23,6 @@ function MapViewHandler({ bounds }) {
 }
 
 export default function CartographieConformite() {
-  const displayedStatRefs = ['1.a', '2.a'];
   const [stats, setStats] = useState({});
   const [currentLevel, setCurrentLevel] = useState("country");
   const [selectedAreas, setSelectedAreas] = useState({});
@@ -50,8 +49,8 @@ export default function CartographieConformite() {
   };
 
   const colorsConfig = {
-    domain: [0, 1, 2, 3],
-    range: ["#ef4444", "#f97316", "#22c55e"], // removed #eab308
+    domain: [0, 1, 2],
+    range: ["#ef4444", "#eab308", "#22c55e"], // removed #f97316
     defaultColor: "#000000",
   };
 
@@ -79,7 +78,7 @@ export default function CartographieConformite() {
       departement: 'dep',
       epci: 'epci',
     }
-    const response = await fetch(`/api/rcpnt/stats?scope=${scope[level]}&refs=a`, {
+    const response = await fetch(`/api/rcpnt/stats?scope=${scope[level]}&refs=1.a,2.a,a`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
       next: { revalidate: 3600 },
@@ -154,20 +153,23 @@ export default function CartographieConformite() {
 
       const downLevel = {
         country: 'region',
-        region: 'departement',
-        departement: 'epci',
+        region: 'departement'
       }
 
       let score;
-      console.log(stats, level, feature.properties)
       try {
         if (level === 'department') {
-          score = displayedStatRefs.reduce((acc, ref) => {
+          score = ['1.a', '2.a'].reduce((acc, ref) => {
             return acc + (record.rcpnt.indexOf(ref) > -1 ? 1 : 0)
           }, 0)
         } else {
-          const stat = stats[downLevel[level]][feature.properties.CODE.replace(/^r/,"")][0]
-          score = (stat.valid / stat.total) * 3
+          const stat = stats[downLevel[level]][feature.properties.CODE.replace(/^r/,"")]
+          const stat_a = stat.find(s => s.ref === 'a')
+          const stat_1a = stat.find(s => s.ref === '1.a')
+          const stat_2a = stat.find(s => s.ref === '2.a')
+          const n_score_2 = stat_a.valid
+          const n_score_1 = stat_1a.valid - stat_a.valid + stat_2a.valid - stat_a.valid
+          score = (n_score_2 * 2 + n_score_1 * 1) / stat_a.total
         }
       } catch (err) {
         console.log('no score', err)
@@ -206,13 +208,27 @@ export default function CartographieConformite() {
         })
       }
       const record = parentAreas.find(r => r.insee_geo === epciSiren)
+
+      let score;
+      try {
+        const stat = stats['epci'][epciSiren]
+        const stat_a = stat.find(s => s.ref === 'a')
+        const stat_1a = stat.find(s => s.ref === '1.a')
+        const stat_2a = stat.find(s => s.ref === '2.a')
+        const n_score_2 = stat_a.valid
+        const n_score_1 = stat_1a.valid - stat_a.valid + stat_2a.valid - stat_a.valid
+        score = (n_score_2 * 2 + n_score_1 * 1) / stat_a.total
+      } catch (err) {
+        console.log('no score', err)
+      }
+
       merged.properties = {
         NAME: record ? record.name : 'EPCI inconnue',
         TYPE: 'epci',
         INSEE_GEO: record ? record.insee_geo : 'EPCI inconnue',
         INSEE_REG: record ? record.insee_reg : 'EPCI inconnue',
         INSEE_DEP: record ? record.insee_dep : 'EPCI inconnue',
-        // SCORE: record ? JSON.parse(record.Score_moyen) : {},
+        SCORE: score,
       }
       return merged
     });
@@ -224,31 +240,30 @@ export default function CartographieConformite() {
     console.log('selectLevel', level, code)
     setCurrentLevel(level);
 
-    // const levels = ['country', 'region', 'department', 'epci', 'city']
-    // const newSelectedAreas = levels.reduce((acc, lev) => {
-    //   if (levels.indexOf(lev) > levels.indexOf(level)) {
-    //     acc[lev] = selectedAreas[lev]
-    //   }
-    //   return acc
-    // }, {})
+    const levels = ['country', 'region', 'department', 'epci', 'city']
+    const newSelectedAreas = levels.reduce((acc, lev) => {
+      if (levels.indexOf(lev) < levels.indexOf(level)) {
+        acc[lev] = selectedAreas[lev]
+      }
+      return acc
+    }, {})
 
-    let areasToAdd = {};
+    console.log('newSelectedAreas', newSelectedAreas)
+
     if (
-      (level === "department" && !selectedAreas["region"]) ||
-      (level === "epci" && !selectedAreas["department"])
+      (level === "department" && !newSelectedAreas["region"]) ||
+      (level === "epci" && !newSelectedAreas["department"])
     ) {
       const selectedAreaData = parentAreas.find((area) => area.insee_geo === code);
       const parentLevel = level === "department" ? "region" : "department";
       const parentCode = level === "department" ? selectedAreaData.insee_reg : selectedAreaData.insee_dep;
-      areasToAdd[parentLevel] = await computeSelectedArea(parentLevel, parentCode);
+      newSelectedAreas[parentLevel] = await computeSelectedArea(parentLevel, parentCode);
     }
-    if (!selectedAreas[level]) {
-      areasToAdd[level] = await computeSelectedArea(level, code);
+    if (!newSelectedAreas[level]) {
+      newSelectedAreas[level] = await computeSelectedArea(level, code);
     }
-    setSelectedAreas({
-      ...selectedAreas,
-      ...areasToAdd,
-    })
+    console.log('newSelectedAreas', newSelectedAreas)
+    setSelectedAreas(newSelectedAreas)
   };
 
   const handleAreaClick = async (properties) => {
@@ -263,23 +278,24 @@ export default function CartographieConformite() {
   };
 
   const getBackLevel = async (level) => {
-    setCurrentLevel(level);
-    if (level === "country") {
-      setSelectedAreas({
-        country: selectedAreas.country,
-      });
-    } else if (level === "region") {
-      setSelectedAreas({
-        ...selectedAreas,
-        department: null,
-        city: null,
-      });
-    } else if (level === "department") {
-      setSelectedAreas({
-        ...selectedAreas,
-        epci: null,
-      });
-    }
+    // setCurrentLevel(level);
+    await selectLevel(level, selectedAreas[level].insee_geo);
+    // if (level === "country") {
+    //   setSelectedAreas({
+    //     country: selectedAreas.country,
+    //   });
+    // } else if (level === "region") {
+    //   setSelectedAreas({
+    //     ...selectedAreas,
+    //     department: null,
+    //     city: null,
+    //   });
+    // } else if (level === "department") {
+    //   setSelectedAreas({
+    //     ...selectedAreas,
+    //     epci: null,
+    //   });
+    // }
   };
 
   const handleQuickNav = async (community) => {
