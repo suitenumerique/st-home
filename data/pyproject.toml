@@ -43,7 +43,7 @@ line-length = 99
 
 
 [tool.ruff.lint]
-ignore = ["DJ001", "PLR2004", "S101", "PLR0913", "PLR0911", "BLE001", "S113", "PLR0915", "S602", "PLR0912"]
+ignore = ["DJ001", "PLR2004", "S101", "PLR0913", "PLR0911", "BLE001", "S113", "PLR0915", "S602", "PLR0912", "S607"]
 select = [
     "B",     # flake8-bugbear
     "BLE",   # flake8-blind-except

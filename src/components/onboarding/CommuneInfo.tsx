@@ -182,18 +182,8 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
             </MessageLine>
           )}
 
-          {!rcpnt.includes("1.7") && (
-            <MessageLine severity="warning" rcpnt="1.7">
-              Le domaine{" "}
-              <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
-                {commune.website_domain}
-              </Link>{" "}
-              est déclaré en HTTP (et non HTTPS) sur Service-Public.fr.
-            </MessageLine>
-          )}
-
           {issues.includes("WEBSITE_HTTPS_NOWWW") && (
-            <MessageLine severity="warning" rcpnt="1.8">
+            <MessageLine severity="warning" rcpnt="1.7">
               L&rsquo;adresse{" "}
               <strong>
                 https://
@@ -204,13 +194,23 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
           )}
 
           {issues.includes("WEBSITE_HTTP_NOWWW") && (
-            <MessageLine severity="warning" rcpnt="1.8">
+            <MessageLine severity="warning" rcpnt="1.7">
               L&rsquo;adresse{" "}
               <strong>
                 http://
                 {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
               </strong>{" "}
               (sans www.) ne redirige pas correctement vers le site internet de la commune.
+            </MessageLine>
+          )}
+
+          {!rcpnt.includes("1.8") && (
+            <MessageLine severity="warning" rcpnt="1.8">
+              Le domaine{" "}
+              <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
+                {commune.website_domain}
+              </Link>{" "}
+              est déclaré en HTTP (et non HTTPS) sur Service-Public.fr.
             </MessageLine>
           )}
 
