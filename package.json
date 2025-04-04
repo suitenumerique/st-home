@@ -19,6 +19,7 @@
     "start": "next start",
     "start:local": "dotenv -e .env.local -- next start",
     "prepare": "husky",
+    "data:shell": "docker-compose run --rm -e PYTHONPATH=/app/data worker bash",
     "data:sync": "docker-compose run --rm worker python -m tasks.sync",
     "data:sync:local": "dotenv -e .env.local -- docker-compose run --rm worker python -m tasks.sync",
     "data:queue_all": "docker-compose run --rm worker sh -c 'celery -A celery_app call tasks.check_website.queue_all && celery -A celery_app call tasks.check_dns.queue_all'",

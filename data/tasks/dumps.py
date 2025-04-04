@@ -13,7 +13,8 @@ def dump_dila():
     if Path("dumps/dila.json").exists():
         return
 
-    url = "https://lecomarquage.service-public.fr/donnees_locales_v4/all_latest.tar.bz2"
+    # https://www.data.gouv.fr/fr/datasets/service-public-fr-annuaire-de-l-administration-base-de-donnees-locales/
+    url = "https://www.data.gouv.fr/fr/datasets/r/73302880-e4df-4d4c-8676-1a61bb997f3d"
 
     # Stream download
     response = requests.get(url, stream=True)
