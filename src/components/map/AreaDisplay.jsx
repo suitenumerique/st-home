@@ -65,6 +65,7 @@ export default function AreaDisplay({
   getValueForPeriod,
   getColor,
   dataIsLoaded,
+  selectedCity,
   // showInfo,
   // setShowInfo,
   // setPeriod,
@@ -85,7 +86,7 @@ export default function AreaDisplay({
       borderRadius: "0.75rem",
       padding: "1.5rem",
       pointerEvents: "auto",
-      marginTop: "1rem",
+      marginTop: "0.5rem",
       color: "#64748b",
     },
     containerWithShadow: {
@@ -95,7 +96,7 @@ export default function AreaDisplay({
         "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
       padding: "1.5rem",
       pointerEvents: "auto",
-      marginTop: "1rem",
+      marginTop: "0.5rem",
       color: "#64748b",
     },
     backLink: {
@@ -391,47 +392,35 @@ export default function AreaDisplay({
                 </div>
               )}
 
-              {/* <p style={styles.communesText}>
-                {formatNumber(selectedAreas[currentLevel].Nombre_de_communes)}{" "}
-                communes
-              </p> */}
+              <p style={styles.communesText}>
+                {formatNumber(selectedAreas[currentLevel].conformityStats.n_cities)} communes
+              </p>
 
-              {/* <div style={styles.scoreContainer}>
-                {["3", "2", "1", "0"].map((score) => {
+              <div style={styles.scoreContainer}>
+                {["2", "1", "0"].map((scoreKey) => {
                   const percentage = Math.round(
-                    (getValueForPeriod(
-                      selectedAreas[currentLevel].Communes_par_score,
-                      period,
-                    )[score] /
-                      selectedAreas[currentLevel].Nombre_de_communes) *
-                      100,
+                    (selectedAreas[currentLevel].conformityStats.details[scoreKey] / selectedAreas[currentLevel].conformityStats.n_cities) * 100
                   );
 
                   return (
-                    <div key={score} style={{ position: "relative" }}>
+                    <div key={scoreKey} style={{ position: "relative" }}>
                       <div style={styles.scoreHeader}>
                         <span>
                           {formatNumber(
-                            getValueForPeriod(
-                              selectedAreas[currentLevel].Communes_par_score,
-                              period,
-                            )[score],
+                            selectedAreas[currentLevel].conformityStats.details[scoreKey]
                           )}
-                          ({percentage}%)
+                          &nbsp;({percentage}%)
                         </span>
                       </div>
                       <div style={styles.progressBarContainer}>
                         <div
-                          style={styles.progressBar(
-                            dataIsLoaded ? `${percentage}%` : "0%",
-                            getColor(parseInt(score)),
-                          )}
+                          style={styles.progressBar(`${percentage}%`, getColor(parseInt(scoreKey)))}
                         />
                       </div>
                     </div>
                   );
                 })}
-              </div> */}
+              </div>
 
             </div>
           ) : (
@@ -465,7 +454,7 @@ export default function AreaDisplay({
           )}
         </div>
       </div>
-      {/* <div
+      <div
         style={{
           borderRadius: "xl",
           boxShadow: "lg",
@@ -475,55 +464,30 @@ export default function AreaDisplay({
       >
         {(currentLevel === "department" || currentLevel === "epci") && (
           <div style={styles.containerNoShadow}>
-            {selectedAreas["city"] ? (
+            {selectedCity ? (
               <div>
-                <p style={styles.title2}>{selectedAreas["city"].Libelle}</p>
+                <p style={styles.title2}>{selectedCity.name}</p>
                 <div>
+
                   <div style={styles.indicatorContainer}>
                     <span style={styles.indicatorCircle(
-                      getColor(getValueForPeriod(selectedAreas['city'].Composants_score, period).indexOf('TLD OK') < 0 ? 0 : 3)
+                      getColor(selectedCity.rcpnt.indexOf('1.a') > -1 ? 2 : 0)
                     )}>
                       <span style={styles.indicatorText}>
-                        {getValueForPeriod(selectedAreas['city'].Composants_score, period).indexOf('TLD OK') < 0 ? '×' : '✓'}
+                        {selectedCity.rcpnt.indexOf('1.a') > -1 ? '✓' : '×'}
                       </span>
                     </span>
                     <span style={styles.indicatorLabel}>
-                      Domaine et extension conformes
+                      Site internet conforme
                     </span>
                   </div>
 
                   <div style={styles.indicatorContainer}>
                     <span style={styles.indicatorCircle(
-                      getColor(getValueForPeriod(selectedAreas['city'].Composants_score, period).indexOf('PROP') < 0 ? 0 : 3)
+                      getColor(selectedCity.rcpnt.indexOf('2.a') > -1 ? 2 : 0)
                     )}>
                       <span style={styles.indicatorText}>
-                        {getValueForPeriod(selectedAreas['city'].Composants_score, period).indexOf('PROP') < 0 ? '×' : '✓'}
-                      </span>
-                    </span>
-                    <span style={styles.indicatorLabel}>
-                      Propriété du domaine
-                    </span>
-                  </div>
-
-                  <div style={styles.indicatorContainer}>
-                    <span style={styles.indicatorCircle(
-                      getColor(getValueForPeriod(selectedAreas['city'].Composants_score, period).indexOf('HTTPS') < 0 ? 0 : 3)
-                    )}>
-                      <span style={styles.indicatorText}>
-                        {getValueForPeriod(selectedAreas['city'].Composants_score, period).indexOf('HTTPS') < 0 ? '×' : '✓'}
-                      </span>
-                    </span>
-                    <span style={styles.indicatorLabel}>
-                      Site web conforme (HTTPS)
-                    </span>
-                  </div>
-
-                  <div style={styles.indicatorContainer}>
-                    <span style={styles.indicatorCircle(
-                      getColor(getValueForPeriod(selectedAreas['city'].Composants_score, period).indexOf('MAIL OK') < 0 ? 0 : 3)
-                    )}>
-                      <span style={styles.indicatorText}>
-                        {getValueForPeriod(selectedAreas['city'].Composants_score, period).indexOf('MAIL OK') < 0 ? '×' : '✓'}
+                        {selectedCity.rcpnt.indexOf('2.a') > -1 ? '✓' : '×'}
                       </span>
                     </span>
                     <span style={styles.indicatorLabel}>
@@ -531,56 +495,16 @@ export default function AreaDisplay({
                     </span>
                   </div>
 
-                  <p style={styles.updateText}>Mettre à jour les données</p>
-                  <a
-                    href={`${selectedAreas["city"].Lien_Annuaire_Service_Public}/demande-de-mise-a-jour`}
-                    style={styles.updateLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <SquareArrowOutUpRight
-                      style={{
-                        marginRight: "0.5rem",
-                        width: "1.25rem",
-                        color: "#64748b",
-                      }}
-                    />
-                    <span style={styles.updateLinkText}>
-                      Annuaire Service Public - {selectedAreas["city"].Libelle}
-                    </span>
-                  </a>
                 </div>
               </div>
             ) : (
-              <p style={{ color: "#64748b" }}>
+              <p style={{ color: "#64748b", margin: 0 }}>
                 Cliquez sur une commune pour afficher les détails
               </p>
             )}
           </div>
         )}
-      </div> */}
-      {/* <div style={{ backgroundColor: 'white', borderRadius: 'xl', boxShadow: 'lg', padding: '6px', pointerEvents: 'auto' }}>
-        <div style={styles.containerWithShadow}>
-          <div style={styles.dataHeader}>
-            <p style={styles.dataTitle}>Données</p>
-            <select 
-              value={period} 
-              onChange={(e) => setPeriod(e.target.value)}
-              style={styles.dataSelect}
-            >
-              {periods.map(p => (
-                <option key={p.value} value={p.value}>{p.label}</option>
-              ))}
-            </select>
-          </div>
-          <div style={styles.infoButton} onClick={() => setShowInfo(true)}>
-            <p style={styles.infoText}>
-              <Info style={styles.infoIcon} />
-              En savoir plus sur cette carte
-            </p>
-          </div>
-        </div>
-      </div> */}
+      </div>
     </>
   );
 }
