@@ -30,11 +30,11 @@ export default function CartographieConformite() {
   const [layerBounds, setLayerBounds] = useState(null);
   const [selectedCity, setSelectedCity] = useState(null);
   const [communityToSelect, setCommunityToSelect] = useState(null);
+  const [cityToSelect, setCityToSelect] = useState(null);
 
   // const [dataIsLoaded, setDataIsLoaded] = useState(false);
   // const [periods, setPeriods] = useState([]);
   // const [period, setPeriod] = useState('last');
-  // const [showInfo, setShowInfo] = useState(false);
 
   const mapConfig = {
     defaultViewCoords: [46.603354, 1.888334],
@@ -75,7 +75,7 @@ export default function CartographieConformite() {
   const loadStats = async (level) => {
     const scope = {
       region: 'reg',
-      departement: 'dep',
+      department: 'dep',
       epci: 'epci',
     }
     const response = await fetch(`/api/rcpnt/stats?scope=${scope[level]}&refs=1.a,2.a,a`, {
@@ -85,6 +85,20 @@ export default function CartographieConformite() {
     });
     const data = await response.json();
     return data;
+  }
+
+  const loadAllStats = async () => {
+    const regionStats = await loadStats('region');
+    const departmentStats = await loadStats('department');
+    const epciStats = await loadStats('epci');
+    const countryStats = { '00': ['1.a', '2.a', 'a'].map(ref => {
+      return {
+        ref,
+        valid: Object.values(regionStats).reduce((acc, stat) => acc + stat.find(s => s.ref === ref).valid, 0),
+        total: Object.values(regionStats).reduce((acc, stat) => acc + stat.find(s => s.ref === ref).total, 0),
+      }
+    })}
+    setStats({ region: regionStats, department: departmentStats, epci: epciStats, country: countryStats });
   }
 
   const loadDepartmentCities = async (departmentCode) => {
@@ -116,10 +130,11 @@ export default function CartographieConformite() {
     console.log('computeSelectedArea', level, code)
     let selectedArea;
     if (level === "country") {
-      selectedArea = { name: "France" };
+      selectedArea = { insee_geo: "00", name: "France" };
     } else {
       selectedArea = parentAreas.find((area) => area.insee_geo === code);
     }
+    selectedArea.conformityStats = computeConformityStats(level, code)
     let childrenAreas;
     if (level === "department") {
       childrenAreas = await loadDepartmentCities(code);
@@ -151,11 +166,6 @@ export default function CartographieConformite() {
       );
       if (!record) return feature;
 
-      const downLevel = {
-        country: 'region',
-        region: 'departement'
-      }
-
       let score;
       try {
         if (level === 'department') {
@@ -163,6 +173,10 @@ export default function CartographieConformite() {
             return acc + (record.rcpnt.indexOf(ref) > -1 ? 1 : 0)
           }, 0)
         } else {
+          const downLevel = {
+            country: 'region',
+            region: 'department'
+          }
           const stat = stats[downLevel[level]][feature.properties.CODE.replace(/^r/,"")]
           const stat_a = stat.find(s => s.ref === 'a')
           const stat_1a = stat.find(s => s.ref === '1.a')
@@ -209,17 +223,18 @@ export default function CartographieConformite() {
       }
       const record = parentAreas.find(r => r.insee_geo === epciSiren)
 
-      let score;
-      try {
-        const stat = stats['epci'][epciSiren]
-        const stat_a = stat.find(s => s.ref === 'a')
-        const stat_1a = stat.find(s => s.ref === '1.a')
-        const stat_2a = stat.find(s => s.ref === '2.a')
-        const n_score_2 = stat_a.valid
-        const n_score_1 = stat_1a.valid - stat_a.valid + stat_2a.valid - stat_a.valid
-        score = (n_score_2 * 2 + n_score_1 * 1) / stat_a.total
-      } catch (err) {
-        console.log('no score', err)
+      const computeScore = (record) => {
+        try {
+          const stat = stats['epci'][record.insee_geo]
+          const stat_a = stat.find(s => s.ref === 'a')
+          const stat_1a = stat.find(s => s.ref === '1.a')
+          const stat_2a = stat.find(s => s.ref === '2.a')
+          const n_score_2 = stat_a.valid
+          const n_score_1 = stat_1a.valid - stat_a.valid + stat_2a.valid - stat_a.valid
+          return (n_score_2 * 2 + n_score_1 * 1) / stat_a.total
+        } catch (err) {
+          return null
+        }
       }
 
       merged.properties = {
@@ -228,11 +243,31 @@ export default function CartographieConformite() {
         INSEE_GEO: record ? record.insee_geo : 'EPCI inconnue',
         INSEE_REG: record ? record.insee_reg : 'EPCI inconnue',
         INSEE_DEP: record ? record.insee_dep : 'EPCI inconnue',
-        SCORE: score,
+        SCORE: record ? computeScore(record) : null,
       }
       return merged
     });
     return processedGeoJSONFeatures
+  }
+
+  const computeConformityStats = (level, code) => {
+    const stat = stats[level][code.replace(/^r/,"")]
+    const stat_a = stat.find(s => s.ref === 'a')
+    const stat_1a = stat.find(s => s.ref === '1.a')
+    const stat_2a = stat.find(s => s.ref === '2.a')
+    const n_cities = stat['2'].total
+    const n_score_2 = stat_a.valid
+    const n_score_1 = stat_1a.valid - stat_a.valid + stat_2a.valid - stat_a.valid
+    const score = (n_score_2 * 2 + n_score_1 * 1) / stat_a.total
+    return {
+      n_cities: n_cities,
+      score: score,
+      details: {
+        '0': n_cities - n_score_2 - n_score_1,
+        '1': n_score_1,
+        '2': n_score_2,
+      }
+    }
   }
 
   // INTERACTIONS
@@ -240,15 +275,13 @@ export default function CartographieConformite() {
     console.log('selectLevel', level, code)
     setCurrentLevel(level);
 
-    const levels = ['country', 'region', 'department', 'epci', 'city']
+    const levels = ['country', 'region', 'department', 'epci']
     const newSelectedAreas = levels.reduce((acc, lev) => {
       if (levels.indexOf(lev) < levels.indexOf(level)) {
         acc[lev] = selectedAreas[lev]
       }
       return acc
     }, {})
-
-    console.log('newSelectedAreas', newSelectedAreas)
 
     if (
       (level === "department" && !newSelectedAreas["region"]) ||
@@ -262,7 +295,6 @@ export default function CartographieConformite() {
     if (!newSelectedAreas[level]) {
       newSelectedAreas[level] = await computeSelectedArea(level, code);
     }
-    console.log('newSelectedAreas', newSelectedAreas)
     setSelectedAreas(newSelectedAreas)
   };
 
@@ -271,31 +303,17 @@ export default function CartographieConformite() {
       (currentLevel === "department" && departmentView === "city") ||
       currentLevel === "epci"
     ) {
-      setSelectedCity({ insee_geo: properties.INSEE_GEO, insee_dep: properties.INSEE_DEP });
+      const cityProperties = selectedAreas['department'].childrenAreas.find(
+        (feature) => feature.insee_geo === properties.INSEE_GEO,
+      );
+      setSelectedCity(cityProperties);
       return;
     }
     await selectLevel(nextLevel, properties.INSEE_GEO);
   };
 
   const getBackLevel = async (level) => {
-    // setCurrentLevel(level);
     await selectLevel(level, selectedAreas[level].insee_geo);
-    // if (level === "country") {
-    //   setSelectedAreas({
-    //     country: selectedAreas.country,
-    //   });
-    // } else if (level === "region") {
-    //   setSelectedAreas({
-    //     ...selectedAreas,
-    //     department: null,
-    //     city: null,
-    //   });
-    // } else if (level === "department") {
-    //   setSelectedAreas({
-    //     ...selectedAreas,
-    //     epci: null,
-    //   });
-    // }
   };
 
   const handleQuickNav = async (community) => {
@@ -316,8 +334,8 @@ export default function CartographieConformite() {
     } else {
       code = community['insee_geo']
     }
-    const cityInfo = community.type === 'commune' ? { insee_geo: community.insee_geo, insee_dep: community.insee_dep } : null
-    setCommunityToSelect({ level, code, cityInfo })
+    const cityToSelect = community.type === 'commune' ? { insee_geo: community.insee_geo } : null
+    setCommunityToSelect({ level, code, cityToSelect })
   };
 
   // RENDERING
@@ -326,8 +344,7 @@ export default function CartographieConformite() {
   };
 
   const geoJSONStyle = (feature) => {
-    const isSelected = selectedAreas?.city?.insee_geo === feature.properties.INSEE_GEO;
-    // const score = getValueForPeriod(feature.properties.SCORE, period.value)
+    const isSelected = selectedCity?.insee_geo === feature.properties.INSEE_GEO;
     return {
       fillColor: getColor(feature.properties.SCORE),
       weight: isSelected ? 3 : 2,
@@ -407,72 +424,41 @@ export default function CartographieConformite() {
     }
   };
 
-  // PERIODS
-  const getValueForPeriod = () => {
-    // const getValueForPeriod = (_data, _period) => {
-    return Math.random() * 3;
-    // let periodKey;
-    // if (period === 'last' && Object.keys(data).indexOf('last') > -1) {
-    //   periodKey = 'last'
-    // } else if (period === 'last') {
-    //   periodKey = Object.keys(data).pop()
-    // } else {
-    //   const closestPeriod = Object.keys(data).find(key => new Date(key) <= new Date(period));
-    //   periodKey = closestPeriod;
-    // }
-    // return data[periodKey];
-  };
-
+  // USE EFFECTS
   useEffect(() => {
-    const selectCommunity = async () => {
-      if (communityToSelect) {
-        await selectLevel(communityToSelect.level, communityToSelect.code);
-        if (communityToSelect.cityInfo) {
-          setSelectedCity(communityToSelect.cityInfo);
-        }
-      }
-    }
-    selectCommunity();
-  }, [communityToSelect])
-
-  useEffect(() => {
-    if (selectedAreas?.city?.insee_geo === selectedCity?.insee_geo) {
-      return;
-    }
-    if (selectedCity && selectedAreas['department'] && selectedCity.insee_dep === selectedAreas['department'].insee_geo) {
+    if (cityToSelect) {
       const cityProperties = selectedAreas['department'].childrenAreas.find(
-        (feature) => feature.insee_geo === selectedCity.insee_geo,
+        (feature) => feature.insee_geo === cityToSelect.insee_geo,
       );
-      if (!cityProperties) {
-        return;
-      }
-      setSelectedAreas({
-        ...selectedAreas,
-        city: {
-          insee_geo: cityProperties.insee_geo,
-          // Composants_score: properties.COMPOSANTS_SCORE || '{}',
-          score: cityProperties.score,
-          name: cityProperties.name,
-        },
-      });
+      setSelectedCity(cityProperties);
+      setCityToSelect(null)
     }
-  }, [selectedCity, selectedAreas])
+  }, [cityToSelect])
 
   useEffect(() => {
-    const loadAllStats = async () => {
-      const regionStats = await loadStats('region');
-      const departementStats = await loadStats('departement');
-      const epciStats = await loadStats('epci');
-      setStats({ region: regionStats, departement: departementStats, epci: epciStats });
+    const selectCity = async () => {
+      if (communityToSelect) {
+        await selectLevel(communityToSelect.level, communityToSelect.code)
+        setCityToSelect(communityToSelect.cityToSelect)
+        setCommunityToSelect(null)
+      }
     }
-    loadAllStats();
-  }, []);
+    selectCity();
+  }, [communityToSelect, selectedAreas])
+
+  useEffect(() => {
+    setSelectedCity(null)
+  }, [departmentView])
 
   useEffect(() => {
     if (Object.keys(stats).length > 0) {
       selectLevel("country", "00");
     }
   }, [stats]);
+
+  useEffect(() => {
+    loadAllStats();
+  }, []);
 
   return (
     <div style={{ height: "100%", width: "100%", position: "relative" }}>
@@ -504,18 +490,18 @@ export default function CartographieConformite() {
           >
             <AreaDisplay
               selectedAreas={selectedAreas}
+              selectedCity={selectedCity}
               currentLevel={currentLevel}
               departmentView={departmentView}
               setDepartmentView={setDepartmentView}
-              // period={period}
               periods={[
                 { value: "current", label: "Actuel" },
                 { value: "previous", label: "Précédent" },
               ]}
-              // setPeriod={setPeriod}
               getBackLevel={getBackLevel}
-              getValueForPeriod={getValueForPeriod}
               getColor={getColor}
+              // period={period}
+              // setPeriod={setPeriod}
               // dataIsLoaded={true}
               // showInfo={showInfo}
               // setShowInfo={setShowInfo}
