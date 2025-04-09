@@ -55,19 +55,12 @@ const SquareArrowOutUpRight = () => (
 // );
 
 export default function AreaDisplay({
-  selectedAreas,
-  currentLevel,
-  period,
-  // periods,
+  mapState,
+  setMapState,
   getBackLevel,
-  departmentView,
-  setDepartmentView,
-  getValueForPeriod,
   getColor,
-  dataIsLoaded,
-  selectedCity,
-  // showInfo,
-  // setShowInfo,
+  // period,
+  // periods,
   // setPeriod,
 }) {
 
@@ -303,16 +296,16 @@ export default function AreaDisplay({
         }}
       >
         <div style={styles.container}>
-          {selectedAreas[currentLevel] ? (
+          {mapState.selectedAreas[mapState.currentLevel] ? (
             <div>
-              {Object.values(selectedAreas).length > 1 && (
+              {Object.values(mapState.selectedAreas).length > 1 && (
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
                   }}
                 >
-                  {currentLevel === "region" && (
+                  {mapState.currentLevel === "region" && (
                     <a
                       onClick={() => getBackLevel("country")}
                       style={styles.backLink}
@@ -326,7 +319,7 @@ export default function AreaDisplay({
                     </a>
                   )}
 
-                  {currentLevel === "department" && selectedAreas["region"] && (
+                  {mapState.currentLevel === "department" && mapState.selectedAreas["region"] && (
                     <a
                       onClick={() => getBackLevel("region")}
                       style={styles.backLink}
@@ -342,12 +335,12 @@ export default function AreaDisplay({
                         <span style={{ marginRight: "0.5rem" }}>
                           <Undo2 />
                         </span>
-                        {selectedAreas["region"].name}
+                        {mapState.selectedAreas["region"].name}
                       </p>
                     </a>
                   )}
 
-                  {currentLevel === "epci" && selectedAreas["department"] && (
+                  {mapState.currentLevel === "epci" && mapState.selectedAreas["department"] && (
                     <a
                       onClick={() => getBackLevel("department")}
                       style={styles.backLink}
@@ -363,25 +356,25 @@ export default function AreaDisplay({
                         <span style={{ marginRight: "0.5rem" }}>
                           <Undo2 />
                         </span>
-                        {selectedAreas["department"].name}
+                        {mapState.selectedAreas["department"].name}
                       </p>
                     </a>
                   )}
                 </div>
               )}
 
-              <p style={styles.title}>{selectedAreas[currentLevel].name}</p>
+              <p style={styles.title}>{mapState.selectedAreas[mapState.currentLevel].name}</p>
 
-              {currentLevel === "department" && (
+              {mapState.currentLevel === "department" && (
                 <div style={styles.viewContainer}>
                   <p style={styles.viewLabel}>Afficher les</p>
                   {["city", "epci"].map((view) => (
                     <a
                       key={view}
-                      onClick={() => setDepartmentView(view)}
+                      onClick={() => setMapState({ ...mapState, departmentView: view })}
                       style={{
                         ...styles.viewOption,
-                        ...(departmentView === view
+                        ...(mapState.departmentView === view
                           ? styles.viewOptionActive
                           : {}),
                       }}
@@ -393,13 +386,13 @@ export default function AreaDisplay({
               )}
 
               <p style={styles.communesText}>
-                {formatNumber(selectedAreas[currentLevel].conformityStats.n_cities)} communes
+                {formatNumber(mapState.selectedAreas[mapState.currentLevel].conformityStats.n_cities)} communes
               </p>
 
               <div style={styles.scoreContainer}>
                 {["2", "1", "0"].map((scoreKey) => {
                   const percentage = Math.round(
-                    (selectedAreas[currentLevel].conformityStats.details[scoreKey] / selectedAreas[currentLevel].conformityStats.n_cities) * 100
+                    (mapState.selectedAreas[mapState.currentLevel].conformityStats.details[scoreKey] / mapState.selectedAreas[mapState.currentLevel].conformityStats.n_cities) * 100
                   );
 
                   return (
@@ -407,7 +400,7 @@ export default function AreaDisplay({
                       <div style={styles.scoreHeader}>
                         <span>
                           {formatNumber(
-                            selectedAreas[currentLevel].conformityStats.details[scoreKey]
+                            mapState.selectedAreas[mapState.currentLevel].conformityStats.details[scoreKey]
                           )}
                           &nbsp;({percentage}%)
                         </span>
@@ -425,12 +418,12 @@ export default function AreaDisplay({
             </div>
           ) : (
             <div style={styles.pulse}>
-              {currentLevel !== "country" && (
+              {mapState.currentLevel !== "country" && (
                 <div style={styles.pulseSmall}></div>
               )}
               <div
                 style={
-                  currentLevel !== "country"
+                  mapState.currentLevel !== "country"
                     ? styles.pulseLarge
                     : styles.pulseMedium
                 }
@@ -462,19 +455,19 @@ export default function AreaDisplay({
           pointerEvents: "auto",
         }}
       >
-        {(currentLevel === "department" || currentLevel === "epci") && (
+        {((mapState.currentLevel === "department" && mapState.departmentView === "city") || (mapState.currentLevel === "epci")) && (
           <div style={styles.containerNoShadow}>
-            {selectedCity ? (
+            {mapState.selectedCity ? (
               <div>
-                <p style={styles.title2}>{selectedCity.name}</p>
+                <p style={styles.title2}>{mapState.selectedCity.name}</p>
                 <div>
 
                   <div style={styles.indicatorContainer}>
                     <span style={styles.indicatorCircle(
-                      getColor(selectedCity.rcpnt.indexOf('1.a') > -1 ? 2 : 0)
+                      getColor(mapState.selectedCity.rcpnt.indexOf('1.a') > -1 ? 2 : 0)
                     )}>
                       <span style={styles.indicatorText}>
-                        {selectedCity.rcpnt.indexOf('1.a') > -1 ? '✓' : '×'}
+                        {mapState.selectedCity.rcpnt.indexOf('1.a') > -1 ? '✓' : '×'}
                       </span>
                     </span>
                     <span style={styles.indicatorLabel}>
@@ -484,10 +477,10 @@ export default function AreaDisplay({
 
                   <div style={styles.indicatorContainer}>
                     <span style={styles.indicatorCircle(
-                      getColor(selectedCity.rcpnt.indexOf('2.a') > -1 ? 2 : 0)
+                      getColor(mapState.selectedCity.rcpnt.indexOf('2.a') > -1 ? 2 : 0)
                     )}>
                       <span style={styles.indicatorText}>
-                        {selectedCity.rcpnt.indexOf('2.a') > -1 ? '✓' : '×'}
+                        {mapState.selectedCity.rcpnt.indexOf('2.a') > -1 ? '✓' : '×'}
                       </span>
                     </span>
                     <span style={styles.indicatorLabel}>

@@ -39,7 +39,7 @@ const moduleExports = {
   productionBrowserSourceMaps: false,
 
   // This causes double-renders of pages in developement to avoid concurrency bugs!
-  reactStrictMode: true,
+  reactStrictMode: false,
 
   webpack: (config) => {
     config.module.rules.push({

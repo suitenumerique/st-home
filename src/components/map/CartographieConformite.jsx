@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import L from "leaflet";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { GeoJSON, MapContainer, TileLayer, useMap } from "react-leaflet";
 import * as turf from "@turf/turf";
 
@@ -24,15 +24,15 @@ function MapViewHandler({ bounds }) {
 
 export default function CartographieConformite() {
   const [stats, setStats] = useState({});
-  const [currentLevel, setCurrentLevel] = useState("country");
-  const [selectedAreas, setSelectedAreas] = useState({});
-  const [departmentView, setDepartmentView] = useState("city");
+  const [mapState, setMapState] = useState({
+    currentLevel: "country",
+    selectedAreas: {},
+    departmentView: "city",
+    selectedCity: null,
+  });
   const [layerBounds, setLayerBounds] = useState(null);
-  const [selectedCity, setSelectedCity] = useState(null);
-  const [communityToSelect, setCommunityToSelect] = useState(null);
-  const [cityToSelect, setCityToSelect] = useState(null);
+  const selectedLayerRef = useRef(null);
 
-  // const [dataIsLoaded, setDataIsLoaded] = useState(false);
   // const [periods, setPeriods] = useState([]);
   // const [period, setPeriod] = useState('last');
 
@@ -60,16 +60,16 @@ export default function CartographieConformite() {
     .range(colorsConfig.range);
 
   const nextLevel = useMemo(() => {
-    if (currentLevel === "department" && departmentView === "epci") {
-      return "epci";
+    if (mapState.currentLevel === "department") {
+      return mapState.departmentView === "epci" ? "epci" : 'city'
     }
     const levelTransitions = {
       country: "region",
       region: "department",
-      department: null,
+      epci: "city",
     };
-    return levelTransitions[currentLevel] || null;
-  }, [currentLevel, departmentView]);
+    return levelTransitions[mapState.currentLevel] || null;
+  }, [mapState.currentLevel, mapState.departmentView]);
 
   // DATA LOADING
   const loadStats = async (level) => {
@@ -126,7 +126,7 @@ export default function CartographieConformite() {
   };
 
   // PROCESSING
-  const computeSelectedArea = async (level, code) => {
+  const computeSelectedArea = async (level, code, withGeoJSON = false) => {
     console.log('computeSelectedArea', level, code)
     let selectedArea;
     if (level === "country") {
@@ -134,30 +134,60 @@ export default function CartographieConformite() {
     } else {
       selectedArea = parentAreas.find((area) => area.insee_geo === code);
     }
-    selectedArea.conformityStats = computeConformityStats(level, code)
-    let childrenAreas;
-    if (level === "department") {
-      childrenAreas = await loadDepartmentCities(code);
-      selectedArea.childrenAreas = childrenAreas;
-    } else {
-      childrenAreas = {
-        country: parentAreas.filter((area) => area.type === "region"),
-        region: parentAreas.filter(
-          (area) =>
-            area.type === "department" && area.insee_reg === code,
-        ),
-      }[level];
-    }
-    if (level !== 'epci') {
-      const geoJSON = await fetchGeoJSON(level, code);
-      const processedGeoJSON = processGeoJSON(level, geoJSON, childrenAreas);
-      selectedArea.geoJSON = processedGeoJSON;
-      if (level === 'department') {
-        selectedArea.geoJSONEPCI = processGeoJSONEPCI(processedGeoJSON)
+    if (withGeoJSON) {
+      selectedArea.conformityStats = computeAreaStats(level, { insee_geo: code })
+      let childrenAreas;
+      if (level === "department") {
+        childrenAreas = await loadDepartmentCities(code);
+        selectedArea.childrenAreas = childrenAreas;
+      } else {
+        childrenAreas = {
+          country: parentAreas.filter((area) => area.type === "region"),
+          region: parentAreas.filter(
+            (area) =>
+              area.type === "department" && area.insee_reg === code,
+          ),
+        }[level];
+      }
+      if (level !== 'epci') {
+        const geoJSON = await fetchGeoJSON(level, code);
+        const processedGeoJSON = processGeoJSON(level, geoJSON, childrenAreas);
+        selectedArea.geoJSON = processedGeoJSON;
+        if (level === 'department') {
+          selectedArea.geoJSONEPCI = processGeoJSONEPCI(processedGeoJSON)
+        }
       }
     }
     return selectedArea;
   };
+
+  const computeAreaStats = (level, record) => {
+    if (level === 'city') {
+      return {
+        score: ['1.a', '2.a'].reduce((acc, ref) => {
+          return acc + (record.rcpnt.indexOf(ref) > -1 ? 1 : 0)
+        }, 0)
+      }
+    } else {
+      const stat = stats[level][record.insee_geo.replace('r', '')]
+      const stat_a = stat.find(s => s.ref === 'a')
+      const stat_1a = stat.find(s => s.ref === '1.a')
+      const stat_2a = stat.find(s => s.ref === '2.a')
+      const n_cities = stat['2'].total
+      const n_score_2 = stat_a.valid
+      const n_score_1 = stat_1a.valid - stat_a.valid + stat_2a.valid - stat_a.valid
+      const score = (n_score_2 * 2 + n_score_1 * 1) / stat_a.total
+      return {
+        n_cities: n_cities,
+        score: score,
+        details: {
+          '0': n_cities - n_score_2 - n_score_1,
+          '1': n_score_1,
+          '2': n_score_2,
+        }
+      }
+    }
+  }
 
   const processGeoJSON = (level, geoJSON, childrenAreas) => {
     const features = geoJSON.features.map((feature) => {
@@ -165,30 +195,12 @@ export default function CartographieConformite() {
         (r) => r.insee_geo === feature.properties.CODE,
       );
       if (!record) return feature;
-
-      let score;
-      try {
-        if (level === 'department') {
-          score = ['1.a', '2.a'].reduce((acc, ref) => {
-            return acc + (record.rcpnt.indexOf(ref) > -1 ? 1 : 0)
-          }, 0)
-        } else {
-          const downLevel = {
-            country: 'region',
-            region: 'department'
-          }
-          const stat = stats[downLevel[level]][feature.properties.CODE.replace(/^r/,"")]
-          const stat_a = stat.find(s => s.ref === 'a')
-          const stat_1a = stat.find(s => s.ref === '1.a')
-          const stat_2a = stat.find(s => s.ref === '2.a')
-          const n_score_2 = stat_a.valid
-          const n_score_1 = stat_1a.valid - stat_a.valid + stat_2a.valid - stat_a.valid
-          score = (n_score_2 * 2 + n_score_1 * 1) / stat_a.total
-        }
-      } catch (err) {
-        console.log('no score', err)
-      }
-
+      const scoreLevel = {
+        'country': 'region',
+        'region': 'department',
+        'department': 'city',
+      }[level]
+      const score = computeAreaStats(scoreLevel, record).score
       return {
         ...feature,
         properties: {
@@ -223,119 +235,102 @@ export default function CartographieConformite() {
       }
       const record = parentAreas.find(r => r.insee_geo === epciSiren)
 
-      const computeScore = (record) => {
-        try {
-          const stat = stats['epci'][record.insee_geo]
-          const stat_a = stat.find(s => s.ref === 'a')
-          const stat_1a = stat.find(s => s.ref === '1.a')
-          const stat_2a = stat.find(s => s.ref === '2.a')
-          const n_score_2 = stat_a.valid
-          const n_score_1 = stat_1a.valid - stat_a.valid + stat_2a.valid - stat_a.valid
-          return (n_score_2 * 2 + n_score_1 * 1) / stat_a.total
-        } catch (err) {
-          return null
-        }
-      }
-
       merged.properties = {
         NAME: record ? record.name : 'EPCI inconnue',
         TYPE: 'epci',
         INSEE_GEO: record ? record.insee_geo : 'EPCI inconnue',
         INSEE_REG: record ? record.insee_reg : 'EPCI inconnue',
         INSEE_DEP: record ? record.insee_dep : 'EPCI inconnue',
-        SCORE: record ? computeScore(record) : null,
+        SCORE: record ? computeAreaStats('epci', record).score : null,
       }
       return merged
     });
     return processedGeoJSONFeatures
   }
 
-  const computeConformityStats = (level, code) => {
-    const stat = stats[level][code.replace(/^r/,"")]
-    const stat_a = stat.find(s => s.ref === 'a')
-    const stat_1a = stat.find(s => s.ref === '1.a')
-    const stat_2a = stat.find(s => s.ref === '2.a')
-    const n_cities = stat['2'].total
-    const n_score_2 = stat_a.valid
-    const n_score_1 = stat_1a.valid - stat_a.valid + stat_2a.valid - stat_a.valid
-    const score = (n_score_2 * 2 + n_score_1 * 1) / stat_a.total
-    return {
-      n_cities: n_cities,
-      score: score,
-      details: {
-        '0': n_cities - n_score_2 - n_score_1,
-        '1': n_score_1,
-        '2': n_score_2,
-      }
-    }
-  }
-
   // INTERACTIONS
-  const selectLevel = async (level, code) => {
-    console.log('selectLevel', level, code)
-    setCurrentLevel(level);
+  const selectLevel = async (level, code, source = 'areaClick') => {
+    console.log('selectLevel', level, code, source)
 
-    const levels = ['country', 'region', 'department', 'epci']
-    const newSelectedAreas = levels.reduce((acc, lev) => {
-      if (levels.indexOf(lev) < levels.indexOf(level)) {
-        acc[lev] = selectedAreas[lev]
+    const allLevels = ['epci', 'department', 'region', 'country']
+    const parentLevels = allLevels.slice(allLevels.indexOf(level) + 1)
+
+    let newSelectedAreas;
+    if (source === 'quickNav') {
+      newSelectedAreas = { country: mapState.selectedAreas.country }
+    } else if (source == 'backClick') {
+      newSelectedAreas = parentLevels.reduce((acc, lev) => {
+        acc[lev] = mapState.selectedAreas[lev]
+        return acc
+      }, {})
+    } else {
+      newSelectedAreas = { ...mapState.selectedAreas }
+    }
+
+    if (source === 'quickNav') {
+      for (const parentLevel of parentLevels) {
+        if (parentLevel === 'epci' || parentLevel === 'country') {
+          continue
+        }
+        let parentCode;
+        if (!newSelectedAreas[parentLevel]) { 
+          if (parentLevel === 'department') {
+            if (level === 'epci') {
+              parentCode = parentAreas.find(p => p.insee_geo === code).insee_dep
+            } else if (level === 'city') {
+              parentCode = code.slice(0, 2)
+            }
+          } else {
+            parentCode = newSelectedAreas['department'].insee_reg
+          }
+          const withGeoJSON = parentLevel === 'department'
+          newSelectedAreas[parentLevel] = await computeSelectedArea(parentLevel, parentCode, withGeoJSON)
+        }
       }
-      return acc
-    }, {})
+    }
 
-    if (
-      (level === "department" && !newSelectedAreas["region"]) ||
-      (level === "epci" && !newSelectedAreas["department"])
-    ) {
-      const selectedAreaData = parentAreas.find((area) => area.insee_geo === code);
-      const parentLevel = level === "department" ? "region" : "department";
-      const parentCode = level === "department" ? selectedAreaData.insee_reg : selectedAreaData.insee_dep;
-      newSelectedAreas[parentLevel] = await computeSelectedArea(parentLevel, parentCode);
+    if (level !== "city") {
+      newSelectedAreas[level] = await computeSelectedArea(level, code, true);
     }
-    if (!newSelectedAreas[level]) {
-      newSelectedAreas[level] = await computeSelectedArea(level, code);
+
+    const newMapState = {
+      selectedAreas: newSelectedAreas
     }
-    setSelectedAreas(newSelectedAreas)
+
+    if (level === "city") {
+      const selectedCity = newSelectedAreas["department"].childrenAreas.find(c => c.insee_geo === code)
+      newMapState.selectedCity = selectedCity
+    }
+
+    newMapState.departmentView = newSelectedAreas["epci"] ? "epci" : "city"
+    if (level === "city") {
+      newMapState.currentLevel = newSelectedAreas["epci"] ? "epci" : "department"
+    } else {
+      newMapState.currentLevel = level
+    }
+
+    newMapState.updateBounds = source !== 'areaClick' || level !== 'city'
+
+    setMapState(newMapState)
   };
 
   const handleAreaClick = async (properties) => {
-    if (
-      (currentLevel === "department" && departmentView === "city") ||
-      currentLevel === "epci"
-    ) {
-      const cityProperties = selectedAreas['department'].childrenAreas.find(
-        (feature) => feature.insee_geo === properties.INSEE_GEO,
-      );
-      setSelectedCity(cityProperties);
-      return;
-    }
-    await selectLevel(nextLevel, properties.INSEE_GEO);
+    await selectLevel(nextLevel, properties.INSEE_GEO, 'areaClick');
   };
 
   const getBackLevel = async (level) => {
-    await selectLevel(level, selectedAreas[level].insee_geo);
+    await selectLevel(level, mapState.selectedAreas[level].insee_geo, 'backClick');
   };
 
   const handleQuickNav = async (community) => {
-    if (community.type === "epci") {
-      setDepartmentView("epci");
-    } else {
-      setDepartmentView("city");
-    }
-    setSelectedAreas({
-      country: selectedAreas.country,
-    });
-    const level = community.type === 'commune' ? 'department' : community.type;
+    const level = community.type === 'commune' ? 'city' : community.type;
     let code;
     if (community.type === 'epci') {
       code = community['siret'].slice(0, 9)
-    } else if (community.type === 'commune') {
-      code = community['insee_dep']
     } else {
       code = community['insee_geo']
     }
-    const cityToSelect = community.type === 'commune' ? { insee_geo: community.insee_geo } : null
-    setCommunityToSelect({ level, code, cityToSelect })
+    await selectLevel(level, code, 'quickNav')
   };
 
   // RENDERING
@@ -344,7 +339,7 @@ export default function CartographieConformite() {
   };
 
   const geoJSONStyle = (feature) => {
-    const isSelected = selectedCity?.insee_geo === feature.properties.INSEE_GEO;
+    const isSelected = mapState.selectedCity?.insee_geo === feature.properties.INSEE_GEO;
     return {
       fillColor: getColor(feature.properties.SCORE),
       weight: isSelected ? 3 : 2,
@@ -356,17 +351,21 @@ export default function CartographieConformite() {
 
   const onEachFeature = (feature, layer) => {
     const tooltipContent = `
-      <div style={{ backgroundColor: "white", padding: "0.5rem" }}>
-        <p style={{ fontWeight: "bold", fontSize: "1.2rem", color: "#1E293B" }}>${feature.properties.NAME}</p>
+      <div style="backgroundColor: white; padding: 0.5rem">
+        <p style="font-weight: bold; font-size: 1rem; color: #1E293B; margin-bottom: 0">${feature.properties.NAME}</p>
         ${
-          currentLevel === "department" && departmentView === "city"
-            ? "<p style={{ fontSize: '0.8rem', color: '#64748B' }}>Cliquez pour afficher les détails</p>"
+          mapState.currentLevel === "department" && mapState.departmentView === "city"
+            ? "<p style='font-size: 0.8rem; color: #64748B; margin-bottom: 0'>Cliquez pour afficher les détails</p>"
             : ""
         }
       </div>
     `;
 
     layer.bindTooltip(tooltipContent, { permanent: false });
+
+    if (mapState.selectedCity?.insee_geo === feature.properties.INSEE_GEO) {
+      selectedLayerRef.current = layer;
+    }
 
     layer.on({
       mouseover: (e) => {
@@ -377,11 +376,14 @@ export default function CartographieConformite() {
           color: currentColor,
           opacity: 0.9,
         });
-        layer.bringToFront();
+        layer.bringToFront()
       },
       mouseout: (e) => {
         const layer = e.target;
         layer.setStyle(geoJSONStyle(feature));
+        if (mapState.selectedCity?.insee_geo !== feature.properties.INSEE_GEO) {
+          layer.bringToBack()
+        }
       },
       click: () => {
         handleAreaClick(feature.properties);
@@ -390,26 +392,29 @@ export default function CartographieConformite() {
   };
 
   const currentGeoJSON = useMemo(() => {
-    if (!selectedAreas[currentLevel]) return null;
+    if (!mapState.selectedAreas[mapState.currentLevel]) return null;
     let displayedGeoJSON;
-    if (currentLevel === "department" && departmentView === "epci") {
-      displayedGeoJSON = selectedAreas[currentLevel].geoJSONEPCI;
-    } else if (currentLevel === "epci" && selectedAreas["department"]?.geoJSON) {
-      displayedGeoJSON = { ...selectedAreas["department"].geoJSON };
+    if (mapState.currentLevel === "department" && mapState.departmentView === "epci") {
+      displayedGeoJSON = mapState.selectedAreas[mapState.currentLevel].geoJSONEPCI;
+    } else if (mapState.currentLevel === "epci" && mapState.selectedAreas["department"]?.geoJSON) {
+      displayedGeoJSON = { ...mapState.selectedAreas["department"].geoJSON };
       displayedGeoJSON.features = displayedGeoJSON.features.filter(
         (feature) =>
           feature.properties.EPCI_SIREN ===
-          selectedAreas[currentLevel].insee_geo,
+          mapState.selectedAreas[mapState.currentLevel].insee_geo,
       );
     } else {
-      displayedGeoJSON = selectedAreas[currentLevel].geoJSON;
+      displayedGeoJSON = mapState.selectedAreas[mapState.currentLevel].geoJSON;
     }
     return displayedGeoJSON;
-  }, [selectedAreas, currentLevel, departmentView]);
+  }, [mapState]);
 
   const onGeoJSONAdd = (e) => {
     try {
-      if (currentLevel === "country") {
+      if (!mapState.updateBounds) {
+        return
+      }
+      if (mapState.currentLevel === "country") {
         const bounds = L.latLngBounds([
           [41.3, -5.2],
           [51.1, 9.5],
@@ -419,36 +424,15 @@ export default function CartographieConformite() {
         const bounds = e.target.getBounds();
         setLayerBounds(bounds);
       }
+      setTimeout(() => {
+        if (selectedLayerRef.current && mapState.selectedCity) {
+          selectedLayerRef.current.bringToFront();
+        }
+      }, 0);
     } catch (err) {
       console.error("Error getting bounds:", err);
     }
   };
-
-  // USE EFFECTS
-  useEffect(() => {
-    if (cityToSelect) {
-      const cityProperties = selectedAreas['department'].childrenAreas.find(
-        (feature) => feature.insee_geo === cityToSelect.insee_geo,
-      );
-      setSelectedCity(cityProperties);
-      setCityToSelect(null)
-    }
-  }, [cityToSelect])
-
-  useEffect(() => {
-    const selectCity = async () => {
-      if (communityToSelect) {
-        await selectLevel(communityToSelect.level, communityToSelect.code)
-        setCityToSelect(communityToSelect.cityToSelect)
-        setCommunityToSelect(null)
-      }
-    }
-    selectCity();
-  }, [communityToSelect, selectedAreas])
-
-  useEffect(() => {
-    setSelectedCity(null)
-  }, [departmentView])
 
   useEffect(() => {
     if (Object.keys(stats).length > 0) {
@@ -489,22 +473,16 @@ export default function CartographieConformite() {
             }}
           >
             <AreaDisplay
-              selectedAreas={selectedAreas}
-              selectedCity={selectedCity}
-              currentLevel={currentLevel}
-              departmentView={departmentView}
-              setDepartmentView={setDepartmentView}
-              periods={[
-                { value: "current", label: "Actuel" },
-                { value: "previous", label: "Précédent" },
-              ]}
+              mapState={mapState}
+              setMapState={setMapState}
               getBackLevel={getBackLevel}
               getColor={getColor}
+              // periods={[
+              //   { value: "current", label: "Actuel" },
+              //   { value: "previous", label: "Précédent" },
+              // ]}
               // period={period}
               // setPeriod={setPeriod}
-              // dataIsLoaded={true}
-              // showInfo={showInfo}
-              // setShowInfo={setShowInfo}
             />
           </div>
         </div>
@@ -560,8 +538,8 @@ export default function CartographieConformite() {
 
         {currentGeoJSON && (
           <GeoJSON
-            key={`geojson-${Object.keys(selectedAreas).map(key => `${key}-${selectedAreas[key]?.insee_geo || ''}`).join('-')}-${departmentView}`}
-            data={currentGeoJSON}
+          key={`geojson-${Object.keys(mapState.selectedAreas).map(key => `${key}-${mapState.selectedAreas[key]?.insee_geo || ''}`).join('-')}-${mapState.departmentView}-${mapState.selectedCity?.insee_geo || 'none'}`}
+          data={currentGeoJSON}
             style={geoJSONStyle}
             onEachFeature={onEachFeature}
             eventHandlers={{
