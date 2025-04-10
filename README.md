@@ -55,3 +55,44 @@ npm run db:seed:local
 # lancer tous les tests
 npm test
 ```
+
+
+## Mise à jour des fichiers geoJSON
+
+### Prérequis
+
+- Mapshaper installé sur votre système ([https://github.com/mbloch/mapshaper](https://github.com/mbloch/mapshaper))
+
+### Procédure
+
+#### 1. Téléchargement des données
+
+Télécharger la dernière version des données ADMIN EXPRESS de l'IGN, version France Entière, depuis :
+[https://geoservices.ign.fr/adminexpress](https://geoservices.ign.fr/adminexpress)
+
+#### 2. Génération du geoJSON des régions
+
+```bash
+mapshaper -i REGION.shp snap -proj wgs84 -simplify 5% weighted keep-shapes -filter-fields INSEE_REG,NOM -rename-fields CODE=INSEE_REG -o format=geojson precision=0.00001 france.json
+```
+
+#### 3. Génération des geoJSON des départements par région
+
+```bash
+mapshaper -i REGION.shp name=regions -i DEPARTEMENT.shp name=depts -clip target=depts source=regions -proj wgs84 -simplify 5% weighted keep-shapes -filter-fields INSEE_DEP,INSEE_REG,NOM -rename-fields CODE=INSEE_DEP -split INSEE_REG -o format=geojson precision=0.00001
+```
+
+#### 4. Génération des geoJSON des communes par département
+
+```bash
+mapshaper -i DEPARTEMENT.shp name=depts -i COMMUNE.shp name=communes -clip target=communes source=depts -proj wgs84 -simplify 5% weighted keep-shapes -filter-fields INSEE_COM,INSEE_DEP,NOM -rename-fields CODE=INSEE_COM -split INSEE_DEP -o format=geojson precision=0.00001
+```
+
+### Résultats
+
+Cette procédure générera :
+- Un fichier `france.json` contenant les données des régions
+- Des fichiers séparés pour chaque région, contenant l'ensemble des départements de cette région
+- Des fichiers séparés pour département, contenant l'ensemble des communes de ce département
+
+
