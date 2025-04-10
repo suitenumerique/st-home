@@ -31,9 +31,15 @@
   margin-top: 0 !important;
 }
 
+.rcpnt-section p:has(+ ul),
+.rcpnt-section p:has(+ ol) {
+  margin-bottom: 0 !important;
+}
+
 .rcpnt-section ul,
 .rcpnt-section ol {
   margin-left: 1rem;
+  margin-bottom: 1rem;
 }
 
 html,

@@ -19,6 +19,7 @@ interface CommuneSearchProps {
   onSelect?: (commune: Commune) => void;
   placeholder?: string;
   type?: "commune" | "epci" | "all";
+  smallButton?: boolean;
 }
 
 interface SearchInputProps {
@@ -208,13 +209,18 @@ function CommuneSearchInput(
   );
 }
 
-export default function CommuneSearch({ onSelect, placeholder, type = "all" }: CommuneSearchProps) {
+export default function CommuneSearch({
+  onSelect,
+  placeholder,
+  type = "all",
+  smallButton = false,
+}: CommuneSearchProps) {
   return (
     <>
       <SearchBar
         style={{ width: "100%" }}
         label="Rechercher une commune"
-        big
+        big={!smallButton}
         renderInput={({ id }) => (
           <CommuneSearchInput
             id={id}

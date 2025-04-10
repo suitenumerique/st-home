@@ -91,6 +91,7 @@ DOMAIN_EXTENSIONS_ALLOWED = [
     "bzh",
     "corsica",
     "paris",
+    "eu",
     # Outre-mer
     "gp",  # Guadeloupe
     "gf",  # Guyane
