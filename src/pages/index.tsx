@@ -77,15 +77,7 @@ export default function Home() {
           adresse de messagerie.
           <br />
           <br />
-          Voir notre{" "}
-          <Link
-            href="https://grist.incubateur.anct.gouv.fr/o/anct/gVoLeTsdJL8q/Suite-territoriale-Deploiement?embed=true"
-            target="_blank"
-            rel="noopener"
-          >
-            Cartographie de conformité
-          </Link>
-          .
+          Voir notre <Link href="/conformite/cartographie">Cartographie de conformité</Link>.
         </>
       ),
     },
@@ -101,9 +93,7 @@ export default function Home() {
     //       <br />
     //       Voir notre{" "}
     //       <Link
-    //         href="https://grist.incubateur.anct.gouv.fr/o/anct/gVoLeTsdJL8q/Suite-territoriale-Deploiement?embed=true"
-    //         target="_blank"
-    //         rel="noopener"
+    //         href="/conformite/cartographie"
     //       >
     //         Cartographie de conformité
     //       </Link>
@@ -121,15 +111,7 @@ export default function Home() {
           <strong>.re</strong>, ...) constituent une marque de confiance suffisante.
           <br />
           <br />
-          Voir notre{" "}
-          <Link
-            href="https://grist.incubateur.anct.gouv.fr/o/anct/gVoLeTsdJL8q/Suite-territoriale-Deploiement?embed=true"
-            target="_blank"
-            rel="noopener"
-          >
-            Cartographie de conformité
-          </Link>
-          .
+          Voir notre <Link href="/conformite/cartographie">Cartographie de conformité</Link>.
         </>
       ),
     },
@@ -202,15 +184,7 @@ export default function Home() {
           impossible : wanadoo.fr, orange.fr, gmail.com, yahoo.fr, etc.
           <br />
           <br />
-          Voir notre{" "}
-          <Link
-            href="https://grist.incubateur.anct.gouv.fr/o/anct/gVoLeTsdJL8q/Suite-territoriale-Deploiement?embed=true"
-            target="_blank"
-            rel="noopener"
-          >
-            Cartographie de conformité
-          </Link>
-          .
+          Voir notre <Link href="/conformite/cartographie">Cartographie de conformité</Link>.
         </>
       ),
     },
@@ -510,7 +484,7 @@ export default function Home() {
                 iconPosition="right"
                 iconId="fr-icon-map-pin-2-line"
                 linkProps={{
-                  href: "https://grist.incubateur.anct.gouv.fr/o/anct/gVoLeTsdJL8q/Suite-territoriale-Deploiement?embed=true",
+                  href: "/conformite/cartographie",
                 }}
               >
                 Voir la carte

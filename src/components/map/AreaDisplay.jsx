@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import Link from "next/link";
 // Icon components
 const Undo2 = () => (
   <svg
@@ -487,6 +487,8 @@ export default function AreaDisplay({
                       Messagerie conforme
                     </span>
                   </div>
+
+                  <Link className="fr-text--sm" href={`/bienvenue/${mapState.selectedCity.siret}`}>Plus de détails...</Link>
 
                 </div>
               </div>

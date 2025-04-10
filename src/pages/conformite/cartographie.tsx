@@ -36,16 +36,6 @@ export default function CartographiePage() {
           height: "calc(100% - 172.5px)",
         }}
       >
-        {/* <iframe
-          src="https://grist.incubateur.anct.gouv.fr/o/anct/gVoLeTsdJL8q/Suite-territoriale-Deploiement?embed=true"
-          style={{
-            width: "100%",
-            height: "100%",
-            border: "none",
-          }}
-          title="Cartographie du déploiement"
-          allow="fullscreen"
-        /> */}
         <CartographieConformite />
       </div>
     </>
