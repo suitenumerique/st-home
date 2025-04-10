@@ -52,7 +52,8 @@ export const MessageLine = ({ children, severity, rcpnt }: MessageLineProps): Re
           aria-hidden="true"
         />
       )}
-      {children} {rcpnt && <Link href={`/conformite/referentiel#${rcpnt}`}>En savoir plus...</Link>}
+      {children}{" "}
+      {rcpnt && <Link href={`/conformite/referentiel#${rcpnt}`}>Comprendre ce critère</Link>}
     </p>
   );
 };

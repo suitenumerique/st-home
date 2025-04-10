@@ -273,7 +273,7 @@ export default function CartographieConformite() {
           continue
         }
         let parentCode;
-        if (!newSelectedAreas[parentLevel]) { 
+        if (!newSelectedAreas[parentLevel]) {
           if (parentLevel === 'department') {
             if (level === 'epci') {
               parentCode = parentAreas.find(p => p.insee_geo === code).insee_dep
@@ -502,7 +502,7 @@ export default function CartographieConformite() {
           style={{
             height: "calc(100vh-2rem)",
             overflow: "auto",
-            width: "300px",
+            width: "310px",
           }}
         >
           <div
@@ -516,7 +516,8 @@ export default function CartographieConformite() {
             <div style={{ pointerEvents: "auto" }}>
               <CommuneSearch
                 onSelect={handleQuickNav}
-                placeholder="Région, département, EPCI ou commune"
+                placeholder="Recherche de commune ou EPCI"
+                smallButton={true}
               />
             </div>
           </div>
