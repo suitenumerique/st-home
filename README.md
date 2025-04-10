@@ -56,7 +56,6 @@ npm run db:seed:local
 npm test
 ```
 
-
 ## Mise à jour des fichiers geoJSON
 
 ### Prérequis
@@ -91,8 +90,7 @@ mapshaper -i DEPARTEMENT.shp name=depts -i COMMUNE.shp name=communes -clip targe
 ### Résultats
 
 Cette procédure générera :
+
 - Un fichier `france.json` contenant les données des régions
 - Des fichiers séparés pour chaque région, contenant l'ensemble des départements de cette région
 - Des fichiers séparés pour département, contenant l'ensemble des communes de ce département
-
-
