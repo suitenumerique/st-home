@@ -471,7 +471,7 @@ export default function AreaDisplay({
                       </span>
                     </span>
                     <span style={styles.indicatorLabel}>
-                      Site internet conforme
+                      {mapState.selectedCity.rcpnt.indexOf('1.a') > -1 ? 'Site internet conforme' : 'Site internet non conforme'}
                     </span>
                   </div>
 
@@ -484,7 +484,7 @@ export default function AreaDisplay({
                       </span>
                     </span>
                     <span style={styles.indicatorLabel}>
-                      Messagerie conforme
+                      {mapState.selectedCity.rcpnt.indexOf('2.a') > -1 ? 'Messagerie conforme' : 'Messagerie non conforme'}
                     </span>
                   </div>
 
