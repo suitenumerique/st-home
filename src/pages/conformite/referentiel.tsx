@@ -983,8 +983,14 @@ const ReferentielPage: NextPage = () => {
     const stat = stats.global.find((s) => s.ref === ref);
     if (!stat) return null;
 
+    const total_existing = ref.endsWith(".1")
+      ? stat.total
+      : (stats.global.find((s) => s.ref === ref.replace(/\.\d+$/, ".1")) || stat).valid;
+
     return {
       percentage: stat.total > 0 ? Math.round((stat.valid / stat.total) * 10000) / 100 : 0,
+      percentage_of_existing:
+        stat.total > 0 ? Math.round((stat.valid / total_existing) * 10000) / 100 : 0,
       valid: stat.valid,
       total: stat.total,
       valid_pop: stat.valid_pop,
@@ -1253,13 +1259,22 @@ const ReferentielPage: NextPage = () => {
                                     )}
                                     aria-hidden="true"
                                   />
-                                  {getStatsForRef(item.num)?.percentage}%
+                                  {getStatsForRef(item.num)?.percentage_of_existing}%
                                 </>
                               )}
                             </span>{" "}
                             <span>
                               {stats && getStatsForRef(item.num) && (
-                                <>des communes sont conformes à ce critère.</>
+                                <>
+                                  des communes{" "}
+                                  {!item.num.endsWith(".1") &&
+                                    (item.num.startsWith("1.") ? (
+                                      <>ayant un site internet</>
+                                    ) : (
+                                      <>ayant une adresse de messagerie</>
+                                    ))}{" "}
+                                  sont conformes à ce critère.
+                                </>
                               )}
                             </span>
                           </div>
