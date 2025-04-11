@@ -12,7 +12,7 @@ test("has commune search", async ({ page }) => {
   await page.goto(url);
 
   await expect(
-    page.getByPlaceholder("Renseignez le nom ou le code postal de votre commune"),
+    page.getByPlaceholder("Renseignez le nom ou le code postal de votre collectivité"),
   ).toBeVisible();
   await expect(page.getByRole("button", { name: "Rechercher" })).toBeVisible();
 });

@@ -16,8 +16,8 @@ export default function ComingSoonView({}: Props) {
       >
         <h2>La Suite territoriale arrive bientôt !</h2>
         <p>
-          Vous êtes agent public ou élu local du collectivité territoriale française ? Rejoignez le
-          Groupe pilote pour rester informé et tester les services.
+          Vous êtes agent public ou élu local d&rsquo;une collectivité territoriale française ?
+          Rejoignez le Groupe pilote pour rester informé et tester les services.
         </p>
         <Button
           linkProps={{
