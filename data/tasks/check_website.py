@@ -31,7 +31,7 @@ def run(siret):
         if issues is not None:
             upsert_issues(siret, "website", issues)
 
-        return issues
+        return {str(x): issues[x] for x in issues.keys()}
 
 
 @app.task
