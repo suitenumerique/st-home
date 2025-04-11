@@ -35,6 +35,27 @@ const DILA_LINK = (
   </Link>
 );
 
+const REF_INTRO = (
+  <>
+    <p>
+      Le <strong>Référentiel de Conformité de la Présence Numérique des Territoires</strong> (RCPNT)
+      est édité par l&rsquo;
+      <Link href="https://anct.gouv.fr/" target="_blank">
+        Agence nationale de la cohésion des territoires
+      </Link>{" "}
+      (ANCT). Il vise à garantir l&rsquo;identification officielle des collectivités dans leurs
+      usages numériques afin de renforcer leur sécurité en ligne et la confiance des usagers.
+    </p>
+    <p>
+      Les critères sont classés selon deux niveaux d&rsquo;importance : <strong>essentiel</strong>{" "}
+      ou <strong>recommandé</strong>. La conformité des collectivités est vérifiée quotidiennement à
+      partir des données connues de l&rsquo;administration française et de la Suite territoriale. Le
+      référentiel est structuré en deux parties qui correspondent aux principaux usages d&rsquo;un
+      nom de domaine : le site internet et l&rsquo;adresse de messagerie de la collectivité.
+    </p>
+  </>
+);
+
 const ReferentielConformite: ReferentielSection[] = [
   {
     id: "site-internet",
@@ -63,11 +84,11 @@ const ReferentielConformite: ReferentielSection[] = [
           <>
             Pour déclarer le site internet de votre commune sur {DILA_LINK} :
             <ol>
-              <li>Accédez à la page de votre mairie grâce à la barre de recherche ;</li>
-              <li>En bas de page, cliquez sur « mettre cette page à jour » ;</li>
+              <li>Accédez à la page de votre mairie grâce à la barre de recherche&nbsp;;</li>
+              <li>En bas de page, cliquez sur «&nbsp;Mettre cette page à jour&nbsp;»&nbsp;;</li>
               <li>
-                Renseignez correctement votre site internet dans la section « Contacts web ». <br />
-                Par exemple : <strong>https://www.macommune.fr</strong>
+                Renseignez votre site internet au format <strong>https://[commune].fr</strong> dans
+                la section «&nbsp;Contacts web&nbsp;».
               </li>
               <li>Envoyez votre demande. Elle sera examinée sous 48 heures.</li>
             </ol>
@@ -117,7 +138,7 @@ const ReferentielConformite: ReferentielSection[] = [
                 >
                   Vérifiez la disponibilité du domaine
                 </Link>{" "}
-                au format <strong>[commune].[extension]</strong> ;
+                au format <strong>[commune].[extension]</strong>&nbsp;;
               </li>
               <li>
                 Effectuez la demande auprès d&rsquo;un{" "}
@@ -160,10 +181,10 @@ const ReferentielConformite: ReferentielSection[] = [
             <ul>
               <li>
                 Impossibilité pour les usagers d&rsquo;accéder à l&rsquo;information officielle de
-                votre commune ou aux services en ligne ;
+                votre commune ou aux services en ligne&nbsp;;
               </li>
-              <li>Perte de confiance dans la présence numérique de la collectivité ;</li>
-              <li>Risque de confusion avec des sites frauduleux ;</li>
+              <li>Perte de confiance dans la présence numérique de la collectivité&nbsp;;</li>
+              <li>Risque de confusion avec des sites frauduleux&nbsp;;</li>
               <li>Perturbation du service public.</li>
             </ul>
           </>
@@ -193,10 +214,10 @@ const ReferentielConformite: ReferentielSection[] = [
               autonomie ou à l&rsquo;aide de votre prestataire informatique :
             </p>
             <ol>
-              <li>Vérifiez l&rsquo;état de votre hébergement et son tableau de bord ;</li>
-              <li>Contrôlez les enregistrements DNS de votre nom de domaine ;</li>
+              <li>Vérifiez l&rsquo;état de votre hébergement et son tableau de bord&nbsp;;</li>
+              <li>Contrôlez les enregistrements DNS de votre nom de domaine&nbsp;;</li>
               <li>
-                Examinez les logs du serveur web pour identifier d&rsquo;éventuelles erreurs ;
+                Examinez les logs du serveur web pour identifier d&rsquo;éventuelles erreurs&nbsp;;
               </li>
               <li>Testez la connectivité depuis différents réseaux.</li>
             </ol>
@@ -211,10 +232,10 @@ const ReferentielConformite: ReferentielSection[] = [
         whyItsImportant: (
           <>
             <p>
-              Le protocole HTTPS « protocole de transfert hypertextuel sécurisé » garantit la
-              confidentialité et l&rsquo;intégrité des données échangées entre l&rsquo;usager et le
-              site. Il est facilement reconnaissable dans l&rsquo;URL du site (https://) ou par la
-              présence d&rsquo;une icône de cadenas dans la barre d&rsquo;adresse du navigateur.
+              Le protocole HTTPS «&nbsp;protocole de transfert hypertextuel sécurisé&nbsp;» garantit
+              la confidentialité et l&rsquo;intégrité des données échangées entre l&rsquo;usager et
+              le site. Il est facilement reconnaissable dans l&rsquo;URL du site (https://) ou par
+              la présence d&rsquo;une icône de cadenas dans la barre d&rsquo;adresse du navigateur.
             </p>
             <p>
               Sans ce protocole, les données transmises peuvent être interceptées ou modifiées par
@@ -228,19 +249,19 @@ const ReferentielConformite: ReferentielSection[] = [
             <p>Pour obtenir un protocole sécurisé HTTPS pour le site internet de votre commune :</p>
             <ol>
               <li>
-                Utilisez{" "}
+                Utilisez un service comme{" "}
                 <Link href="https://letsencrypt.org/fr/" target="_blank">
                   Let&rsquo;s Encrypt
                 </Link>{" "}
-                pour obtenir un certificat SSL gratuitement ;
+                pour obtenir un certificat SSL gratuitement&nbsp;;
               </li>
               <li>
-                Allez sur votre espace client de votre hébergeur (OVH, IONOS, Gandi, etc.), section
-                « Certificat SSL » ou « HTTPS » ;
+                Allez sur votre espace client de votre hébergeur, section «&nbsp;Certificat
+                SSL&nbsp;» ou «&nbsp;HTTPS&nbsp;»&nbsp;;
               </li>
               <li>
                 Configurez dans votre serveur web la redirection automatique HTTP vers HTTPS (selon
-                votre site, il peut-être votre hébergeur, Wordpress ou autre) ;
+                votre site, il peut-être votre hébergeur, Wordpress ou autre)&nbsp;;
               </li>
               <li>
                 En cas de problème, contactez votre hébergeur ou votre prestataire technique qui
@@ -273,11 +294,11 @@ const ReferentielConformite: ReferentielSection[] = [
               chaque année. Un certificat SSL invalide pose plusieurs problèmes :
             </p>
             <ul>
-              <li>La confidentialité des échanges n&rsquo;est plus garantie ;</li>
-              <li>Le site internet peut devenir inaccessible sur certains navigateurs ;</li>
+              <li>La confidentialité des échanges n&rsquo;est plus garantie&nbsp;;</li>
+              <li>Le site internet peut devenir inaccessible sur certains navigateurs&nbsp;;</li>
               <li>
                 Certains navigateurs affichent des avertissements de sécurité qui effraient les
-                usagers ;
+                usagers&nbsp;;
               </li>
               <li>La collectivité apparaît comme négligente de sa sécurité numérique.</li>
             </ul>
@@ -287,16 +308,16 @@ const ReferentielConformite: ReferentielSection[] = [
           <>
             <p>Pour maintenir un certificat SSL valide pour le site internet de votre commune :</p>
             <ol>
-              <li>Vérifiez la date d&rsquo;expiration de votre certificat actuel ;</li>
+              <li>Vérifiez la date d&rsquo;expiration de votre certificat actuel&nbsp;;</li>
               <li>
                 Configurez le renouvellement automatique si possible (recommandé avec le service
                 gratuit{" "}
                 <Link href="https://letsencrypt.org/fr/" target="_blank">
                   Let&rsquo;s Encrypt
                 </Link>
-                ) ;
+                )&nbsp;;
               </li>
-              <li>Mettez en place une surveillance des dates d&rsquo;expiration ;</li>
+              <li>Mettez en place une surveillance des dates d&rsquo;expiration&nbsp;;</li>
               <li>Vérifiez que le certificat correspond bien au nom de domaine utilisé.</li>
             </ol>
             <p>
@@ -328,11 +349,11 @@ const ReferentielConformite: ReferentielSection[] = [
               internet sur {DILA_LINK} :
             </p>
             <ol>
-              <li>Accédez à la page de votre mairie grâce à la barre de recherche ;</li>
-              <li>En bas de page, cliquez sur « mettre cette page à jour » ;</li>
+              <li>Accédez à la page de votre mairie grâce à la barre de recherche&nbsp;;</li>
+              <li>En bas de page, cliquez sur «&nbsp;Mettre cette page à jour&nbsp;»&nbsp;;</li>
               <li>
-                Renseignez correctement la section « Contacts web », par exemple :{" "}
-                <strong>https://www.macommune.fr</strong>
+                Renseignez la nouvelle adresse de votre site internet au format{" "}
+                <strong>https://[commune].fr</strong> dans la section «&nbsp;Contacts web&nbsp;».
               </li>
               <li>Envoyez votre demande. Elle sera examinée sous 48 h.</li>
             </ol>
@@ -354,10 +375,10 @@ const ReferentielConformite: ReferentielSection[] = [
             <ul>
               <li>
                 De garantir l&rsquo;accès au site quelle que soit l&rsquo;adresse URL saisie par
-                l&rsquo;usager ;
+                l&rsquo;usager&nbsp;;
               </li>
-              <li>D&rsquo;éviter la duplication de contenu qui nuit au référencement ;</li>
-              <li>De s&rsquo;assurer que tous les accès passent par HTTPS ;</li>
+              <li>D&rsquo;éviter la duplication de contenu qui nuit au référencement&nbsp;;</li>
+              <li>De s&rsquo;assurer que tous les accès passent par HTTPS&nbsp;;</li>
               <li>De maintenir une expérience utilisateur cohérente.</li>
             </ul>
           </>
@@ -369,13 +390,13 @@ const ReferentielConformite: ReferentielSection[] = [
               collectivité sont :
             </p>
             <ul>
-              <li>La redirection automatique de HTTP vers HTTPS ;</li>
+              <li>La redirection automatique de HTTP vers HTTPS&nbsp;;</li>
               <li>
                 La redirection des variantes du nom de domaine vers la version principale :
                 <ul>
                   <li>
                     De <strong>commune.fr</strong> vers <strong>www.commune.fr</strong> (ou
-                    l&rsquo;inverse) ;
+                    l&rsquo;inverse)&nbsp;;
                   </li>
                   <li>Des anciennes adresses vers la nouvelle en cas de changement.</li>
                 </ul>
@@ -401,9 +422,9 @@ const ReferentielConformite: ReferentielSection[] = [
               nécessaire de le renseigner dans {DILA_LINK} :
             </p>
             <ul>
-              <li>Cela évite un passage initial non sécurisé par HTTP ;</li>
-              <li>Les usagers sont directement dirigés vers la version sécurisée ;</li>
-              <li>Les moteurs de recherche privilégient les liens HTTPS ;</li>
+              <li>Cela évite un passage initial non sécurisé par HTTP&nbsp;;</li>
+              <li>Les usagers sont directement dirigés vers la version sécurisée&nbsp;;</li>
+              <li>Les moteurs de recherche privilégient les liens HTTPS&nbsp;;</li>
               <li>Cela démontre le professionnalisme de la collectivité.</li>
             </ul>
           </>
@@ -414,11 +435,12 @@ const ReferentielConformite: ReferentielSection[] = [
               Pour mettre à jour l&rsquo;adresse du site internet de votre commune sur {DILA_LINK} :
             </p>
             <ol>
-              <li>Accédez à la page de votre mairie grâce à la barre de recherche ;</li>
-              <li>En bas de page, cliquez sur « mettre cette page à jour » ;</li>
+              <li>Accédez à la page de votre mairie grâce à la barre de recherche&nbsp;;</li>
+              <li>En bas de page, cliquez sur «&nbsp;Mettre cette page à jour&nbsp;»&nbsp;;</li>
               <li>
-                Assurez-vous de remplir correctement la section « Contacts web », en remplaçant «
-                http:// » par « https:// »
+                Assurez-vous de remplir correctement la section «&nbsp;Contacts web&nbsp;», en
+                remplaçant
+                <strong>http://</strong> par <strong>https://</strong>&nbsp;;
               </li>
               <li>Envoyez votre demande. Elle sera examinée sous 48 h.</li>
             </ol>
@@ -431,7 +453,7 @@ const ReferentielConformite: ReferentielSection[] = [
   },
   {
     id: "messagerie",
-    title: "2. La Messagerie",
+    title: "2. La messagerie",
     logo: "/images/rcpnt-messagerie.svg",
     items: [
       {
@@ -451,10 +473,10 @@ const ReferentielConformite: ReferentielSection[] = [
               La déclaration d&rsquo;une adresse de messagerie officielle est primordiale, car :
             </p>
             <ul>
-              <li>Elle est le point de contact officiel principal pour les usagers ;</li>
+              <li>Elle est le point de contact officiel principal pour les usagers&nbsp;;</li>
               <li>
                 Elle participe à la transparence administrative et au bon fonctionnement du service
-                public ;
+                public&nbsp;;
               </li>
               <li>C&rsquo;est une obligation légale pour les collectivités.</li>
             </ul>
@@ -466,10 +488,11 @@ const ReferentielConformite: ReferentielSection[] = [
               Pour déclarer l&rsquo;adresse de messagerie de votre collectivité sur {DILA_LINK} :
             </p>
             <ol>
-              <li>Accédez à la page de votre mairie grâce à la barre de recherche ;</li>
-              <li>En bas de page, cliquez sur « mettre cette page à jour » ;</li>
+              <li>Accédez à la page de votre mairie grâce à la barre de recherche&nbsp;;</li>
+              <li>En bas de page, cliquez sur «&nbsp;Mettre cette page à jour&nbsp;»&nbsp;;</li>
               <li>
-                Renseignez correctement votre adresse de messagerie dans la section « Emails » ;
+                Renseignez correctement votre adresse de messagerie dans la section
+                «&nbsp;Emails&nbsp;»&nbsp;;
               </li>
               <li>Envoyez votre demande. Elle sera examinée sous 48 h.</li>
             </ol>
@@ -493,12 +516,12 @@ const ReferentielConformite: ReferentielSection[] = [
             <ul>
               <li>
                 Impossibilité pour les émetteurs et destinataires de messages électroniques de
-                s&rsquo;assurer formellement de l&rsquo;identité de leurs interlocuteurs ;
+                s&rsquo;assurer formellement de l&rsquo;identité de leurs interlocuteurs&nbsp;;
               </li>
               <li>
-                Non-conformité avec les bonnes pratiques de l&rsquo;administration numérique ;
+                Non-conformité avec les bonnes pratiques de l&rsquo;administration numérique&nbsp;;
               </li>
-              <li>Absence de contrôle sur la sécurité et la confidentialité des échanges ;</li>
+              <li>Absence de contrôle sur la sécurité et la confidentialité des échanges&nbsp;;</li>
               <li>Perte de souveraineté sur les données échangées.</li>
             </ul>
           </>
@@ -510,21 +533,25 @@ const ReferentielConformite: ReferentielSection[] = [
               <li>
                 Optez pour une solution de messagerie professionnelle en utilisant le même nom de
                 domaine que le site internet de votre commune (ce nom de domaine doit correspondre
-                aux critères 1.3) :
+                au <Link href="#1.2">critère 1.2</Link>) :
                 <ul>
                   <li>
-                    Solution proposée par la structure de mutualisation de votre département ;
+                    Solution proposée par la structure de mutualisation de votre département&nbsp;;
                   </li>
-                  <li>Solution proposée par un éditeur privé sélectionné par votre commune ;</li>
+                  <li>
+                    Solution proposée par un éditeur privé sélectionné par votre commune&nbsp;;
+                  </li>
                   <li>Solution proposée par la Suite territoriale.</li>
                 </ul>
               </li>
               <li>
                 Mettez en place une politique de transition :
                 <ul>
-                  <li>Informez vos contacts du changement d&rsquo;adresse de messagerie ;</li>
-                  <li>Configurez une réponse automatique sur l&rsquo;ancienne adresse ;</li>
-                  <li>Maintenez l&rsquo;ancienne adresse en parallèle durant 3 mois minimum ;</li>
+                  <li>Informez vos contacts du changement d&rsquo;adresse de messagerie&nbsp;;</li>
+                  <li>Configurez une réponse automatique sur l&rsquo;ancienne adresse&nbsp;;</li>
+                  <li>
+                    Maintenez l&rsquo;ancienne adresse en parallèle durant 3 mois minimum&nbsp;;
+                  </li>
                   <li>
                     Mettez à jour les informations relatives à la messagerie de votre commune sur{" "}
                     {DILA_LINK}.
@@ -547,9 +574,9 @@ const ReferentielConformite: ReferentielSection[] = [
               messagerie de votre commune est cruciale, car :
             </p>
             <ul>
-              <li>Elle réduit les risques de confusion pour les usagers ;</li>
-              <li>Elle facilite l&rsquo;identification des communications officielles ;</li>
-              <li>Elle simplifie la gestion technique des services numériques ;</li>
+              <li>Elle réduit les risques de confusion pour les usagers&nbsp;;</li>
+              <li>Elle facilite l&rsquo;identification des communications officielles&nbsp;;</li>
+              <li>Elle simplifie la gestion technique des services numériques&nbsp;;</li>
               <li>Elle renforce la présence numérique de votre collectivité.</li>
             </ul>
           </>
@@ -576,9 +603,11 @@ const ReferentielConformite: ReferentielSection[] = [
               <li>
                 Mettez en place une politique de transition :
                 <ul>
-                  <li>Informez vos contacts du changement d&rsquo;adresse de messagerie ;</li>
-                  <li>Configurez une réponse automatique sur l&rsquo;ancienne adresse ;</li>
-                  <li>Maintenez l&rsquo;ancienne adresse en parallèle durant 3 mois minimum ;</li>
+                  <li>Informez vos contacts du changement d&rsquo;adresse de messagerie&nbsp;;</li>
+                  <li>Configurez une réponse automatique sur l&rsquo;ancienne adresse&nbsp;;</li>
+                  <li>
+                    Maintenez l&rsquo;ancienne adresse en parallèle durant 3 mois minimum&nbsp;;
+                  </li>
                   <li>
                     Mettez à jour les informations relatives à la messagerie de votre commune sur{" "}
                     {DILA_LINK}.
@@ -603,8 +632,8 @@ const ReferentielConformite: ReferentielSection[] = [
               :
             </p>
             <ul>
-              <li>Ils permettent la réception des emails adressés à votre domaine ;</li>
-              <li>Leur absence rend impossible toute communication entrante ;</li>
+              <li>Ils permettent la réception des emails adressés à votre domaine&nbsp;;</li>
+              <li>Leur absence rend impossible toute communication entrante&nbsp;;</li>
               <li>Une mauvaise configuration peut causer des pertes de messages.</li>
             </ul>
           </>
@@ -613,11 +642,13 @@ const ReferentielConformite: ReferentielSection[] = [
           <>
             <p>Pour configurer les enregistrements MX :</p>
             <ol>
-              <li>Accédez à l&rsquo;interface du gestionnaire du nom de domaine de messagerie ;</li>
-              <li>Allez à la « zone DNS » ou « enregistrement DNS » ;</li>
+              <li>
+                Accédez à l&rsquo;interface du gestionnaire du nom de domaine de messagerie&nbsp;;
+              </li>
+              <li>Allez à la «&nbsp;zone DNS&nbsp;» ou «&nbsp;enregistrement DNS&nbsp;»&nbsp;;</li>
               <li>
                 Créez les enregistrements MX en précisant les priorités adéquates et le nom du
-                serveur de messagerie ;
+                serveur de messagerie&nbsp;;
               </li>
               <li>
                 Vérifiez la configuration avec des outils comme{" "}
@@ -654,9 +685,9 @@ const ReferentielConformite: ReferentielSection[] = [
             <ul>
               <li>
                 Il empêche l&rsquo;usurpation de votre nom de domaine pour l&rsquo;envoi de messages
-                frauduleux ;
+                frauduleux&nbsp;;
               </li>
-              <li>Il améliore la réception des emails que vous envoyez ;</li>
+              <li>Il améliore la réception des emails que vous envoyez&nbsp;;</li>
               <li>Il protège votre réputation numérique.</li>
             </ul>
           </>
@@ -672,13 +703,11 @@ const ReferentielConformite: ReferentielSection[] = [
                 </Link>
               </li>
               <li>
-                Accédez à l&rsquo;interface du gestionnaire du nom de domaine de messagerie (ex :
-                OVH, donner des exemples…) ;
+                Accédez à l&rsquo;interface du gestionnaire du nom de domaine de messagerie&nbsp;;
               </li>
               <li>
-                Au sein de la section « Zone DNS » ou « Gestion DNS », ajoutez
-                l&rsquo;enregistrement TXT approprié à votre fournisseur de messagerie (thunderbird,
-                protonmail, etc.) ;
+                Au sein de la section «&nbsp;Zone DNS&nbsp;» ou «&nbsp;Gestion DNS&nbsp;», ajoutez
+                l&rsquo;enregistrement TXT approprié à votre fournisseur de messagerie&nbsp;;
               </li>
               <li>
                 Pour trouver et copier le bon enregistrement SPF selon votre fournisseur
@@ -718,13 +747,13 @@ const ReferentielConformite: ReferentielSection[] = [
               <li>
                 Il permet de détecter et bloquer les tentatives d&rsquo;usurpation de courrier
                 électronique utilisées dans le phishing et d&rsquo;autres attaques basées sur la
-                messagerie ;
+                messagerie&nbsp;;
               </li>
               <li>
                 Il fournit des rapports détaillés sur les tentatives d&rsquo;utilisation frauduleuse
-                du domaine ;
+                du domaine&nbsp;;
               </li>
-              <li>Il renforce la confiance des destinataires dans vos communications ;</li>
+              <li>Il renforce la confiance des destinataires dans vos communications&nbsp;;</li>
               <li>
                 Il complète les protections SPF (voir critère 2.5) et DKIM pour une sécurité
                 optimale.
@@ -736,16 +765,17 @@ const ReferentielConformite: ReferentielSection[] = [
           <>
             <p>Pour mettre en place DMARC :</p>
             <ol>
-              <li>Il est nécessaire au préalable d&rsquo;avoir SPF et DKIM déjà en place ;</li>
+              <li>Il est nécessaire au préalable d&rsquo;avoir SPF et DKIM déjà en place&nbsp;;</li>
               <li>
                 Accédez à l&rsquo;interface du gestionnaire du nom de domaine de messagerie et
-                cherchez une section nommée « Zone DNS » par exemple ;
+                cherchez une section nommée «&nbsp;Zone DNS&nbsp;» par exemple&nbsp;;
               </li>
               <li>
                 Créez un enregistrement TXT de type : <strong>_dmarc.votredomaine.fr</strong> avec
-                une politique permissive (p=none) pour observer sans bloquer les emails entrants ;
+                une politique permissive (p=none) pour observer sans bloquer les emails
+                entrants&nbsp;;
               </li>
-              <li>Configurez une adresse email pour recevoir les rapports ;</li>
+              <li>Configurez une adresse email pour recevoir les rapports&nbsp;;</li>
               <li>Analysez les rapports et ajustez progressivement la politique.</li>
             </ol>
             <p>
@@ -773,14 +803,14 @@ const ReferentielConformite: ReferentielSection[] = [
             <p>
               La politique de quarantaine DMARC signale les emails qui échouent à
               l&rsquo;authentification, qualifiés comme suspects, ils seront redirigés vers le
-              dossier spam. Après avoir installé et observer le fonctionnement de
+              dossier spam. Après avoir installé et observé le fonctionnement de
               l&rsquo;enregistrement DMARC, la mise en place d&rsquo;une politique de quarantaine
               DMARC est importante, car :
             </p>
             <ul>
-              <li>Elle applique un traitement strict aux emails suspects ;</li>
-              <li>Elle réduit significativement les risques d&rsquo;hameçonnage ;</li>
-              <li>Elle démontre un engagement fort pour la sécurité email ;</li>
+              <li>Elle applique un traitement strict aux emails suspects&nbsp;;</li>
+              <li>Elle réduit significativement les risques d&rsquo;hameçonnage&nbsp;;</li>
+              <li>Elle démontre un engagement fort pour la sécurité email&nbsp;;</li>
               <li>Elle protège activement la réputation de la collectivité.</li>
             </ul>
           </>
@@ -790,13 +820,15 @@ const ReferentielConformite: ReferentielSection[] = [
             <p>Pour configurer une politique de quarantaine :</p>
             <ol>
               <li>
-                Assurez-vous que SPF (voir critères 2.5) et DKIM sont correctement configurés ;
+                Assurez-vous que SPF (voir critères 2.5) et DKIM sont correctement configurés&nbsp;;
               </li>
               <li>
                 Modifiez l&rsquo;enregistrement DMARC pour inclure <strong>p=quarantine</strong> ou{" "}
-                <strong>p=reject</strong> ;
+                <strong>p=reject</strong>&nbsp;;
               </li>
-              <li>Surveillez les rapports DMARC pour détecter d&rsquo;éventuels faux positifs ;</li>
+              <li>
+                Surveillez les rapports DMARC pour détecter d&rsquo;éventuels faux positifs&nbsp;;
+              </li>
               <li>N&rsquo;utilisez pas un pourcentage (champ pct) inférieur à 100%.</li>
             </ol>
             <p>
@@ -823,8 +855,10 @@ const FAQS = [
       <>
         <p>Pour vérifier la conformité de votre collectivité :</p>
         <ol>
-          <li>Utilisez la barre de recherche en haut de page pour trouver votre commune ;</li>
-          <li>Consultez le rapport détaillé qui s&rsquo;affiche ;</li>
+          <li>
+            Utilisez la barre de recherche en haut de la page pour trouver votre collectivité&nbsp;;
+          </li>
+          <li>Consultez le rapport détaillé qui s&rsquo;affiche&nbsp;;</li>
           <li>Pour chaque critère non conforme, suivez les recommandations de correction.</li>
         </ol>
         <p>Les vérifications sont effectuées quotidiennement.</p>
@@ -832,18 +866,18 @@ const FAQS = [
     ),
   },
   {
-    question: <>Que faire si je ne peux pas corriger une conformité ?</>,
+    question: <>Que faire si je ne peux pas corriger une non-conformité ?</>,
     answer: (
       <>
         <p>Si vous rencontrez des difficultés pour corriger une non-conformité, vous pouvez :</p>
         <ul>
-          <li>Contactez votre prestataire technique habituel ;</li>
-          <li>Rapprochez-vous de votre structure de mutualisation ;</li>
-          <li>Utilisez le formulaire de contact en bas de page pour obtenir de l&rsquo;aide.</li>
+          <li>Contacter votre prestataire informatique habituel&nbsp;;</li>
+          <li>Vous rapprocher de votre structure de mutualisation&nbsp;;</li>
+          <li>Utiliser le formulaire de contact en bas de page pour obtenir de l&rsquo;aide.</li>
         </ul>
         <p>
-          À noter que les services de la Suite territoriale permettent de répondre à
-          l&rsquo;ensemble des critères du référentiel.
+          Les services de la Suite territoriale permettent de répondre à l&rsquo;ensemble des
+          critères du référentiel.
         </p>
       </>
     ),
@@ -852,11 +886,11 @@ const FAQS = [
     question: <>Les critères vont-ils évoluer ?</>,
     answer: (
       <>
-        <p>Le référentiel est amené à évoluer pour plusieurs raisons :</p>
+        <p>Le référentiel est voué à évoluer selon :</p>
         <ul>
-          <li>L&rsquo;évolution des menaces et des bonnes pratiques de sécurité ;</li>
-          <li>Les retours d&rsquo;expérience des collectivités ;</li>
-          <li>Les nouvelles obligations réglementaires.</li>
+          <li>l&rsquo;évolution des menaces et des bonnes pratiques de sécurité&nbsp;;</li>
+          <li>les retours d&rsquo;expérience des collectivités&nbsp;;</li>
+          <li>les nouvelles obligations réglementaires.</li>
         </ul>
         <p>
           Chaque mise à jour majeure sera communiquée avec un délai d&rsquo;adaptation approprié.
@@ -871,18 +905,18 @@ const FAQS = [
         <p>Cette distinction reflète deux niveaux d&rsquo;exigence :</p>
         <ul>
           <li>
-            Les critères <strong>essentiels</strong> correspondent au niveau minimal de sécurité et
-            de professionnalisme attendu d&rsquo;une collectivité ;
+            <strong>les critères essentiels</strong> correspondent au niveau minimal de sécurité
+            attendu d&rsquo;une collectivité&nbsp;;
           </li>
           <li>
-            Les critères <strong>recommandés</strong> permettent d&rsquo;atteindre un niveau de
+            <strong>les critères recommandés</strong> permettent d&rsquo;atteindre un niveau de
             sécurité optimal, mais peuvent nécessiter plus de ressources ou de compétences
             techniques.
           </li>
         </ul>
         <p>
-          Nous encourageons toutes les collectivités à viser la conformité avec l&rsquo;ensemble des
-          critères, essentiels comme recommandés.
+          L&rsquo;ANCT encourage toutes les collectivités à viser la conformité avec
+          l&rsquo;ensemble des critères, essentiels comme recommandés.
         </p>
       </>
     ),
@@ -900,14 +934,13 @@ const FAQS = [
           >
             DKIM
           </Link>{" "}
-          est effectivement très fortement recommandée pour toutes les collectivités, cependant,
+          est effectivement très fortement recommandée pour toutes les collectivités. Cependant,
           elle n&rsquo;est malheureusement pas encore testable automatiquement, car elle dépend
           d&rsquo;un <i>sélecteur</i> qui peut être arbitrairement choisi par l&rsquo;expéditeur.
-          Nous avons à cœur de n&rsquo;utiliser que des critères automatiquement vérifiables dans ce
-          référentiel.
+          Nous utilisons uniquement des critères automatiquement vérifiables dans le Référentiel.
         </p>
         <p>
-          Une future version de ce référentiel pourra s&rsquo;appuyer sur l&rsquo;envoi régulier
+          Une future version de ce Référentiel pourra s&rsquo;appuyer sur l&rsquo;envoi régulier
           d&rsquo;emails depuis les adresses de messagerie de la collectivité pour vérifier la
           configuration de DKIM et la délivrabilité des emails en général.
         </p>
@@ -915,11 +948,11 @@ const FAQS = [
     ),
   },
   {
-    question: <>Suis-je obligé d&rsquo;utiliser la Suite territoriale pour être conforme ?</>,
+    question: <>Suis-je obligé(e) d&rsquo;utiliser la Suite territoriale pour être conforme ?</>,
     answer: (
       <>
         <p>
-          Non, vous n&rsquo;êtes pas obligé d&rsquo;utiliser la Suite territoriale pour être
+          Non, vous n&rsquo;êtes pas obligé(e) d&rsquo;utiliser la Suite territoriale pour être
           conforme. Vous pouvez utiliser l&rsquo;outil ou la solution de votre choix. Cependant, la
           Suite territoriale propose des services faciles à utiliser pour vous aider à être conforme
           et vous accompagner dans cette démarche.
@@ -928,13 +961,16 @@ const FAQS = [
     ),
   },
   {
-    question: <>Le référentiel relève t-il d&rsquo;une obligation légale ?</>,
+    question: <>Le référentiel relève-t-il d&rsquo;une obligation légale ?</>,
     answer: (
       <>
         <p>
-          Non, le référentiel n&rsquo;est adossé présentement à une loi, mais il est le fruit de
-          réflexions entre plusieurs administrations d&rsquo;État (ANCT ; ANSSI ; DILA) et du besoin
-          d&rsquo;élever le niveau de sécurité dans les usages numériques des collectivités.
+          Non, le référentiel n&rsquo;est pour l&rsquo;instant adossé à aucune loi et ne constitue
+          par conséquent pas une obligation réglementaire. Il synthétise toutefois les
+          recommandations et retours d&rsquo;expérience de plusieurs administrations d&rsquo;État
+          (ANCT, ANSSI, DILA), de partenaires (associations d&rsquo;élus, opérateurs publics de
+          services numériques) et des collectivités territoriales qui entendent répondre au besoin
+          d&rsquo;élever le niveau de sécurité numérique des collectivités.
         </p>
       </>
     ),
@@ -1096,28 +1132,7 @@ const ReferentielPage: NextPage = () => {
                 Version 0.1, publiée le 10 Avril 2025
               </div>
 
-              <div className={fr.cx("fr-text--lg", "fr-mb-5w")}>
-                <p>
-                  Le{" "}
-                  <strong>
-                    Référentiel de Conformité de la Présence Numérique des Territoires
-                  </strong>{" "}
-                  (RCPNT) est édité par l&rsquo;
-                  <Link href="https://anct.gouv.fr/" target="_blank">
-                    Agence nationale de la cohésion des territoires
-                  </Link>{" "}
-                  (ANCT). Il vise à garantir l&rsquo;identification officielle des collectivités
-                  dans leurs usages numériques afin de renforcer leur sécurité et la confiance des
-                  usagers.
-                </p>
-                <p>
-                  Les critères sont classés selon deux niveaux d&rsquo;importance (
-                  <strong>essentiel</strong> ou <strong>recommandé</strong>). La conformité des
-                  communes est vérifiée quotidiennement à partir des données connues de
-                  l&rsquo;administration française et de la Suite territoriale. Le référentiel est
-                  structuré en deux parties :
-                </p>
-              </div>
+              <div className={fr.cx("fr-text--lg", "fr-mb-5w")}>{REF_INTRO}</div>
             </div>
 
             <div id="referentiel">
@@ -1134,10 +1149,11 @@ const ReferentielPage: NextPage = () => {
                   >
                     <Image
                       src={section.logo}
-                      alt={section.title}
+                      alt=""
                       width={60}
                       height={60}
                       role="presentation"
+                      aria-hidden="true"
                     />
                     <h2
                       className={fr.cx("fr-h2", "fr-py-2w")}
@@ -1209,7 +1225,7 @@ const ReferentielPage: NextPage = () => {
                             ></Link>
                           </div>
 
-                          <h4 className={fr.cx("fr-text--bold", "fr-mb-1w", "fr-mt-3w", "fr-h5")}>
+                          <h4 className={fr.cx("fr-text--bold", "fr-mb-1w", "fr-mt-1w", "fr-h5")}>
                             <span
                               className={fr.cx(
                                 "fr-icon-arrow-right-line",
@@ -1225,7 +1241,7 @@ const ReferentielPage: NextPage = () => {
                             {item.whyItsImportant}
                           </div>
 
-                          <h4 className={fr.cx("fr-text--bold", "fr-mb-1w")}>
+                          <h4 className={fr.cx("fr-text--bold", "fr-mb-1w", "fr-h5")}>
                             <span
                               className={fr.cx(
                                 "fr-icon-arrow-right-line",
@@ -1241,8 +1257,8 @@ const ReferentielPage: NextPage = () => {
 
                           <div
                             style={{
-                              backgroundColor: "var(--text-inverted-success)",
-                              color: "var(--text-default-success)",
+                              backgroundColor: "var(--background-alt-blue-cumulus)",
+                              color: "var(--text-label-blue-cumulus)",
                             }}
                             className={fr.cx("fr-mt-3w", "fr-p-2w")}
                           >

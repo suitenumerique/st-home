@@ -502,7 +502,7 @@ export default function CartographieConformite() {
           style={{
             height: "calc(100vh-2rem)",
             overflow: "auto",
-            width: "310px",
+            width: "330px",
           }}
         >
           <div
@@ -516,7 +516,7 @@ export default function CartographieConformite() {
             <div style={{ pointerEvents: "auto" }}>
               <CommuneSearch
                 onSelect={handleQuickNav}
-                placeholder="Recherche de commune ou EPCI"
+                placeholder="Rechercher une commune ou EPCI"
                 smallButton={true}
               />
             </div>

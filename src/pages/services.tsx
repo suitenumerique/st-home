@@ -24,7 +24,7 @@ const SERVICES_DATA = [
     features: [
       <>Une identité numérique professionnelle ;</>,
       <>Un socle de services numériques essentiels ;</>,
-      <>Un écosystème de services numériques.</>,
+      <>Un écosystème applicatif sécurisé.</>,
     ],
     faqs: [
       {
@@ -131,7 +131,7 @@ const SERVICES_DATA = [
         ),
         answer: (
           <>
-            ProConnect est une fédération d&rsquo;identités permettant aux services de l&rsquo;Etat,
+            ProConnect est une fédération d&rsquo;identités permettant aux services de l&rsquo;État,
             aux centres de gestion et aux structures de mutualisation partenaires de coopérer pour
             vous identifier formellement en tant qu&rsquo;agent(e) ou élu(e) de votre collectivité.
           </>
@@ -166,7 +166,7 @@ const SERVICES_DATA = [
     description: (
       <>
         Dotez votre commune d&rsquo;un nom de domaine officiel, formellement identifiable par les
-        services de l&rsquo;Etat et les citoyens
+        services de l&rsquo;État et les citoyens.
       </>
     ),
     features: [
@@ -381,7 +381,7 @@ const SERVICES_DATA = [
         question: <>Où mes documents et ma donnée seront-ils hébergés ?</>,
         answer: (
           <>
-            L&rsquo;hébergeur retenu par pour le service &quot;Fichiers&quot; mis à disposition par
+            L&rsquo;hébergeur retenu pour le service &quot;Fichiers&quot; mis à disposition par
             l&rsquo;ANCT est 3DS Outscale, hébergeur français certifié SecNumCloud. Personne
             d&rsquo;autre que vous ou vos collaborateurs n&rsquo;ont néanmoins accès à ces
             documents.
@@ -397,7 +397,7 @@ const SERVICES_DATA = [
     description: (
       <>
         Gérez vos contacts, groupes de travail et droits d&rsquo;accès aux services depuis une
-        interface d&rsquo;administration unique
+        interface d&rsquo;administration unique.
       </>
     ),
     features: [
@@ -456,16 +456,17 @@ const SERVICES_DATA = [
   {
     id: "ecosysteme",
     name: "Ecosystème applicatif",
+    image: "/images/screen-ecosysteme.png",
     title: <>Ecosystème applicatif, les services mutualisés</>,
     description: (
       <>
-        Accédez via ProConnect à un ensemble de services numériques proposés par l&rsquo;Etat, votre
-        structure de mutualisation ou les éditeurs privés
+        Accédez via ProConnect à un ensemble de services numériques proposés par l&rsquo;État, votre
+        structure de mutualisation ou les éditeurs privés.
       </>
     ),
     features: [
       <>Les services numériques de l&rsquo;Incubateur des territoires ANCT ;</>,
-      <>Les services numériques mis à disposition par l&rsquo;Etat ;</>,
+      <>Les services numériques mis à disposition par l&rsquo;État ;</>,
       <>Les services numériques de votre opérateur de mutualisation ;</>,
       <>Les services numériques de votre prestataire privé ProConnecté.</>,
     ],
@@ -527,7 +528,7 @@ const SERVICES_DATA = [
             >
               la documentation technique
             </Link>{" "}
-            fournie par l&rsquo;Etat. Sous réserve de respect de certains critères fixés par la
+            fournie par l&rsquo;État. Sous réserve de respect de certains critères fixés par la
             DINUM et l&rsquo;ANCT, votre service sera ainsi valorisé via son intégration à
             l&rsquo;écosystème applicatif.
           </>
@@ -585,13 +586,52 @@ export default function ServicesPage() {
 
                 {service.image && (
                   <div className={fr.cx("fr-my-3w")}>
-                    <Image
-                      src={service.image}
-                      alt={`Capture d'écran du service ${service.name}`}
-                      width="1500"
-                      height="1000"
-                      className={fr.cx("fr-responsive-img")}
-                    />
+                    <div
+                      role="img"
+                      aria-label={`Capture d'écran du service ${service.name}`}
+                      style={{
+                        borderRadius: "6px",
+                        overflow: "hidden",
+                        boxShadow: "0px 0px 15px 0px rgba(0, 0, 0, 0.2)",
+                      }}
+                    >
+                      <div
+                        style={{ margin: "8px", display: "flex", flexDirection: "row", gap: "4px" }}
+                      >
+                        <div
+                          style={{
+                            width: "6px",
+                            height: "6px",
+                            borderRadius: "50%",
+                            backgroundColor: "#ccc",
+                          }}
+                        />
+                        <div
+                          style={{
+                            width: "6px",
+                            height: "6px",
+                            borderRadius: "50%",
+                            backgroundColor: "#ccc",
+                          }}
+                        />
+                        <div
+                          style={{
+                            width: "6px",
+                            height: "6px",
+                            borderRadius: "50%",
+                            backgroundColor: "#ccc",
+                          }}
+                        />
+                      </div>
+
+                      <Image
+                        src={service.image}
+                        alt=""
+                        width="1500"
+                        height="1000"
+                        className={fr.cx("fr-responsive-img")}
+                      />
+                    </div>
                   </div>
                 )}
 

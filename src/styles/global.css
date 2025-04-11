@@ -42,6 +42,15 @@
   margin-bottom: 1rem;
 }
 
+.rcpnt-result-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.rcpnt-result-list li {
+  padding: 0 0 1.3rem 0;
+}
+
 html,
 body {
   min-width: 320px;
