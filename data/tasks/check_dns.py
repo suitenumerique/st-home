@@ -32,7 +32,7 @@ def run(siret):
         if issues is not None:  # Only store if we got results
             upsert_issues(siret, "dns", issues)
 
-        return issues
+        return {str(x): issues[x] for x in issues.keys()}
 
 
 @app.task

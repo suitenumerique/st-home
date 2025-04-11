@@ -36,8 +36,8 @@
   margin-bottom: 0 !important;
 }
 
-.rcpnt-section ul,
-.rcpnt-section ol {
+.rcpnt-section p + ul,
+.rcpnt-section p + ol {
   margin-left: 1rem;
   margin-bottom: 1rem;
 }

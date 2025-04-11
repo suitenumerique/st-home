@@ -995,6 +995,7 @@ const ReferentielPage: NextPage = () => {
     router.push(`/bienvenue/${selectedCommune.siret}`);
   };
 
+  const [statsLoadingError, setStatsLoadingError] = useState(false);
   const [stats, setStats] = useState<Record<
     string,
     Array<{
@@ -1008,9 +1009,14 @@ const ReferentielPage: NextPage = () => {
 
   useEffect(() => {
     fetch(`/api/rcpnt/stats?scope=global&refs=${getAllRefs()}`)
-      .then((res) => res.json())
-      .then((data) => setStats(data))
-      .catch((err) => console.error("Error loading conformance stats:", err));
+      .then((res) => {
+        if (!res.ok) {
+          setStatsLoadingError(true);
+        } else {
+          return res.json();
+        }
+      })
+      .then((data) => setStats(data));
   }, []);
 
   const getStatsForRef = (ref: string) => {
@@ -1264,7 +1270,9 @@ const ReferentielPage: NextPage = () => {
                             className={fr.cx("fr-mt-3w", "fr-p-2w")}
                           >
                             <span className={fr.cx("fr-text--bold")}>
-                              {!stats ? (
+                              {statsLoadingError ? (
+                                "Erreur lors du chargement des statistiques, veuillez réessayer plus tard."
+                              ) : !stats ? (
                                 "Chargement des statistiques..."
                               ) : (
                                 <>

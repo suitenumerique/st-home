@@ -50,7 +50,7 @@ const moduleExports = {
   },
   env: {
     NEXT_PUBLIC_APP_VERSION: version,
-    NEXT_PUBLIC_APP_VERSION_COMMIT: process.env.GITHUB_SHA,
+    NEXT_PUBLIC_APP_VERSION_COMMIT: process.env.GITHUB_SHA || process.env.CONTAINER_VERSION,
     CONTENT_SECURITY_POLICY: ContentSecurityPolicy,
   },
   onDemandEntries: {

@@ -87,3 +87,20 @@ services:
     ports:
       - "5557:5557"
     command: celery -A celery_app flower --port=5557
+
+  flower_production:
+    profiles:
+      - tools_production
+    volumes:
+      - ./data:/app/data
+    build:
+      context: data/
+      dockerfile: Dockerfile.local
+    pull_policy: build
+    env_file:
+      - .env.production
+    environment:
+      - FLOWER_UNAUTHENTICATED_API=true
+    ports:
+      - "5557:5557"
+    command: celery -A celery_app flower --port=5557
