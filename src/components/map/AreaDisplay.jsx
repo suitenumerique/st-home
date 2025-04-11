@@ -390,7 +390,7 @@ export default function AreaDisplay({
               </p>
 
               <div style={styles.scoreContainer}>
-                {["2", "1", "0"].map((scoreKey) => {
+                {[["2", "Conforme"], ["1", "Partiellement conforme"], ["0", "Non conforme"]].map(([scoreKey, label]) => {
                   const percentage = Math.round(
                     (mapState.selectedAreas[mapState.currentLevel].conformityStats.details[scoreKey] / mapState.selectedAreas[mapState.currentLevel].conformityStats.n_cities) * 100
                   );
@@ -398,6 +398,7 @@ export default function AreaDisplay({
                   return (
                     <div key={scoreKey} style={{ position: "relative" }}>
                       <div style={styles.scoreHeader}>
+                        <span>{label}</span>
                         <span>
                           {formatNumber(
                             mapState.selectedAreas[mapState.currentLevel].conformityStats.details[scoreKey]
