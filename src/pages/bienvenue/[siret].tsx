@@ -15,7 +15,6 @@ import OPSNProConnectView from "@/components/onboarding/OPSNProConnectView";
 import UniqueCodeRequestView from "@/components/onboarding/UniqueCodeRequestView";
 
 import ContactUs from "@/components/ContactUs";
-import Tag from "@codegouvfr/react-dsfr/Tag";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
@@ -66,46 +65,20 @@ export default function Bienvenue(props: PageProps) {
           style={{ float: "right" }}
           className={fr.cx("fr-mt-1w", "fr-hidden", "fr-unhidden-sm")}
         >
-          {commune.type === "commune" && (
-            <>
-              <Tag>
-                <Link href={commune.service_public_url || ""} target="_blank">
-                  Commune
-                </Link>
-              </Tag>
-              &nbsp;
-              <Tag>
-                <span
-                  onClick={(e) => {
-                    // Easter egg to go to the future page
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (e.altKey) {
-                      router.push(`/bienvenue/${commune.siret}?futur=1`);
-                    }
-                  }}
-                >
-                  {commune.zipcode}
-                </span>
-              </Tag>
-            </>
-          )}
-          {commune.type === "epci" && (
-            <Tag>
-              <span
-                onClick={(e) => {
-                  // Easter egg to go to the future page
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (e.altKey) {
-                    router.push(`/bienvenue/${commune.siret}?futur=1`);
-                  }
-                }}
-              >
-                EPCI
-              </span>
-            </Tag>
-          )}
+          <span
+            onClick={(e) => {
+              // Easter egg to go to the future page
+              e.preventDefault();
+              e.stopPropagation();
+              if (e.altKey) {
+                router.push(`/bienvenue/${commune.siret}?futur=1`);
+              }
+            }}
+            className={fr.cx("fr-text--regular", "fr-text--xl")}
+            style={{ color: "var(--text-title-blue-france)" }}
+          >
+            {commune.type === "commune" ? commune.zipcode : "EPCI"}
+          </span>
         </div>
         <h1 className={fr.cx("fr-h1")} style={{ color: "var(--text-title-blue-france)" }}>
           {commune.name}
