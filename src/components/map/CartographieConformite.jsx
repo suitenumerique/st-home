@@ -51,7 +51,7 @@ export default function CartographieConformite() {
   const colorsConfig = {
     domain: [0, 1, 2],
     range: ["#ef4444", "#eab308", "#22c55e"], // removed #f97316
-    defaultColor: "#000000",
+    defaultColor: "#e2e8f0",
   };
 
   const colorScale = d3
