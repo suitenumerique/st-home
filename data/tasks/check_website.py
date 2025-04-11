@@ -31,7 +31,7 @@ def run(siret):
         if issues is not None:
             upsert_issues(siret, "website", issues)
 
-        return [str(x) for x in issues.keys()]
+        return issues
 
 
 @app.task
@@ -102,6 +102,7 @@ def check_http(base_url, urls_to_test, issues, request_kwargs):
 
             # Check if final domain matches original
             final_domain = urlparse(http_response.url).netloc
+            final_domain = re.sub(r"\:(80|443)", "", final_domain)
             if re.sub(r"^www\.", "", final_domain) != re.sub(
                 r"^www\.", "", urlparse(urls_to_test["http"]).netloc
             ):
@@ -132,6 +133,7 @@ def check_https(base_url, urls_to_test, issues, request_kwargs):
         else:
             # Check if final domain matches original
             final_domain = urlparse(https_response.url).netloc
+            final_domain = re.sub(r"\:(80|443)", "", final_domain)
             if re.sub(r"^www\.", "", final_domain) != re.sub(
                 r"^www\.", "", urlparse(urls_to_test["https"]).netloc
             ):
@@ -171,6 +173,7 @@ def check_non_www(base_final_domain, base_url, urls_to_test, issues, request_kwa
             else:
                 # Check if final domain matches original
                 final_domain = urlparse(response.url).netloc
+                final_domain = re.sub(r"\:(80|443)", "", final_domain)
                 if final_domain != base_final_domain:
                     if url_type == "http_no_www":
                         issues[Issues.WEBSITE_HTTP_NOWWW] = (

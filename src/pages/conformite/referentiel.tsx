@@ -1118,16 +1118,17 @@ const ReferentielPage: NextPage = () => {
             )}
           >
             <div id="about">
-              {/*
-              <div className={fr.cx("fr-my-2w")} style={{ float: "right", color: "var(--text-disabled-grey)" }}>
-                Publié le 10 Avril 2025
-              </div>
-              <h2 className={fr.cx("fr-h2", "fr-mb-3w")}>RCPNT version 0.1</h2>
-              */}
-
               <div
                 className={fr.cx("fr-mb-3w", "fr-text--md")}
                 style={{ color: "var(--text-disabled-grey)" }}
+                onClick={(e) => {
+                  // Easter egg for Thibaud who likes BOLD
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (e.altKey) {
+                    document.body.style.fontWeight = "bold";
+                  }
+                }}
               >
                 Version 0.1, publiée le 10 Avril 2025
               </div>
