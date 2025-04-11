@@ -72,7 +72,7 @@ export default function Home() {
       title: "sans nom de domaine",
       content: (
         <>
-          Selon les données de l&rsquo;Etat, 11&nbsp;000 communes ne disposent pas d&rsquo;un nom de
+          Selon les données de l&rsquo;État, 11&nbsp;000 communes ne disposent pas d&rsquo;un nom de
           domaine permettant une identification formelle en ligne via un site internet ou une
           adresse de messagerie.
           <br />

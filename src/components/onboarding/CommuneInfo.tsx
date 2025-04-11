@@ -26,35 +26,46 @@ type MessageLineProps = {
 
 export const MessageLine = ({ children, severity, rcpnt }: MessageLineProps): ReactNode => {
   return (
-    <p>
+    <li>
       {severity === "info" && (
         <span
           className={fr.cx("fr-icon-info-line", "fr-label--info", "fr-mr-1w")}
-          aria-hidden="true"
+          role="img"
+          aria-label="Recommandation"
         />
       )}
       {severity === "success" && (
         <span
           className={fr.cx("fr-icon-success-line", "fr-label--success", "fr-mr-1w")}
-          aria-hidden="true"
+          role="img"
+          aria-label="Conforme"
         />
       )}
       {severity === "error" && (
         <span
           className={fr.cx("fr-icon-error-line", "fr-label--error", "fr-mr-1w")}
-          aria-hidden="true"
+          role="img"
+          aria-label="Non conforme"
         />
       )}
       {severity === "warning" && (
         <span
           className={fr.cx("fr-icon-warning-line", "fr-mr-1w")}
           style={{ color: "var(--text-default-warning)" }}
-          aria-hidden="true"
+          role="img"
+          aria-label="Attention"
         />
       )}
       {children}{" "}
-      {rcpnt && <Link href={`/conformite/referentiel#${rcpnt}`}>Comprendre ce critère</Link>}
-    </p>
+      {rcpnt && (
+        <Link
+          href={`/conformite/referentiel#${rcpnt}`}
+          style={{ color: "var(--text-default-grey)" }}
+        >
+          (Critère {rcpnt})
+        </Link>
+      )}
+    </li>
   );
 };
 
@@ -77,9 +88,8 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
   const emailMissing = !rcpnt.includes("2.1");
   const emailCompliant = rcpnt.includes("2.a");
 
-  const lastChecked = commune.issues_last_checked
-    ? ` (testé pour la dernière fois le ${String(commune.issues_last_checked).substring(0, 10)})`
-    : "";
+  const emailDomain = commune.email_domain || "";
+  const websiteDomain = (commune.website_domain || "").replace(/^www\./, "");
 
   const dilaUpdateLink = (
     <Link
@@ -96,7 +106,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
       {issues.includes("WEBSITE_MISSING") && (
         <>
           <MessageLine severity="error" rcpnt="1.1">
-            La commune ne dispose pas encore d&rsquo;un nom de domaine connu des services de
+            La commune ne dispose pas encore d&rsquo;un site internet connu des services de
             l&rsquo;État.
           </MessageLine>
 
@@ -105,21 +115,21 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
           </MessageLine>
 
           {isEligible && (
-            <p className={fr.cx("fr-text--bold")}>
+            <li className={fr.cx("fr-text--bold")}>
               <Badge severity="success" noIcon as="span">
                 Bonne nouvelle !
               </Badge>{" "}
               Si vous n&rsquo;en possédez pas, la Suite territoriale peut vous accompagner à en
               obtenir un.
-            </p>
+            </li>
           )}
         </>
       )}
 
       {issues.includes("WEBSITE_MALFORMED") && (
         <MessageLine severity="error" rcpnt="1.1">
-          Un nom de domaine est déclaré pour la commune mais il n&rsquo;est pas formatté
-          correctement. Veuillez vérifier sur que votre nom de domaine correspond au format{" "}
+          Un site internet est déclaré pour la commune mais il n&rsquo;est pas formaté correctement.
+          Veuillez vérifier que votre site internet correspond au format{" "}
           <strong>https://domaine.extension</strong> et qu&rsquo;il ne comporte pas d&rsquo;accents.
         </MessageLine>
       )}
@@ -128,9 +138,9 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
         <>
           {rcpnt.includes("1.2") && (
             <MessageLine severity="success" rcpnt="1.2">
-              L&rsquo;extension <strong>.{commune.website_tld}</strong> du domaine{" "}
+              L&rsquo;extension <strong>.{commune.website_tld}</strong> du nom de domaine{" "}
               <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
-                {commune.website_domain}
+                {websiteDomain}
               </Link>{" "}
               est bien souveraine.
             </MessageLine>
@@ -138,17 +148,24 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
 
           {!rcpnt.includes("1.2") && (
             <MessageLine severity="error" rcpnt="1.2">
-              L&rsquo;extension <strong>.{commune.website_tld}</strong> du domaine{" "}
+              L&rsquo;extension <strong>.{commune.website_tld}</strong> du nom de domaine{" "}
               <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
-                {commune.website_domain}
+                {websiteDomain}
               </Link>{" "}
               n&rsquo;est pas souveraine.
             </MessageLine>
           )}
 
+          {issues.includes("EMAIL_DOMAIN_MISMATCH") && !rcpnt.includes("1.2") && (
+            <MessageLine severity="error" rcpnt="2.3">
+              Le site internet utilise un domaine <strong>{websiteDomain}</strong> différent de
+              celui de la messagerie <strong>{emailDomain}</strong>.
+            </MessageLine>
+          )}
+
           {!rcpnt.includes("1.3") && (
             <MessageLine severity="error" rcpnt="1.3">
-              Le site internet de la commune n&rsquo;est pas joignable{lastChecked}.
+              Le site internet de la commune n&rsquo;est pas joignable.
             </MessageLine>
           )}
 
@@ -159,14 +176,13 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                 http://
                 {(commune.website_url || "").replace(/^https?:\/\//, "")}
               </strong>{" "}
-              ne redirige pas correctement vers la version HTTPS du site internet de la commune
-              {lastChecked}.
+              ne redirige pas vers la version HTTPS du site internet de la commune.
             </MessageLine>
           )}
 
           {!rcpnt.includes("1.5") && (
             <MessageLine severity="error" rcpnt="1.5">
-              Le certificat SSL du site internet de la commune n&rsquo;est pas valide{lastChecked}.
+              Le certificat SSL du site internet de la commune n&rsquo;est pas valide.
             </MessageLine>
           )}
 
@@ -179,37 +195,53 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
           {!rcpnt.includes("1.6") && (
             <MessageLine severity="error" rcpnt="1.6">
               L&rsquo;adresse <strong>{commune.website_url}</strong> redirige vers un autre domaine
-              non déclaré sur Service-Public.fr{lastChecked}.
+              non déclaré sur Service-Public.fr.
             </MessageLine>
           )}
 
-          {issues.includes("WEBSITE_HTTPS_NOWWW") && (
+          {issues.includes("WEBSITE_HTTPS_NOWWW") && issues.includes("WEBSITE_HTTP_NOWWW") && (
+            <MessageLine severity="warning" rcpnt="1.7">
+              Les adresses{" "}
+              <strong>
+                http://
+                {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
+              </strong>{" "}
+              et{" "}
+              <strong>
+                https://
+                {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
+              </strong>{" "}
+              (sans www.) ne redirigent pas vers le site internet de la commune.
+            </MessageLine>
+          )}
+
+          {issues.includes("WEBSITE_HTTPS_NOWWW") && !issues.includes("WEBSITE_HTTP_NOWWW") && (
             <MessageLine severity="warning" rcpnt="1.7">
               L&rsquo;adresse{" "}
               <strong>
                 https://
                 {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
               </strong>{" "}
-              (sans www.) ne redirige pas correctement vers le site internet de la commune.
+              (sans www.) ne redirige pas vers le site internet de la commune.
             </MessageLine>
           )}
 
-          {issues.includes("WEBSITE_HTTP_NOWWW") && (
+          {issues.includes("WEBSITE_HTTP_NOWWW") && !issues.includes("WEBSITE_HTTPS_NOWWW") && (
             <MessageLine severity="warning" rcpnt="1.7">
               L&rsquo;adresse{" "}
               <strong>
                 http://
                 {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
               </strong>{" "}
-              (sans www.) ne redirige pas correctement vers le site internet de la commune.
+              (sans www.) ne redirige pas vers le site internet de la commune.
             </MessageLine>
           )}
 
           {!rcpnt.includes("1.8") && (
             <MessageLine severity="warning" rcpnt="1.8">
-              Le domaine{" "}
+              Le site internet{" "}
               <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
-                {commune.website_domain}
+                {websiteDomain}
               </Link>{" "}
               est déclaré en HTTP (et non HTTPS) sur Service-Public.fr.
             </MessageLine>
@@ -217,7 +249,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
 
           {websiteCompliant && isEligible && (
             <MessageLine severity="success">
-              Vous pourrez réutiliser ce domaine au sein de la Suite territoriale !
+              Vous pourrez réutiliser ce nom de domaine au sein de la Suite territoriale !
             </MessageLine>
           )}
         </>
@@ -248,34 +280,35 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
 
       {!emailMissing && (
         <>
-          {issues.includes("EMAIL_DOMAIN_EXTENSION") && (
+          {rcpnt.includes("2.2") && issues.includes("EMAIL_DOMAIN_EXTENSION") && (
             <MessageLine severity="error" rcpnt="1.2">
               L&rsquo;extension <strong>.{commune.email_tld}</strong> du domaine de messagerie{" "}
-              <strong>{commune.email_domain}</strong> n&rsquo;est pas souveraine.
+              <strong>{emailDomain}</strong> n&rsquo;est pas souveraine.
             </MessageLine>
           )}
 
-          {!issues.includes("EMAIL_DOMAIN_EXTENSION") && (
+          {rcpnt.includes("2.2") && !issues.includes("EMAIL_DOMAIN_EXTENSION") && (
             <MessageLine severity="success" rcpnt="1.2">
               L&rsquo;extension <strong>.{commune.email_tld}</strong> du domaine de messagerie{" "}
-              <strong>{commune.email_domain}</strong> est bien souveraine.
+              <strong>{emailDomain}</strong> est bien souveraine.
             </MessageLine>
           )}
 
           {!rcpnt.includes("2.2") && (
             <MessageLine severity="error" rcpnt="2.2">
-              Le domaine <strong>{commune.email_domain}</strong> générique ne permet pas aux usagers
-              de vérifier l&rsquo;authenticité de la messagerie.
+              Le domaine <strong>{emailDomain}</strong> générique ne permet pas aux usagers de
+              vérifier l&rsquo;authenticité de la messagerie.
             </MessageLine>
           )}
 
-          {issues.includes("EMAIL_DOMAIN_MISMATCH") && (
-            <MessageLine severity="error" rcpnt="2.3">
-              L&rsquo;adresse de messagerie utilise un domaine{" "}
-              <strong>{commune.email_domain}</strong> différent de celui du site internet{" "}
-              <strong>{commune.website_domain}</strong>.
-            </MessageLine>
-          )}
+          {rcpnt.includes("2.2") &&
+            issues.includes("EMAIL_DOMAIN_MISMATCH") &&
+            rcpnt.includes("1.2") && (
+              <MessageLine severity="error" rcpnt="2.3">
+                L&rsquo;adresse de messagerie utilise un domaine <strong>{emailDomain}</strong>{" "}
+                différent de celui du site internet <strong>{websiteDomain}</strong>.
+              </MessageLine>
+            )}
 
           {rcpnt.includes("2.3") && (
             <MessageLine severity="success" rcpnt="2.3">
@@ -285,67 +318,65 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
 
           {issues.includes("DNS_DOWN") && (
             <MessageLine severity="error" rcpnt="2.4">
-              Le serveur DNS du domaine de messagerie <strong>{commune.email_domain}</strong>{" "}
-              n&rsquo;est pas joignable.
+              Le serveur DNS du domaine de messagerie <strong>{emailDomain}</strong> n&rsquo;est pas
+              joignable.
             </MessageLine>
           )}
 
           {issues.includes("DNS_MX_MISSING") && (
             <MessageLine severity="error" rcpnt="2.4">
               Aucun enregistrement MX n&rsquo;est configuré sur le domaine de messagerie{" "}
-              <strong>{commune.email_domain}</strong>. La messagerie ne peut recevoir aucun email.
+              <strong>{emailDomain}</strong>. La messagerie ne peut recevoir aucun email.
             </MessageLine>
           )}
 
-          {rcpnt.includes("2.5") && (
+          {rcpnt.includes("2.2") && rcpnt.includes("2.5") && (
             <MessageLine severity="success" rcpnt="2.5">
-              L&rsquo;enregistrement SPF du domaine <strong>{commune.email_domain}</strong> est
-              présent.
+              L&rsquo;enregistrement SPF du domaine <strong>{emailDomain}</strong> est présent.
             </MessageLine>
           )}
 
-          {!rcpnt.includes("2.5") && (
+          {rcpnt.includes("2.2") && !rcpnt.includes("2.5") && (
             <MessageLine severity="info" rcpnt="2.5">
               Nous vous recommandons de configurer un enregistrement SPF sur le domaine de
-              messagerie <strong>{commune.email_domain}</strong>.
+              messagerie <strong>{emailDomain}</strong>.
             </MessageLine>
           )}
 
-          {!rcpnt.includes("2.6") && (
+          {rcpnt.includes("2.2") && !rcpnt.includes("2.6") && (
             <MessageLine severity="info" rcpnt="2.6">
               Nous vous recommandons de configurer un enregistrement DMARC sur le domaine de
-              messagerie <strong>{commune.email_domain}</strong>.
+              messagerie <strong>{emailDomain}</strong>.
             </MessageLine>
           )}
 
-          {rcpnt.includes("2.6") && !rcpnt.includes("2.7") && (
+          {rcpnt.includes("2.2") && rcpnt.includes("2.6") && !rcpnt.includes("2.7") && (
             <MessageLine severity="success" rcpnt="2.6">
-              L&rsquo;enregistrement DMARC du domaine <strong>{commune.email_domain}</strong> est
-              présent.
+              L&rsquo;enregistrement DMARC du domaine <strong>{emailDomain}</strong> est présent.
             </MessageLine>
           )}
 
-          {rcpnt.includes("2.6") && !rcpnt.includes("2.7") && (
+          {rcpnt.includes("2.2") && rcpnt.includes("2.6") && !rcpnt.includes("2.7") && (
             <MessageLine severity="info" rcpnt="2.7">
               Nous vous recommandons d&rsquo;utiliser une politique de quarantaine DMARC plus
               stricte.
             </MessageLine>
           )}
 
-          {rcpnt.includes("2.7") && (
+          {rcpnt.includes("2.2") && rcpnt.includes("2.7") && (
             <MessageLine severity="success" rcpnt="2.7">
-              L&rsquo;enregistrement DMARC du domaine <strong>{commune.email_domain}</strong>{" "}
-              utilise une politique de quarantaine stricte.
+              L&rsquo;enregistrement DMARC du domaine <strong>{emailDomain}</strong> utilise une
+              politique de quarantaine stricte.
             </MessageLine>
           )}
 
           {!emailCompliant && isEligible && (
-            <p className={fr.cx("fr-text--bold")}>
+            <li className={fr.cx("fr-text--bold")}>
               <Badge severity="success" noIcon as="span">
                 Bonne nouvelle !
               </Badge>{" "}
               La Suite territoriale peut vous aider à obtenir une adresse de messagerie conforme.
-            </p>
+            </li>
           )}
 
           {emailCompliant && isEligible && (
@@ -360,14 +391,14 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
 
   return (
     <div className={fr.cx("fr-mb-4w")}>
-      <div className={fr.cx("fr-accordions-group")}>
+      <div>
         {/* Website */}
         <Accordion
           titleAs="h2"
           label={
             <div className={fr.cx("fr-grid-row", "fr-grid-row--middle")}>
               <span className={fr.cx("fr-icon-earth-line", "fr-mr-1w")} aria-hidden="true" />
-              Nom de domaine :&nbsp;
+              Site internet :&nbsp;
               <span className={fr.cx("fr-text--bold")}>{commune.website_domain || ""}</span>
               &nbsp;
               <div className={fr.cx("fr-ml-2w", "fr-badges-group", "fr-badges-group--sm")}>
@@ -381,7 +412,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
             </div>
           }
         >
-          <div className={fr.cx("fr-py-1w")}>{websiteContent}</div>
+          <ul className={fr.cx("fr-py-1w") + " rcpnt-result-list"}>{websiteContent}</ul>
         </Accordion>
 
         {/* Email */}
@@ -403,7 +434,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
             </div>
           }
         >
-          <div className={fr.cx("fr-py-1w")}>{emailContent}</div>
+          <ul className={fr.cx("fr-py-1w") + " rcpnt-result-list"}>{emailContent}</ul>
         </Accordion>
 
         {/* Eligibility */}
@@ -432,7 +463,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
               </li>
             )}
           </ul>
-          <div className={fr.cx("fr-mt-2w")}>
+          <ul className={fr.cx("fr-mt-2w") + " rcpnt-result-list"}>
             {isEligible ? (
               <MessageLine severity="success">
                 La commune est éligible à la Suite territoriale. Vous pouvez dès à présent rejoindre
@@ -448,7 +479,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                 !
               </MessageLine>
             )}
-          </div>
+          </ul>
         </Accordion>
       </div>
 
@@ -457,6 +488,13 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
           className={fr.cx("fr-mt-2w", "fr-text--xs", "fr-label--disabled")}
           style={{ textAlign: "right" }}
         >
+          {commune.issues_last_checked && (
+            <>
+              Dernière vérification le {String(commune.issues_last_checked).substring(8, 10)}/
+              {String(commune.issues_last_checked).substring(5, 7)}/
+              {String(commune.issues_last_checked).substring(0, 4)}.{" "}
+            </>
+          )}
           Mettre les informations à jour sur l&rsquo;
           <Link
             href={commune.service_public_url + "/demande-de-mise-a-jour"}
