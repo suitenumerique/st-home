@@ -261,7 +261,12 @@ const ReferentielConformite: ReferentielSection[] = [
               </li>
               <li>
                 Configurez dans votre serveur web la redirection automatique HTTP vers HTTPS (selon
-                votre site, il peut-être votre hébergeur, Wordpress ou autre)&nbsp;;
+                votre site, il peut-être votre hébergeur, Wordpress ou autre).
+              </li>
+              <li>
+                Attention, certains navigateurs peuvent rediriger automatiquement vers HTTPS mais
+                cela n&rsquo;est pas suffisant, il faut bien que le serveur soit configuré pour
+                rediriger 100% des connexions&nbsp;;
               </li>
               <li>
                 En cas de problème, contactez votre hébergeur ou votre prestataire technique qui
@@ -508,10 +513,9 @@ const ReferentielConformite: ReferentielSection[] = [
           <>
             <p>
               Un nom de domaine est dit générique lorsqu&rsquo;il ne comporte pas le nom de la
-              collectivité (par exemple : <strong>accueil@mairie-brigny.fr</strong>). Les domaines
-              génériques les plus utilisés par les communes françaises sont{" "}
-              <strong>wanadoo.fr</strong>, <strong>orange.fr</strong> ou encore{" "}
-              <strong>gmail.com</strong> et présentent plusieurs risques :
+              collectivité. Les domaines génériques les plus utilisés par les communes françaises
+              sont <strong>wanadoo.fr</strong>, <strong>orange.fr</strong> ou encore{" "}
+              <strong>gmail.com</strong>. Ils présentent plusieurs risques :
             </p>
             <ul>
               <li>
@@ -995,6 +999,7 @@ const ReferentielPage: NextPage = () => {
     router.push(`/bienvenue/${selectedCommune.siret}`);
   };
 
+  const [showStatsSamples, setShowStatsSamples] = useState(false);
   const [statsLoadingError, setStatsLoadingError] = useState(false);
   const [stats, setStats] = useState<Record<
     string,
@@ -1004,11 +1009,13 @@ const ReferentielPage: NextPage = () => {
       total: number;
       valid_pop: number;
       total_pop: number;
+      sample_valid?: string[];
+      sample_invalid?: string[];
     }>
   > | null>(null);
 
   useEffect(() => {
-    fetch(`/api/rcpnt/stats?scope=global&refs=${getAllRefs()}`)
+    fetch(`/api/rcpnt/stats?scope=global&with_sample=1&refs=${getAllRefs()}`)
       .then((res) => {
         if (!res.ok) {
           setStatsLoadingError(true);
@@ -1037,6 +1044,8 @@ const ReferentielPage: NextPage = () => {
       total: stat.total,
       valid_pop: stat.valid_pop,
       total_pop: stat.total_pop,
+      sample_valid: stat.sample_valid,
+      sample_invalid: stat.sample_invalid,
     };
   };
 
@@ -1283,6 +1292,14 @@ const ReferentielPage: NextPage = () => {
                                       "fr-mr-1w",
                                     )}
                                     aria-hidden="true"
+                                    onClick={(e) => {
+                                      // Alt-click to show samples
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      if (e.altKey) {
+                                        setShowStatsSamples(true);
+                                      }
+                                    }}
                                   />
                                   {getStatsForRef(item.num)?.percentage_of_existing}%
                                 </>
@@ -1302,6 +1319,28 @@ const ReferentielPage: NextPage = () => {
                                 </>
                               )}
                             </span>
+                            {showStatsSamples && (
+                              <div className={fr.cx("fr-text--sm")}>
+                                <br />
+                                Exemples conformes :{" "}
+                                {getStatsForRef(item.num)?.sample_valid?.map((s) => (
+                                  <>
+                                    <Link href={`/bienvenue/${s}`} key={s}>
+                                      {s}
+                                    </Link>{" "}
+                                  </>
+                                ))}
+                                <br />
+                                Exemples non conformes :{" "}
+                                {getStatsForRef(item.num)?.sample_invalid?.map((s) => (
+                                  <>
+                                    <Link href={`/bienvenue/${s}`} key={s}>
+                                      {s}
+                                    </Link>{" "}
+                                  </>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </Accordion>
