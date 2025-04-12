@@ -4,7 +4,12 @@ import { sql } from "drizzle-orm";
 import { NextApiRequest, NextApiResponse } from "next";
 import { unstable_cache } from "next/cache";
 
-const getConformanceStatsInner = async (scope: string, refs: string, dep?: string) => {
+const getConformanceStatsInner = async (
+  scope: string,
+  refs: string,
+  with_sample: string,
+  dep?: string,
+) => {
   // Special case for commune scope - return raw organization data
   if (scope === "list-commune" || scope === "list-epci") {
     if (!dep) {
@@ -43,6 +48,8 @@ const getConformanceStatsInner = async (scope: string, refs: string, dep?: strin
     total: number;
     valid_pop: number;
     total_pop: number;
+    sample_valid: string[];
+    sample_invalid: string[];
     last_updated: Date;
   }>(sql`
     SELECT
@@ -52,6 +59,8 @@ const getConformanceStatsInner = async (scope: string, refs: string, dep?: strin
       total,
       valid_pop,
       total_pop,
+      sample_valid,
+      sample_invalid,
       last_updated
     FROM data_rcpnt_stats
     WHERE scope = ${scope}
@@ -74,6 +83,12 @@ const getConformanceStatsInner = async (scope: string, refs: string, dep?: strin
         total: stat.total,
         valid_pop: stat.valid_pop,
         total_pop: stat.total_pop,
+        ...(with_sample === "1"
+          ? {
+              sample_valid: stat.sample_valid,
+              sample_invalid: stat.sample_invalid,
+            }
+          : {}),
       });
       return acc;
     },
@@ -87,7 +102,8 @@ const getConformanceStatsInner = async (scope: string, refs: string, dep?: strin
 const getConformanceStats =
   process.env.NODE_ENV === "production"
     ? unstable_cache(
-        (scope: string, refs: string, dep?: string) => getConformanceStatsInner(scope, refs, dep),
+        (scope: string, refs: string, with_sample: string, dep?: string) =>
+          getConformanceStatsInner(scope, refs, with_sample, dep),
         ["conformance-stats"],
         { revalidate: 3600 },
       )
@@ -95,7 +111,7 @@ const getConformanceStats =
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { scope = "global", refs = "1.a,2.a", dep } = req.query;
+    const { scope = "global", refs = "1.a,2.a", with_sample = "0", dep } = req.query;
 
     if (scope === "commune" && !dep) {
       return res.status(400).json({
@@ -110,7 +126,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.setHeader("Cache-Control", "no-store");
     }
 
-    const stats = await getConformanceStats(scope as string, refs as string, dep as string);
+    const stats = await getConformanceStats(
+      scope as string,
+      refs as string,
+      with_sample as string,
+      dep as string,
+    );
     return res.status(200).json(stats);
   } catch (error) {
     console.error("Error fetching conformance stats:", error);

@@ -84,9 +84,11 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
 
   const websiteMissing = !rcpnt.includes("1.1");
   const websiteCompliant = rcpnt.includes("1.a");
+  const websiteInvalid = issues.includes("WEBSITE_MALFORMED");
 
   const emailMissing = !rcpnt.includes("2.1");
   const emailCompliant = rcpnt.includes("2.a");
+  const emailInvalid = issues.includes("EMAIL_MALFORMED");
 
   const emailDomain = commune.email_domain || "";
   const websiteDomain = (commune.website_domain || "").replace(/^www\./, "");
@@ -176,7 +178,8 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                 http://
                 {(commune.website_url || "").replace(/^https?:\/\//, "")}
               </strong>{" "}
-              ne redirige pas vers la version HTTPS du site internet de la commune.
+              ne redirige pas tous les navigateurs vers la version HTTPS du site internet de la
+              commune.
             </MessageLine>
           )}
 
@@ -261,19 +264,36 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
     <>
       {emailMissing && (
         <>
-          <MessageLine severity="error" rcpnt="2.1">
-            La commune ne dispose pas encore d&rsquo;une adresse de messagerie connue des services
-            de l&rsquo;État.
-          </MessageLine>
-          <MessageLine severity="info">
-            Si vous en possédez une, vous devez la déclarer sur {dilaUpdateLink}.
-          </MessageLine>
+          {emailInvalid && (
+            <>
+              <MessageLine severity="error" rcpnt="2.1">
+                Une adresse de messagerie est déclarée mais elle n&rsquo;est pas valide. Vérifiez
+                qu&rsquo;elle ne contient ni espaces, ni caractères spéciaux et respecte le format{" "}
+                <strong>nom@domaine.extension</strong>
+              </MessageLine>
+              <MessageLine severity="info">
+                Vous pouvez la corriger sur {dilaUpdateLink}.
+              </MessageLine>
+            </>
+          )}
 
-          {isEligible && (
-            <MessageLine severity="success">
-              Si vous n&rsquo;en possédez pas, la Suite territoriale peut vous aider à en obtenir
-              une.
-            </MessageLine>
+          {!emailInvalid && (
+            <>
+              <MessageLine severity="error" rcpnt="2.1">
+                La commune ne dispose pas encore d&rsquo;une adresse de messagerie connue des
+                services de l&rsquo;État.
+              </MessageLine>
+              <MessageLine severity="info">
+                Si vous en possédez une, vous devez la déclarer sur {dilaUpdateLink}.
+              </MessageLine>
+
+              {isEligible && (
+                <MessageLine severity="success">
+                  Si vous n&rsquo;en possédez pas, la Suite territoriale peut vous aider à en
+                  obtenir une.
+                </MessageLine>
+              )}
+            </>
           )}
         </>
       )}
@@ -403,11 +423,13 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
               &nbsp;
               <div className={fr.cx("fr-ml-2w", "fr-badges-group", "fr-badges-group--sm")}>
                 {inProgress && !websiteMissing && getBadge("warning", "Vérifications en cours")}
-                {websiteMissing
-                  ? getBadge("error", "Manquant")
-                  : websiteCompliant
-                    ? getBadge("success", "Conforme")
-                    : getBadge("error", "Non conforme")}
+                {websiteInvalid
+                  ? getBadge("error", "Invalide")
+                  : websiteMissing
+                    ? getBadge("error", "Manquant")
+                    : websiteCompliant
+                      ? getBadge("success", "Conforme")
+                      : getBadge("error", "Non conforme")}
               </div>
             </div>
           }
@@ -422,14 +444,18 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
             <div className={fr.cx("fr-grid-row", "fr-grid-row--middle")}>
               <span className={fr.cx("fr-icon-mail-line", "fr-mr-1w")} aria-hidden="true" />
               Adresse de messagerie :&nbsp;
-              <span className={fr.cx("fr-text--bold")}>{commune.email_official || ""}</span>
+              <span className={fr.cx("fr-text--bold")}>
+                {emailMissing ? "" : commune.email_official || ""}
+              </span>
               <div className={fr.cx("fr-ml-2w", "fr-badges-group", "fr-badges-group--sm")}>
                 {inProgress && !emailMissing && getBadge("warning", "Vérifications en cours")}
-                {emailMissing
-                  ? getBadge("error", "Manquante")
-                  : emailCompliant
-                    ? getBadge("success", "Conforme")
-                    : getBadge("error", "Non conforme")}
+                {emailInvalid
+                  ? getBadge("error", "Invalide")
+                  : emailMissing
+                    ? getBadge("error", "Manquante")
+                    : emailCompliant
+                      ? getBadge("success", "Conforme")
+                      : getBadge("error", "Non conforme")}
               </div>
             </div>
           }

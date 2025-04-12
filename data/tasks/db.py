@@ -171,8 +171,20 @@ def calculate_stats_for_scope(communes, scope_communes):
         sample_valid = random.sample(list(valid), min(3, count)) if valid else []
         sample_invalid = []
         invalid = scope_sirets - valid
+
+        # Pick invalid samples with the fewest other issues
         if invalid:
-            sample_invalid = random.sample(list(invalid), min(3, len(invalid)))
+            # Create a map to count issues for invalid SIRETs
+            valid_count = dict.fromkeys(invalid, 0)
+            for c in scope_communes:
+                if c.get("_st_siret") in invalid:
+                    valid_count[c["_st_siret"]] += len(c.get("_st_rcpnt", []))
+
+            # Sort invalid SIRETs by issue count and select samples
+            least_issues_invalid = sorted(
+                invalid, key=lambda siret: valid_count[siret], reverse=True
+            )[0:12]
+            sample_invalid = random.sample(least_issues_invalid, min(3, len(least_issues_invalid)))
 
         stats.append((ref, count, total, count_pop, total_pop, sample_valid, sample_invalid))
 

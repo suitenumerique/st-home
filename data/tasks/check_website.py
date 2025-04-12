@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-@app.task
+@app.task(time_limit=60, acks_late=True)
 def run(siret):
     org = find_org_by_siret(siret)
 
