@@ -8,6 +8,7 @@ dependencies = [
     "requests==2.32.3",
     "celery[redis,gevent]==5.4.0",
     "dnspython==2.7.0",
+    "sentry-sdk[celery]==2.26.1",
     "psycopg2-binary==2.9.10",
 ]
 
@@ -18,7 +19,7 @@ local = [
     "watchdog==6.0.0",
     "pytest==8.3.5",
     "certifi==2025.1.31",
-    "ruff==0.11.2",
+    "ruff==0.11.2"
 ]
 
 [build-system]

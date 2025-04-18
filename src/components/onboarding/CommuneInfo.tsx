@@ -178,8 +178,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                 http://
                 {(commune.website_url || "").replace(/^https?:\/\//, "")}
               </strong>{" "}
-              ne redirige pas tous les navigateurs vers la version HTTPS du site internet de la
-              commune.
+              ne redirige pas tous les navigateurs vers la version HTTPS du site.
             </MessageLine>
           )}
 

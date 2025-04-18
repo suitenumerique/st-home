@@ -4,6 +4,8 @@ import os
 import re
 from collections import defaultdict
 
+from sentry_sdk.crons import monitor
+
 from celery_app import app
 
 from .conformance import Issues, get_rcpnt_conformance, validate_conformance
@@ -39,6 +41,17 @@ logging.basicConfig(level=logging.INFO)
 
 
 @app.task
+@monitor(
+    monitor_slug="sync.run",
+    monitor_config={
+        "schedule": {"type": "crontab", "value": "20 7 * * *"},
+        "timezone": "UTC",
+        "checkin_margin": 60,  # in minutes
+        "max_runtime": 20,
+        "failure_issue_threshold": 1,
+        "recovery_threshold": 3,
+    },
+)
 def run():
     """Main data sync workflow"""
 
@@ -473,6 +486,11 @@ def compute_slug_for_communes(communes: list):
     logger.warning(
         f"Communes with a slug longer than 25 characters: {sum(1 for commune in communes if len(commune['_st_slug']) > 25)}"
     )
+
+
+@app.task
+def debug_sentry():
+    raise Exception("This is a test exception for Sentry")
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ import { useSmallScreen } from "@/lib/hooks";
 import { Commune } from "@/types";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion";
+import { Tooltip } from "@codegouvfr/react-dsfr/Tooltip";
 import { NextPage } from "next";
 import { NextSeo } from "next-seo";
 import Image from "next/image";
@@ -1076,6 +1077,17 @@ const ReferentielPage: NextPage = () => {
     };
   }, []);
 
+  // One state for each ref link
+  const [showSuccessIcon, setShowSuccessIcon] = useState<Record<string, boolean>>({});
+
+  const copyRefLinkToClipboard = (item: string) => {
+    navigator.clipboard.writeText(
+      window.location.origin + `/conformite/referentiel#${item.toLowerCase()}`,
+    );
+    setShowSuccessIcon((prev) => ({ ...prev, [item]: true }));
+    setTimeout(() => setShowSuccessIcon((prev) => ({ ...prev, [item]: false })), 2000);
+  };
+
   return (
     <>
       <NextSeo
@@ -1211,8 +1223,7 @@ const ReferentielPage: NextPage = () => {
                         }
                       >
                         <div className={fr.cx("fr-mb-2w")}>
-                          <div>
-                            {/*
+                          {/*
                             <span className={fr.cx("fr-badge", "fr-badge--sm", "fr-mr-2w")}>
                               <span
                                 className={fr.cx(
@@ -1227,18 +1238,28 @@ const ReferentielPage: NextPage = () => {
                               {item.type === "tested" ? "Testé quotidiennement" : "Déclaratif"}
                             </span>
                             */}
-
-                            <Link
-                              href={`#${item.num.toLowerCase()}`}
-                              className={fr.cx(
-                                "ri-links-line",
-                                "fr-icon--md",
-                                "fr-mr-1w",
-                                "fr-raw-link",
-                              )}
-                              style={{ color: "var(--text-title-blue-france)", float: "right" }}
-                              title="Lien vers ce critère"
-                            ></Link>
+                          <div style={{ float: "right" }}>
+                            <Tooltip kind="hover" title="Copier le lien vers ce critère">
+                              <Link
+                                href={`#${item.num.toLowerCase()}`}
+                                className={fr.cx(
+                                  showSuccessIcon[item.num] ? "ri-check-line" : "ri-links-line",
+                                  "fr-icon--md",
+                                  "fr-mr-1w",
+                                  "fr-raw-link",
+                                )}
+                                style={{
+                                  color: showSuccessIcon[item.num]
+                                    ? "var(--text-default-success)"
+                                    : "var(--text-title-blue-france)",
+                                }}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  copyRefLinkToClipboard(item.num);
+                                }}
+                              ></Link>
+                            </Tooltip>
                           </div>
 
                           <h4 className={fr.cx("fr-text--bold", "fr-mb-1w", "fr-mt-1w", "fr-h5")}>
