@@ -10,7 +10,7 @@ const SENTRY_ENV = process.env.SENTRY_ENV || process.env.NEXT_PUBLIC_SENTRY_ENV;
 Sentry.init({
   dsn: SENTRY_DSN ?? "",
   environment: SENTRY_ENV ?? "development",
-  release: "suite-territoriale-home@" + (process.env.GITHUB_SHA || process.env.CONTAINER_VERSION),
+  release: "suite-territoriale-home@" + process.env.NEXT_PUBLIC_APP_VERSION_COMMIT,
   // Adjust this value in production, or use tracesSampler for greater control
   tracesSampleRate: 0.1,
   // ...

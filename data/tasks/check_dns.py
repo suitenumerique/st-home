@@ -4,6 +4,7 @@ import sys
 
 import dns.exception
 import dns.resolver
+from sentry_sdk.crons import monitor
 
 from celery_app import app
 
@@ -36,6 +37,17 @@ def run(siret):
 
 
 @app.task
+@monitor(
+    monitor_slug="check_dns.queue_all",
+    monitor_config={
+        "schedule": {"type": "crontab", "value": "00 2 * * *"},
+        "timezone": "UTC",
+        "checkin_margin": 60,  # in minutes
+        "max_runtime": 60,
+        "failure_issue_threshold": 1,
+        "recovery_threshold": 3,
+    },
+)
 def queue_all():
     for org in list_all_orgs():
         run.apply_async(args=[org["siret"]], queue="check_dns")

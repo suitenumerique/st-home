@@ -49,6 +49,7 @@
     "db:drop:staging": "dotenv -e .env.staging -- node -r @swc-node/register scripts/db-drop.ts",
     "db:browse:local": "dotenv -e .env.local -- drizzle-kit studio",
     "db:browse:staging": "dotenv -e .env.staging -- drizzle-kit studio",
+    "db:browse:production": "dotenv -e .env.production -- drizzle-kit studio",
     "db:push:local": "dotenv -e .env.local -- drizzle-kit push",
     "db:push:staging": "dotenv -e .env.staging -- drizzle-kit push",
     "db:seed:sample:local": "dotenv -e .env.local -- node -r @swc-node/register scripts/db-seed.ts ./data/dumps-sample",
