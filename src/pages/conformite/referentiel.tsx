@@ -1058,7 +1058,13 @@ const ReferentielPage: NextPage = () => {
         // Give the DOM time to render
         setTimeout(() => {
           const element = document.getElementById(hash);
-          if (element) element.click();
+          if (
+            element &&
+            element.parentNode &&
+            (element.parentNode as HTMLElement).getAttribute("aria-expanded") === "false"
+          ) {
+            element.click();
+          }
           //   // Scroll the element into view
           //   element.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 200);
