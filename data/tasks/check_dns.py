@@ -83,23 +83,23 @@ def check_spf(email_domain, issues):
     """
     Check SPF record
     """
-
     try:
         spf_records = dns.resolver.resolve(
             email_domain, "TXT", raise_on_no_answer=False, lifetime=5
         )
         spf_found = False
-
         for record in spf_records:
-            txt = record.to_text().strip('"')
+            # Records can be split into multiple strings, join them
+            txt = "".join(
+                s.decode("utf-8") if isinstance(s, bytes) else str(s) for s in record.strings
+            ).strip()
             if txt.startswith("v=spf1"):
                 spf_found = True
-                break
-
+                break  # Found one, no need to check others
         if not spf_found:
             issues[Issues.DNS_SPF_MISSING] = f"No SPF record found for {email_domain}"
-
     except dns.exception.DNSException:
+        # Keep existing behavior: report as missing if lookup fails
         issues[Issues.DNS_SPF_MISSING] = f"No SPF record found for {email_domain}"
 
 
@@ -107,42 +107,53 @@ def check_dmarc(email_domain, issues):
     """
     Check DMARC record
     """
-
+    dmarc_domain = f"_dmarc.{email_domain}"
     try:
         dmarc_records = dns.resolver.resolve(
-            f"_dmarc.{email_domain}", "TXT", raise_on_no_answer=False, lifetime=5
+            dmarc_domain, "TXT", raise_on_no_answer=False, lifetime=5
         )
 
         dmarc_found = False
         for record in dmarc_records:
-            txt = record.to_text().strip('"')
+            # Join potential multiple strings in one TXT record
+            txt = "".join(
+                s.decode("utf-8") if isinstance(s, bytes) else str(s) for s in record.strings
+            ).strip()
             if txt.startswith("v=DMARC1"):
                 dmarc_found = True
 
-                # Parse DMARC policy and percentage
-                policy_match = re.search(r"p=(\w+)", txt)
-                pct_match = re.search(r"pct=(\d+)", txt)
+                # Parse DMARC policy and percentage, ignoring case for tags
+                policy_match = re.search(r"p\s*=\s*(\w+)", txt, re.IGNORECASE)
+                pct_match = re.search(r"pct\s*=\s*(\d+)", txt, re.IGNORECASE)
 
-                policy = policy_match.group(1) if policy_match else "none"
+                # Default policy is 'none' if 'p' tag is missing (RFC 7489 Section 6.3)
+                policy = policy_match.group(1).lower() if policy_match else "none"
+                # Default pct is 100 if 'pct' tag is missing (RFC 7489 Section 6.3)
                 pct = int(pct_match.group(1)) if pct_match else 100
 
                 if policy == "none":
                     issues[Issues.DNS_DMARC_WEAK] = (
-                        f"DMARC policy is set to 'none' for {email_domain}"
+                        f"DMARC policy (p=) is 'none' for {dmarc_domain}"
                     )
                 elif policy == "quarantine" and pct < 100:
                     issues[Issues.DNS_DMARC_WEAK] = (
-                        f"DMARC policy is set to 'quarantine' with pct<100 for {email_domain}"
+                        f"DMARC policy (p=) is 'quarantine' with percentage (pct=) < 100 ({pct}%) for {dmarc_domain}"
                     )
-                # elif policy == 'quarantine' or pct < 100:
-                #    issues[Issues.DNS_DMARC_WEAK] = f"DMARC policy is weak: p={policy}, pct={pct} for {email_domain}"
+                elif policy not in ["quarantine", "reject"]:
+                    # Treat policies other than quarantine/reject as weak
+                    issues[Issues.DNS_DMARC_WEAK] = (
+                        f"DMARC policy (p=) is not 'quarantine' or 'reject' ('{policy}') for {dmarc_domain}"
+                    )
+
+                # Process only the first valid DMARC record found (RFC 7489 Section 6.6.3)
                 break
 
         if not dmarc_found:
-            issues[Issues.DNS_DMARC_MISSING] = f"No DMARC record found for {email_domain}"
+            issues[Issues.DNS_DMARC_MISSING] = f"No DMARC record found for {dmarc_domain}"
 
     except dns.exception.DNSException:
-        issues[Issues.DNS_DMARC_MISSING] = f"No DMARC record found for {email_domain}"
+        # Keep existing behavior: report as missing if lookup fails
+        issues[Issues.DNS_DMARC_MISSING] = f"No DMARC record found for {dmarc_domain}"
 
 
 if __name__ == "__main__":
