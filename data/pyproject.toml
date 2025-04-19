@@ -66,3 +66,6 @@ select = [
 [tool.ruff.lint.isort]
 section-order = ["future","standard-library","third-party","first-party","local-folder"]
 extra-standard-library = ["tomllib"]
+
+[tool.pytest.ini_options]
+filterwarnings = "ignore::urllib3.exceptions.InsecureRequestWarning"

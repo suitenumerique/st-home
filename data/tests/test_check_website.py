@@ -265,11 +265,7 @@ def test_local_ssl(
 
     # Test with working www setup. Only issue is http://localhost:8443 will be down.
     issues = check_website("https://www.localhost:8443")
-    assert issues.keys() == {
-        Issues.WEBSITE_HTTP_REDIRECT,
-        Issues.WEBSITE_HTTP_NOWWW,
-        Issues.WEBSITE_HTTPS_NOWWW,
-    }
+    assert issues.keys() == {Issues.WEBSITE_HTTP_REDIRECT, Issues.WEBSITE_HTTP_NOWWW}
 
     # Test with nonworking https setup.
     issues = check_website("https://www.localexample.fr:8443")

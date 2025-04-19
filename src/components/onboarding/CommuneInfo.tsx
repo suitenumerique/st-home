@@ -342,7 +342,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
             </MessageLine>
           )}
 
-          {issues.includes("DNS_MX_MISSING") && (
+          {issues.includes("DNS_MX_MISSING") && !issues.includes("DNS_DOWN") && (
             <MessageLine severity="error" rcpnt="2.4">
               Aucun enregistrement MX n&rsquo;est configuré sur le domaine de messagerie{" "}
               <strong>{emailDomain}</strong>. La messagerie ne peut recevoir aucun email.
@@ -355,14 +355,14 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
             </MessageLine>
           )}
 
-          {rcpnt.includes("2.2") && !rcpnt.includes("2.5") && (
+          {rcpnt.includes("2.2") && !issues.includes("DNS_DOWN") && !rcpnt.includes("2.5") && (
             <MessageLine severity="info" rcpnt="2.5">
               Nous vous recommandons de configurer un enregistrement SPF sur le domaine de
               messagerie <strong>{emailDomain}</strong>.
             </MessageLine>
           )}
 
-          {rcpnt.includes("2.2") && !rcpnt.includes("2.6") && (
+          {rcpnt.includes("2.2") && !issues.includes("DNS_DOWN") && !rcpnt.includes("2.6") && (
             <MessageLine severity="info" rcpnt="2.6">
               Nous vous recommandons de configurer un enregistrement DMARC sur le domaine de
               messagerie <strong>{emailDomain}</strong>.
@@ -375,14 +375,17 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
             </MessageLine>
           )}
 
-          {rcpnt.includes("2.2") && rcpnt.includes("2.6") && !rcpnt.includes("2.7") && (
-            <MessageLine severity="info" rcpnt="2.7">
-              Nous vous recommandons d&rsquo;utiliser une politique de quarantaine DMARC plus
-              stricte.
-            </MessageLine>
-          )}
+          {rcpnt.includes("2.2") &&
+            !issues.includes("DNS_DOWN") &&
+            rcpnt.includes("2.6") &&
+            !rcpnt.includes("2.7") && (
+              <MessageLine severity="info" rcpnt="2.7">
+                Nous vous recommandons d&rsquo;utiliser une politique de quarantaine DMARC plus
+                stricte.
+              </MessageLine>
+            )}
 
-          {rcpnt.includes("2.2") && rcpnt.includes("2.7") && (
+          {rcpnt.includes("2.2") && !issues.includes("DNS_DOWN") && rcpnt.includes("2.7") && (
             <MessageLine severity="success" rcpnt="2.7">
               L&rsquo;enregistrement DMARC du domaine <strong>{emailDomain}</strong> utilise une
               politique de quarantaine stricte.
