@@ -9,7 +9,7 @@ on:
       - "**"
 
 jobs:
-  lint:
+  lint-front:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
@@ -24,9 +24,26 @@ jobs:
         env:
           NODE_ENV: development
       - name: Run lint
-        run: npm run lint:check
+        run: npm run lint:front:check
 
-  test:
+  lint-back:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: data
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install development dependencies
+        run: pip install --user .[dev]
+      - name: Run lint
+        run: ruff check . && ruff format --check .
+
+  test-front:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
@@ -44,3 +61,21 @@ jobs:
         run: npm run test:e2e:install
       - name: Run tests
         run: npm run test
+
+
+  test-back:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: data
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install development dependencies
+        run: pip install --user .[dev]
+      - name: Run tests
+        run: pytest tests/ -vv
