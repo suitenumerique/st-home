@@ -28,7 +28,7 @@ services:
       - ./data:/app/data
     build:
       context: data/
-      dockerfile: Dockerfile.local
+      dockerfile: Dockerfile.dev
     pull_policy: build
     environment:
       - PYTHONPATH=/app/data
@@ -37,7 +37,7 @@ services:
   worker:
     build:
       context: data/
-      dockerfile: Dockerfile.local
+      dockerfile: Dockerfile.dev
     pull_policy: build
     depends_on:
       - postgresql
@@ -59,7 +59,7 @@ services:
   flower:
     build:
       context: data/
-      dockerfile: Dockerfile.local
+      dockerfile: Dockerfile.dev
     depends_on:
       - redis
     environment:
@@ -78,7 +78,7 @@ services:
       - ./data:/app/data
     build:
       context: data/
-      dockerfile: Dockerfile.local
+      dockerfile: Dockerfile.dev
     pull_policy: build
     env_file:
       - .env.staging
@@ -95,7 +95,7 @@ services:
       - ./data:/app/data
     build:
       context: data/
-      dockerfile: Dockerfile.local
+      dockerfile: Dockerfile.dev
     pull_policy: build
     env_file:
       - .env.production
