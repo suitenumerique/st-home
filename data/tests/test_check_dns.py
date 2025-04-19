@@ -24,6 +24,10 @@ class MockRecord:
     def to_text(self):
         return f'"{self._txt}"'
 
+    @property
+    def strings(self):
+        return [self._txt]
+
 
 @pytest.fixture
 def mock_resolver():
@@ -178,8 +182,8 @@ def test_real_domains():
     assert Issues.DNS_SPF_MISSING in issues
     assert Issues.DNS_DMARC_MISSING in issues
 
-    # willneverexist.gouv.fr should not be resolving at all
-    issues = check_dns("willneverexist.gouv.fr")
+    # site.notcom should not be resolving at all
+    issues = check_dns("site.notcom")
     assert Issues.DNS_DOWN in issues
     assert len(issues) == 1
 
