@@ -54,7 +54,27 @@ npm run db:seed:local
 ```
 # lancer tous les tests
 npm test
+
+# a refaire avant chaque commit
+npm run lint
 ```
+
+### Lancer des vérifications RCPNT manuellement
+
+Il est possible de rentrer dans le conteneur `data` et éxecuter des tâches. Par exemple :
+
+```
+npm run data:shell
+
+# Puis, une fois dedans :
+python3 -m tasks.check_website [SIRET]
+python3 -m tasks.check_dns [SIRET]
+python3 -m tasks.sync
+```
+
+Cela peut permettre de débugguer des problèmes liés à certains SIRETs en particulier.
+
+Il est recommandé d'ajouter des tests unitaires à chaque nouveau cas pour rendre les vérifications plus robustes.
 
 ## Mise à jour des fichiers geoJSON
 

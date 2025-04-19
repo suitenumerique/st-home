@@ -1,3 +1,4 @@
+import json
 import logging
 import re
 import sys
@@ -148,4 +149,4 @@ if __name__ == "__main__":
     # Run with command line arguments
     siret = sys.argv[1]
     issues = run(siret)
-    logger.info(issues)
+    logger.info(json.dumps(issues, indent=2))

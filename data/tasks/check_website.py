@@ -1,9 +1,11 @@
+import json
 import logging
 import re
 import sys
 from urllib.parse import urlparse, urlunparse
 
 import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from celery_app import app
 
@@ -12,6 +14,11 @@ from .db import find_org_by_siret, list_all_orgs, upsert_issues
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
+# We disable warnings for SSL errors because we handle them in the code.
+# Some requests we explicitly want to do without verifying the SSL certificate,
+# to show more precise errors to users.
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 @app.task(time_limit=60, acks_late=True)
@@ -79,7 +86,11 @@ def check_website(url):
     final_domain_http = check_http(url, urls_to_test, issues, request_kwargs)
     final_domain_https = check_https(url, urls_to_test, issues, request_kwargs)
     check_non_www(
-        final_domain_https or final_domain_http, url, urls_to_test, issues, request_kwargs
+        final_domain_https or final_domain_http or base_domain,
+        url,
+        urls_to_test,
+        issues,
+        request_kwargs,
     )
 
     return issues
@@ -91,7 +102,7 @@ def check_http(base_url, urls_to_test, issues, request_kwargs):
     """
 
     try:
-        http_response = requests.get(urls_to_test["http"], **request_kwargs)
+        http_response = requests.get(urls_to_test["http"], **{**request_kwargs, "verify": False})
 
         if http_response.status_code != 200:
             issues[Issues.WEBSITE_DOWN] = f"HTTP returned status {http_response.status_code}"
@@ -101,13 +112,13 @@ def check_http(base_url, urls_to_test, issues, request_kwargs):
                 issues[Issues.WEBSITE_HTTP_REDIRECT] = f"Site stays on HTTP: {http_response.url}"
 
             # Check if final domain matches original
+            expected_domain = re.sub(r"^www\.", "", urlparse(urls_to_test["http"]).netloc)
             final_domain = urlparse(http_response.url).netloc
             final_domain = re.sub(r"\:(80|443)", "", final_domain)
-            if re.sub(r"^www\.", "", final_domain) != re.sub(
-                r"^www\.", "", urlparse(urls_to_test["http"]).netloc
-            ):
+            final_domain = re.sub(r"^www\.", "", final_domain)
+            if final_domain != expected_domain:
                 issues[Issues.WEBSITE_DOMAIN_REDIRECT] = (
-                    f"HTTP Site redirects to different domain: {final_domain}"
+                    f"HTTP Site redirects to different domain: {final_domain} vs. {expected_domain}"
                 )
 
             return final_domain
@@ -132,13 +143,13 @@ def check_https(base_url, urls_to_test, issues, request_kwargs):
             issues[Issues.WEBSITE_DOWN] = f"HTTPS returned status {https_response.status_code}"
         else:
             # Check if final domain matches original
+            expected_domain = re.sub(r"^www\.", "", urlparse(urls_to_test["https"]).netloc)
             final_domain = urlparse(https_response.url).netloc
             final_domain = re.sub(r"\:(80|443)", "", final_domain)
-            if re.sub(r"^www\.", "", final_domain) != re.sub(
-                r"^www\.", "", urlparse(urls_to_test["https"]).netloc
-            ):
+            final_domain = re.sub(r"^www\.", "", final_domain)
+            if final_domain != expected_domain:
                 issues[Issues.WEBSITE_DOMAIN_REDIRECT] = (
-                    f"HTTPS Site redirects to different domain: {final_domain}"
+                    f"HTTPS Site redirects to different domain: {final_domain} vs. {expected_domain}"
                 )
 
             return final_domain
@@ -160,7 +171,7 @@ def check_non_www(base_final_domain, base_url, urls_to_test, issues, request_kwa
         if url_type not in urls_to_test:
             continue
         try:
-            response = requests.get(urls_to_test[url_type], **request_kwargs)
+            response = requests.get(urls_to_test[url_type], **{**request_kwargs, "verify": False})
             if response.status_code != 200 and not response.history:
                 if url_type == "http_no_www":
                     issues[Issues.WEBSITE_HTTP_NOWWW] = (
@@ -174,14 +185,25 @@ def check_non_www(base_final_domain, base_url, urls_to_test, issues, request_kwa
                 # Check if final domain matches original
                 final_domain = urlparse(response.url).netloc
                 final_domain = re.sub(r"\:(80|443)", "", final_domain)
+                final_domain = re.sub(r"^www\.", "", final_domain)
                 if final_domain != base_final_domain:
                     if url_type == "http_no_www":
                         issues[Issues.WEBSITE_HTTP_NOWWW] = (
-                            f"HTTP without www redirected to another domain: {final_domain}"
+                            f"HTTP without www redirected to another domain: {final_domain} vs {base_final_domain}"
                         )
                     else:
                         issues[Issues.WEBSITE_HTTPS_NOWWW] = (
                             f"HTTPS without www redirected to another domain: {final_domain}"
+                        )
+
+                # In the case of a needed and successful HTTPS redirect,
+                # verify the base URL has a correct SSL certificate
+                if url_type == "https_no_www" and Issues.WEBSITE_HTTPS_NOWWW not in issues:
+                    try:
+                        requests.get(base_url, **{**request_kwargs, "allow_redirects": False})
+                    except requests.exceptions.SSLError:
+                        issues[Issues.WEBSITE_HTTPS_NOWWW] = (
+                            f"SSL certificate error on base URL before redirect: {base_url}"
                         )
 
         except requests.exceptions.RequestException as e:
@@ -200,4 +222,4 @@ if __name__ == "__main__":
     # Run with command line arguments
     siret = sys.argv[1]
     issues = run(siret)
-    logger.info(issues)
+    logger.info(json.dumps(issues, indent=2))
