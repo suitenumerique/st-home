@@ -278,7 +278,11 @@ export default function CartographieConformite() {
             if (level === 'epci') {
               parentCode = parentAreas.find(p => p.insee_geo === code).insee_dep
             } else if (level === 'city') {
-              parentCode = code.slice(0, 2)
+              if (code.slice(0, 2) === '97') {
+                parentCode = code.slice(0, 3)
+              } else {
+                parentCode = code.slice(0, 2)
+              }
             }
           } else {
             parentCode = newSelectedAreas['department'].insee_reg
