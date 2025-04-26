@@ -201,6 +201,12 @@ def run():
             commune.get("_st_epci", {}).get("total_pop_mun", "").replace(" ", "") or 0
         )
 
+        phone = (
+            commune["_st_dila"]["telephone"][0]["valeur"]
+            if len(commune.get("_st_dila", {}).get("telephone", [])) > 0
+            else None
+        )
+
         url_sp = commune.get("_st_dila", {}).get("url_service_public") or None
         id_sp = commune.get("_st_dila", {}).get("id") or None
 
@@ -229,6 +235,7 @@ def run():
                 "website_tld": website_tld,
                 "email_tld": email_tld,
                 "zipcode": commune.get("_st_zipcode") or None,
+                "phone": phone,
                 "population": pop,
                 "epci_population": commune["_st_epci_pop"],
                 "epci_name": commune.get("_st_epci", {}).get("raison_sociale") or None,
@@ -415,12 +422,15 @@ def associate_structures_to_communes(communes: list):
 
     # "Couverture" is a list of Grist IDs, that can be of any kind.
     for structure in iter_repertoire_structures():
+        if not structure["Groupe_Pilote"]:
+            continue
         if not structure["Typologie"] or len(structure["Typologie"]) < 2:
             continue
-        if len(set(structure["Typologie"][1:]).intersection({"OPSN", "Centre de gestion"})) > 0:
-            if structure["Couverture"] and len(structure["Couverture"]) > 1:
-                for couv in structure["Couverture"][1:]:
-                    structure_mappings[couv].append(structure["id"])
+        if len(set(structure["Typologie"][1:]).intersection({"OPSN", "Centre de gestion"})) == 0:
+            continue
+        if structure["Couverture"] and len(structure["Couverture"]) > 1:
+            for couv in structure["Couverture"][1:]:
+                structure_mappings[couv].append(structure["id"])
 
     for commune in communes:
         commune["_st_structures"] = []

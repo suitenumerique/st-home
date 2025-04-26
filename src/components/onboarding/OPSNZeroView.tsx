@@ -4,10 +4,10 @@ import Button from "@codegouvfr/react-dsfr/Button";
 // import Link from "next/link";
 
 interface Props {
-  commune?: Commune;
+  commune: Commune;
 }
 
-export default function ComingSoonView({}: Props) {
+export default function OPSNZeroView({ commune }: Props) {
   return (
     <>
       <div
@@ -21,7 +21,7 @@ export default function ComingSoonView({}: Props) {
         </p>
         <Button
           linkProps={{
-            href: "https://grist.incubateur.anct.gouv.fr/o/anct/forms/nuyZtejstHFwuekKzP3Juz/281",
+            href: `/bienvenue/${commune.siret}/inscription`,
           }}
           priority="primary"
         >

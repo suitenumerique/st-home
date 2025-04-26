@@ -15,6 +15,7 @@ export const organizations = pgTable(
     insee_dep: text("insee_dep"),
     insee_reg: text("insee_reg"),
     zipcode: text("zipcode"),
+    phone: text("phone"),
     population: integer("population").notNull(),
     website_url: text("website_url"),
     website_domain: text("website_domain"),
