@@ -104,7 +104,7 @@ export default function InscriptionGroupePilote(props: PageProps) {
     <div className={fr.cx("fr-container") + " st-bienvenue-page"}>
       <NextSeo
         title={currentPageLabel}
-        description="Inscription au groupe pilote {displayStructureName} - {commune.name}"
+        description="Inscription de {commune.name} au groupe pilote - {displayStructureName}"
       />
       <div>
         <Breadcrumb
@@ -142,7 +142,7 @@ export default function InscriptionGroupePilote(props: PageProps) {
             className={fr.cx("fr-mb-4w")}
             severity="warning"
             title="Formulaire réservé à la collectivité."
-            description="Seule la collectivité concernée peut envoyer une demande."
+            description={`Seule la collectivité concernée peut envoyer une demande. ${structureId ? `Celle-ci sera adressée à la structure de mutualisation.` : ""}`}
             closable={false}
           />
         )}
@@ -158,7 +158,7 @@ export default function InscriptionGroupePilote(props: PageProps) {
           className={fr.cx("fr-h2", "fr-mb-2w")}
           style={{ color: "var(--text-title-blue-france)" }}
         >
-          Inscription au Groupe pilote {displayStructureName && `(${displayStructureName})`}
+          Inscription au Groupe pilote {displayStructureName && ` - ${displayStructureName}`}
         </h1>
 
         {structureId ? (

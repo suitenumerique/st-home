@@ -48,6 +48,14 @@ export function determineOnboardingCase(
     };
   }
 
+  // Not eligible
+  if (commune.st_eligible === false) {
+    return {
+      onboardingCase: OnboardingCase.NOT_ELIGIBLE,
+      population: commune.population,
+    };
+  }
+
   // // No OPSNs available
   if (commune.structures?.length === 0) {
     return {

@@ -6,8 +6,8 @@ import { NextSeo } from "next-seo";
 // Import view components
 import ActiveInRegieView from "@/components/onboarding/ActiveInRegieView";
 import CommuneInfo from "@/components/onboarding/CommuneInfo";
-import EpciInfo from "@/components/onboarding/EpciInfo";
 import ErrorView from "@/components/onboarding/ErrorView";
+import NotEligibleView from "@/components/onboarding/NotEligibleView";
 import OPSNChoiceView from "@/components/onboarding/OPSNChoiceView";
 import OPSNProConnectView from "@/components/onboarding/OPSNProConnectView";
 import OPSNZeroView from "@/components/onboarding/OPSNZeroView";
@@ -40,6 +40,9 @@ export default function Bienvenue(props: PageProps) {
         return <OPSNProConnectView commune={_commune} />;
       case OnboardingCase.OPSN_ZERO:
         return <OPSNZeroView commune={_commune} />;
+      case OnboardingCase.NOT_ELIGIBLE:
+        return <NotEligibleView commune={_commune} />;
+
       case OnboardingCase.UNIQUE_CODE_REQUEST:
         return <UniqueCodeRequestView commune={_commune} />;
       default:
@@ -78,7 +81,6 @@ export default function Bienvenue(props: PageProps) {
             <CommuneInfo commune={commune} />
           </>
         )}
-        {commune.type === "epci" && <EpciInfo commune={commune} />}
 
         {getCommuneContent(commune)}
       </div>

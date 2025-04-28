@@ -89,14 +89,23 @@ describe("determineOnboardingCase", () => {
   //     error: "Structure introuvable",
   //   });
   // });
-
   it("should return OPSN_ZERO case by default when commune has no structures", () => {
-    const result = determineOnboardingCase(largeCommune);
+    const communeWithoutStructures = { ...communeWithOPSN, structures: [] };
+    const result = determineOnboardingCase(communeWithoutStructures);
     expect(result).toEqual({
       onboardingCase: OnboardingCase.OPSN_ZERO,
+      population: 859,
+    });
+  });
+
+  it("should return NOT_ELIGIBLE case when commune is not eligible", () => {
+    const result = determineOnboardingCase(largeCommune);
+    expect(result).toEqual({
+      onboardingCase: OnboardingCase.NOT_ELIGIBLE,
       population: 15554,
     });
   });
+
   it("should return OPSN_CHOICE case by default when commune has structures", () => {
     const result = determineOnboardingCase(communeWithOPSN);
     expect(result).toEqual({

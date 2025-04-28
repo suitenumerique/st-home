@@ -445,8 +445,7 @@ const ReferentielConformite: ReferentielSection[] = [
               <li>En bas de page, cliquez sur «&nbsp;Mettre cette page à jour&nbsp;»&nbsp;;</li>
               <li>
                 Assurez-vous de remplir correctement la section «&nbsp;Contacts web&nbsp;», en
-                remplaçant
-                <strong>http://</strong> par <strong>https://</strong>&nbsp;;
+                remplaçant <strong>http://</strong> par <strong>https://</strong>&nbsp;;
               </li>
               <li>Envoyez votre demande. Elle sera examinée sous 48 h.</li>
             </ol>
