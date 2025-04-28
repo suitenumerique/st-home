@@ -40,10 +40,10 @@ const activeInRegieCommune = prepareTestCommune(testCommunes[3]); // Ambérieux-
 const largeCommune = prepareTestCommune(testCommunes[2]); // Ambérieu-en-Bugey, pop 15554
 
 describe("determineOnboardingCase", () => {
-  it("should return COMING_SOON when comingSoon option is true", () => {
-    const result = determineOnboardingCase(smallCommune, { comingSoon: true });
-    expect(result.onboardingCase).toBe(OnboardingCase.COMING_SOON);
-  });
+  // it("should return COMING_SOON when comingSoon option is true", () => {
+  //   const result = determineOnboardingCase(smallCommune, { comingSoon: true });
+  //   expect(result.onboardingCase).toBe(OnboardingCase.COMING_SOON);
+  // });
 
   it("should return ERROR case when error is provided", () => {
     const result = determineOnboardingCase(null, {}, "Test error");
@@ -56,37 +56,53 @@ describe("determineOnboardingCase", () => {
     expect(result.onboardingCase).toBe(OnboardingCase.ACTIVE_IN_REGIE);
   });
 
-  it("should return UNIQUE_CODE_REQUEST case when population is less than 3500", () => {
-    const result = determineOnboardingCase(smallCommune);
-    expect(result.onboardingCase).toBe(OnboardingCase.UNIQUE_CODE_REQUEST);
-    expect(result.population).toBe(smallCommune.population);
-  });
+  // it("should return UNIQUE_CODE_REQUEST case when population is less than 3500", () => {
+  //   const result = determineOnboardingCase(smallCommune);
+  //   expect(result.onboardingCase).toBe(OnboardingCase.UNIQUE_CODE_REQUEST);
+  //   expect(result.population).toBe(smallCommune.population);
+  // });
 
-  it("should return CONTACT_US case when direct registration and population >= 3500", () => {
-    const result = determineOnboardingCase(largeCommune, { direct: true });
-    expect(result.onboardingCase).toBe(OnboardingCase.CONTACT_US);
-    expect(result.population).toBe(largeCommune.population);
-  });
+  // it("should return CONTACT_US case when direct registration and population >= 3500", () => {
+  //   const result = determineOnboardingCase(largeCommune, { direct: true });
+  //   expect(result.onboardingCase).toBe(OnboardingCase.CONTACT_US);
+  //   expect(result.population).toBe(largeCommune.population);
+  // });
 
-  it("should return CONTACT_US case with structure info", () => {
-    const result = determineOnboardingCase(communeWithOPSN, {
-      structureId: "131",
-      isExistingMember: true,
-    });
+  // it("should return CONTACT_US case with structure info", () => {
+  //   const result = determineOnboardingCase(communeWithOPSN, {
+  //     structureId: "131",
+  //     isExistingMember: true,
+  //   });
+  //   expect(result).toEqual({
+  //     onboardingCase: OnboardingCase.CONTACT_US,
+  //     structureId: "131",
+  //     isExistingMember: true,
+  //   });
+  // });
+
+  // it("should return ERROR case when structure is not found", () => {
+  //   const result = determineOnboardingCase(communeWithOPSN, {
+  //     structureId: "999",
+  //   });
+  //   expect(result).toEqual({
+  //     onboardingCase: OnboardingCase.ERROR,
+  //     error: "Structure introuvable",
+  //   });
+  // });
+  it("should return OPSN_ZERO case by default when commune has no structures", () => {
+    const communeWithoutStructures = { ...communeWithOPSN, structures: [] };
+    const result = determineOnboardingCase(communeWithoutStructures);
     expect(result).toEqual({
-      onboardingCase: OnboardingCase.CONTACT_US,
-      structureId: "131",
-      isExistingMember: true,
+      onboardingCase: OnboardingCase.OPSN_ZERO,
+      population: 859,
     });
   });
 
-  it("should return ERROR case when structure is not found", () => {
-    const result = determineOnboardingCase(communeWithOPSN, {
-      structureId: "999",
-    });
+  it("should return NOT_ELIGIBLE case when commune is not eligible", () => {
+    const result = determineOnboardingCase(largeCommune);
     expect(result).toEqual({
-      onboardingCase: OnboardingCase.ERROR,
-      error: "Structure introuvable",
+      onboardingCase: OnboardingCase.NOT_ELIGIBLE,
+      population: 15554,
     });
   });
 

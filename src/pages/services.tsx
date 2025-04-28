@@ -65,14 +65,10 @@ const SERVICES_DATA = [
             La Suite territoriale et les services qui la composent sont en cours de développement et
             de tests. La plateforme sera disponible et déployable à l&rsquo;échelle nationale le{" "}
             <strong>1er janvier 2026</strong>. L&rsquo;ANCT propose aux collectivités volontaires
-            d&rsquo;être associées aux développements en participant au{" "}
-            <Link
-              href="https://grist.incubateur.anct.gouv.fr/o/anct/forms/nuyZtejstHFwuekKzP3Juz/281"
-              target="_blank"
-            >
-              Groupe pilote
-            </Link>
-            .
+            d&rsquo;être associées aux développements en participant au Groupe pilote. Pour le
+            rejoindre, il suffit d&rsquo;effectuer un test d&rsquo;éligibilité pour votre
+            collectivité depuis la page d&rsquo;accueil de la Suite territoriale puis de cliquer sur
+            le bouton &quot;Rejoindre le Groupe pilote&quot;.
           </>
         ),
       },

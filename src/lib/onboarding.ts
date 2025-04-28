@@ -16,15 +16,13 @@ export interface OnboardingProps {
   error?: string;
   population?: number;
   isProConnectEnabled?: boolean;
-  structureId?: string;
+  structureId?: string | null;
   isExistingMember?: boolean;
 }
 
 export interface OnboardingOptions {
-  direct?: boolean;
-  structureId?: string;
+  structureId?: string | null;
   isExistingMember?: boolean;
-  comingSoon?: boolean;
 }
 
 /**
@@ -43,13 +41,6 @@ export function determineOnboardingCase(
     };
   }
 
-  // Coming soon case
-  if (options.comingSoon) {
-    return {
-      onboardingCase: OnboardingCase.COMING_SOON,
-    };
-  }
-
   // Check if organization is active in Régie
   if (commune.st_active) {
     return {
@@ -57,29 +48,18 @@ export function determineOnboardingCase(
     };
   }
 
-  // Direct registration path
-  if (options.direct || commune.structures?.length === 0) {
-    return {
-      onboardingCase:
-        commune.population <= 3500 ? OnboardingCase.UNIQUE_CODE_REQUEST : OnboardingCase.CONTACT_US,
-      population: commune.population,
-    };
-  }
-
-  // If a structureId is provided, go directly to contact form
-  if (options.structureId) {
-    // Check if the ID belongs to a mutualization structure
-    const structure = commune.structures?.find((structure) => structure.id === options.structureId);
-    if (structure) {
+  // // No OPSNs available
+  if (commune.structures?.length === 0) {
+    // Not eligible
+    if (commune.st_eligible === false) {
       return {
-        onboardingCase: OnboardingCase.CONTACT_US,
-        structureId: options.structureId,
-        isExistingMember: options.isExistingMember,
+        onboardingCase: OnboardingCase.NOT_ELIGIBLE,
+        population: commune.population,
       };
     } else {
       return {
-        onboardingCase: OnboardingCase.ERROR,
-        error: "Structure introuvable",
+        onboardingCase: OnboardingCase.OPSN_ZERO,
+        population: commune.population,
       };
     }
   }
@@ -87,5 +67,6 @@ export function determineOnboardingCase(
   // Show the choice view because the commune has structures
   return {
     onboardingCase: OnboardingCase.OPSN_CHOICE,
+    structureId: options.structureId,
   };
 }

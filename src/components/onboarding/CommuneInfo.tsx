@@ -93,6 +93,9 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
   const emailDomain = commune.email_domain || "";
   const websiteDomain = (commune.website_domain || "").replace(/^www\./, "");
 
+  const hasWebsiteRecommendations = rcpnt.includes("1.a") && !rcpnt.includes("1.aa");
+  const hasEmailRecommendations = rcpnt.includes("2.a") && !rcpnt.includes("2.aa");
+
   const dilaUpdateLink = (
     <Link
       href={commune.service_public_url + "/demande-de-mise-a-jour"}
@@ -424,7 +427,6 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
               <span className={fr.cx("fr-text--bold")}>{commune.website_domain || ""}</span>
               &nbsp;
               <div className={fr.cx("fr-ml-2w", "fr-badges-group", "fr-badges-group--sm")}>
-                {inProgress && !websiteMissing && getBadge("warning", "Vérifications en cours")}
                 {websiteInvalid
                   ? getBadge("error", "Invalide")
                   : websiteMissing
@@ -432,6 +434,8 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                     : websiteCompliant
                       ? getBadge("success", "Conforme")
                       : getBadge("error", "Non conforme")}
+                {!inProgress && hasWebsiteRecommendations && getBadge("warning", "Recommandations")}
+                {inProgress && !websiteMissing && getBadge("warning", "Vérifications en cours")}
               </div>
             </div>
           }
@@ -450,7 +454,6 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                 {emailMissing ? "" : commune.email_official || ""}
               </span>
               <div className={fr.cx("fr-ml-2w", "fr-badges-group", "fr-badges-group--sm")}>
-                {inProgress && !emailMissing && getBadge("warning", "Vérifications en cours")}
                 {emailInvalid
                   ? getBadge("error", "Invalide")
                   : emailMissing
@@ -458,56 +461,13 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                     : emailCompliant
                       ? getBadge("success", "Conforme")
                       : getBadge("error", "Non conforme")}
+                {!inProgress && hasEmailRecommendations && getBadge("warning", "Recommandations")}
+                {inProgress && !emailMissing && getBadge("warning", "Vérifications en cours")}
               </div>
             </div>
           }
         >
           <ul className={fr.cx("fr-py-1w") + " rcpnt-result-list"}>{emailContent}</ul>
-        </Accordion>
-
-        {/* Eligibility */}
-        <Accordion
-          titleAs="h2"
-          label={
-            <div className={fr.cx("fr-grid-row", "fr-grid-row--middle")}>
-              <span className={fr.cx("fr-icon-user-line", "fr-mr-1w")} aria-hidden="true" />
-              Éligible à la Suite territoriale :&nbsp;
-              <div className={fr.cx("fr-ml-2w")}>
-                {isEligible ? getBadge("success", "Oui") : getBadge("info", "Nous contacter")}
-              </div>
-            </div>
-          }
-        >
-          <ul>
-            <li>
-              <strong>Population de la commune :</strong>{" "}
-              {commune.population.toLocaleString("fr-FR")} habitants
-            </li>
-
-            {commune.epci_name && commune.epci_population && (
-              <li>
-                <strong>Intercommunalité :</strong> {commune.epci_name},{" "}
-                {commune.epci_population.toLocaleString("fr-FR")} habitants
-              </li>
-            )}
-          </ul>
-          <ul className={fr.cx("fr-mt-2w") + " rcpnt-result-list"}>
-            {isEligible ? (
-              <MessageLine severity="success">
-                La commune est éligible à la Suite territoriale. Vous pouvez dès à présent rejoindre
-                le Groupe pilote ci-dessous.
-              </MessageLine>
-            ) : (
-              <MessageLine severity="info">
-                La commune n&rsquo;est pas directement éligible mais peut bénéficier d&rsquo;un
-                accompagnement spécifique.{" "}
-                <Link href="mailto:lasuiteterritoriale@anct.gouv.fr" className={fr.cx("fr-link")}>
-                  Contactez-nous pour en discuter
-                </Link>{" "}
-                !
-              </MessageLine>
-            )}
-          </ul>
         </Accordion>
       </div>
 

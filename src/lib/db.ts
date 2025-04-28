@@ -142,3 +142,14 @@ export async function searchOrganizations(query: string, type: string, limit = 1
 }
 
 export const searchCommunes = searchOrganizations;
+
+// Function to find a single mutualization structure by its ID
+export async function findMutualizationStructureById(id: string) {
+  const [structure] = await db
+    .select()
+    .from(mutualizationStructures)
+    .where(eq(mutualizationStructures.id, id))
+    .limit(1);
+
+  return structure; // Returns the structure object or undefined if not found
+}

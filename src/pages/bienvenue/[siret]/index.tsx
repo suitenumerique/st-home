@@ -5,18 +5,16 @@ import { GetServerSideProps } from "next";
 import { NextSeo } from "next-seo";
 // Import view components
 import ActiveInRegieView from "@/components/onboarding/ActiveInRegieView";
-import ComingSoonView from "@/components/onboarding/ComingSoonView";
 import CommuneInfo from "@/components/onboarding/CommuneInfo";
-import ContactUsView from "@/components/onboarding/ContactUsView";
-import EpciInfo from "@/components/onboarding/EpciInfo";
 import ErrorView from "@/components/onboarding/ErrorView";
+import NotEligibleView from "@/components/onboarding/NotEligibleView";
 import OPSNChoiceView from "@/components/onboarding/OPSNChoiceView";
 import OPSNProConnectView from "@/components/onboarding/OPSNProConnectView";
+import OPSNZeroView from "@/components/onboarding/OPSNZeroView";
 import UniqueCodeRequestView from "@/components/onboarding/UniqueCodeRequestView";
 
 import ContactUs from "@/components/ContactUs";
 import Link from "next/link";
-import { useRouter } from "next/router";
 
 // Import types and functions
 import { determineOnboardingCase, type Commune, type OnboardingProps } from "@/lib/onboarding";
@@ -29,8 +27,6 @@ interface PageProps extends OnboardingProps {
 export default function Bienvenue(props: PageProps) {
   const { commune, onboardingCase, error } = props;
 
-  const router = useRouter();
-
   const getCommuneContent = (_commune: Commune) => {
     switch (onboardingCase) {
       case OnboardingCase.ACTIVE_IN_REGIE:
@@ -42,12 +38,13 @@ export default function Bienvenue(props: PageProps) {
         return <OPSNChoiceView commune={{ ..._commune, structures: _commune.structures }} />;
       case OnboardingCase.OPSN_PROCONNECT:
         return <OPSNProConnectView commune={_commune} />;
-      case OnboardingCase.CONTACT_US:
-        return <ContactUsView commune={_commune} />;
+      case OnboardingCase.OPSN_ZERO:
+        return <OPSNZeroView commune={_commune} />;
+      case OnboardingCase.NOT_ELIGIBLE:
+        return <NotEligibleView commune={_commune} />;
+
       case OnboardingCase.UNIQUE_CODE_REQUEST:
         return <UniqueCodeRequestView commune={_commune} />;
-      case OnboardingCase.COMING_SOON:
-        return <ComingSoonView commune={_commune} />;
       default:
         return <ErrorView error="Cas non géré" />;
     }
@@ -66,14 +63,6 @@ export default function Bienvenue(props: PageProps) {
           className={fr.cx("fr-mt-1w", "fr-hidden", "fr-unhidden-sm")}
         >
           <span
-            onClick={(e) => {
-              // Easter egg to go to the future page
-              e.preventDefault();
-              e.stopPropagation();
-              if (e.altKey) {
-                router.push(`/bienvenue/${commune.siret}?futur=1`);
-              }
-            }}
             className={fr.cx("fr-text--regular", "fr-text--xl")}
             style={{ color: "var(--text-title-blue-france)" }}
           >
@@ -92,7 +81,6 @@ export default function Bienvenue(props: PageProps) {
             <CommuneInfo commune={commune} />
           </>
         )}
-        {commune.type === "epci" && <EpciInfo commune={commune} />}
 
         {getCommuneContent(commune)}
       </div>
@@ -132,7 +120,7 @@ export default function Bienvenue(props: PageProps) {
 }
 
 export const getServerSideProps: GetServerSideProps<PageProps> = async (context) => {
-  const { siret, direct, structureId, isExistingMember, futur } = context.query;
+  const { siret, structureId } = context.query;
 
   if (!siret || typeof siret !== "string") {
     return {
@@ -161,10 +149,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
     props: {
       commune: communeData,
       ...determineOnboardingCase(communeData, {
-        direct: direct === "1",
-        structureId: typeof structureId === "string" ? structureId : undefined,
-        isExistingMember: isExistingMember === "true",
-        comingSoon: futur !== "1",
+        structureId: typeof structureId === "string" ? structureId : null,
       }),
     },
   };
