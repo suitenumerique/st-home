@@ -4,10 +4,10 @@ import Button from "@codegouvfr/react-dsfr/Button";
 // import Link from "next/link";
 
 interface Props {
-  commune?: Commune;
+  commune: Commune;
 }
 
-export default function ComingSoonView({}: Props) {
+export default function OPSNZeroView({ commune }: Props) {
   return (
     <>
       <div
@@ -16,12 +16,12 @@ export default function ComingSoonView({}: Props) {
       >
         <h2>La Suite territoriale arrive bientôt !</h2>
         <p>
-          Vous êtes agent public ou élu local d&rsquo;une collectivité territoriale française ?
-          Rejoignez le Groupe pilote pour rester informé et tester les services.
+          La collectivité pourra bénéficier prochainement de nos outils. Rejoignez le Groupe pilote
+          dès maintenant pour être informé et tester les services.
         </p>
         <Button
           linkProps={{
-            href: "https://grist.incubateur.anct.gouv.fr/o/anct/forms/nuyZtejstHFwuekKzP3Juz/281",
+            href: `/bienvenue/${commune.siret}/inscription`,
           }}
           priority="primary"
         >

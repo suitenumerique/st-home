@@ -15,6 +15,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "useUnknownInCatchVariables": false,
     "jsx": "preserve",
     "incremental": true,
     "paths": {

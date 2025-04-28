@@ -2,7 +2,6 @@ import type { mutualizationStructures, organizations } from "@/lib/schema";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import { Button } from "@codegouvfr/react-dsfr/Button";
-import { Card } from "@codegouvfr/react-dsfr/Card";
 import { type InferSelectModel } from "drizzle-orm";
 import Link from "next/link";
 
@@ -25,53 +24,40 @@ function StructureCard({
   structure: InferSelectModel<typeof mutualizationStructures>;
   commune: OrganizationWithStructures;
 }) {
-  const baseUrl = `/bienvenue/${commune.siret}`;
+  const offreUrl = structure.website || "";
 
   return (
-    <Card
-      className={fr.cx("fr-card--no-arrow")}
-      title={structure.shortname || structure.name}
-      start={<Badge className={fr.cx("fr-mb-2w")}>{structure.type}</Badge>}
-      desc={
-        <>
-          {structure.website && (
-            <>
-              Site web :{" "}
-              <Link href={structure.website} target="_blank" rel="noopener noreferrer">
-                {structure.website}
-              </Link>
-            </>
-          )}
-        </>
-      }
-      footer={
-        <div
-          className={fr.cx(
-            "fr-btns-group",
-            "fr-btns-group--inline-reverse",
-            "fr-btns-group--icon-left",
-          )}
-        >
-          <Button
-            linkProps={{
-              href: `${baseUrl}?structureId=${structure.id}&isExistingMember=true`,
-            }}
-          >
-            Je suis adhérent
-          </Button>
-          <Button
-            priority="secondary"
-            linkProps={{
-              href: `${baseUrl}?structureId=${structure.id}&isExistingMember=false`,
-            }}
-          >
-            Pas adhérent mais je souhaite une mise en relation
-          </Button>
-        </div>
-      }
-      border
-      size="large"
-    />
+    <div
+      className={fr.cx("fr-p-4w")}
+      style={{ backgroundColor: "var(--background-alt-blue-france)" }}
+    >
+      <Badge className={fr.cx("fr-mb-2w")} severity="success" noIcon small>
+        Partenaire
+      </Badge>
+      <h3 style={{ marginBottom: "0" }}>{structure.shortname || structure.name}</h3>
+      <p
+        className={fr.cx("fr-text--sm")}
+        style={{ color: "var(--text-disabled-grey)", minHeight: "4em" }}
+      >
+        {structure.name}
+      </p>
+      {offreUrl && (
+        <Link href={offreUrl} target="_blank" rel="noopener noreferrer">
+          Voir l&rsquo;offre de services
+        </Link>
+      )}
+      <br />
+      <br />
+      <br />
+
+      <Button
+        linkProps={{
+          href: `/bienvenue/${commune.siret}/inscription?structureId=${structure.id}`,
+        }}
+      >
+        Rejoindre le Groupe pilote
+      </Button>
+    </div>
   );
 }
 
@@ -81,13 +67,12 @@ function StructureCard({
 export default function OPSNChoiceView({ commune }: OPSNChoiceViewProps) {
   return (
     <>
-      <p className={fr.cx("fr-text--lg", "fr-mb-2w")}>
-        Vous n&rsquo;êtes pas encore adhérent à la ST.
-      </p>
+      <h2>La Suite territoriale arrive bientôt !</h2>
 
       <p className={fr.cx("fr-text--lg", "fr-mb-3w")}>
-        Cependant, votre territoire est couvert par des structures de mutualisation, qui peuvent
-        vous accompagner :
+        La collectivité pourra bénéficier prochainement de l&rsquo;accompagnement de la structure de
+        mutualisation de son choix pour mettre en œuvre nos outils. Rejoignez son Groupe pilote dès
+        maintenant pour être informé et tester les services.
       </p>
 
       <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
@@ -99,16 +84,14 @@ export default function OPSNChoiceView({ commune }: OPSNChoiceViewProps) {
       </div>
 
       <p className={fr.cx("fr-text--lg", "fr-mt-4w")}>
-        Si vous ne souhaitez pas vous faire accompagner par une structure, et que vous souhaitez
-        vous inscrire à la ST directement auprès de l&rsquo;ANCT,{" "}
-        <Button
-          priority="tertiary"
-          linkProps={{
-            href: `/bienvenue/${commune.siret}?direct=1`,
-          }}
+        En cas de doute ou si vous ne souhaitez pas adhérer aux structures proposées,{" "}
+        <Link
+          href={`/bienvenue/${commune.siret}/inscription`}
+          className={fr.cx("fr-link", "fr-text--lg")}
         >
-          cliquez ici
-        </Button>
+          contactez-nous
+        </Link>
+        .
       </p>
     </>
   );

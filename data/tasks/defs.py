@@ -81,7 +81,7 @@ GENERIC_EMAIL_DOMAINS = [
     "numericable.com",
     "vialis.net",
     "fr.oleane.com",
-    "collectivite47.fr", # Distribués par le CDG47
+    "collectivite47.fr",  # Distribués par le CDG47
 ]
 
 DOMAIN_EXTENSIONS_ALLOWED = [

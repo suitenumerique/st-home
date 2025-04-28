@@ -22,6 +22,7 @@ interface Commune extends BaseOrganization {
   email_official: string;
   structures: number[];
   website_url: string | null;
+  phone: string | null;
   issues: string[];
   rcpnt: string[];
   issues_last_checked: string;
@@ -141,6 +142,7 @@ async function importOrganizations(dumpsDir: string) {
         insee_dep: commune.insee_dep || null,
         insee_reg: commune.insee_reg || null,
         zipcode: commune.zipcode,
+        phone: commune.phone || null,
         population: commune.population,
         website_url: commune.website_url || null,
         website_domain: commune.website_domain || null,

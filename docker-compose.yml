@@ -9,11 +9,11 @@ services:
     ports:
       - "5432:5432"
 
-  mailcatcher:
-    image: maildev/maildev:2.2.1
-    ports:
-      - "1081:1080"
-      - "1025:1025"
+  # mailcatcher:
+  #   image: maildev/maildev:2.2.1
+  #   ports:
+  #     - "1081:1080"
+  #     - "1025:1025"
 
   redis:
     image: redis:latest
