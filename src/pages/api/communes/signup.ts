@@ -1,22 +1,21 @@
-import { findOrganizationsWithStructures } from "@/lib/db"; // Assuming this fetches commune details including zipcode
-import * as Sentry from "@sentry/nextjs"; // Added for Sentry
+import { findMutualizationStructureById, findOrganizationsWithStructures } from "@/lib/db";
+import * as Sentry from "@sentry/nextjs";
 import { GristDocAPI } from "grist-api";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { RateLimiterMemory } from "rate-limiter-flexible"; // Added for rate limiting
+import { RateLimiterMemory } from "rate-limiter-flexible";
 
 // Type definition for the expected request body
 interface SignUpRequestBody {
   siret: string;
   postal_code: string;
-  name: string;
+  name: string; // Full name
   role: string;
   email: string;
   phone: string;
-  is_adherent: "yes" | "no" | "unknown";
+  is_adherent: "yes" | "no" | "unknown"; // Only relevant if structureId is present
   precisions?: string;
-  contact_preferences_details?: "yes";
   cgu_accepted: "yes";
-  structureId?: string; // Include structureId if available
+  structureId?: string; // Optional structure ID
 }
 
 // Response type
@@ -49,6 +48,20 @@ const getIp = (req: NextApiRequest): string => {
 // --- Validation Configuration ---
 const MAX_FIELD_LENGTH = 1024;
 // --- End Validation Configuration ---
+
+// Helper to map OPSN membership status
+const mapOPSNMembershipStatus = (status: "yes" | "no" | "unknown"): string => {
+  switch (status) {
+    case "yes":
+      return "Oui";
+    case "no":
+      return "Non";
+    case "unknown":
+      return "?";
+    default:
+      return "";
+  }
+};
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<SignUpResponse>) {
   if (req.method !== "POST") {
@@ -86,23 +99,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     phone,
     is_adherent,
     precisions,
-    contact_preferences_details,
     cgu_accepted,
-    structureId, // Capture structureId
+    structureId,
   }: SignUpRequestBody = req.body;
 
   // --- Basic Validation ---
-  const requiredFields: (keyof SignUpRequestBody)[] = [
+  const requiredFields: (keyof Omit<SignUpRequestBody, "precisions" | "structureId">)[] = [
     "siret",
     "postal_code",
     "name",
     "role",
     "email",
     "phone",
-    "is_adherent",
     "cgu_accepted",
   ];
-  const missingFields = requiredFields.filter((field) => !req.body[field]);
+  const missingFields = requiredFields.filter(
+    (field) => req.body[field] === undefined || req.body[field] === "",
+  );
 
   if (missingFields.length > 0) {
     return res.status(400).json({
@@ -120,16 +133,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   // --- End Basic Validation ---
 
   // --- Length Validation ---
-  const fieldsToValidateLength: (keyof SignUpRequestBody)[] = [
-    "siret",
-    "postal_code",
-    "name",
-    "role",
-    "email",
-    "phone",
-    "precisions",
-    "structureId",
-  ];
+  const fieldsToValidateLength: (keyof Omit<SignUpRequestBody, "cgu_accepted" | "is_adherent">)[] =
+    ["siret", "postal_code", "name", "role", "email", "phone", "precisions", "structureId"];
   for (const field of fieldsToValidateLength) {
     const value = req.body[field];
     if (value && typeof value === "string" && value.length > MAX_FIELD_LENGTH) {
@@ -141,50 +146,85 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
   // --- End Length Validation ---
 
-  // Prepare the record data for Grist (do this before the try block to include in Sentry context if needed)
-  let recordToAdd: Record<string, string> | null = null;
+  // Prepare the record data for Grist
+  let recordToAdd: Record<string, string | number> | null = null;
+  const tableName = "Formulaire_Groupe_Pilote"; // Use Python class name
 
   try {
     // 1. Fetch commune details
     const commune = await findOrganizationsWithStructures(siret);
     if (!commune) {
+      Sentry.captureMessage("Commune not found during signup", {
+        level: "warning",
+        extra: { siret },
+      });
       return res
         .status(404)
         .json({ success: false, message: "Collectivité non trouvée pour le SIRET fourni." });
     }
 
-    // 2. Validate Postal Code
-    if (postal_code !== commune.zipcode) {
+    // 2. Fetch Mutualization Structure details (if ID provided)
+    let opsnName = "";
+    let membreOpsnStatus = "";
+    if (structureId) {
+      const structure = await findMutualizationStructureById(structureId);
+      if (structure) {
+        opsnName = structure.shortname || structure.name || ""; // Use fetched name for OPSN column
+        membreOpsnStatus = mapOPSNMembershipStatus(is_adherent); // Map status for Membre_OPSN column
+      } else {
+        // Structure ID provided but not found - log warning, proceed without OPSN info
+        console.warn(`Mutualization structure with ID ${structureId} not found.`);
+        Sentry.captureMessage("Mutualization structure not found during signup", {
+          level: "warning",
+          extra: { structureId, siret },
+        });
+      }
+    } else {
+      // No structure ID provided, ensure is_adherent isn't mapped
+      membreOpsnStatus = ""; // Explicitly clear status if no structure ID
+    }
+
+    // 3. Validate Postal Code
+    if (commune.type === "commune" && postal_code !== commune.zipcode) {
       return res.status(400).json({
         success: false,
         message: "Le code postal ne correspond pas à celui de la collectivité.",
       });
     }
 
-    // Assign record data here now that commune is fetched
+    if (commune.type === "epci" && postal_code !== commune.insee_dep) {
+      return res.status(400).json({
+        success: false,
+        message: "Le département ne correspond pas à celui de l'EPCI.",
+      });
+    }
+
+    // 4. Construct Grist Record
     recordToAdd = {
-      SIRET: siret,
-      Nom_Collectivite: commune.name,
-      Code_Postal_Verification: postal_code,
-      Nom_Prenom_Contact: name,
-      Fonction_Contact: role,
-      Email_Contact: email,
-      Telephone_Contact: phone,
-      Deja_Adherent: is_adherent,
+      // --- Grist Column Name : Value from Request/Logic ---
+      Nom: name, // Full name from form
+      // "Prenom": "",          // Leave empty/unset
+      Mail: email,
+      Fonction: role,
+      // "Cyberattaque": "",    // Leave empty/unset (deprecated)
+      Structure: commune.name, // Use commune name
+      Telephone: phone,
+      CP: postal_code,
+      // "Cree_a":             // Handled by Grist default
+      SIRET: commune.siret,
+      OPSN: opsnName, // Fetched structure name or empty
+      Membre_OPSN: membreOpsnStatus, // Mapped status or empty
       Precisions: precisions || "",
-      Preferences_Contact_Detaillees: contact_preferences_details === "yes" ? "Oui" : "Non",
-      CGU_Acceptees: cgu_accepted === "yes" ? "Oui" : "Non",
-      Structure_ID: structureId || "",
-      Date_Inscription: new Date().toISOString(),
-      Adresse_IP: ip,
+      IP: ip,
+      // "A":                  // Boolean, not in form
+      // "Contact_pris":       // Boolean, not in form
     };
 
-    // 3. Prepare Grist API call
+    // 5. Prepare Grist API call
     const apiKey = process.env.GRIST_API_KEY;
-    const docId = process.env.GRIST_DOC_ID;
+    const docId = process.env.GRIST_DOC_ID_SIGNUP;
     const server =
       process.env.GRIST_SELF_MANAGED === "Y" ? process.env.GRIST_SELF_MANAGED_HOME : undefined;
-    const tableName = "inscriptions_pilote"; // CHANGE THIS if your Grist table name is different
 
     if (!apiKey || !docId) {
       console.error("GRIST_API_KEY or GRIST_DOC_ID is not configured.");
@@ -201,43 +241,56 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     const api = new GristDocAPI(docId, { apiKey, server });
 
-    // 4. Add record to Grist
+    // 6. Add record to Grist
+    console.log(`Adding record to Grist table '${tableName}':`, JSON.stringify(recordToAdd));
     const addedRowIds = await api.addRecords(tableName, [recordToAdd]);
+    console.log("Grist response - addedRowIds:", addedRowIds);
 
     if (!addedRowIds || addedRowIds.length === 0) {
-      const errorMsg = "Failed to add record to Grist.";
+      const errorMsg = `Failed to add record to Grist table '${tableName}' (no row ID returned).`;
       console.error(errorMsg);
       Sentry.captureMessage(errorMsg, {
         level: "error",
-        extra: { requestBody: req.body, gristRecord: recordToAdd },
+        extra: { requestBody: req.body, gristRecord: recordToAdd, tableName },
       });
       return res.status(500).json({
         success: false,
         message:
-          "Échec de l'enregistrement de l'inscription. Veuillez réessayer plus tard ou nous contacter.",
+          "Échec de l'enregistrement de l'inscription (service distant). Veuillez réessayer plus tard ou nous contacter.",
       });
     }
 
-    // 5. Send success response
+    // 7. Send success response
     return res
       .status(201)
       .json({ success: true, message: "Inscription réussie !", rowId: addedRowIds[0] });
-  } catch (error) {
+  } catch (error: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
     console.error("Signup API Error:", error);
-    // Log full error and context to Sentry
     Sentry.captureException(error, {
-      // Include recordToAdd if it was prepared, otherwise just body
       extra: { requestBody: req.body, gristRecordAttempt: recordToAdd },
       tags: { api_route: "/api/communes/signup" },
     });
 
-    // Attempt to provide a more specific error message if it's a Grist error
     let userMessage =
-      "Échec du traitement de l'inscription. Veuillez réessayer plus tard ou nous contacter.";
-    if (error.message && error.message.includes("Table not found")) {
-      userMessage =
-        "Erreur lors de la communication avec le service d'enregistrement (Table non trouvée). Veuillez réessayer plus tard ou nous contacter.";
+      "Échec du traitement de l\'inscription. Veuillez réessayer plus tard ou nous contacter.";
+    if (error.response) {
+      // Axios/Grist API error
+      console.error("Grist API Error Status:", error.response.status);
+      console.error("Grist API Error Data:", error.response.data);
+      const errorDetail = error.response.data?.error || JSON.stringify(error.response.data);
+      if (error.response.status === 404) {
+        userMessage = `Erreur service distant: Ressource non trouvée (${errorDetail}). Vérifiez le nom de la table ('${tableName}') ou l'ID du document.`;
+      } else if (error.response.status === 400) {
+        userMessage = `Erreur service distant: Données invalides (${errorDetail}). Vérifiez les noms/types des colonnes: ${Object.keys(recordToAdd || {}).join(", ")}.`; // Added column names hint
+      } else {
+        userMessage = `Erreur service distant (${error.response.status}): ${errorDetail}. Veuillez réessayer plus tard ou nous contacter.`;
+      }
+      Sentry.setContext("Grist Error Detail", {
+        status: error.response.status,
+        data: error.response.data,
+      });
     } else if (error.message) {
+      // Other errors
       userMessage = `Échec du traitement de l\'inscription: ${error.message}. Veuillez réessayer plus tard ou nous contacter.`;
     }
 

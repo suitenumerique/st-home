@@ -48,39 +48,21 @@ export function determineOnboardingCase(
     };
   }
 
-  // Not eligible
-  if (commune.st_eligible === false) {
-    return {
-      onboardingCase: OnboardingCase.NOT_ELIGIBLE,
-      population: commune.population,
-    };
-  }
-
   // // No OPSNs available
   if (commune.structures?.length === 0) {
-    return {
-      onboardingCase: OnboardingCase.OPSN_ZERO,
-      population: commune.population,
-    };
+    // Not eligible
+    if (commune.st_eligible === false) {
+      return {
+        onboardingCase: OnboardingCase.NOT_ELIGIBLE,
+        population: commune.population,
+      };
+    } else {
+      return {
+        onboardingCase: OnboardingCase.OPSN_ZERO,
+        population: commune.population,
+      };
+    }
   }
-
-  // // If a structureId is provided, go directly to contact form
-  // if (options.structureId) {
-  //   // Check if the ID belongs to a mutualization structure
-  //   const structure = commune.structures?.find((structure) => structure.id === options.structureId);
-  //   if (structure) {
-  //     return {
-  //       onboardingCase: OnboardingCase.CONTACT_US,
-  //       structureId: options.structureId,
-  //       isExistingMember: options.isExistingMember,
-  //     };
-  //   } else {
-  //     return {
-  //       onboardingCase: OnboardingCase.ERROR,
-  //       error: "Structure introuvable",
-  //     };
-  //   }
-  // }
 
   // Show the choice view because the commune has structures
   return {

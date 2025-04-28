@@ -16,8 +16,8 @@ export default function OPSNZeroView({ commune }: Props) {
       >
         <h2>La Suite territoriale arrive bientôt !</h2>
         <p>
-          Vous êtes agent public ou élu local de cette collectivité ? Rejoignez le Groupe pilote
-          pour rester informé et tester les services.
+          La collectivité pourra bénéficier prochainement de nos outils. Rejoignez le Groupe pilote
+          dès maintenant pour être informé et tester les services.
         </p>
         <Button
           linkProps={{

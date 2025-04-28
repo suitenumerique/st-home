@@ -36,6 +36,14 @@ export default function InscriptionGroupePilote(props: PageProps) {
 
   const currentPageLabel = `Inscription au groupe pilote`;
 
+  const scrollToError = () => {
+    const errorMessage = document.querySelector(".fr-alert--error .fr-alert__title")?.parentElement
+      ?.parentElement;
+    if (errorMessage) {
+      errorMessage.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmitting(true);
@@ -65,6 +73,9 @@ export default function InscriptionGroupePilote(props: PageProps) {
 
       if (!response.ok) {
         setSubmitStatus({ success: false, message: result.message || "Une erreur est survenue." });
+        setTimeout(() => {
+          scrollToError();
+        }, 200);
       } else {
         setSubmitStatus({ success: true, message: result.message || "Inscription réussie !" });
         setShowSuccess(true);
@@ -72,6 +83,9 @@ export default function InscriptionGroupePilote(props: PageProps) {
     } catch (error) {
       console.error("Fetch Error:", error);
       setSubmitStatus({ success: false, message: "Impossible de contacter le serveur." });
+      setTimeout(() => {
+        scrollToError();
+      }, 200);
     }
 
     setIsSubmitting(false);
@@ -85,10 +99,7 @@ export default function InscriptionGroupePilote(props: PageProps) {
           <Alert
             severity="success"
             title="Inscription réussie !"
-            description={
-              submitStatus?.message ||
-              "Votre demande d'inscription au groupe pilote a bien été enregistrée. Nous vous recontacterons prochainement."
-            }
+            description="Votre demande d'inscription au groupe pilote a bien été enregistrée. Nous vous recontacterons prochainement."
           />
           <div className={fr.cx("fr-mt-4w")}>
             <Button priority="primary" linkProps={{ href: `/bienvenue/${commune.siret}` }}>
@@ -151,7 +162,7 @@ export default function InscriptionGroupePilote(props: PageProps) {
           className={fr.cx("fr-text--sm", "fr-mb-1w")}
           style={{ color: "var(--text-title-blue-france)" }}
         >
-          {commune.name} ({commune.zipcode})
+          {commune.name} ({commune.type === "commune" ? commune.zipcode : "EPCI"})
         </p>
 
         <h1
@@ -316,15 +327,19 @@ export default function InscriptionGroupePilote(props: PageProps) {
 
           <div className={fr.cx("fr-mb-6w")}>
             <Input
-              label="Renseignez le code postal de la collectivité"
+              label={
+                commune.type === "commune"
+                  ? "Renseignez le code postal de la collectivité"
+                  : "Renseignez le département de l'EPCI"
+              }
               hintText="Uniquement composé de chiffres"
               nativeInputProps={{
                 ref: zipCodeInputRef,
                 type: "text",
                 name: "postal_code",
                 required: true,
-                pattern: "[0-9]{5}",
-                maxLength: 5,
+                pattern: commune.type === "commune" ? "[0-9]{5}" : "[0-9ABMD]{2,3}",
+                maxLength: commune.type === "commune" ? 5 : 3,
                 inputMode: "numeric",
                 autoComplete: "postal-code",
                 value: zipCode,
@@ -340,7 +355,7 @@ export default function InscriptionGroupePilote(props: PageProps) {
             />
           </div>
 
-          <h2 className={fr.cx("fr-h4", "fr-mb-4w")}>Conditions générales d&rsquo;utilisation</h2>
+          <h2 className={fr.cx("fr-h4", "fr-mb-4w")}>Politique de confidentialité</h2>
 
           <Checkbox
             className={fr.cx("fr-mb-2w")}
@@ -348,13 +363,13 @@ export default function InscriptionGroupePilote(props: PageProps) {
               {
                 label: (
                   <span>
-                    J&rsquo;accepte les{" "}
+                    J&rsquo;accepte la{" "}
                     <Link
-                      href="/conditions-generales-utilisation"
+                      href="/politique-de-confidentialite"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      conditions générales d&rsquo;utilisation
+                      politique de confidentialité des données
                     </Link>
                   </span>
                 ),
@@ -367,20 +382,6 @@ export default function InscriptionGroupePilote(props: PageProps) {
             ]}
             state="default"
           />
-          <p className={fr.cx("fr-text--sm", "fr-mb-6w")}>
-            J&rsquo;accepte que mon adresse électronique soit utilisée pour le traitement de ma
-            demande et déclare avoir pris connaissance des{" "}
-            <a href="/conditions-generales-utilisation" target="_blank" rel="noopener noreferrer">
-              conditions générales d&rsquo;utilisation
-            </a>{" "}
-            de la Suite territoriale. Pour connaître et exercer vos droits, notamment de retrait de
-            votre consentement à l&rsquo;utilisation des données collectées par ce formulaire,
-            veuillez consulter nos{" "}
-            <a href="/conditions-generales-utilisation" target="_blank" rel="noopener noreferrer">
-              conditions générales d&rsquo;utilisation
-            </a>
-            .
-          </p>
 
           <div
             className={fr.cx("fr-btns-group", "fr-btns-group--inline-lg", "fr-btns-group--left")}

@@ -70,8 +70,8 @@ export default function OPSNChoiceView({ commune }: OPSNChoiceViewProps) {
       <h2>La Suite territoriale arrive bientôt !</h2>
 
       <p className={fr.cx("fr-text--lg", "fr-mb-3w")}>
-        La collectivité pourra bénéficier prochainement de l’accompagnement de la structure de
-        mutualisation de son choix pour mettre en oeuvre nos outils. Rejoignez le Groupe pilote dès
+        La collectivité pourra bénéficier prochainement de l&rsquo;accompagnement de la structure de
+        mutualisation de son choix pour mettre en œuvre nos outils. Rejoignez son Groupe pilote dès
         maintenant pour être informé et tester les services.
       </p>
 
