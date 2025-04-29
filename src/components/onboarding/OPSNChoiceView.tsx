@@ -83,16 +83,18 @@ export default function OPSNChoiceView({ commune }: OPSNChoiceViewProps) {
         ))}
       </div>
 
-      <p className={fr.cx("fr-text--lg", "fr-mt-4w")}>
-        En cas de doute ou si vous ne souhaitez pas adhérer aux structures proposées,{" "}
-        <Link
-          href={`/bienvenue/${commune.siret}/inscription`}
-          className={fr.cx("fr-link", "fr-text--lg")}
-        >
-          contactez-nous
-        </Link>
-        .
-      </p>
+      {commune.st_eligible && (
+        <p className={fr.cx("fr-text--lg", "fr-mt-4w")}>
+          En cas de doute ou si vous ne souhaitez pas adhérer aux structures proposées,{" "}
+          <Link
+            href={`/bienvenue/${commune.siret}/inscription`}
+            className={fr.cx("fr-link", "fr-text--lg")}
+          >
+            contactez-nous
+          </Link>
+          .
+        </p>
+      )}
     </>
   );
 }
