@@ -39,7 +39,7 @@ function StructureCard({
         className={fr.cx("fr-text--sm")}
         style={{ color: "var(--text-disabled-grey)", minHeight: "4em" }}
       >
-        {structure.name}
+        {structure.shortname ? structure.name : " "}
       </p>
       {offreUrl && (
         <Link href={offreUrl} target="_blank" rel="noopener noreferrer">
