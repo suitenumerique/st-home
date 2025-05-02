@@ -82,6 +82,7 @@ GENERIC_EMAIL_DOMAINS = [
     "vialis.net",
     "fr.oleane.com",
     "collectivite47.fr",  # Distribués par le CDG47
+    "intramuros.org",
 ]
 
 DOMAIN_EXTENSIONS_ALLOWED = [

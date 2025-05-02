@@ -131,6 +131,69 @@ def list_all_orgs():
             return cur.fetchall()
 
 
+def historize_table(table_name: str):
+    """
+    Appends the current data from a table to its corresponding history table,
+    adding `history_date` (DATE) and `history_month` (VARCHAR(7)) columns
+    with the current date and month. Creates the history table (schema only)
+    if it doesn't exist.
+
+    Args:
+        table_name: The name of the table to historize.
+    """
+    history_table_name = f"{table_name}_history"
+
+    with get_db() as db:
+        with db.cursor() as cur:
+            # Check if history table exists
+            cur.execute(
+                "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = %s);",
+                (history_table_name,),
+            )
+            table_exists = cur.fetchone()[0]
+
+            if not table_exists:
+                # Create the history table by copying schema ONLY from the original
+                cur.execute(
+                    f"CREATE TABLE {history_table_name} AS TABLE {table_name} WITH NO DATA;"
+                )
+                # Add the history columns
+                cur.execute(f"ALTER TABLE {history_table_name} ADD COLUMN history_date DATE;")
+                cur.execute(
+                    f"ALTER TABLE {history_table_name} ADD COLUMN history_month VARCHAR(7);"
+                )
+                # No need to populate history columns here, the INSERT below handles it.
+
+            # Get column names from the original table
+            # This needs to be done *after* potential table creation
+            cur.execute(
+                """
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_name = %s
+                  AND table_schema = 'public'  -- Assuming public schema, adjust if needed
+                ORDER BY ordinal_position;
+            """,
+                (table_name,),
+            )
+            columns = [row[0] for row in cur.fetchall()]
+            column_list = ", ".join(f'"{col}"' for col in columns)  # Quote column names
+
+            # Insert current data from original table into history table,
+            # adding the current date and month for the new history columns.
+            # This runs regardless of whether the table was just created or already existed.
+            insert_column_list = f"{column_list}, history_date, history_month"
+            select_column_list = f"{column_list}, CURRENT_DATE, TO_CHAR(NOW(), 'YYYY-MM')"
+
+            cur.execute(f"""
+                INSERT INTO {history_table_name} ({insert_column_list})
+                SELECT {select_column_list}
+                FROM {table_name};
+            """)  # noqa: S608
+
+        db.commit()
+
+
 def calculate_stats_for_scope(communes, scope_communes):
     """
     Calculate statistics for a given scope of communes.

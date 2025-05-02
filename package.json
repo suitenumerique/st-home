@@ -26,6 +26,7 @@
     "data:purge": "docker-compose run --rm worker sh -c 'celery -A celery_app purge -Q celery,check_website,check_dns -f'",
     "data:purge:staging": "docker-compose run --rm flower_staging celery -A celery_app purge -Q celery,check_website,check_dns -f",
     "data:purge:production": "docker-compose run --rm flower_production celery -A celery_app purge -Q celery,check_website,check_dns -f",
+    "data:historize": "docker-compose run --rm worker python -m tasks.historize",
     "flower:staging": "docker-compose run --rm --service-ports flower_staging",
     "flower:production": "docker-compose run --rm --service-ports flower_production",
     "lint": "npm run lint:front && npm run lint:data",
