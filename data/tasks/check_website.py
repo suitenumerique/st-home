@@ -47,7 +47,7 @@ def queue_all():
         run.apply_async(args=[org["siret"]], queue="check_website")
 
 
-def check_website(url):
+def check_website(url, force_http_url=None):
     """
     Check website reachability and HTTPS redirect behavior
     Returns a dict of Issues with explanations
@@ -60,7 +60,8 @@ def check_website(url):
 
     # Prepare all URL variants we need to test
     urls_to_test = {
-        "http": urlunparse(("http", parsed.netloc, parsed.path, parsed.params, parsed.query, "")),
+        "http": force_http_url
+        or urlunparse(("http", parsed.netloc, parsed.path, parsed.params, parsed.query, "")),
         "https": urlunparse(
             ("https", parsed.netloc, parsed.path, parsed.params, parsed.query, "")
         ),
@@ -105,14 +106,19 @@ def check_http(base_url, urls_to_test, issues, request_kwargs):
         http_response = requests.get(urls_to_test["http"], **{**request_kwargs, "verify": False})
 
         if http_response.status_code != 200:
-            issues[Issues.WEBSITE_DOWN] = f"HTTP returned status {http_response.status_code}"
+            if base_url.startswith("https://"):
+                issues[Issues.WEBSITE_HTTP_REDIRECT] = (
+                    f"HTTP redirect returned status {http_response.status_code}"
+                )
+            else:
+                issues[Issues.WEBSITE_DOWN] = f"HTTP returned status {http_response.status_code}"
         else:
             # Check if HTTP properly redirects to HTTPS
             if not http_response.url.startswith("https://"):
                 issues[Issues.WEBSITE_HTTP_REDIRECT] = f"Site stays on HTTP: {http_response.url}"
 
             # Check if final domain matches original
-            expected_domain = re.sub(r"^www\.", "", urlparse(urls_to_test["http"]).netloc)
+            expected_domain = re.sub(r"^www\.", "", urlparse(urls_to_test["https"]).netloc)
             final_domain = urlparse(http_response.url).netloc
             final_domain = re.sub(r"\:(80|443)", "", final_domain)
             final_domain = re.sub(r"^www\.", "", final_domain)
@@ -221,5 +227,8 @@ def check_non_www(base_final_domain, base_url, urls_to_test, issues, request_kwa
 if __name__ == "__main__":
     # Run with command line arguments
     siret = sys.argv[1]
-    issues = run(siret)
-    logger.info(json.dumps(issues, indent=2))
+    if "." in siret:
+        logger.info(check_website(siret))
+    else:
+        issues = run(siret)
+        logger.info(json.dumps(issues, indent=2))

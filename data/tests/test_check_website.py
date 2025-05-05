@@ -275,3 +275,18 @@ def test_local_ssl(
         Issues.WEBSITE_HTTP_NOWWW,
         Issues.WEBSITE_HTTPS_NOWWW,
     }
+
+    # Fully working https setup, with a small hack to force the HTTP URL
+    issues = check_website(
+        "https://localhost:8443/", force_http_url="http://localhost:8080/https_redirect"
+    )
+    assert len(issues) == 0
+
+    # Only HTTP is down
+    issues = check_website(
+        "https://localhost:8443/", force_http_url="http://localhost:8088/https_redirect"
+    )
+    assert issues.keys() == {Issues.WEBSITE_HTTP_REDIRECT}
+
+    issues = check_website("https://localhost:8443/", force_http_url="http://localhost:8080/404")
+    assert issues.keys() == {Issues.WEBSITE_HTTP_REDIRECT}
