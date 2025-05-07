@@ -193,24 +193,6 @@ const ReferentielConformite: ReferentielSection[] = [
         howToFix: (
           <>
             <p>
-              Pour tester la disponibilité du site internet de votre collectivité, vous pouvez
-              utiliser un de ces services :
-            </p>
-            <ul>
-              <li>
-                <Link href="https://downforeveryoneorjustme.com/" target="_blank">
-                  Down for Everyone or Just Me
-                </Link>{" "}
-                - Vérification rapide
-              </li>
-              <li>
-                <Link href="https://www.pingdom.com/" target="_blank">
-                  Pingdom
-                </Link>{" "}
-                - Monitoring professionnel
-              </li>
-            </ul>
-            <p>
               En cas d&rsquo;indisponibilité, l&rsquo;ANCT vous recommande de suivre ces étapes, en
               autonomie ou à l&rsquo;aide de votre prestataire informatique :
             </p>

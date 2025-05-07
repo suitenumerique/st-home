@@ -34,12 +34,12 @@ ENV VIRTUAL_ENV=/venv
 ENV VIRTUAL_ENV_PROMPT=venv
 
 # Install dependencies in this new virtual environment
-RUN poetry install
+RUN poetry install --compile
 
 # ---- Base image with dependencies installed for development ----
 FROM base-with-deps AS runtime-dev
 
-RUN poetry install --extras dev
+RUN poetry install --compile --extras dev
 
 # ---- Runtime production image ----
 FROM debian:bookworm-slim AS runtime-prod

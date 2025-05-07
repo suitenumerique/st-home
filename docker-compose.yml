@@ -32,7 +32,7 @@ services:
     pull_policy: build
     command: pytest tests/ -vv
 
-  data_poetry_lock:
+  data_poetry:
     profiles:
       - tools
     volumes:
@@ -41,7 +41,6 @@ services:
       context: data/
       target: poetry
     pull_policy: build
-    command: poetry lock
 
   worker:
     build:
@@ -63,7 +62,7 @@ services:
       - GRIST_SELF_MANAGED_HOME=${GRIST_SELF_MANAGED_HOME}
       - GRIST_SELF_MANAGED_SINGLE_ORG=${GRIST_SELF_MANAGED_SINGLE_ORG}
       - GRIST_TEAM_SITE=${GRIST_TEAM_SITE}
-    command: watchmedo auto-restart --patterns="*.py" --recursive -- celery -A celery_app worker -E -Q celery,check_website,check_dns --loglevel=debug --concurrency=2 -P gevent
+    command: watchmedo auto-restart --patterns="*.py" --recursive -- celery -A celery_app worker -E -Q celery,check_website,check_dns --loglevel=debug --concurrency=2
 
   flower:
     build:
