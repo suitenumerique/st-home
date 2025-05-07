@@ -76,6 +76,6 @@ jobs:
         with:
           python-version: '3.13'
       - name: Install development dependencies
-        run: pip install --user .[dev]
+        run: pip install --user poetry==2.1.3 && poetry install --extras dev
       - name: Run tests
         run: pytest tests/ -vv
