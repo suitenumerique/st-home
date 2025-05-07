@@ -30,8 +30,6 @@ services:
       context: data/
       target: runtime-dev
     pull_policy: build
-    environment:
-      - PYTHONPATH=/app/data
     command: pytest tests/ -vv
 
   data_poetry_lock:
