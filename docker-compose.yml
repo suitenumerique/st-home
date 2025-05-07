@@ -28,16 +28,27 @@ services:
       - ./data:/app/data
     build:
       context: data/
-      dockerfile: Dockerfile.dev
+      target: runtime-dev
     pull_policy: build
     environment:
       - PYTHONPATH=/app/data
     command: pytest tests/ -vv
 
+  data_poetry_lock:
+    profiles:
+      - tools
+    volumes:
+      - ./data:/app/data
+    build:
+      context: data/
+      target: poetry
+    pull_policy: build
+    command: poetry lock
+
   worker:
     build:
       context: data/
-      dockerfile: Dockerfile.dev
+      target: runtime-dev
     pull_policy: build
     depends_on:
       - postgresql
@@ -59,7 +70,7 @@ services:
   flower:
     build:
       context: data/
-      dockerfile: Dockerfile.dev
+      target: runtime-dev
     depends_on:
       - redis
     environment:
@@ -78,7 +89,7 @@ services:
       - ./data:/app/data
     build:
       context: data/
-      dockerfile: Dockerfile.dev
+      target: runtime-dev
     pull_policy: build
     env_file:
       - .env.staging
@@ -95,7 +106,7 @@ services:
       - ./data:/app/data
     build:
       context: data/
-      dockerfile: Dockerfile.dev
+      target: runtime-dev
     pull_policy: build
     env_file:
       - .env.production
