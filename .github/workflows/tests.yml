@@ -71,11 +71,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Install Python poetry
+        run: pipx install poetry
       - name: Install Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
+          cache: 'poetry'
       - name: Install development dependencies
-        run: pip install --user poetry==2.1.3 && poetry install --extras dev
+        run: poetry install --extras dev
       - name: Run tests
-        run: pytest tests/ -vv
+        run: poetry run pytest tests/ -vv
