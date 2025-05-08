@@ -1,7 +1,7 @@
 {
   "jobs": [
     {
-      "command": "20 7 * * * bash -c 'python -m tasks.sync && npm run db:seed'",
+      "command": "20 7 * * * bash -c 'python -m tasks.sync && node -r @swc-node/register scripts/db-seed.ts dumps'",
       "size": "2XL"
     },
     {
