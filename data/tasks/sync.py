@@ -22,6 +22,7 @@ from .dumps import (
     dump_filtered_sirene,
     dump_insee_communes,
     dump_perimetre_epci,
+    dump_groupements_memberships,
     reset_dila_issues,
 )
 from .lib import (
@@ -31,6 +32,7 @@ from .lib import (
     iter_perimetre_epci,
     iter_repertoire_collectivites,
     iter_repertoire_structures,
+    iter_groupements_memberships,
     iter_sirene,
     normalize,
 )
@@ -67,6 +69,7 @@ def run():
     dump_repertoire_structures()
     dump_repertoire_collectivites()
     dump_perimetre_epci()
+    dump_groupements_memberships()
 
     communes = [{"_st_insee": x} for x in iter_insee_communes()]
 
@@ -90,6 +93,7 @@ def run():
     # Associate Repertoire data to communes
     associate_repertoire_to_communes(communes)
     associate_structures_to_communes(communes)
+    associate_memberships_to_communes(communes)
 
     compute_slug_for_communes(communes)
 
@@ -245,6 +249,7 @@ def run():
                 "st_eligible": st_eligible,
                 "st_active": st_active,
                 "structures": commune.get("_st_structures") or [],
+                "memberships": commune.get("_st_memberships") or [],
             }
         )
 
@@ -456,6 +461,28 @@ def associate_structures_to_communes(communes: list):
         # Remove duplicates
         commune["_st_structures"] = list(set(commune["_st_structures"]))
 
+def associate_memberships_to_communes(communes: list):
+    """Associate memberships to communes"""
+    structures_with_banatic_name = [x for x in iter_repertoire_structures() if x.get("Libelle_BANATIC")]
+    memberships = []
+    for structure in structures_with_banatic_name:
+        memberships.extend([{**x, "structure_id": structure.get("id")} for x in iter_groupements_memberships() if x.get("Nom du groupement") == structure.get("Libelle_BANATIC")])
+
+    # group by siren membre
+    memberships_by_siren = defaultdict(list)
+    for membership in memberships:
+        memberships_by_siren[membership.get("Siren membre")].append(membership)
+
+    for commune in communes:
+        commune["_st_memberships"] = []
+        # If the commune siren is in the memberships, add the memberships structure_id to the commune memberships
+        if commune.get("_st_siren") in memberships_by_siren:
+            commune["_st_memberships"] = [x.get("structure_id") for x in memberships_by_siren[commune.get("_st_siren")]]
+        elif commune.get("_st_epci", {}).get("siren") in memberships_by_siren:
+            commune["_st_memberships"] = [x.get("structure_id") for x in memberships_by_siren[commune.get("_st_epci", {}).get("siren")]]
+
+        # Remove duplicates
+        commune["_st_memberships"] = list(set(commune["_st_memberships"]))
 
 def compute_slug_for_communes(communes: list):
     """Create a unique slug for each commune"""
