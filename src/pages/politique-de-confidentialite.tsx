@@ -1,6 +1,7 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { NextPage } from "next";
 import { NextSeo } from "next-seo";
+import Link from "next/link";
 
 const PolitiqueDeConfidentialite: NextPage = () => {
   return (
@@ -174,6 +175,47 @@ const PolitiqueDeConfidentialite: NextPage = () => {
           par l'usager au moyen du site de la Suite territoriale, et à ne pas les communiquer à des
           tiers, en dehors des cas prévus par la loi, notamment, en cas de réquisition judiciaire.
         </p>
+
+        <p>
+          Certaines données sont envoyées à des sous-traitants pour réaliser certaines missions. Le
+          responsable de traitements s&rsquo;est assuré de la mise en œuvre par ses sous-traitants
+          de garanties adéquates et du respect de conditions strictes de confidentialité,
+          d&rsquo;usage et de protection des données.
+        </p>
+
+        <div className="fr-table rdv-white-space-nowrap" data-fr-js-table="true">
+          <table
+            data-fr-js-table-element="true"
+            className="fr-table__shadow fr-table__shadow--right"
+          >
+            <thead>
+              <tr>
+                <th>Partenaire</th>
+                <th>Traitement réalisé</th>
+                <th>Pays destinataire</th>
+                <th>Garanties</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <strong>Scalingo</strong>
+                </td>
+                <td>Hébergement</td>
+                <td>France</td>
+                <td>
+                  <Link
+                    href="https://scalingo.com/fr/contrat-gestion-traitements-donnees-personnelles"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    Contrat de Gestion des Traitements de Données Personnelles Scalingo
+                  </Link>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
         <h2 data-level="2">Quels sont vos droits sur vos données et comment les exercer ?</h2>
         <p></p>

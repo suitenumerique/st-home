@@ -52,10 +52,12 @@ services:
       - redis
     volumes:
       - ./data:/app/data
+    env_file:
+      - .env.development
     environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/1
-      - DATABASE_URL=postgresql://usr:pwd@postgresql:5432/st_home_local
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+      - DATABASE_URL=${DATABASE_URL}
       - GRIST_API_KEY=${GRIST_API_KEY}
       - GRIST_DOC_ID=${GRIST_DOC_ID}
       - GRIST_SELF_MANAGED=${GRIST_SELF_MANAGED}
