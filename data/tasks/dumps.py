@@ -135,6 +135,7 @@ def dump_filtered_sirene(communes):
 
     return len(rows)
 
+
 def dump_groupements_memberships():
     if Path("dumps/groupements_memberships.json").exists():
         return
@@ -148,12 +149,13 @@ def dump_groupements_memberships():
 
     # Read the XLSX file
     df = pd.read_excel(r.content)
-    df_selected = df[[
-        "Nom du groupement",
-        "N° SIREN",
-        "Nom membre",
-        "Siren membre",
-        "Catégorie des membres du groupement",
+    df_selected = df[
+        [
+            "Nom du groupement",
+            "N° SIREN",
+            "Nom membre",
+            "Siren membre",
+            "Catégorie des membres du groupement",
         ]
     ]
     with open("dumps/groupements_memberships.json", "w") as f:

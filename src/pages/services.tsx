@@ -437,7 +437,7 @@ const SERVICES_DATA = [
       },
       {
         question: (
-          <>La Régie permet-elle de piloter uniquement les services Messagerie et Fichiers ?</>
+          <>La Régie permet-elle de piloter uniquement les services Messages et Fichiers ?</>
         ),
         answer: (
           <>

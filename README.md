@@ -15,10 +15,17 @@ Après avoir cloné le projet :
 ```bash
 docker-compose up -d # pour lancer les conteneurs de base de données
 npm install # pour installer les dépendances
+npx husky install # ajouter les vérifications pre-commit
 npm run dev # pour lancer en mode développement
 ```
 
 Il suffit ensuite de se rendre sur [http://127.0.0.1:3000/](http://127.0.0.1:3000/).
+
+Après avoir modifié une dépendance Python dans `data/pyproject.toml`, il est nécessaire de recréer le lockfile :
+
+```bash
+npm run data:poetry:lock
+```
 
 ### Base de données
 
