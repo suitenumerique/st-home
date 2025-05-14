@@ -240,9 +240,9 @@ const SERVICES_DATA = [
     ],
   },
   {
-    id: "messagerie",
-    name: "Messagerie",
-    title: <>Messagerie, les adresses mail professionnelles</>,
+    id: "messages",
+    name: "Messages",
+    title: <>Messages, les adresses mail professionnelles</>,
     description: (
       <>
         Envoyez ou recevez des emails et gérez votre calendrier professionnel dans un environnement
@@ -271,10 +271,10 @@ const SERVICES_DATA = [
         ),
       },
       {
-        question: <>Puis-je utiliser la Messagerie avec mon nom de domaine actuel ?</>,
+        question: <>Puis-je utiliser Messages avec mon nom de domaine actuel ?</>,
         answer: (
           <>
-            Oui, l&rsquo;utilisation de la Messagerie n&rsquo;est pas dépendante de la fourniture
+            Oui, l&rsquo;utilisation de Messages n&rsquo;est pas dépendante de la fourniture
             d&rsquo;un nom de domaine institutionnel par l&rsquo;ANCT et est possible avec tout nom
             de domaine conforme.
           </>
@@ -282,11 +282,11 @@ const SERVICES_DATA = [
       },
       {
         question: (
-          <>Puis-je utiliser la Messagerie avec un autre client comme Thunderbird ou Outlook ?</>
+          <>Puis-je utiliser Messages avec un autre client comme Thunderbird ou Outlook ?</>
         ),
         answer: (
           <>
-            Non, comme tous les services de la Suite territoriale, la Messagerie est accessible
+            Non, comme tous les services de la Suite territoriale, Messages est accessible
             uniquement via ProConnect pour des raisons de sécurité et afin de dissocier les usages
             personnels et professionnels.
           </>
@@ -314,7 +314,7 @@ const SERVICES_DATA = [
         answer: (
           <>
             Oui, l&rsquo;ANCT et votre structure de mutualisation peuvent vous accompagner dans la
-            migration de vos historiques vers la Messagerie de la Suite territoriale.
+            migration de vos historiques vers la messagerie de la Suite territoriale.
           </>
         ),
       },
@@ -352,7 +352,7 @@ const SERVICES_DATA = [
         question: <>Puis-je stocker les pièces-jointes que je reçois par mail ?</>,
         answer: (
           <>
-            Tout à fait. Fichiers est dit &quot;intéropérable&quot; avec le service de Messagerie
+            Tout à fait. Fichiers est dit &quot;intéropérable&quot; avec le service de messagerie
             proposé par la Suite territoriale. Les documents reçus par e-mail pourront donc par
             exemple être automatiquement stockés sur Fichiers.
           </>
