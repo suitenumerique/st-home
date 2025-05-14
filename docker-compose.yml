@@ -28,38 +28,48 @@ services:
       - ./data:/app/data
     build:
       context: data/
-      dockerfile: Dockerfile.dev
+      target: runtime-dev
     pull_policy: build
-    environment:
-      - PYTHONPATH=/app/data
     command: pytest tests/ -vv
+
+  data_poetry:
+    profiles:
+      - tools
+    volumes:
+      - ./data:/app/data
+    build:
+      context: data/
+      target: poetry
+    pull_policy: build
 
   worker:
     build:
       context: data/
-      dockerfile: Dockerfile.dev
+      target: runtime-dev
     pull_policy: build
     depends_on:
       - postgresql
       - redis
     volumes:
       - ./data:/app/data
+    env_file:
+      - .env.development
     environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/1
-      - DATABASE_URL=postgresql://usr:pwd@postgresql:5432/st_home_local
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
+      - DATABASE_URL=${DATABASE_URL}
       - GRIST_API_KEY=${GRIST_API_KEY}
       - GRIST_DOC_ID=${GRIST_DOC_ID}
       - GRIST_SELF_MANAGED=${GRIST_SELF_MANAGED}
       - GRIST_SELF_MANAGED_HOME=${GRIST_SELF_MANAGED_HOME}
       - GRIST_SELF_MANAGED_SINGLE_ORG=${GRIST_SELF_MANAGED_SINGLE_ORG}
       - GRIST_TEAM_SITE=${GRIST_TEAM_SITE}
-    command: watchmedo auto-restart --patterns="*.py" --recursive -- celery -A celery_app worker -E -Q celery,check_website,check_dns --loglevel=debug --concurrency=2 -P gevent
+    command: watchmedo auto-restart --patterns="*.py" --recursive -- celery -A celery_app worker -E -Q celery,check_website,check_dns --loglevel=debug --concurrency=2
 
   flower:
     build:
       context: data/
-      dockerfile: Dockerfile.dev
+      target: runtime-dev
     depends_on:
       - redis
     environment:
@@ -78,7 +88,7 @@ services:
       - ./data:/app/data
     build:
       context: data/
-      dockerfile: Dockerfile.dev
+      target: runtime-dev
     pull_policy: build
     env_file:
       - .env.staging
@@ -95,7 +105,7 @@ services:
       - ./data:/app/data
     build:
       context: data/
-      dockerfile: Dockerfile.dev
+      target: runtime-dev
     pull_policy: build
     env_file:
       - .env.production

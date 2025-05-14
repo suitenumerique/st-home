@@ -12,8 +12,6 @@ function getConnectionString() {
     throw new Error("DATABASE_URL environment variable is not set");
   }
 
-  console.log(dbUrl);
-
   try {
     // Parse the connection URL to handle special characters in password
     const url = new URL(dbUrl);

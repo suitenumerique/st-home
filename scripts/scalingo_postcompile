@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -o errexit    # always exit on error
+set -o pipefail   # don't ignore exit codes when piping output
+
+echo "-----> Running post-compile script"
+
+# Remove some files that are not needed
+
+# Keep only next-swc.linux-x64-gnu.node
+rm -rf ./node_modules/@next/swc-linux-x64-musl
+find node_modules -type f -name '*.map' -delete
+
+find .next -type f -name '*.map' -delete
+rm -rf .next/cache
+
+# echo "-----> Listing top files/dirs by size"
+# du -ah . | sort -rh | head -n 100
+
+exit 0

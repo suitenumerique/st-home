@@ -1,2 +1,0 @@
-# This makes 'pip install .' work by looking up dependencies in pyproject.toml
-.

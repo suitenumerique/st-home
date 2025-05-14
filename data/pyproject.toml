@@ -4,30 +4,26 @@ version = "0.1.0"
 description = "Data pipeline for Suite territoriale communes"
 requires-python = ">=3.13"
 dependencies = [
-    "pygrister==0.6.0",
+    "pygrister==0.7.0",
     "requests==2.32.3",
-    "celery[redis,gevent]==5.4.0",
+    "celery[redis]==5.5.2",
     "dnspython==2.7.0",
-    "sentry-sdk[celery]==2.26.1",
+    "sentry-sdk[celery]==2.27.0",
     "psycopg2-binary==2.9.10",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest-cov==6.0.0",
+    "pytest-cov==6.1.1",
     "flower==2.0.1",
     "watchdog==6.0.0",
     "pytest==8.3.5",
-    "certifi==2025.1.31",
-    "ruff==0.11.2"
+    "certifi==2025.4.26",
+    "ruff==0.11.8"
 ]
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.hatch.build.targets.wheel]
-packages = ["."]
+[tool.poetry]
+package-mode = false
 
 [tool.ruff]
 exclude = [
