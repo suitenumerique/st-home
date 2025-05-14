@@ -134,3 +134,27 @@ def dump_filtered_sirene(communes):
         json.dump(rows, f, ensure_ascii=False, indent=4)
 
     return len(rows)
+
+def dump_groupements_memberships():
+    if Path("dumps/groupements_memberships.json").exists():
+        return
+
+    url = "https://www.data.gouv.fr/fr/datasets/r/348cc004-22b4-4b12-9281-b00d4ccb1d88"
+    r = requests.get(url)
+    r.raise_for_status()
+
+    # Convert XLSX to JSON
+    import pandas as pd
+
+    # Read the XLSX file
+    df = pd.read_excel(r.content)
+    df_selected = df[[
+        "Nom du groupement",
+        "N° SIREN",
+        "Nom membre",
+        "Siren membre",
+        "Catégorie des membres du groupement",
+        ]
+    ]
+    with open("dumps/groupements_memberships.json", "w") as f:
+        json.dump(df_selected.to_dict(orient="records"), f, ensure_ascii=False, indent=4)
