@@ -44,6 +44,13 @@ def iter_repertoire_structures():
         yield structure
 
 
+def iter_groupements_memberships():
+    with open("dumps/groupements_memberships.json") as f:
+        data = json.load(f)
+    for membership in data:
+        yield membership
+
+
 def iter_repertoire_collectivites():
     with open("dumps/collectivites.json") as f:
         data = json.load(f)
