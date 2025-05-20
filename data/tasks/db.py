@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import random
 from collections import defaultdict
@@ -28,6 +29,7 @@ def init_db():
                     type VARCHAR(16) NOT NULL,
                     issues VARCHAR(64)[] NOT NULL,
                     details TEXT[] NOT NULL,
+                    metadata JSONB NOT NULL,
                     dt TIMESTAMP WITH TIME ZONE NOT NULL,
                     PRIMARY KEY (siret, type)
                 );
@@ -35,7 +37,9 @@ def init_db():
             db.commit()
 
 
-def upsert_issues(siret: str, check_type: str, issues: Dict[Issues, str]):
+def upsert_issues(
+    siret: str, check_type: str, issues: Dict[Issues, str], metadata: Dict[str, str]
+):
     """
     Insert or update issues for a given SIRET and check type
 
@@ -57,11 +61,12 @@ def upsert_issues(siret: str, check_type: str, issues: Dict[Issues, str]):
         with db.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO data_checks (siret, type, issues, details, dt)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO data_checks (siret, type, issues, details, metadata, dt)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 ON CONFLICT (siret, type) DO UPDATE SET
                     issues = EXCLUDED.issues,
                     details = EXCLUDED.details,
+                    metadata = EXCLUDED.metadata,
                     dt = EXCLUDED.dt
             """,
                 (
@@ -69,6 +74,7 @@ def upsert_issues(siret: str, check_type: str, issues: Dict[Issues, str]):
                     check_type,
                     issue_keys,
                     issue_details,
+                    json.dumps(metadata or {}),
                     datetime.datetime.now(datetime.timezone.utc),
                 ),
             )

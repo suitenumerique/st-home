@@ -1,7 +1,11 @@
 import json
+import socket
 import unicodedata
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from typing import Iterable
+
+import maxminddb
 
 
 def normalize(s):
@@ -70,3 +74,33 @@ def iter_sirene():
         data = json.load(f)
     for row in data:
         yield row
+
+
+def geoip_country_by_ip(ip):
+    with maxminddb.open_database("dumps/geoip-country.mmdb") as reader:
+        return reader.get(ip).get("country_code")
+
+
+def geoip_country_by_hostname(hostname):
+    try:
+        ip = resolve_with_timeout(hostname, timeout=10)
+        return geoip_country_by_ip(ip)
+    except Exception:
+        return None
+
+
+def resolve_hostname(hostname):
+    return socket.gethostbyname(hostname)
+
+
+def resolve_with_timeout(hostname, timeout=5):
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(resolve_hostname, hostname)
+        try:
+            return future.result(timeout=timeout)
+        except TimeoutError as e:
+            raise TimeoutError(
+                f"DNS resolution for {hostname} timed out after {timeout} seconds"
+            ) from e
+        except socket.gaierror as e:
+            raise ConnectionError(f"Failed to resolve hostname {hostname}: {e}") from e

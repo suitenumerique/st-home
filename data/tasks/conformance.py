@@ -33,6 +33,7 @@ class Issues(Enum):
     DNS_SPF_MISSING = "DNS_SPF_MISSING"  # SPF record missing on the email domain
     DNS_DMARC_MISSING = "DNS_DMARC_MISSING"  # DMARC record missing, or p=none
     DNS_DMARC_WEAK = "DNS_DMARC_WEAK"  # DMARC record is too weak: anything below p=quarantine;pct=100. relaxed alignment is okay for now.
+    DNS_MX_OUTSIDE_EU = "DNS_MX_OUTSIDE_EU"  # MX record is outside of the EU
 
     def __str__(self):
         return self.name
@@ -121,7 +122,6 @@ def data_checks_doable(conformance_issues):
             {
                 Issues.EMAIL_MISSING.name,
                 Issues.EMAIL_MALFORMED.name,
-                Issues.EMAIL_DOMAIN_GENERIC.name,
             }.intersection([str(x) for x in conformance_issues])
         )
         == 0
