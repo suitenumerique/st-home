@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from typing import Iterable
 
 import maxminddb
+from cachetools import TTLCache, cached
 
 
 def normalize(s):
@@ -81,6 +82,10 @@ def geoip_country_by_ip(ip):
         return reader.get(ip).get("country_code")
 
 
+geoip_cache = TTLCache(maxsize=1000, ttl=3600)
+
+
+@cached(geoip_cache)
 def geoip_country_by_hostname(hostname):
     try:
         ip = resolve_with_timeout(hostname, timeout=10)
