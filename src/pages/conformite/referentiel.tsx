@@ -830,6 +830,68 @@ const ReferentielConformite: ReferentielSection[] = [
         type: "tested",
         level: "recommended",
       },
+      {
+        num: "2.8",
+        title: <>Le serveur de messagerie doit être dans l&rsquo;Union Européenne</>,
+        whyItsImportant: (
+          <>
+            <p>
+              L&rsquo;hébergement des serveurs de messagerie au sein de l&rsquo;Union Européenne est
+              crucial pour :
+            </p>
+            <ul>
+              <li>
+                Garantir la conformité avec le RGPD et assurer une meilleure protection des données
+                personnelles des administrés&nbsp;;
+              </li>
+              <li>
+                Préserver la souveraineté numérique de la collectivité en évitant
+                l&rsquo;application de législations étrangères potentiellement intrusives (comme le
+                Cloud Act américain)&nbsp;;
+              </li>
+              <li>
+                S&rsquo;aligner avec les recommandations SecNumCloud de l&rsquo;ANSSI qui
+                préconisent l&rsquo;utilisation de services cloud de confiance hébergés sur le
+                territoire européen&nbsp;;
+              </li>
+            </ul>
+          </>
+        ),
+        howToFix: (
+          <>
+            <p>
+              Pour vous assurer que votre messagerie est hébergée dans l&rsquo;Union européenne :
+            </p>
+            <ol>
+              <li>
+                Vérifiez auprès de votre fournisseur actuel de messagerie la localisation
+                géographique de leurs serveurs&nbsp;;
+              </li>
+              <li>
+                Si nécessaire, choisissez un prestataire de messagerie garantissant un hébergement
+                exclusivement européen et conforme au RGPD&nbsp;;
+              </li>
+              <li>
+                Privilégiez les solutions proposées par :
+                <ul>
+                  <li>Votre structure de mutualisation départementale ou régionale&nbsp;;</li>
+                  <li>
+                    Des fournisseurs européens spécialisés dans les services aux collectivités
+                    territoriales&nbsp;;
+                  </li>
+                  <li>La Suite territoriale.</li>
+                </ul>
+              </li>
+              <li>
+                Incluez systématiquement des clauses concernant la localisation des données dans vos
+                cahiers des charges et contrats de service.
+              </li>
+            </ol>
+          </>
+        ),
+        type: "tested",
+        level: "mandatory",
+      },
     ],
   },
 ];
@@ -878,9 +940,15 @@ const FAQS = [
           <li>les retours d&rsquo;expérience des collectivités&nbsp;;</li>
           <li>les nouvelles obligations réglementaires.</li>
         </ul>
-        <p>
-          Chaque mise à jour majeure sera communiquée avec un délai d&rsquo;adaptation approprié.
-        </p>
+        <p>Voici son historique :</p>
+        <ul>
+          <li>
+            <strong>Version 0.2</strong> (23 Mai 2025) : Ajout du critère 2.8
+          </li>
+          <li>
+            <strong>Version 0.1</strong> (10 Avril 2025) : Première version publique
+          </li>
+        </ul>
       </>
     ),
   },
@@ -1144,7 +1212,7 @@ const ReferentielPage: NextPage = () => {
                   }
                 }}
               >
-                Version 0.1, publiée le 10 Avril 2025
+                Version 0.2, publiée le 23 Mai 2025
               </div>
 
               <div className={fr.cx("fr-text--lg", "fr-mb-5w")}>{REF_INTRO}</div>

@@ -140,15 +140,18 @@ def dump_groupements_memberships():
     if Path("dumps/groupements_memberships.json").exists():
         return
 
+    # https://www.data.gouv.fr/fr/datasets/5e1f20058b4c414d3f94460d/
     url = "https://www.data.gouv.fr/fr/datasets/r/348cc004-22b4-4b12-9281-b00d4ccb1d88"
     r = requests.get(url)
     r.raise_for_status()
 
     # Convert XLSX to JSON
+    from io import BytesIO
+
     import pandas as pd
 
-    # Read the XLSX file
-    df = pd.read_excel(r.content)
+    # Read the XLSX file directly from the response content using a file-like object
+    df = pd.read_excel(BytesIO(r.content))
     df_selected = df[
         [
             "Nom du groupement",
