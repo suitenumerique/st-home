@@ -44,6 +44,7 @@ export default function CartographieConformite() {
     selectedCity: null,
   });
   const [layerBounds, setLayerBounds] = useState<L.LatLngBounds | null>(null);
+  const [displayedRef, setDisplayedRef] = useState<string | null>(null);
   const selectedLayerRef = useRef<L.Layer | null>(null);
 
   const mapConfig = {
@@ -58,9 +59,33 @@ export default function CartographieConformite() {
     markerZoomAnimation: false,
   };
 
+  const rcpntRefs = [
+    "1.1",
+    "1.2",
+    "1.3",
+    "1.4",
+    "1.5",
+    "1.6",
+    "1.7",
+    "1.8",
+    "2.1",
+    "2.2",
+    "2.3",
+    "2.4",
+    "2.5",
+    "2.6",
+    "2.7",
+    "1.a",
+    "1.aa",
+    "2.a",
+    "2.aa",
+    "a",
+    "aa",
+  ];
+
   const colorsConfig = {
-    domain: [0, 1, 2],
-    range: ["#ef4444", "#eab308", "#22c55e"],
+    domain: displayedRef ? [0, 1] : [0, 1, 2],
+    range: displayedRef ? ["#ef4444", "#22c55e"] : ["#ef4444", "#eab308", "#22c55e"],
     defaultColor: "#e2e8f0",
   };
 
@@ -87,11 +112,14 @@ export default function CartographieConformite() {
       department: "dep",
       epci: "epci",
     };
-    const response = await fetch(`/api/rcpnt/stats?scope=${scope[level]}&refs=1.a,2.a,a`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      next: { revalidate: 3600 },
-    });
+    const response = await fetch(
+      `/api/rcpnt/stats?scope=${scope[level]}&refs=${rcpntRefs.join(",")}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        next: { revalidate: 3600 },
+      },
+    );
     const data = await response.json();
     return data;
   };
@@ -101,9 +129,9 @@ export default function CartographieConformite() {
     const departmentStats = await loadStats("department");
     const epciStats = await loadStats("epci");
     const countryStats = {
-      "00": ["1.a", "2.a", "a"].map((ref) => {
+      "00": rcpntRefs.map((ref) => {
         return {
-          ref: ref as "1.a" | "2.a" | "a",
+          ref: ref,
           valid: Object.values(regionStats).reduce(
             (acc, stat) => acc + (stat.find((s) => s.ref === ref)?.valid || 0),
             0,
@@ -195,12 +223,32 @@ export default function CartographieConformite() {
   ) => {
     if (level === "city") {
       const cityRecord = record as CollectiviteRecord;
-      return {
-        score: ["1.a", "2.a"].reduce((acc, ref) => {
-          return acc + (cityRecord.rcpnt.indexOf(ref) > -1 ? 1 : 0);
-        }, 0),
-      };
+      if (displayedRef) {
+        return {
+          score: cityRecord.rcpnt.indexOf(displayedRef) > -1 ? 1 : 0,
+        };
+      } else {
+        return {
+          score: ["1.a", "2.a"].reduce((acc, ref) => {
+            return acc + (cityRecord.rcpnt.indexOf(ref) > -1 ? 1 : 0);
+          }, 0),
+        };
+      }
     } else {
+      if (displayedRef) {
+        const stat = stats[level][record.insee_geo.replace("r", "")].find(
+          (s) => s.ref === displayedRef,
+        ) || { valid: 0, total: 0 };
+        return {
+          n_cities: stat.total,
+          score: stat.valid / stat.total,
+          details: {
+            "0": stat.total - stat.valid,
+            "1": stat.valid,
+          },
+        };
+      }
+
       const stat = stats[level][record.insee_geo.replace("r", "")];
       const stat_a = stat.find((s) => s.ref === "a") || { valid: 0, total: 0 };
       const stat_1a = stat.find((s) => s.ref === "1.a") || { valid: 0, total: 0 };
@@ -507,6 +555,11 @@ export default function CartographieConformite() {
 
   useEffect(() => {
     loadAllStats();
+    const urlParams = new URLSearchParams(window.location.search);
+    const ref = urlParams.get("ref");
+    if (ref && rcpntRefs.includes(ref as string)) {
+      setDisplayedRef(ref);
+    }
   }, []);
 
   return (
@@ -541,6 +594,7 @@ export default function CartographieConformite() {
               mapState={mapState}
               setMapState={setMapState}
               getBackLevel={getBackLevel}
+              displayedRef={displayedRef}
               getColor={getColor}
             />
           </div>

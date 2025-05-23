@@ -59,6 +59,7 @@ export default function AreaDisplay({
   setMapState,
   getBackLevel,
   getColor,
+  displayedRef,
   // period,
   // periods,
   // setPeriod,
@@ -285,6 +286,21 @@ export default function AreaDisplay({
     return new Intl.NumberFormat("fr-FR").format(value);
   };
 
+  let chartSeries = [];
+
+  if (displayedRef) {
+    chartSeries = [
+      ["1", "Conforme"],
+      ["0", "Non conforme"],
+    ]
+  } else {
+    chartSeries = [
+      ["2", "Conforme"],
+      ["1", "Partiellement conforme"],
+      ["0", "Non conforme"],
+    ];
+  }
+
   return (
     <>
       <div
@@ -390,7 +406,7 @@ export default function AreaDisplay({
               </p>
 
               <div style={styles.scoreContainer}>
-                {[["2", "Conforme"], ["1", "Partiellement conforme"], ["0", "Non conforme"]].map(([scoreKey, label]) => {
+                {chartSeries.map(([scoreKey, label]) => {
                   const percentage = Math.round(
                     (mapState.selectedAreas[mapState.currentLevel].conformityStats.details[scoreKey] / mapState.selectedAreas[mapState.currentLevel].conformityStats.n_cities) * 100
                   );

@@ -1,7 +1,7 @@
 import L from "leaflet";
 
 export interface StatRecord {
-  ref: "1.a" | "2.a" | "a";
+  ref: string;
   valid: number;
   total: number;
 }
@@ -47,7 +47,7 @@ export interface ConformityStats {
   details?: {
     "0": number;
     "1": number;
-    "2": number;
+    "2"?: number;
   };
 }
 
