@@ -232,13 +232,6 @@ const ReferentielConformite: ReferentielSection[] = [
             <p>Pour obtenir un protocole sécurisé HTTPS pour le site internet de votre commune :</p>
             <ol>
               <li>
-                Utilisez un service comme{" "}
-                <Link href="https://letsencrypt.org/fr/" target="_blank">
-                  Let&rsquo;s Encrypt
-                </Link>{" "}
-                pour obtenir un certificat SSL gratuitement&nbsp;;
-              </li>
-              <li>
                 Allez sur votre espace client de votre hébergeur, section «&nbsp;Certificat
                 SSL&nbsp;» ou «&nbsp;HTTPS&nbsp;»&nbsp;;
               </li>
@@ -832,7 +825,7 @@ const ReferentielConformite: ReferentielSection[] = [
       },
       {
         num: "2.8",
-        title: <>Le serveur de messagerie doit être dans l&rsquo;Union Européenne</>,
+        title: <>Le serveur de messagerie doit être situé dans l&rsquo;Union Européenne</>,
         whyItsImportant: (
           <>
             <p>
@@ -846,13 +839,22 @@ const ReferentielConformite: ReferentielSection[] = [
               </li>
               <li>
                 Préserver la souveraineté numérique de la collectivité en évitant
-                l&rsquo;application de législations étrangères potentiellement intrusives (comme le
-                Cloud Act américain)&nbsp;;
+                l&rsquo;application de législations étrangères potentiellement intrusives (comme le{" "}
+                <Link href="https://fr.wikipedia.org/wiki/CLOUD_Act" target="_blank">
+                  CLOUD Act
+                </Link>{" "}
+                américain)&nbsp;;
               </li>
               <li>
-                S&rsquo;aligner avec les recommandations SecNumCloud de l&rsquo;ANSSI qui
-                préconisent l&rsquo;utilisation de services cloud de confiance hébergés sur le
-                territoire européen&nbsp;;
+                S&rsquo;aligner avec les recommandations{" "}
+                <Link
+                  href="https://cyber.gouv.fr/secnumcloud-pour-les-fournisseurs-de-services-cloud"
+                  target="_blank"
+                >
+                  SecNumCloud
+                </Link>{" "}
+                de l&rsquo;ANSSI qui préconisent l&rsquo;utilisation de services cloud de confiance
+                hébergés sur le territoire européen.
               </li>
             </ul>
           </>
@@ -864,8 +866,8 @@ const ReferentielConformite: ReferentielSection[] = [
             </p>
             <ol>
               <li>
-                Vérifiez auprès de votre fournisseur actuel de messagerie la localisation
-                géographique de leurs serveurs&nbsp;;
+                Vérifiez la localisation géographique des serveurs de votre fournisseur actuel de
+                messagerie&nbsp;;
               </li>
               <li>
                 Si nécessaire, choisissez un prestataire de messagerie garantissant un hébergement
@@ -874,12 +876,12 @@ const ReferentielConformite: ReferentielSection[] = [
               <li>
                 Privilégiez les solutions proposées par :
                 <ul>
-                  <li>Votre structure de mutualisation départementale ou régionale&nbsp;;</li>
+                  <li>votre structure de mutualisation départementale ou régionale&nbsp;;</li>
                   <li>
-                    Des fournisseurs européens spécialisés dans les services aux collectivités
+                    des fournisseurs européens spécialisés dans les services aux collectivités
                     territoriales&nbsp;;
                   </li>
-                  <li>La Suite territoriale.</li>
+                  <li>la Suite territoriale.</li>
                 </ul>
               </li>
               <li>

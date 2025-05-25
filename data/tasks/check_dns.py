@@ -74,7 +74,9 @@ def check_dns(email_domain):
     # Check MX records
     try:
         mx_records = dns.resolver.resolve(email_domain, "MX", raise_on_no_answer=False, lifetime=5)
-        non_empty_mx_records = [record for record in mx_records if record.exchange]
+        non_empty_mx_records = [
+            record for record in sorted(mx_records, key=lambda x: x.preference) if record.exchange
+        ]
     except dns.exception.DNSException as e:
         return {Issues.DNS_DOWN: f"DNS MX lookup failed for {email_domain}: {str(e)}"}, None
 
@@ -85,18 +87,20 @@ def check_dns(email_domain):
         countries = [
             geoip_country_by_hostname(record.exchange.to_text()) for record in non_empty_mx_records
         ]
+        non_empty_countries = [c for c in countries if c]
+        hostnames = [record.exchange.to_text() for record in non_empty_mx_records]
         tlds = [
-            str(
-                tldextract.extract(record.exchange.to_text()).top_domain_under_public_suffix
-            ).lower()
-            for record in non_empty_mx_records
+            str(tldextract.extract(hostname).top_domain_under_public_suffix).lower()
+            for hostname in hostnames
         ]
 
-        if len(set(countries)) > 1:
-            logger.info(f"MX records for {email_domain} have different countries: {countries}")
+        if len(set(non_empty_countries)) > 1:
+            logger.info(
+                f"MX records for {email_domain} {hostnames} have different countries: {countries}"
+            )
 
         # Seems reasonable to only keep the first MX record, they should all point to the same provider
-        metadata["mx_country"] = countries[0]
+        metadata["mx_country"] = non_empty_countries[0] if non_empty_countries else None
         metadata["mx_tld"] = tlds[0]
 
         if metadata["mx_country"] and metadata["mx_country"] not in EU_COUNTRIES:

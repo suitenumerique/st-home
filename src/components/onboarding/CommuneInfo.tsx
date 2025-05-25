@@ -404,16 +404,43 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
                   <strong>{commune.email_metadata?.mx_tld}</strong>
                 </>
               )}{" "}
-              situé en dehors de l&rsquo;Union européenne (
+              situé en dehors de l&rsquo;Union européenne
               {commune.email_metadata?.mx_country && (
                 <>
+                  {" "}
+                  (
                   <strong>
                     {ISO_3166_1_ALPHA_2_TO_NAME[commune.email_metadata?.mx_country] ||
                       commune.email_metadata?.mx_country}
                   </strong>
+                  )
                 </>
               )}
-              ).
+              .
+            </MessageLine>
+          )}
+
+          {rcpnt.includes("2.1") && rcpnt.includes("2.8") && commune.email_metadata?.mx_country && (
+            <MessageLine severity="success" rcpnt="2.8">
+              L&rsquo;enregistrement MX désigne un serveur{" "}
+              {commune.email_metadata?.mx_tld && (
+                <>
+                  <strong>{commune.email_metadata?.mx_tld}</strong>
+                </>
+              )}{" "}
+              situé dans l&rsquo;Union européenne
+              {commune.email_metadata?.mx_country && (
+                <>
+                  {" "}
+                  (
+                  <strong>
+                    {ISO_3166_1_ALPHA_2_TO_NAME[commune.email_metadata?.mx_country] ||
+                      commune.email_metadata?.mx_country}
+                  </strong>
+                  )
+                </>
+              )}
+              .
             </MessageLine>
           )}
 

@@ -10,3 +10,4 @@ def test_geoip_country_by_ip():
 def test_geoip_country_by_hostname():
     assert geoip_country_by_hostname("elysee.fr") == "FR"
     assert geoip_country_by_hostname("whitehouse.gov") == "US"
+    assert geoip_country_by_hostname("doesntexist.gouv.fr") is None
