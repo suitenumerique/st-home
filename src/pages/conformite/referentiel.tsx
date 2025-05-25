@@ -1316,7 +1316,10 @@ const ReferentielPage: NextPage = () => {
                             <span>
                               {stats && getStatsForRef(item.num) && (
                                 <>
-                                  des communes{" "}
+                                  des{" "}
+                                  <Link href={"/conformite/cartographie?ref=" + item.num}>
+                                    communes
+                                  </Link>{" "}
                                   {!item.num.endsWith(".1") &&
                                     (item.num.startsWith("1.") ? (
                                       <>ayant un site internet</>
