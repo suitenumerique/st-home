@@ -5,12 +5,15 @@ import sys
 
 import dns.exception
 import dns.resolver
+import tldextract
 from sentry_sdk.crons import monitor
 
 from celery_app import app
 
 from .conformance import Issues, data_checks_doable, validate_conformance
 from .db import find_org_by_siret, list_all_orgs, upsert_issues
+from .defs import EU_COUNTRIES
+from .lib import geoip_country_by_hostname
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -29,12 +32,15 @@ def run(siret):
         if "dns" not in data_checks_doable(conformance_issues):
             return
 
-        issues = check_dns(org["email_official"].split("@")[1])
+        issues, metadata = check_dns(org["email_official"].split("@")[1])
 
         if issues is not None:  # Only store if we got results
-            upsert_issues(siret, "dns", issues)
+            upsert_issues(siret, "dns", issues, metadata)
 
-        return {str(x): issues[x] for x in issues.keys()}
+        return {
+            "issues": {str(x): issues[x] for x in issues.keys()},
+            "metadata": metadata,
+        }
 
 
 @app.task
@@ -60,23 +66,52 @@ def check_dns(email_domain):
     Returns a dict of Issues with explanations
     """
     if not email_domain:
-        return None
+        return None, None
 
     issues = {}
+    metadata = {}
 
     # Check MX records
     try:
         mx_records = dns.resolver.resolve(email_domain, "MX", raise_on_no_answer=False, lifetime=5)
-        non_empty_mx_records = [record for record in mx_records if record.exchange]
-        if not non_empty_mx_records:
-            issues[Issues.DNS_MX_MISSING] = f"No MX records found for domain {email_domain}"
+        non_empty_mx_records = [
+            record for record in sorted(mx_records, key=lambda x: x.preference) if record.exchange
+        ]
     except dns.exception.DNSException as e:
-        return {Issues.DNS_DOWN: f"DNS MX lookup failed for {email_domain}: {str(e)}"}
+        return {Issues.DNS_DOWN: f"DNS MX lookup failed for {email_domain}: {str(e)}"}, None
+
+    if not non_empty_mx_records:
+        issues[Issues.DNS_MX_MISSING] = f"No MX records found for domain {email_domain}"
+    elif type(non_empty_mx_records[0].exchange.to_text()) == str:
+        # Get the IP of the first MX record
+        countries = [
+            geoip_country_by_hostname(record.exchange.to_text()) for record in non_empty_mx_records
+        ]
+        non_empty_countries = [c for c in countries if c]
+        hostnames = [record.exchange.to_text() for record in non_empty_mx_records]
+        tlds = [
+            str(tldextract.extract(hostname).top_domain_under_public_suffix).lower()
+            for hostname in hostnames
+        ]
+
+        if len(set(non_empty_countries)) > 1:
+            logger.info(
+                f"MX records for {email_domain} {hostnames} have different countries: {countries}"
+            )
+
+        # Seems reasonable to only keep the first MX record, they should all point to the same provider
+        metadata["mx_country"] = non_empty_countries[0] if non_empty_countries else None
+        metadata["mx_tld"] = tlds[0]
+
+        if metadata["mx_country"] and metadata["mx_country"] not in EU_COUNTRIES:
+            issues[Issues.DNS_MX_OUTSIDE_EU] = (
+                f"MX record for {email_domain} is in {metadata['mx_country']}, outside of the EU"
+            )
 
     check_spf(email_domain, issues)
     check_dmarc(email_domain, issues)
 
-    return issues
+    return issues, metadata
 
 
 def check_spf(email_domain, issues):

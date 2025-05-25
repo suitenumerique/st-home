@@ -68,7 +68,7 @@ def test_valid_domain(mock_resolver):
         f"_dmarc.{domain}", "TXT", MockAnswer([MockRecord("v=DMARC1; p=reject; pct=100")])
     )
 
-    issues = check_dns(domain)
+    issues, _ = check_dns(domain)
     assert len(issues) == 0
 
 
@@ -77,7 +77,7 @@ def test_missing_mx(mock_resolver):
     domain = "no-mx.fr"
     mock_resolver.side_effect.add_response(domain, "MX", MockAnswer([]))
 
-    issues = check_dns(domain)
+    issues, _ = check_dns(domain)
     assert Issues.DNS_MX_MISSING in issues
 
 
@@ -86,7 +86,7 @@ def test_dns_down(mock_resolver):
     domain = "dns-error.fr"
     mock_resolver.side_effect.add_response(domain, "MX", dns.exception.DNSException("DNS timeout"))
 
-    issues = check_dns(domain)
+    issues, _ = check_dns(domain)
     assert Issues.DNS_DOWN in issues
 
 
@@ -101,7 +101,7 @@ def test_missing_spf(mock_resolver):
         f"_dmarc.{domain}", "TXT", MockAnswer([MockRecord("v=DMARC1; p=reject; pct=100")])
     )
 
-    issues = check_dns(domain)
+    issues, _ = check_dns(domain)
     assert Issues.DNS_SPF_MISSING in issues
 
 
@@ -114,7 +114,7 @@ def test_missing_dmarc(mock_resolver):
     )
     # No DMARC record - default NXDOMAIN response will be used
 
-    issues = check_dns(domain)
+    issues, _ = check_dns(domain)
     assert Issues.DNS_DMARC_MISSING in issues
 
 
@@ -129,7 +129,7 @@ def test_weak_dmarc_policy(mock_resolver):
         f"_dmarc.{domain}", "TXT", MockAnswer([MockRecord("v=DMARC1; p=quarantine; pct=50")])
     )
 
-    issues = check_dns(domain)
+    issues, _ = check_dns(domain)
     assert Issues.DNS_DMARC_WEAK in issues
 
 
@@ -141,7 +141,7 @@ def test_none_dmarc_policy(mock_resolver):
         f"_dmarc.{domain}", "TXT", MockAnswer([MockRecord("v=DMARC1; p=none;")])
     )
 
-    issues = check_dns(domain)
+    issues, _ = check_dns(domain)
     assert Issues.DNS_DMARC_WEAK in issues
     assert Issues.DNS_DMARC_MISSING not in issues
 
@@ -154,14 +154,14 @@ def test_full_quarantine_dmarc_policy(mock_resolver):
         f"_dmarc.{domain}", "TXT", MockAnswer([MockRecord("v=DMARC1; p=quarantine; pct=100")])
     )
 
-    issues = check_dns(domain)
+    issues, _ = check_dns(domain)
     assert Issues.DNS_DMARC_WEAK not in issues
     assert Issues.DNS_DMARC_MISSING not in issues
 
 
 def test_empty_domain():
     """Test with empty domain"""
-    issues = check_dns("")
+    issues, _ = check_dns("")
     assert issues is None
 
 
@@ -169,23 +169,28 @@ def test_real_domains():
     """Test some real domains - these might need adjustment based on actual policies"""
 
     # Impots.gouv.fr should have everything set up correctly
-    issues = check_dns("impots.gouv.fr")
+    issues, _ = check_dns("impots.gouv.fr")
     assert Issues.DNS_DOWN not in issues
     assert Issues.DNS_MX_MISSING not in issues
     assert Issues.DNS_SPF_MISSING not in issues
     assert Issues.DNS_DMARC_MISSING not in issues
+    assert Issues.DNS_MX_OUTSIDE_EU not in issues
 
     # suiteterritoriale.anct.gouv.fr should be missing most records
-    issues = check_dns("suiteterritoriale.anct.gouv.fr")
+    issues, _ = check_dns("suiteterritoriale.anct.gouv.fr")
     assert Issues.DNS_DOWN not in issues
     assert Issues.DNS_MX_MISSING in issues
     assert Issues.DNS_SPF_MISSING in issues
     assert Issues.DNS_DMARC_MISSING in issues
 
     # site.notcom should not be resolving at all
-    issues = check_dns("site.notcom")
+    issues, _ = check_dns("site.notcom")
     assert Issues.DNS_DOWN in issues
     assert len(issues) == 1
+
+    # Should have a MX outside of the EU
+    issues, _ = check_dns("fcc.gov")
+    assert Issues.DNS_MX_OUTSIDE_EU in issues
 
 
 def test_valid_domain_all_records(mock_resolver):
@@ -199,5 +204,5 @@ def test_valid_domain_all_records(mock_resolver):
         f"_dmarc.{domain}", "TXT", MockAnswer([MockRecord("v=DMARC1; p=reject;")])
     )
 
-    issues = check_dns(domain)
+    issues, _ = check_dns(domain)
     assert len(issues) == 0

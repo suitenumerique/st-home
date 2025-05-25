@@ -33,6 +33,7 @@ class Issues(Enum):
     DNS_SPF_MISSING = "DNS_SPF_MISSING"  # SPF record missing on the email domain
     DNS_DMARC_MISSING = "DNS_DMARC_MISSING"  # DMARC record missing, or p=none
     DNS_DMARC_WEAK = "DNS_DMARC_WEAK"  # DMARC record is too weak: anything below p=quarantine;pct=100. relaxed alignment is okay for now.
+    DNS_MX_OUTSIDE_EU = "DNS_MX_OUTSIDE_EU"  # MX record is outside of the EU
 
     def __str__(self):
         return self.name
@@ -54,6 +55,7 @@ RcpntRefs = {
     "2.5",
     "2.6",
     "2.7",
+    "2.8",
     "1.a",
     "1.aa",
     "2.a",
@@ -121,7 +123,6 @@ def data_checks_doable(conformance_issues):
             {
                 Issues.EMAIL_MISSING.name,
                 Issues.EMAIL_MALFORMED.name,
-                Issues.EMAIL_DOMAIN_GENERIC.name,
             }.intersection([str(x) for x in conformance_issues])
         )
         == 0
@@ -151,7 +152,7 @@ def get_rcpnt_conformance(issue_list):
     groups = {
         "1.a": {"1.1", "1.2", "1.3", "1.4", "1.5", "1.6"},
         "1.aa": {"1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8"},
-        "a": {"1.1", "1.2", "1.3", "1.4", "1.5", "2.1", "2.2", "2.3", "2.4", "2.5"},
+        "a": {"1.1", "1.2", "1.3", "1.4", "1.5", "2.1", "2.2", "2.3", "2.4", "2.5", "2.8"},
         "aa": {
             "1.1",
             "1.2",
@@ -168,6 +169,7 @@ def get_rcpnt_conformance(issue_list):
             "2.5",
             "2.6",
             "2.7",
+            "2.8",
         },
     }
 
@@ -179,23 +181,23 @@ def get_rcpnt_conformance(issue_list):
         # No need for 2.3 in this case
         groups.update(
             {
-                "2.a": {"2.1", "2.2", "2.4", "2.5"},
-                "2.aa": {"2.1", "2.2", "2.4", "2.5", "2.6", "2.7"},
+                "2.a": {"2.1", "2.2", "2.4", "2.5", "2.8"},
+                "2.aa": {"2.1", "2.2", "2.4", "2.5", "2.6", "2.7", "2.8"},
             }
         )
     else:
         groups.update(
             {
-                "2.a": {"2.1", "2.2", "2.3", "2.4", "2.5"},
-                "2.aa": {"2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7"},
+                "2.a": {"2.1", "2.2", "2.3", "2.4", "2.5", "2.8"},
+                "2.aa": {"2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8"},
             }
         )
 
     # List of criterion that can't be valid if issues are absent (dependencies)
     blocking_issues = {
         # Declarative issues from DILA data
-        str(Issues.EMAIL_MISSING): {"2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7"},
-        str(Issues.EMAIL_MALFORMED): {"2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7"},
+        str(Issues.EMAIL_MISSING): {"2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8"},
+        str(Issues.EMAIL_MALFORMED): {"2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8"},
         str(Issues.WEBSITE_MISSING): {
             "1.1",
             "1.2",
@@ -231,11 +233,12 @@ def get_rcpnt_conformance(issue_list):
         str(Issues.WEBSITE_HTTPS_NOWWW): {"1.7"},
         str(Issues.WEBSITE_HTTP_NOWWW): {"1.7"},
         # Issues that are tested in check_dns
-        str(Issues.DNS_DOWN): {"2.4", "2.5", "2.6", "2.7"},
-        str(Issues.DNS_MX_MISSING): {"2.4", "2.5", "2.6", "2.7"},
+        str(Issues.DNS_DOWN): {"2.4", "2.5", "2.6", "2.7", "2.8"},
+        str(Issues.DNS_MX_MISSING): {"2.4", "2.5", "2.6", "2.7", "2.8"},
         str(Issues.DNS_SPF_MISSING): {"2.5"},
         str(Issues.DNS_DMARC_MISSING): {"2.6", "2.7"},
         str(Issues.DNS_DMARC_WEAK): {"2.7"},
+        str(Issues.DNS_MX_OUTSIDE_EU): {"2.8"},
     }
 
     # By default we're AA
