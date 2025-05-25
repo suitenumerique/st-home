@@ -839,11 +839,11 @@ const ReferentielConformite: ReferentielSection[] = [
               </li>
               <li>
                 Préserver la souveraineté numérique de la collectivité en évitant
-                l&rsquo;application de législations étrangères potentiellement intrusives (comme le{" "}
+                l&rsquo;application de législations étrangères comme le{" "}
                 <Link href="https://fr.wikipedia.org/wiki/CLOUD_Act" target="_blank">
                   CLOUD Act
                 </Link>{" "}
-                américain)&nbsp;;
+                américain&nbsp;;
               </li>
               <li>
                 S&rsquo;aligner avec les recommandations{" "}
