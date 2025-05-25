@@ -57,7 +57,7 @@ const REF_INTRO = (
   </>
 );
 
-const ReferentielConformite: ReferentielSection[] = [
+export const ReferentielConformite: ReferentielSection[] = [
   {
     id: "site-internet",
     title: "1. Le site internet",

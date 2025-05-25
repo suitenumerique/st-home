@@ -1,5 +1,7 @@
 import { db } from "@/lib/db";
 import { organizations } from "@/lib/schema";
+import { ReferentielConformite } from "@/pages/conformite/referentiel";
+import { stringify as csvStringify } from "csv-stringify";
 import { sql } from "drizzle-orm";
 import { NextApiRequest, NextApiResponse } from "next";
 import { unstable_cache } from "next/cache";
@@ -111,7 +113,13 @@ const getConformanceStats =
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { scope = "global", refs = "1.a,2.a", with_sample = "0", dep } = req.query;
+    const {
+      scope = "global",
+      refs = "1.a,2.a",
+      with_sample = "0",
+      format = "json",
+      dep,
+    } = req.query;
 
     if (scope === "commune" && !dep) {
       return res.status(400).json({
@@ -132,7 +140,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       with_sample as string,
       dep as string,
     );
-    return res.status(200).json(stats);
+    if (format === "json") {
+      return res.status(200).json(stats);
+    } else if (format === "csv") {
+      res.setHeader("Content-Type", "text/plain; charset=utf-8");
+
+      // Map each sub-RCPNT section to a CSV column
+      const csvColumns: string[] = ["aa", "a"];
+      ReferentielConformite.forEach((section, index) => {
+        csvColumns.push(String(index + 1) + ".a");
+        csvColumns.push(String(index + 1) + ".aa");
+        section.items.forEach((item) => {
+          csvColumns.push(item.num);
+        });
+      });
+
+      // Expand the "RCPNT" column into multiple columns
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (stats as any[]).forEach((stat) => {
+        csvColumns.forEach((column) => {
+          stat["rcpnt_" + column] = stat.rcpnt.includes(column) ? 1 : 0;
+        });
+        delete stat.rcpnt;
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return res.status(200).send(csvStringify(stats as any[], { header: true, delimiter: "," }));
+    } else {
+      return res.status(400).json({ error: "Invalid format" });
+    }
   } catch (error) {
     console.error("Error fetching conformance stats:", error);
     return res.status(500).json({ error: "Internal server error" });
