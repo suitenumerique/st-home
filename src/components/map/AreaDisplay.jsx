@@ -1,6 +1,5 @@
-import { useState } from "react";
 import Link from "next/link";
-// Icon components
+
 const Undo2 = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -18,51 +17,12 @@ const Undo2 = () => (
   </svg>
 );
 
-const SquareArrowOutUpRight = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-    <path d="M8 8h8v8" />
-    <path d="m8 16 8-8" />
-  </svg>
-);
-
-// const Info = () => (
-//   <svg
-//     xmlns="http://www.w3.org/2000/svg"
-//     width="16"
-//     height="16"
-//     viewBox="0 0 24 24"
-//     fill="none"
-//     stroke="currentColor"
-//     strokeWidth="2"
-//     strokeLinecap="round"
-//     strokeLinejoin="round"
-//   >
-//     <circle cx="12" cy="12" r="10"/>
-//     <path d="M12 16v-4"/>
-//     <path d="M12 8h.01"/>
-//   </svg>
-// );
-
 export default function AreaDisplay({
   mapState,
   setMapState,
   getBackLevel,
   getColor,
   displayedRef,
-  // period,
-  // periods,
-  // setPeriod,
 }) {
 
   // Styles
@@ -481,7 +441,7 @@ export default function AreaDisplay({
 
                   <div style={styles.indicatorContainer}>
                     <span style={styles.indicatorCircle(
-                      getColor(mapState.selectedCity.rcpnt.indexOf('1.a') > -1 ? 2 : 0)
+                      getColor(mapState.selectedCity.rcpnt.indexOf('1.a') > -1 ? (displayedRef ? 1 : 2) : 0)
                     )}>
                       <span style={styles.indicatorText}>
                         {mapState.selectedCity.rcpnt.indexOf('1.a') > -1 ? '✓' : '×'}
