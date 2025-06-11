@@ -77,6 +77,13 @@ def run():
 
     associate_epci_to_communes(communes)
 
+    # Remove communes with zero population
+    len_communes = len(communes)
+    communes = [
+        x for x in communes if x.get("_st_pmun") and int(x.get("_st_pmun").replace(" ", "")) > 0
+    ]
+    logger.info("Removed %d communes with zero population", len_communes - len(communes))
+
     sirene_row_count = dump_filtered_sirene(communes)
 
     logger.info("Dumped filtered sirene: %s rows", sirene_row_count)
@@ -398,6 +405,9 @@ def associate_dila_to_communes(communes: list):
             if len(dila_match.get("site_internet") or []) > 0
             else ""
         )
+        # Remove trailing anchor from website
+        commune["_st_website"] = commune["_st_website"].strip().split("#")[0]
+
         commune["_st_dila"] = dila_match
 
 

@@ -16,7 +16,7 @@ services:
   #     - "1025:1025"
 
   redis:
-    image: redis:latest
+    image: redis:5
     ports:
       - "6379:6379"
 

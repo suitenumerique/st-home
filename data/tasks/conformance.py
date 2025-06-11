@@ -62,11 +62,18 @@ RcpntRefs = {
     "aa",
 }
 
+
 # This regex is purposefully stricter than what is possible. But we want simple addresses for users.
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-z]{2,10}$")
 WEBSITE_REGEX = re.compile(
     r"^https?://[-a-zA-Z0-9.]{2,256}\.[a-z]{2,10}(\/[a-zA-Z0-9._\/\?\=-]*)?$"
 )
+
+# Version with accents allowed:
+# EMAIL_REGEX = re.compile(r"^[a-zA-Zéèçî0-9._-]+@[a-zA-Zéèçî0-9.-]+\.[a-z]{2,10}$")
+# WEBSITE_REGEX = re.compile(
+#     r"^https?://[-a-zA-Zéèçî0-9.]{2,256}\.[a-z]{2,10}(\/[a-zA-Z0-9._\/\?\=-]*)?$"
+# )
 
 
 def validate_conformance(email, website, bypass_website_regex=False):
