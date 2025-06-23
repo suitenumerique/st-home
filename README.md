@@ -13,10 +13,10 @@ Après avoir cloné le projet :
 ### Développement
 
 ```bash
-docker-compose up -d # pour lancer les conteneurs de base de données
-npm install # pour installer les dépendances
-npx husky install # ajouter les vérifications pre-commit
-npm run dev # pour lancer en mode développement
+cp .env.development .env # then do some modifications if you want
+npx husky # ajouter les vérifications pre-commit
+make frontend-install-frozen # installer les node_modules
+make frontend-start # pour lancer le site et les conteneurs de base de données
 ```
 
 Il suffit ensuite de se rendre sur [http://127.0.0.1:3000/](http://127.0.0.1:3000/).

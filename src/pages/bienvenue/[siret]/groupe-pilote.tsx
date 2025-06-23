@@ -30,11 +30,11 @@ export default function InscriptionGroupePilote(props: PageProps) {
     success: boolean;
     message: string;
   } | null>(null);
-
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const displayStructureName = structureShortname || structureName;
 
-  const currentPageLabel = `Inscription à la Suite territoriale`;
+  const currentPageLabel = `Inscription au groupe pilote`;
 
   const scrollToError = () => {
     const errorMessage = document.querySelector(".fr-alert--error .fr-alert__title")?.parentElement
@@ -61,7 +61,7 @@ export default function InscriptionGroupePilote(props: PageProps) {
     }
 
     try {
-      const response = await fetch("/api/communes/signup", {
+      const response = await fetch("/api/communes/groupe-pilote", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -78,6 +78,7 @@ export default function InscriptionGroupePilote(props: PageProps) {
         }, 200);
       } else {
         setSubmitStatus({ success: true, message: result.message || "Inscription réussie !" });
+        setShowSuccess(true);
       }
     } catch (error) {
       console.error("Fetch Error:", error);
@@ -90,13 +91,31 @@ export default function InscriptionGroupePilote(props: PageProps) {
     setIsSubmitting(false);
   };
 
-
+  if (showSuccess) {
+    return (
+      <div className={fr.cx("fr-container") + " st-bienvenue-page"}>
+        <NextSeo title="Inscription réussie" noindex={true} />
+        <div className={fr.cx("fr-card--shadow", "fr-p-4w", "fr-mb-4w")}>
+          <Alert
+            severity="success"
+            title="Inscription réussie !"
+            description="Votre demande d'inscription au groupe pilote a bien été enregistrée. Nous vous recontacterons prochainement."
+          />
+          <div className={fr.cx("fr-mt-4w")}>
+            <Button priority="primary" linkProps={{ href: `/bienvenue/${commune.siret}` }}>
+              Retour à la page d&rsquo;éligibilité
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={fr.cx("fr-container") + " st-bienvenue-page"}>
       <NextSeo
         title={currentPageLabel}
-        description={`Inscription de ${commune.name} au groupe pilote ${displayStructureName ? ` - ${displayStructureName}` : ""}`}
+        description="Inscription de {commune.name} au groupe pilote - {displayStructureName}"
       />
       <div>
         <Breadcrumb
@@ -118,7 +137,17 @@ export default function InscriptionGroupePilote(props: PageProps) {
         />
       </div>
       <div className={fr.cx("fr-card--shadow", "fr-p-4w", "fr-mb-4w")}>
-        
+        {submitStatus && !submitStatus.success && (
+          <Alert
+            className={fr.cx("fr-mb-4w")}
+            severity="error"
+            title="Erreur lors de l'inscription"
+            description={submitStatus.message}
+            closable
+            onClose={() => setSubmitStatus(null)}
+          />
+        )}
+
         {!submitStatus && (
           <Alert
             className={fr.cx("fr-mb-4w")}
@@ -140,79 +169,34 @@ export default function InscriptionGroupePilote(props: PageProps) {
           className={fr.cx("fr-h2", "fr-mb-2w")}
           style={{ color: "var(--text-title-blue-france)" }}
         >
-          Inscription à la Suite territoriale {displayStructureName && ` - ${displayStructureName}`}
+          Inscription au Groupe pilote {displayStructureName && ` - ${displayStructureName}`}
         </h1>
 
-        {!submitStatus && (<>
-          {structureId ? (
-            <p className={fr.cx("fr-text--lg", "fr-mb-5w")}>
-              Vous êtes intéressé par les services de la Suite territoriale et vous souhaitez être
-              accompagné par cette structure de mutualisation, merci de remplir ce formulaire pour
-              rester informé et tester nos services.
-            </p>
-          ) : (
-            <p className={fr.cx("fr-text--lg", "fr-mb-5w")}>
-              Vous êtes intéressé par la Suite territoriale, merci de remplir ce
-              formulaire pour commencer à tester nos services.
-            </p>
-          )}
-        </>)}
-
-        {submitStatus && (
-          <Alert
-            className={fr.cx("fr-mb-4w")}
-            severity={submitStatus.success ? "success" : "error"}
-            title={submitStatus.success ? "Inscription réussie !" : "Erreur lors de l'inscription"}
-            description={
-              submitStatus.success ? (
-                <div>
-                  <p>Votre demande d&rsquo;inscription a bien été prise en compte.</p>
-                  <p>
-                    <strong>Vous recevrez prochainement un code de sécurité par courrier postal</strong> à l&rsquo;adresse de votre collectivité.
-                  </p>
-                  <p>
-                    Une fois reçu, vous pourrez{" "}
-                    <Link href={`/activation/${commune.siret}`}>
-                      activer votre compte en cliquant ici
-                    </Link>.
-                  </p>
-                </div>
-              ) : (
-                submitStatus.message
-              )
-            }
-            closable={!submitStatus.success}
-            onClose={submitStatus.success ? undefined : () => setSubmitStatus(null)}
-          />
+        {structureId ? (
+          <p className={fr.cx("fr-text--lg", "fr-mb-5w")}>
+            Vous êtes intéressé par les services de la Suite territoriale et vous souhaitez être
+            accompagné par cette structure de mutualisation, merci de remplir ce formulaire pour
+            rester informé et tester nos services.
+          </p>
+        ) : (
+          <p className={fr.cx("fr-text--lg", "fr-mb-5w")}>
+            Vous êtes intéressé par les services de la Suite territoriale, merci de remplir ce
+            formulaire pour rester informé et tester nos services.
+          </p>
         )}
 
-
-        {!submitStatus?.success && (
-          <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
           <h2 className={fr.cx("fr-h4", "fr-mb-4w")}>Vos coordonnées</h2>
 
           <div className={fr.cx("fr-mb-3w")}>
             <Input
-              label="Votre prénom"
+              label="Votre nom et prénom"
               nativeInputProps={{
                 type: "text",
-                name: "first_name",
+                name: "name",
                 required: true,
-                autoComplete: "given-name",
-              }}
-              style={{
-                width: "500px",
-              }}
-            />
-          </div>
-          <div className={fr.cx("fr-mb-3w")}>
-            <Input
-              label="Votre nom"
-              nativeInputProps={{
-                type: "text",
-                name: "last_name",
-                required: true,
-                autoComplete: "family-name",
+
+                autoComplete: "name",
               }}
               style={{
                 width: "500px",
@@ -281,6 +265,8 @@ export default function InscriptionGroupePilote(props: PageProps) {
             />
           </div>
 
+          <h2 className={fr.cx("fr-h4", "fr-mb-4w")}>Votre demande</h2>
+
           {structureId && (
             <RadioButtons
               legend="Êtes-vous déjà adhérent à cette structure de mutualisation ?"
@@ -310,6 +296,32 @@ export default function InscriptionGroupePilote(props: PageProps) {
               ]}
             />
           )}
+
+          <div className={fr.cx("fr-mt-6w", "fr-mb-4w")}>
+            <Input
+              label="Précisions (optionnel)"
+              hintText="200 caractères maximum"
+              textArea
+              nativeTextAreaProps={{
+                name: "precisions",
+                maxLength: 200,
+                rows: 4,
+              }}
+            />
+            <p
+              className={fr.cx("fr-mt-2w", "fr-text--sm")}
+              style={{ color: "var(--text-default-info)" }}
+            >
+              <span
+                className={fr.cx("fr-icon-info-fill", "fr-icon--sm", "fr-mr-1w")}
+                aria-hidden="true"
+              ></span>
+              <span>
+                N&rsquo;hésitez pas à préciser vos préférences (moyens et horaires) pour la prise de
+                contact.
+              </span>
+            </p>
+          </div>
 
           <h2 className={fr.cx("fr-h4", "fr-mb-4w")}>Code de sécurité</h2>
 
@@ -382,7 +394,6 @@ export default function InscriptionGroupePilote(props: PageProps) {
             </Button>
           </div>
         </form>
-        )}
       </div>
     </div>
   );

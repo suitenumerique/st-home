@@ -183,5 +183,40 @@
         2,
         131
     ]
+},{
+    "siret": "99999999999999",
+    "siren": "999999999",
+    "slug": "brigny",
+    "name": "Brigny",
+    "insee_geo": "99999",
+    "insee_dep": "99",
+    "insee_reg": "99",
+    "rcpnt": [
+        "2.1"
+    ],
+    "issues": [
+        "WEBSITE_MISSING",
+        "EMAIL_DOMAIN_GENERIC",
+        "EMAIL_DOMAIN_EXTENSION"
+    ],
+    "issues_last_checked": "2025-04-01 20:18:25+00:00",
+    "email_official": "mairie.brigny@gmail.com",
+    "website_url": null,
+    "website_domain": null,
+    "email_domain": "gmail.com",
+    "website_tld": null,
+    "email_tld": "com",
+    "zipcode": "99999",
+    "phone": "+33 4 99 99 99 99",
+    "population": 859,
+    "epci_population": 40570,
+    "epci_name": "CC du Brignois",
+    "epci_siren": "999999998",
+    "service_public_url": "",
+    "service_public_id": "",
+    "st_eligible": true,
+    "st_active": false,
+    "structures": [
+    ]
 }
 ]

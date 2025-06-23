@@ -5,7 +5,11 @@ import { exec } from "child_process";
 
 const routes = [
   "http://localhost:3000/api/communes/search?q=paris",
-  "http://localhost:3000/api/auth/session",
+  "http://localhost:3000/api/communes/signup",
+  "http://localhost:3000/api/communes/activate",
+  "http://localhost:3000/api/communes/groupe-pilote",
+  "http://localhost:3000/api/rcpnt/stats",
+  "http://localhost:3000/api/auth/session"
 ];
 
 async function waitForServer(): Promise<boolean> {

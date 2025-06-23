@@ -14,6 +14,7 @@ export default function OPSNZeroView({ commune }: Props) {
         className={fr.cx("fr-py-4w", "fr-px-4w")}
         style={{ backgroundColor: "var(--background-alt-blue-france)" }}
       >
+        {/*
         <h2>La Suite territoriale arrive bientôt !</h2>
         <p>
           La collectivité pourra bénéficier prochainement de nos outils. Rejoignez le Groupe pilote
@@ -21,12 +22,26 @@ export default function OPSNZeroView({ commune }: Props) {
         </p>
         <Button
           linkProps={{
-            href: `/bienvenue/${commune.siret}/inscription`,
+            href: `/bienvenue/${commune.siret}/groupe-pilote`,
           }}
           priority="primary"
         >
           Rejoindre le Groupe pilote
         </Button>
+        */}
+        <h2>La Suite territoriale est disponible !</h2>
+        <p>
+          La collectivité peut désormais accéder aux outils de la Suite territoriale.
+        </p>
+        <Button
+          linkProps={{
+            href: `/bienvenue/${commune.siret}/inscription`,
+          }}
+          priority="primary"
+        >
+          Inscription
+        </Button>
+
       </div>
 
       {/*
