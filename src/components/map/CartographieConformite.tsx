@@ -1,41 +1,23 @@
 import * as turf from "@turf/turf";
 import * as d3 from "d3";
-import L from "leaflet";
+import { MapLayerMouseEvent } from "maplibre-gl";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { GeoJSON, MapContainer, TileLayer, useMap } from "react-leaflet";
+import parentAreas from "../../../public/parent_areas.json";
+import MapContainer from "./MapContainer";
+import SidePanel from "./SidePanel";
+import SidePanelContent from "./SidePanelContent";
 
 import {
   AllStats,
   CollectiviteRecord,
-  FeatureProperties,
   MapState,
-  MapViewHandlerProps,
   ParentArea,
-  SearchCommune,
   SelectedArea,
   StatRecord,
 } from "./types";
 
-import parentAreas from "../../../public/parent_areas.json";
-import CommuneSearch from "../CommuneSearch";
-import AreaDisplay from "./AreaDisplay";
-
-function MapViewHandler({ bounds }: MapViewHandlerProps) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (bounds) {
-      map.fitBounds(bounds, {
-        padding: [50, 50],
-        maxZoom: 13,
-      });
-    }
-  }, [bounds, map]);
-
-  return null;
-}
-
-export default function CartographieConformite() {
+const ConformityMap = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [stats, setStats] = useState<AllStats>({} as AllStats);
   const [mapState, setMapState] = useState<MapState>({
     currentLevel: "country",
@@ -43,21 +25,7 @@ export default function CartographieConformite() {
     departmentView: "epci",
     selectedCity: null,
   });
-  const [layerBounds, setLayerBounds] = useState<L.LatLngBounds | null>(null);
   const [displayedRef, setDisplayedRef] = useState<string | null>(null);
-  const selectedLayerRef = useRef<L.Layer | null>(null);
-
-  const mapConfig = {
-    defaultViewCoords: [46.603354, 1.888334],
-    defaultZoom: 6,
-    tileLayer: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-    attribution: "© OpenStreetMap contributors",
-    minZoom: 4,
-    maxZoom: 18,
-    zoomSnap: 0.25,
-    zoomControl: true,
-    markerZoomAnimation: false,
-  };
 
   const rcpntRefs = [
     "1.1",
@@ -83,11 +51,11 @@ export default function CartographieConformite() {
     "aa",
   ];
 
-  const colorsConfig = {
+  const [colorsConfig, setColorsConfig] = useState({
     domain: displayedRef ? [0, 1] : [0, 1, 2],
-    range: displayedRef ? ["#ef4444", "#22c55e"] : ["#ef4444", "#eab308", "#22c55e"],
+    range: displayedRef ? ["#D3ADFE", "#009081"] : ["#D3ADFE", "#669BBD", "#009081"],
     defaultColor: "#e2e8f0",
-  };
+  });
 
   const colorScale = d3.scaleLinear(colorsConfig.domain, colorsConfig.range);
 
@@ -164,7 +132,7 @@ export default function CartographieConformite() {
   const fetchGeoJSON = async (level: "country" | "region" | "department", code: string) => {
     let filePath = "";
     if (level === "country") {
-      filePath = "france.json";
+      filePath = "regions.json";
     } else if (level === "region") {
       filePath = `departements_par_region/${code.replace("r", "")}.json`;
     } else if (level === "department") {
@@ -210,7 +178,8 @@ export default function CartographieConformite() {
         const processedGeoJSON = processGeoJSON(level, geoJSON, childrenAreas);
         selectedArea.geoJSON = processedGeoJSON;
         if (level === "department") {
-          selectedArea.geoJSONEPCI = processGeoJSONEPCI(processedGeoJSON);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          selectedArea.geoJSONEPCI = processGeoJSONEPCI(processedGeoJSON) as any;
         }
       }
     }
@@ -294,6 +263,7 @@ export default function CartographieConformite() {
           INSEE_DEP: record.insee_dep,
           EPCI_SIREN: record.epci_siren,
           SCORE: score,
+          color: getColor(score),
         },
       };
     });
@@ -316,25 +286,48 @@ export default function CartographieConformite() {
       }
       const record = parentAreas.find((r) => r.insee_geo === epciSiren);
 
+      const score = record ? computeAreaStats("epci", record as ParentArea).score : null;
+
       merged.properties = {
         NAME: record ? record.name : "EPCI inconnue",
         TYPE: "epci",
         INSEE_GEO: record ? record.insee_geo : "EPCI inconnue",
         INSEE_REG: record ? record.insee_reg : "EPCI inconnue",
         INSEE_DEP: record ? record.insee_dep : "EPCI inconnue",
-        SCORE: record ? computeAreaStats("epci", record as ParentArea).score : null,
+        SCORE: score,
+        color: getColor(score),
       };
       return merged;
     });
-    return processedGeoJSONFeatures;
+    return {
+      type: "FeatureCollection",
+      features: processedGeoJSONFeatures as GeoJSON.Feature<
+        GeoJSON.Geometry,
+        GeoJSON.GeoJsonProperties
+      >[],
+    };
   };
 
   // INTERACTIONS
+  const handleAreaClick = async (event: MapLayerMouseEvent) => {
+    if (event.features && event.features.length > 0) {
+      const feature = event.features[0];
+      if (nextLevel) {
+        await selectLevel(
+          nextLevel as "region" | "department" | "city",
+          feature.properties.INSEE_GEO,
+          "areaClick",
+        );
+      }
+    }
+  };
+
   const selectLevel = async (
-    level: "epci" | "department" | "region" | "country" | "city",
+    level: "country" | "region" | "department" | "epci" | "city",
     code: string,
     source = "areaClick",
   ) => {
+    console.log("selectLevel", level, code, source);
     const allLevels = ["epci", "department", "region", "country"];
     const parentLevels = allLevels.slice(allLevels.indexOf(level) + 1);
 
@@ -387,9 +380,9 @@ export default function CartographieConformite() {
     if (level !== "city") {
       newSelectedAreas[level] = await computeSelectedArea(level, code, true);
     }
-
     const newMapState: Partial<MapState> = {
       selectedAreas: newSelectedAreas,
+      selectedCity: null,
     };
 
     if (level === "city") {
@@ -407,34 +400,18 @@ export default function CartographieConformite() {
       newMapState.currentLevel = level;
     }
 
-    newMapState.updateBounds = source !== "areaClick" || level !== "city";
-
     setMapState({ ...mapState, ...newMapState } as MapState);
   };
 
-  const handleAreaClick = async (properties: FeatureProperties) => {
-    if (nextLevel) {
-      await selectLevel(
-        nextLevel as "region" | "department" | "city",
-        properties.INSEE_GEO,
-        "areaClick",
-      );
+  const handleFullscreen = () => {
+    const container = containerRef.current;
+    if (container && container.requestFullscreen) {
+      container.requestFullscreen();
     }
   };
 
-  const getBackLevel = async (level: "country" | "region" | "department" | "epci") => {
-    await selectLevel(level, mapState.selectedAreas[level].insee_geo, "backClick");
-  };
-
-  const handleQuickNav = async (community: SearchCommune) => {
-    const level = community.type === "commune" ? "city" : community.type;
-    let code: string;
-    if (community.type === "epci") {
-      code = community["siret"].slice(0, 9);
-    } else {
-      code = community.insee_geo || "";
-    }
-    await selectLevel(level as "epci" | "city", code, "quickNav");
+  const handleApplyGradient = (colors: string[]) => {
+    setColorsConfig({ ...colorsConfig, range: colors });
   };
 
   // RENDERING
@@ -442,110 +419,11 @@ export default function CartographieConformite() {
     return score === null || score === undefined ? colorsConfig.defaultColor : colorScale(score);
   };
 
-  const geoJSONStyle = (feature: GeoJSON.Feature | undefined) => {
-    if (!feature?.properties)
-      return {
-        fillColor: colorsConfig.defaultColor,
-        weight: 2,
-        opacity: 1,
-        color: "#FFFFFF",
-        fillOpacity: 0.7,
-      };
-    const props = feature.properties as FeatureProperties;
-    const isSelected = mapState.selectedCity?.insee_geo === props.INSEE_GEO;
-    return {
-      fillColor: getColor(props.SCORE),
-      weight: isSelected ? 3 : 2,
-      opacity: 1,
-      color: isSelected ? "#1E293B" : "#FFFFFF",
-      fillOpacity: 0.7,
-    };
-  };
-
-  const onEachFeature = (feature: GeoJSON.Feature, layer: L.Layer) => {
-    const props = feature.properties as FeatureProperties;
-    const tooltipContent = `
-      <div style="backgroundColor: white; padding: 0.5rem">
-        <p style="font-weight: bold; font-size: 1rem; color: #1E293B; margin-bottom: 0">${props.NAME}</p>
-        ${
-          mapState.currentLevel === "department" && mapState.departmentView === "city"
-            ? "<p style='font-size: 0.8rem; color: #64748B; margin-bottom: 0'>Cliquez pour afficher les détails</p>"
-            : ""
-        }
-      </div>
-    `;
-
-    layer.bindTooltip(tooltipContent, { permanent: false });
-
-    if (mapState.selectedCity?.insee_geo === props.INSEE_GEO) {
-      selectedLayerRef.current = layer;
+  useEffect(() => {
+    if (mapState.selectedAreas[mapState.currentLevel]) {
+      selectLevel(mapState.currentLevel as "country" | "region" | "department" | "epci" | "city", mapState.selectedAreas[mapState.currentLevel].insee_geo, 'quickNav');
     }
-
-    layer.on({
-      mouseover: (e: L.LeafletEvent) => {
-        const layer = e.target;
-        const currentColor = e.target.options.fillColor;
-        layer.setStyle({
-          weight: 3,
-          color: currentColor,
-          opacity: 0.9,
-        });
-        layer.bringToFront();
-      },
-      mouseout: (e: L.LeafletEvent) => {
-        const layer = e.target;
-        layer.setStyle(geoJSONStyle(feature));
-        if (mapState.selectedCity?.insee_geo !== props.INSEE_GEO) {
-          layer.bringToBack();
-        }
-      },
-      click: () => {
-        handleAreaClick(props);
-      },
-    });
-  };
-
-  const currentGeoJSON = useMemo(() => {
-    if (!mapState.selectedAreas[mapState.currentLevel]) return null;
-    let displayedGeoJSON: GeoJSON.FeatureCollection | GeoJSON.Feature[] | null = null;
-    if (mapState.currentLevel === "department" && mapState.departmentView === "epci") {
-      displayedGeoJSON = mapState.selectedAreas[mapState.currentLevel].geoJSONEPCI || null;
-    } else if (mapState.currentLevel === "epci" && mapState.selectedAreas["department"]?.geoJSON) {
-      displayedGeoJSON = { ...mapState.selectedAreas["department"].geoJSON };
-      displayedGeoJSON.features = displayedGeoJSON.features.filter((feature) => {
-        const props = feature.properties as FeatureProperties;
-        return props.EPCI_SIREN === mapState.selectedAreas[mapState.currentLevel].insee_geo;
-      });
-    } else {
-      displayedGeoJSON = mapState.selectedAreas[mapState.currentLevel].geoJSON || null;
-    }
-    return displayedGeoJSON;
-  }, [mapState]);
-
-  const onGeoJSONAdd = (e: L.LeafletEvent) => {
-    try {
-      if (!mapState.updateBounds) {
-        return;
-      }
-      if (mapState.currentLevel === "country") {
-        const bounds = L.latLngBounds([
-          [41.3, -5.2],
-          [51.1, 9.5],
-        ]);
-        setLayerBounds(bounds);
-      } else {
-        const bounds = e.target.getBounds();
-        setLayerBounds(bounds);
-      }
-      setTimeout(() => {
-        if (selectedLayerRef.current && mapState.selectedCity) {
-          (selectedLayerRef.current as L.Path).bringToFront();
-        }
-      }, 0);
-    } catch (err) {
-      console.error("Error getting bounds:", err);
-    }
-  };
+  }, [colorsConfig]);
 
   useEffect(() => {
     if (Object.keys(stats).length > 0) {
@@ -554,115 +432,25 @@ export default function CartographieConformite() {
   }, [stats]);
 
   useEffect(() => {
+    setDisplayedRef(null);
     loadAllStats();
-    const urlParams = new URLSearchParams(window.location.search);
-    const ref = urlParams.get("ref");
-    if (ref && rcpntRefs.includes(ref as string)) {
-      setDisplayedRef(ref);
-    }
   }, []);
 
   return (
-    <div style={{ height: "100%", width: "100%", position: "relative" }}>
-      <div
-        style={{
-          position: "absolute",
-          zIndex: 1000,
-          pointerEvents: "none",
-          top: 20,
-          bottom: 20,
-          left: 20,
-          transformOrigin: "bottom left",
-        }}
-      >
-        <div
-          style={{
-            height: "100%",
-            overflow: "auto",
-            width: "350px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              minHeight: "100%",
-              justifyContent: "flex-end",
-            }}
-          >
-            <AreaDisplay
-              mapState={mapState}
-              setMapState={setMapState}
-              getBackLevel={getBackLevel}
-              displayedRef={displayedRef}
-              getColor={getColor}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div
-        style={{
-          position: "absolute",
-          zIndex: 1000,
-          pointerEvents: "none",
-          top: 20,
-          right: 20,
-          transformOrigin: "top right",
-        }}
-      >
-        <div
-          style={{
-            height: "calc(100vh-2rem)",
-            overflow: "auto",
-            width: "330px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              minHeight: "100%",
-              justifyContent: "flex-start",
-            }}
-          >
-            <div style={{ pointerEvents: "auto" }}>
-              <CommuneSearch
-                onSelect={handleQuickNav}
-                placeholder="Rechercher une commune ou EPCI"
-                smallButton={true}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <div ref={containerRef} style={{ display: "flex", width: "100%", height: "100%" }}>
+      <SidePanel>
+        <SidePanelContent getColor={getColor} mapState={mapState} selectLevel={selectLevel} />
+      </SidePanel>
       <MapContainer
-        center={mapConfig.defaultViewCoords as L.LatLngExpression}
-        zoom={mapConfig.defaultZoom}
-        style={{ height: "100%", width: "100%" }}
-        zoomSnap={mapConfig.zoomSnap}
-        minZoom={mapConfig.minZoom}
-        maxZoom={mapConfig.maxZoom}
-      >
-        <TileLayer url={mapConfig.tileLayer} attribution={mapConfig.attribution} />
-
-        {currentGeoJSON && (
-          <GeoJSON
-            key={`geojson-${Object.keys(mapState.selectedAreas)
-              .map((key) => `${key}-${mapState.selectedAreas[key]?.insee_geo || ""}`)
-              .join("-")}-${mapState.departmentView}-${mapState.selectedCity?.insee_geo || "none"}`}
-            data={currentGeoJSON as GeoJSON.FeatureCollection}
-            style={geoJSONStyle}
-            onEachFeature={onEachFeature}
-            eventHandlers={{
-              add: onGeoJSONAdd,
-            }}
-          />
-        )}
-
-        <MapViewHandler bounds={layerBounds} />
-      </MapContainer>
+        handleAreaClick={handleAreaClick}
+        handleFullscreen={handleFullscreen}
+        mapState={mapState}
+        selectLevel={selectLevel}
+        colorsConfig={colorsConfig}
+        handleApplyGradient={handleApplyGradient}
+      />
     </div>
   );
-}
+};
+
+export default ConformityMap;

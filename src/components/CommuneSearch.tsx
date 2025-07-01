@@ -20,11 +20,13 @@ interface CommuneSearchProps {
   placeholder?: string;
   type?: "commune" | "epci" | "all";
   smallButton?: boolean;
+  style?: React.CSSProperties;
 }
 
 interface SearchInputProps {
   id: string;
   placeholder?: string;
+  style?: React.CSSProperties;
   type: "commune" | "epci" | "all";
 }
 
@@ -33,7 +35,7 @@ function CommuneSearchInput(
     onOptionSelect: (commune: Commune) => void;
   },
 ) {
-  const { id, placeholder, onOptionSelect } = props;
+  const { id, placeholder, onOptionSelect, style } = props;
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [communes, setCommunes] = useState<Commune[]>([]);
@@ -140,9 +142,10 @@ function CommuneSearchInput(
               label=""
               nativeInputProps={{
                 placeholder: placeholder || "Rechercher une commune",
-                style: {
-                  backgroundColor: "white",
-                },
+                style: style,
+                // style: {
+                //   backgroundColor: "white",
+                // },
                 ...params.inputProps,
               }}
             />
@@ -213,6 +216,7 @@ export default function CommuneSearch({
   onSelect,
   placeholder,
   type = "all",
+  style = {},
   smallButton = false,
 }: CommuneSearchProps) {
   return (
@@ -226,6 +230,7 @@ export default function CommuneSearch({
             id={id}
             placeholder={placeholder}
             type={type}
+            style={style}
             onOptionSelect={onSelect || (() => {})}
           />
         )}
