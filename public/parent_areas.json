@@ -2,84 +2,84 @@
   {
     "insee_geo": "01",
     "type": "department",
-    "name": "Département de l'Ain",
+    "name": "Ain",
     "insee_reg": "r84",
     "insee_dep": "01"
   },
   {
     "insee_geo": "10",
     "type": "department",
-    "name": "Département de l'Aube",
+    "name": "Aube",
     "insee_reg": "r44",
     "insee_dep": "10"
   },
   {
     "insee_geo": "11",
     "type": "department",
-    "name": "Département de l'Aude",
+    "name": "Aude",
     "insee_reg": "r76",
     "insee_dep": "11"
   },
   {
     "insee_geo": "12",
     "type": "department",
-    "name": "Département de l'Aveyron",
+    "name": "Aveyron",
     "insee_reg": "r76",
     "insee_dep": "12"
   },
   {
     "insee_geo": "13",
     "type": "department",
-    "name": "Département des Bouches-du-Rhône",
+    "name": "Bouches-du-Rhône",
     "insee_reg": "r93",
     "insee_dep": "13"
   },
   {
     "insee_geo": "14",
     "type": "department",
-    "name": "Département du Calvados",
+    "name": "Calvados",
     "insee_reg": "r28",
     "insee_dep": "14"
   },
   {
     "insee_geo": "15",
     "type": "department",
-    "name": "Département du Cantal",
+    "name": "Cantal",
     "insee_reg": "r84",
     "insee_dep": "15"
   },
   {
     "insee_geo": "16",
     "type": "department",
-    "name": "Département de la Charente",
+    "name": "Charente",
     "insee_reg": "r75",
     "insee_dep": "16"
   },
   {
     "insee_geo": "17",
     "type": "department",
-    "name": "Département de la Charente-Maritime",
+    "name": "Charente-Maritime",
     "insee_reg": "r75",
     "insee_dep": "17"
   },
   {
     "insee_geo": "18",
     "type": "department",
-    "name": "Département du Cher",
+    "name": "Cher",
     "insee_reg": "r24",
     "insee_dep": "18"
   },
   {
     "insee_geo": "19",
     "type": "department",
-    "name": "Département de la Corrèze",
+    "name": "Corrèze",
     "insee_reg": "r75",
     "insee_dep": "19"
   },
   {
     "insee_geo": "02",
     "type": "department",
-    "name": "Département de l'Aisne",
+    "name": "Aisne",
     "insee_reg": "r32",
     "insee_dep": "02"
   },
@@ -254,7 +254,7 @@
   {
     "insee_geo": "241000405",
     "type": "epci",
-    "name": "CC de la Région de Bar sur Aube",
+    "name": "CC de la de Bar sur Aube",
     "insee_reg": "r44",
     "insee_dep": "10"
   },
@@ -296,7 +296,7 @@
   {
     "insee_geo": "200035863",
     "type": "epci",
-    "name": "CC Région Lézignanaise, Corbières et Minervois",
+    "name": "CC Lézignanaise, Corbières et Minervois",
     "insee_reg": "r76",
     "insee_dep": "11"
   },
@@ -1045,7 +1045,7 @@
   {
     "insee_geo": "200072031",
     "type": "epci",
-    "name": "CA de la Région de Château-Thierry",
+    "name": "CA de la de Château-Thierry",
     "insee_reg": "r32",
     "insee_dep": "02"
   },
@@ -3026,7 +3026,7 @@
   {
     "insee_geo": "243600293",
     "type": "epci",
-    "name": "CC de la Région de Levroux",
+    "name": "CC de la de Levroux",
     "insee_reg": "r24",
     "insee_dep": "36"
   },
@@ -3838,7 +3838,7 @@
   {
     "insee_geo": "244400453",
     "type": "epci",
-    "name": "CC de la Région de Blain",
+    "name": "CC de la de Blain",
     "insee_reg": "r52",
     "insee_dep": "44"
   },
@@ -3880,7 +3880,7 @@
   {
     "insee_geo": "244400644",
     "type": "epci",
-    "name": "CA de la Région Nazairienne et de l'Estuaire (CARENE)",
+    "name": "CA de la Nazairienne et de l'Estuaire (CARENE)",
     "insee_reg": "r52",
     "insee_dep": "44"
   },
@@ -4391,7 +4391,7 @@
   {
     "insee_geo": "200042620",
     "type": "epci",
-    "name": "CC de la Région de Suippes",
+    "name": "CC de la de Suippes",
     "insee_reg": "r44",
     "insee_dep": "51"
   },
@@ -5182,28 +5182,28 @@
   {
     "insee_geo": "21",
     "type": "department",
-    "name": "Département de la Côte-d'Or",
+    "name": "Côte-d'Or",
     "insee_reg": "r27",
     "insee_dep": "21"
   },
   {
     "insee_geo": "22",
     "type": "department",
-    "name": "Département des Côtes-d'Armor",
+    "name": "Côtes-d'Armor",
     "insee_reg": "r53",
     "insee_dep": "22"
   },
   {
     "insee_geo": "23",
     "type": "department",
-    "name": "Département de la Creuse",
+    "name": "Creuse",
     "insee_reg": "r75",
     "insee_dep": "23"
   },
   {
     "insee_geo": "24",
     "type": "department",
-    "name": "Département de la Dordogne",
+    "name": "Dordogne",
     "insee_reg": "r75",
     "insee_dep": "24"
   },
@@ -5357,7 +5357,7 @@
   {
     "insee_geo": "200067965",
     "type": "epci",
-    "name": "CA de la Région de Compiègne et de la Basse Automne",
+    "name": "CA de la de Compiègne et de la Basse Automne",
     "insee_reg": "r32",
     "insee_dep": "60"
   },
@@ -5721,7 +5721,7 @@
   {
     "insee_geo": "246200844",
     "type": "epci",
-    "name": "CC de la Région d'Audruicq",
+    "name": "CC de la d'Audruicq",
     "insee_reg": "r32",
     "insee_dep": "62"
   },
@@ -6190,7 +6190,7 @@
   {
     "insee_geo": "246701064",
     "type": "epci",
-    "name": "CC de la Région de Molsheim-Mutzig",
+    "name": "CC de la de Molsheim-Mutzig",
     "insee_reg": "r44",
     "insee_dep": "67"
   },
@@ -6288,7 +6288,7 @@
   {
     "insee_geo": "246800569",
     "type": "epci",
-    "name": "CC de la Région de Guebwiller",
+    "name": "CC de la de Guebwiller",
     "insee_reg": "r44",
     "insee_dep": "68"
   },
@@ -7289,7 +7289,7 @@
   {
     "insee_geo": "247600786",
     "type": "epci",
-    "name": "CA de la Région Dieppoise",
+    "name": "CA de la Dieppoise",
     "insee_reg": "r28",
     "insee_dep": "76"
   },
@@ -8339,7 +8339,7 @@
   {
     "insee_geo": "200005957",
     "type": "epci",
-    "name": "CC de la Région de Rambervillers",
+    "name": "CC de la de Rambervillers",
     "insee_reg": "r44",
     "insee_dep": "88"
   },
@@ -8899,721 +8899,721 @@
   {
     "insee_geo": "25",
     "type": "department",
-    "name": "Département du Doubs",
+    "name": "Doubs",
     "insee_reg": "r27",
     "insee_dep": "25"
   },
   {
     "insee_geo": "26",
     "type": "department",
-    "name": "Département de la Drôme",
+    "name": "Drôme",
     "insee_reg": "r84",
     "insee_dep": "26"
   },
   {
     "insee_geo": "27",
     "type": "department",
-    "name": "Département de l'Eure",
+    "name": "Eure",
     "insee_reg": "r28",
     "insee_dep": "27"
   },
   {
     "insee_geo": "28",
     "type": "department",
-    "name": "Département de l'Eure-et-Loir",
+    "name": "Eure-et-Loir",
     "insee_reg": "r24",
     "insee_dep": "28"
   },
   {
     "insee_geo": "29",
     "type": "department",
-    "name": "Département du Finistère",
+    "name": "Finistère",
     "insee_reg": "r53",
     "insee_dep": "29"
   },
   {
     "insee_geo": "2A",
     "type": "department",
-    "name": "Département de la Corse-du-Sud",
+    "name": "Corse-du-Sud",
     "insee_reg": "r94",
     "insee_dep": "2A"
   },
   {
     "insee_geo": "2B",
     "type": "department",
-    "name": "Département de la Haute-Corse",
+    "name": "Haute-Corse",
     "insee_reg": "r94",
     "insee_dep": "2B"
   },
   {
     "insee_geo": "03",
     "type": "department",
-    "name": "Département de l'Allier",
+    "name": "Allier",
     "insee_reg": "r84",
     "insee_dep": "03"
   },
   {
     "insee_geo": "30",
     "type": "department",
-    "name": "Département du Gard",
+    "name": "Gard",
     "insee_reg": "r76",
     "insee_dep": "30"
   },
   {
     "insee_geo": "31",
     "type": "department",
-    "name": "Département de la Haute-Garonne",
+    "name": "Haute-Garonne",
     "insee_reg": "r76",
     "insee_dep": "31"
   },
   {
     "insee_geo": "32",
     "type": "department",
-    "name": "Département du Gers",
+    "name": "Gers",
     "insee_reg": "r76",
     "insee_dep": "32"
   },
   {
     "insee_geo": "33",
     "type": "department",
-    "name": "Département de la Gironde",
+    "name": "Gironde",
     "insee_reg": "r75",
     "insee_dep": "33"
   },
   {
     "insee_geo": "34",
     "type": "department",
-    "name": "Département de l'Hérault",
+    "name": "Hérault",
     "insee_reg": "r76",
     "insee_dep": "34"
   },
   {
     "insee_geo": "35",
     "type": "department",
-    "name": "Département d'Ille-et-Vilaine",
+    "name": "Ille-et-Vilaine",
     "insee_reg": "r53",
     "insee_dep": "35"
   },
   {
     "insee_geo": "36",
     "type": "department",
-    "name": "Département de l'Indre",
+    "name": "Indre",
     "insee_reg": "r24",
     "insee_dep": "36"
   },
   {
     "insee_geo": "37",
     "type": "department",
-    "name": "Département de l'Indre-et-Loire",
+    "name": "Indre-et-Loire",
     "insee_reg": "r24",
     "insee_dep": "37"
   },
   {
     "insee_geo": "38",
     "type": "department",
-    "name": "Département de l'Isère",
+    "name": "Isère",
     "insee_reg": "r84",
     "insee_dep": "38"
   },
   {
     "insee_geo": "39",
     "type": "department",
-    "name": "Département du Jura",
+    "name": "Jura",
     "insee_reg": "r27",
     "insee_dep": "39"
   },
   {
     "insee_geo": "04",
     "type": "department",
-    "name": "Département des Alpes-de-Haute-Provence",
+    "name": "Alpes-de-Haute-Provence",
     "insee_reg": "r93",
     "insee_dep": "04"
   },
   {
     "insee_geo": "40",
     "type": "department",
-    "name": "Département des Landes",
+    "name": "Landes",
     "insee_reg": "r75",
     "insee_dep": "40"
   },
   {
     "insee_geo": "41",
     "type": "department",
-    "name": "Département de Loir-et-Cher",
+    "name": "Loir-et-Cher",
     "insee_reg": "r24",
     "insee_dep": "41"
   },
   {
     "insee_geo": "42",
     "type": "department",
-    "name": "Département de la Loire",
+    "name": "Loire",
     "insee_reg": "r84",
     "insee_dep": "42"
   },
   {
     "insee_geo": "43",
     "type": "department",
-    "name": "Département de la Haute-Loire",
+    "name": "Haute-Loire",
     "insee_reg": "r84",
     "insee_dep": "43"
   },
   {
     "insee_geo": "44",
     "type": "department",
-    "name": "Département de la Loire-Atlantique",
+    "name": "Loire-Atlantique",
     "insee_reg": "r52",
     "insee_dep": "44"
   },
   {
     "insee_geo": "45",
     "type": "department",
-    "name": "Département du Loiret",
+    "name": "Loiret",
     "insee_reg": "r24",
     "insee_dep": "45"
   },
   {
     "insee_geo": "46",
     "type": "department",
-    "name": "Département du Lot",
+    "name": "Lot",
     "insee_reg": "r76",
     "insee_dep": "46"
   },
   {
     "insee_geo": "47",
     "type": "department",
-    "name": "Département du Lot-et-Garonne",
+    "name": "Lot-et-Garonne",
     "insee_reg": "r75",
     "insee_dep": "47"
   },
   {
     "insee_geo": "48",
     "type": "department",
-    "name": "Département de la Lozère",
+    "name": "Lozère",
     "insee_reg": "r76",
     "insee_dep": "48"
   },
   {
     "insee_geo": "49",
     "type": "department",
-    "name": "Département de Maine-et-Loire",
+    "name": "Maine-et-Loire",
     "insee_reg": "r52",
     "insee_dep": "49"
   },
   {
     "insee_geo": "05",
     "type": "department",
-    "name": "Département des Hautes-Alpes",
+    "name": "Hautes-Alpes",
     "insee_reg": "r93",
     "insee_dep": "05"
   },
   {
     "insee_geo": "50",
     "type": "department",
-    "name": "Département de la Manche",
+    "name": "Manche",
     "insee_reg": "r28",
     "insee_dep": "50"
   },
   {
     "insee_geo": "51",
     "type": "department",
-    "name": "Département de la Marne",
+    "name": "Marne",
     "insee_reg": "r44",
     "insee_dep": "51"
   },
   {
     "insee_geo": "52",
     "type": "department",
-    "name": "Département de la Haute-Marne",
+    "name": "Haute-Marne",
     "insee_reg": "r44",
     "insee_dep": "52"
   },
   {
     "insee_geo": "53",
     "type": "department",
-    "name": "Département de la Mayenne",
+    "name": "Mayenne",
     "insee_reg": "r52",
     "insee_dep": "53"
   },
   {
     "insee_geo": "54",
     "type": "department",
-    "name": "Département de la Meurthe-et-Moselle",
+    "name": "Meurthe-et-Moselle",
     "insee_reg": "r44",
     "insee_dep": "54"
   },
   {
     "insee_geo": "55",
     "type": "department",
-    "name": "Département de la Meuse",
+    "name": "Meuse",
     "insee_reg": "r44",
     "insee_dep": "55"
   },
   {
     "insee_geo": "56",
     "type": "department",
-    "name": "Département du Morbihan",
+    "name": "Morbihan",
     "insee_reg": "r53",
     "insee_dep": "56"
   },
   {
     "insee_geo": "57",
     "type": "department",
-    "name": "Département de la Moselle",
+    "name": "Moselle",
     "insee_reg": "r44",
     "insee_dep": "57"
   },
   {
     "insee_geo": "58",
     "type": "department",
-    "name": "Département de la Nièvre",
+    "name": "Nièvre",
     "insee_reg": "r27",
     "insee_dep": "58"
   },
   {
     "insee_geo": "59",
     "type": "department",
-    "name": "Département du Nord",
+    "name": "Nord",
     "insee_reg": "r32",
     "insee_dep": "59"
   },
   {
     "insee_geo": "06",
     "type": "department",
-    "name": "Département des Alpes-Maritimes",
+    "name": "Alpes-Maritimes",
     "insee_reg": "r93",
     "insee_dep": "06"
   },
   {
     "insee_geo": "60",
     "type": "department",
-    "name": "Département de l'Oise",
+    "name": "Oise",
     "insee_reg": "r32",
     "insee_dep": "60"
   },
   {
     "insee_geo": "61",
     "type": "department",
-    "name": "Département de l'Orne",
+    "name": "Orne",
     "insee_reg": "r28",
     "insee_dep": "61"
   },
   {
     "insee_geo": "62",
     "type": "department",
-    "name": "Département du Pas-de-Calais",
+    "name": "Pas-de-Calais",
     "insee_reg": "r32",
     "insee_dep": "62"
   },
   {
     "insee_geo": "63",
     "type": "department",
-    "name": "Département du Puy-de-Dôme",
+    "name": "Puy-de-Dôme",
     "insee_reg": "r84",
     "insee_dep": "63"
   },
   {
     "insee_geo": "64",
     "type": "department",
-    "name": "Département des Pyrénées-Atlantiques",
+    "name": "Pyrénées-Atlantiques",
     "insee_reg": "r75",
     "insee_dep": "64"
   },
   {
     "insee_geo": "65",
     "type": "department",
-    "name": "Département des Hautes-Pyrénées",
+    "name": "Hautes-Pyrénées",
     "insee_reg": "r76",
     "insee_dep": "65"
   },
   {
     "insee_geo": "66",
     "type": "department",
-    "name": "Département des Pyrénées-Orientales",
+    "name": "Pyrénées-Orientales",
     "insee_reg": "r76",
     "insee_dep": "66"
   },
   {
     "insee_geo": "67",
     "type": "department",
-    "name": "Département du Bas-Rhin",
+    "name": "Bas-Rhin",
     "insee_reg": "r44",
     "insee_dep": "67"
   },
   {
     "insee_geo": "68",
     "type": "department",
-    "name": "Département du Haut-Rhin",
+    "name": "Haut-Rhin",
     "insee_reg": "r44",
     "insee_dep": "68"
   },
   {
     "insee_geo": "69",
     "type": "department",
-    "name": "Département du Rhône",
+    "name": "Rhône",
     "insee_reg": "r84",
     "insee_dep": "69"
   },
   {
     "insee_geo": "07",
     "type": "department",
-    "name": "Département de l'Ardèche",
+    "name": "Ardèche",
     "insee_reg": "r84",
     "insee_dep": "07"
   },
   {
     "insee_geo": "70",
     "type": "department",
-    "name": "Département de la Haute-Saône",
+    "name": "Haute-Saône",
     "insee_reg": "r27",
     "insee_dep": "70"
   },
   {
     "insee_geo": "71",
     "type": "department",
-    "name": "Département de la Saône-et-Loire",
+    "name": "Saône-et-Loire",
     "insee_reg": "r27",
     "insee_dep": "71"
   },
   {
     "insee_geo": "72",
     "type": "department",
-    "name": "Département de la Sarthe",
+    "name": "Sarthe",
     "insee_reg": "r52",
     "insee_dep": "72"
   },
   {
     "insee_geo": "73",
     "type": "department",
-    "name": "Département de la Savoie",
+    "name": "Savoie",
     "insee_reg": "r84",
     "insee_dep": "73"
   },
   {
     "insee_geo": "74",
     "type": "department",
-    "name": "Département de la Haute-Savoie",
+    "name": "Haute-Savoie",
     "insee_reg": "r84",
     "insee_dep": "74"
   },
   {
     "insee_geo": "75",
     "type": "department",
-    "name": "Département de Paris",
+    "name": "Paris",
     "insee_reg": "r11",
     "insee_dep": "75"
   },
   {
     "insee_geo": "76",
     "type": "department",
-    "name": "Département de Seine-Maritime",
+    "name": "Seine-Maritime",
     "insee_reg": "r28",
     "insee_dep": "76"
   },
   {
     "insee_geo": "77",
     "type": "department",
-    "name": "Département de la Seine-et-Marne",
+    "name": "Seine-et-Marne",
     "insee_reg": "r11",
     "insee_dep": "77"
   },
   {
     "insee_geo": "78",
     "type": "department",
-    "name": "Département des Yvelines",
+    "name": "Yvelines",
     "insee_reg": "r11",
     "insee_dep": "78"
   },
   {
     "insee_geo": "79",
     "type": "department",
-    "name": "Département des Deux-Sèvres",
+    "name": "Deux-Sèvres",
     "insee_reg": "r75",
     "insee_dep": "79"
   },
   {
     "insee_geo": "08",
     "type": "department",
-    "name": "Département des Ardennes",
+    "name": "Ardennes",
     "insee_reg": "r44",
     "insee_dep": "08"
   },
   {
     "insee_geo": "80",
     "type": "department",
-    "name": "Département de la Somme",
+    "name": "Somme",
     "insee_reg": "r32",
     "insee_dep": "80"
   },
   {
     "insee_geo": "81",
     "type": "department",
-    "name": "Département du Tarn",
+    "name": "Tarn",
     "insee_reg": "r76",
     "insee_dep": "81"
   },
   {
     "insee_geo": "82",
     "type": "department",
-    "name": "Département du Tarn-et-Garonne",
+    "name": "Tarn-et-Garonne",
     "insee_reg": "r76",
     "insee_dep": "82"
   },
   {
     "insee_geo": "83",
     "type": "department",
-    "name": "Département du Var",
+    "name": "Var",
     "insee_reg": "r93",
     "insee_dep": "83"
   },
   {
     "insee_geo": "84",
     "type": "department",
-    "name": "Département du Vaucluse",
+    "name": "Vaucluse",
     "insee_reg": "r93",
     "insee_dep": "84"
   },
   {
     "insee_geo": "85",
     "type": "department",
-    "name": "Département de la Vendée",
+    "name": "Vendée",
     "insee_reg": "r52",
     "insee_dep": "85"
   },
   {
     "insee_geo": "86",
     "type": "department",
-    "name": "Département de la Vienne",
+    "name": "Vienne",
     "insee_reg": "r75",
     "insee_dep": "86"
   },
   {
     "insee_geo": "87",
     "type": "department",
-    "name": "Département de la Haute-Vienne",
+    "name": "Haute-Vienne",
     "insee_reg": "r75",
     "insee_dep": "87"
   },
   {
     "insee_geo": "88",
     "type": "department",
-    "name": "Département des Vosges",
+    "name": "Vosges",
     "insee_reg": "r44",
     "insee_dep": "88"
   },
   {
     "insee_geo": "89",
     "type": "department",
-    "name": "Département de l'Yonne",
+    "name": "Yonne",
     "insee_reg": "r27",
     "insee_dep": "89"
   },
   {
     "insee_geo": "09",
     "type": "department",
-    "name": "Département de l'Ariège",
+    "name": "Ariège",
     "insee_reg": "r76",
     "insee_dep": "09"
   },
   {
     "insee_geo": "90",
     "type": "department",
-    "name": "Département du Territoire de Belfort",
+    "name": "Territoire de Belfort",
     "insee_reg": "r27",
     "insee_dep": "90"
   },
   {
     "insee_geo": "91",
     "type": "department",
-    "name": "Département de l'Essonne",
+    "name": "Essonne",
     "insee_reg": "r11",
     "insee_dep": "91"
   },
   {
     "insee_geo": "92",
     "type": "department",
-    "name": "Département des Hauts-de-Seine",
+    "name": "Hauts-de-Seine",
     "insee_reg": "r11",
     "insee_dep": "92"
   },
   {
     "insee_geo": "93",
     "type": "department",
-    "name": "Département de Seine-Saint-Denis",
+    "name": "Seine-Saint-Denis",
     "insee_reg": "r11",
     "insee_dep": "93"
   },
   {
     "insee_geo": "94",
     "type": "department",
-    "name": "Département du Val-de-Marne",
+    "name": "Val-de-Marne",
     "insee_reg": "r11",
     "insee_dep": "94"
   },
   {
     "insee_geo": "95",
     "type": "department",
-    "name": "Département du Val-d'Oise",
+    "name": "Val-d'Oise",
     "insee_reg": "r11",
     "insee_dep": "95"
   },
   {
     "insee_geo": "971",
     "type": "department",
-    "name": "Département de la Guadeloupe",
+    "name": "Guadeloupe",
     "insee_reg": "r01",
     "insee_dep": "971"
   },
   {
     "insee_geo": "972",
     "type": "department",
-    "name": "Département de la Martinique",
+    "name": "Martinique",
     "insee_reg": "r02",
     "insee_dep": "972"
   },
   {
     "insee_geo": "973",
     "type": "department",
-    "name": "Département de la Guyane",
+    "name": "Guyane",
     "insee_reg": "r03",
     "insee_dep": "973"
   },
   {
     "insee_geo": "974",
     "type": "department",
-    "name": "Département de la Réunion",
+    "name": "Réunion",
     "insee_reg": "r04",
     "insee_dep": "974"
   },
   {
     "insee_geo": "976",
     "type": "department",
-    "name": "Département de Mayotte",
+    "name": "Mayotte",
     "insee_reg": "r06",
     "insee_dep": "976"
   },
   {
     "insee_geo": "r01",
     "type": "region",
-    "name": "Région Guadeloupe",
+    "name": "Guadeloupe",
     "insee_reg": "r01",
     "insee_dep": null
   },
   {
     "insee_geo": "r02",
     "type": "region",
-    "name": "Région Martinique",
+    "name": "Martinique",
     "insee_reg": "r02",
     "insee_dep": null
   },
   {
     "insee_geo": "r03",
     "type": "region",
-    "name": "Région Guyane",
+    "name": "Guyane",
     "insee_reg": "r03",
     "insee_dep": null
   },
   {
     "insee_geo": "r04",
     "type": "region",
-    "name": "Région La Réunion",
+    "name": "La Réunion",
     "insee_reg": "r04",
     "insee_dep": null
   },
   {
     "insee_geo": "r06",
     "type": "region",
-    "name": "Région Mayotte",
+    "name": "Mayotte",
     "insee_reg": "r06",
     "insee_dep": null
   },
   {
     "insee_geo": "r11",
     "type": "region",
-    "name": "Région Île-de-France",
+    "name": "Île-de-France",
     "insee_reg": "r11",
     "insee_dep": null
   },
   {
     "insee_geo": "r24",
     "type": "region",
-    "name": "Région Centre-Val de Loire",
+    "name": "Centre-Val de Loire",
     "insee_reg": "r24",
     "insee_dep": null
   },
   {
     "insee_geo": "r27",
     "type": "region",
-    "name": "Région Bourgogne-Franche-Comté",
+    "name": "Bourgogne-Franche-Comté",
     "insee_reg": "r27",
     "insee_dep": null
   },
   {
     "insee_geo": "r28",
     "type": "region",
-    "name": "Région Normandie",
+    "name": "Normandie",
     "insee_reg": "r28",
     "insee_dep": null
   },
   {
     "insee_geo": "r32",
     "type": "region",
-    "name": "Région Hauts-de-France",
+    "name": "Hauts-de-France",
     "insee_reg": "r32",
     "insee_dep": null
   },
   {
     "insee_geo": "r44",
     "type": "region",
-    "name": "Région Grand Est",
+    "name": "Grand Est",
     "insee_reg": "r44",
     "insee_dep": null
   },
   {
     "insee_geo": "r52",
     "type": "region",
-    "name": "Région Pays de la Loire",
+    "name": "Pays de la Loire",
     "insee_reg": "r52",
     "insee_dep": null
   },
   {
     "insee_geo": "r53",
     "type": "region",
-    "name": "Région Bretagne",
+    "name": "Bretagne",
     "insee_reg": "r53",
     "insee_dep": null
   },
   {
     "insee_geo": "r75",
     "type": "region",
-    "name": "Région Nouvelle-Aquitaine",
+    "name": "Nouvelle-Aquitaine",
     "insee_reg": "r75",
     "insee_dep": null
   },
   {
     "insee_geo": "r76",
     "type": "region",
-    "name": "Région Occitanie",
+    "name": "Occitanie",
     "insee_reg": "r76",
     "insee_dep": null
   },
   {
     "insee_geo": "r84",
     "type": "region",
-    "name": "Région Auvergne-Rhône-Alpes",
+    "name": "Auvergne-Rhône-Alpes",
     "insee_reg": "r84",
     "insee_dep": null
   },
   {
     "insee_geo": "r93",
     "type": "region",
-    "name": "Région Provence-Alpes-Côte d'Azur",
+    "name": "Provence-Alpes-Côte d'Azur",
     "insee_reg": "r93",
     "insee_dep": null
   },
   {
     "insee_geo": "r94",
     "type": "region",
-    "name": "Région Corse",
+    "name": "Corse",
     "insee_reg": "r94",
     "insee_dep": null
   }

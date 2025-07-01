@@ -73,3 +73,7 @@ path.leaflet-interactive:focus {
     padding: 0px !important;
   }
 }
+
+.maplibregl-popup-content {
+  pointer-events: none !important;
+}

@@ -70,7 +70,6 @@ export interface MapState {
   };
   departmentView: "city" | "epci";
   selectedCity: CollectiviteRecord | null;
-  updateBounds?: boolean;
 }
 
 export interface FeatureProperties {
