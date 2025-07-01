@@ -147,6 +147,7 @@ def test_get_rcpnt_conformance():
         "2.5",
         "2.6",
         "2.7",
+        "2.8",
         "2.a",
         "2.aa",
     }
@@ -155,13 +156,16 @@ def test_get_rcpnt_conformance():
     assert get_rcpnt_conformance(issues) == {"2.1", "2.2"}
 
     issues = validate_conformance("valide@maville.fr", "") + [Issues.DNS_DMARC_MISSING]
-    assert get_rcpnt_conformance(issues) == {"2.1", "2.2", "2.4", "2.5", "2.a"}
+    assert get_rcpnt_conformance(issues) == {"2.1", "2.2", "2.4", "2.5", "2.8", "2.a"}
+
+    issues = validate_conformance("valide@maville.fr", "") + [Issues.DNS_MX_OUTSIDE_EU]
+    assert get_rcpnt_conformance(issues) == {"2.1", "2.2", "2.4", "2.5", "2.6", "2.7"}
 
     issues = validate_conformance("valide@maville.fr", "") + [
         Issues.DNS_DMARC_MISSING,
         Issues.IN_PROGRESS,
     ]
-    assert get_rcpnt_conformance(issues) == {"2.1", "2.2", "2.4", "2.5", "2.a"}
+    assert get_rcpnt_conformance(issues) == {"2.1", "2.2", "2.4", "2.5", "2.8", "2.a"}
 
     issues = validate_conformance("valide@maville.fr", "https://www.maville.fr")
     assert get_rcpnt_conformance(issues) == FULL_CONFORMANCE
@@ -197,7 +201,7 @@ def test_get_rcpnt_conformance():
     assert get_rcpnt_conformance(issues) == {"1.1", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8"}
 
     issues = validate_conformance("test@maville.com", "")
-    assert get_rcpnt_conformance(issues) == {"2.1", "2.2", "2.4", "2.5", "2.6", "2.7"}
+    assert get_rcpnt_conformance(issues) == {"2.1", "2.2", "2.4", "2.5", "2.6", "2.7", "2.8"}
 
     issues = validate_conformance("test@maville.fr", "https://www.monautreville.fr")
     assert get_rcpnt_conformance(issues) == {
@@ -207,6 +211,7 @@ def test_get_rcpnt_conformance():
         "2.5",
         "2.6",
         "2.7",
+        "2.8",
         "1.1",
         "1.2",
         "1.3",
@@ -227,6 +232,7 @@ def test_get_rcpnt_conformance():
         "2.5",
         "2.6",
         "2.7",
+        "2.8",
         "1.1",
         "1.3",
         "1.4",
@@ -257,4 +263,5 @@ def test_get_rcpnt_conformance():
         "2.5",
         "2.6",
         "2.7",
+        "2.8",
     }

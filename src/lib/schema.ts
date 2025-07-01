@@ -1,5 +1,14 @@
 import { relations, sql } from "drizzle-orm";
-import { boolean, index, integer, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 
 // Organization table
 export const organizations = pgTable(
@@ -20,12 +29,14 @@ export const organizations = pgTable(
     website_url: text("website_url"),
     website_domain: text("website_domain"),
     website_tld: text("website_tld"),
+    website_metadata: jsonb("website_metadata").$type<Record<string, string>>(),
     issues: text("issues").array(),
     issues_last_checked: timestamp("issues_last_checked"),
     rcpnt: text("rcpnt").array(),
     email_official: text("email_official"),
     email_domain: text("email_domain"),
     email_tld: text("email_tld"),
+    email_metadata: jsonb("email_metadata").$type<Record<string, string>>(),
     epci_name: text("epci_name"),
     epci_siren: text("epci_siren"),
     epci_population: integer("epci_population"),

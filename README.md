@@ -121,3 +121,14 @@ Cette procédure générera :
 - Un fichier `france.json` contenant les données des régions
 - Des fichiers séparés pour chaque région, contenant l'ensemble des départements de cette région
 - Des fichiers séparés pour département, contenant l'ensemble des communes de ce département
+
+## Migrations de base de données
+
+En cas d'ajout de colonnes par exemple dans la base de données Postgres, voici la procédure à suivre :
+
+- Modifier `src/lib/schema.ts`
+- Executer `npm run db:push:local` pour modifier la table
+- Executer `npm run db:seed:local` pour importer les nouvelles données
+- Si besoin, ajouter ces colonnes aux tables `history_*` manuellement
+
+Ces étapes sont à répéter en staging puis en prod.

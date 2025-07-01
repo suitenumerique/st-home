@@ -421,7 +421,11 @@ const ConformityMap = () => {
 
   useEffect(() => {
     if (mapState.selectedAreas[mapState.currentLevel]) {
-      selectLevel(mapState.currentLevel as "country" | "region" | "department" | "epci" | "city", mapState.selectedAreas[mapState.currentLevel].insee_geo, 'quickNav');
+      selectLevel(
+        mapState.currentLevel as "country" | "region" | "department" | "epci" | "city",
+        mapState.selectedAreas[mapState.currentLevel].insee_geo,
+        "quickNav",
+      );
     }
   }, [colorsConfig]);
 

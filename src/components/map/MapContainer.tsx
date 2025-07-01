@@ -8,8 +8,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Map, { Layer, LayerProps, MapRef, Popup, ScaleControl, Source } from "react-map-gl/maplibre";
 import mapStyle from "./map_style.json";
 import MapButton from "./mapButton";
-import { MapState } from "./types";
-import { FeatureProperties } from "./types";
+import { FeatureProperties, MapState } from "./types";
 
 import { Tooltip } from "@codegouvfr/react-dsfr/Tooltip";
 
@@ -308,7 +307,7 @@ const MapContainer = ({
           <p style={{ fontSize: "14px", margin: 0 }}>Non conforme</p>
           <p style={{ fontSize: "14px", margin: 0 }}>Conforme</p>
         </div>
-        
+
         {showGradientSelector && (
           <div
             style={{
@@ -327,7 +326,7 @@ const MapContainer = ({
             }}
           >
             <h4 style={{ margin: "0 0 12px 0", fontSize: "14px" }}>Sélecteur de gradient</h4>
-            
+
             {/* Presets */}
             <div style={{ marginBottom: "12px" }}>
               <label style={{ fontSize: "12px", display: "block", marginBottom: "6px" }}>
@@ -361,20 +360,41 @@ const MapContainer = ({
                 <input
                   type="color"
                   value={customGradient[0]}
-                  style={{ width: "60px", height: "30px", border: "1px solid #ccc", borderRadius: "2px" }}
-                  onChange={(e) => setCustomGradient([e.target.value, customGradient[1], customGradient[2]])}
+                  style={{
+                    width: "60px",
+                    height: "30px",
+                    border: "1px solid #ccc",
+                    borderRadius: "2px",
+                  }}
+                  onChange={(e) =>
+                    setCustomGradient([e.target.value, customGradient[1], customGradient[2]])
+                  }
                 />
                 <input
                   type="color"
                   value={customGradient[1]}
-                  style={{ width: "60px", height: "30px", border: "1px solid #ccc", borderRadius: "2px" }}
-                  onChange={(e) => setCustomGradient([customGradient[0], e.target.value, customGradient[2]])}
+                  style={{
+                    width: "60px",
+                    height: "30px",
+                    border: "1px solid #ccc",
+                    borderRadius: "2px",
+                  }}
+                  onChange={(e) =>
+                    setCustomGradient([customGradient[0], e.target.value, customGradient[2]])
+                  }
                 />
                 <input
                   type="color"
                   value={customGradient[2]}
-                  style={{ width: "60px", height: "30px", border: "1px solid #ccc", borderRadius: "2px" }}
-                  onChange={(e) => setCustomGradient([customGradient[0], customGradient[1], e.target.value])}
+                  style={{
+                    width: "60px",
+                    height: "30px",
+                    border: "1px solid #ccc",
+                    borderRadius: "2px",
+                  }}
+                  onChange={(e) =>
+                    setCustomGradient([customGradient[0], customGradient[1], e.target.value])
+                  }
                 />
               </div>
             </div>
@@ -469,12 +489,7 @@ const MapContainer = ({
       >
         <Tooltip kind="hover" title="Plein écran">
           <MapButton onClick={handleFullscreen} aria-label="Plein écran">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
+            <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M22.4008 2.72951L15.8738 9.25654C15.6785 9.4518 15.362 9.4518 15.1667 9.25654L14.7432 8.83305C14.5479 8.63779 14.5479 8.32121 14.7432 8.12595L21.2702 1.59891H15.7057C15.4296 1.59891 15.2057 1.37505 15.2057 1.09891V0.5C15.2057 0.223857 15.4296 0 15.7057 0H23.4997C23.7759 0 23.9997 0.223858 23.9997 0.5V8.29401C23.9997 8.57015 23.7759 8.79401 23.4997 8.79401H22.9008C22.6247 8.79401 22.4008 8.57015 22.4008 8.29401V2.72951Z"
                 fill="#000091"

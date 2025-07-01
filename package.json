@@ -11,7 +11,7 @@
   "scripts": {
     "predev": "rm -rf .next && npm run only-include-used-icons && node -r @swc-node/register scripts/warm-api.ts &",
     "prebuild": "rm -rf .next && node -r @swc-node/register scripts/prebuild.ts && npm run only-include-used-icons",
-    "postinstall": "next telemetry disable",
+    "postinstall": "next telemetry disable && npm run data:geoip:download",
     "only-include-used-icons": "node node_modules/@codegouvfr/react-dsfr/bin/only-include-used-icons.js",
     "dev": "next dev",
     "build": "next build",
@@ -22,7 +22,11 @@
     "data:poetry:check": "docker-compose run --rm data_poetry poetry check",
     "data:poetry:outdated": "docker-compose run --rm data_poetry poetry show --outdated",
     "data:poetry:tree": "docker-compose run --rm data_poetry poetry show --tree",
+<<<<<<< HEAD
     "data:shell:local": "docker-compose --env-file .env.local run --rm worker bash",
+=======
+    "data:shell": "docker-compose run --rm worker bash",
+>>>>>>> 503f67aea892445548128884cf1bd2e6ce81de41
     "data:sync": "docker-compose run --rm worker python -m tasks.sync",
     "data:sync:local": "dotenv -e .env.local -- docker-compose run --rm worker python -m tasks.sync",
     "data:queue_all": "docker-compose run --rm worker sh -c 'celery -A celery_app call tasks.check_website.queue_all && celery -A celery_app call tasks.check_dns.queue_all'",
@@ -30,6 +34,7 @@
     "data:purge:staging": "docker-compose run --rm flower_staging celery -A celery_app purge -Q celery,check_website,check_dns -f",
     "data:purge:production": "docker-compose run --rm flower_production celery -A celery_app purge -Q celery,check_website,check_dns -f",
     "data:historize": "docker-compose run --rm worker python -m tasks.historize",
+    "data:geoip:download": "mkdir -p data/dumps && curl -LSs -o data/dumps/geoip-country.mmdb 'https://cdn.jsdelivr.net/npm/@ip-location-db/dbip-geo-whois-asn-country-mmdb/dbip-geo-whois-asn-country-ipv4.mmdb'",
     "flower:staging": "docker-compose run --rm --service-ports flower_staging",
     "flower:production": "docker-compose run --rm --service-ports flower_production",
     "lint": "npm run lint:front && npm run lint:data",
@@ -56,6 +61,7 @@
     "db:browse:local": "dotenv -e .env.local -- drizzle-kit studio",
     "db:browse:staging": "dotenv -e .env.staging -- drizzle-kit studio",
     "db:browse:production": "dotenv -e .env.production -- drizzle-kit studio",
+    "db:migrate:local": "dotenv -e .env.local -- node -r @swc-node/register scripts/db-migrate.ts",
     "db:push:local": "dotenv -e .env.local -- drizzle-kit push",
     "db:push:staging": "dotenv -e .env.staging -- drizzle-kit push",
     "db:seed:sample:local": "dotenv -e .env.local -- node -r @swc-node/register scripts/db-seed.ts ./data/dumps-sample",

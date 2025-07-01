@@ -52,8 +52,6 @@ services:
       - redis
     volumes:
       - ./data:/app/data
-    env_file:
-      - .env.development
     environment:
       - CELERY_BROKER_URL=${CELERY_BROKER_URL}
       - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
