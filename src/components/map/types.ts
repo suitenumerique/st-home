@@ -1,3 +1,4 @@
+import { Commune } from "@/lib/onboarding";
 import L from "leaflet";
 
 export interface StatRecord {
@@ -39,6 +40,7 @@ export interface CollectiviteRecord {
   insee_dep?: string;
   epci_siren?: string;
   rcpnt: string[];
+  siret?: string;
 }
 
 export interface ConformityStats {
@@ -69,7 +71,7 @@ export interface MapState {
     [key: string]: SelectedArea;
   };
   departmentView: "city" | "epci";
-  selectedCity: CollectiviteRecord | null;
+  selectedCity: Commune | null;
 }
 
 export interface FeatureProperties {

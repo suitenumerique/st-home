@@ -10,8 +10,6 @@ import mapStyle from "./map_style.json";
 import MapButton from "./mapButton";
 import { FeatureProperties, MapState } from "./types";
 
-import Tooltip from "./Tooltip";
-
 const MapContainer = ({
   handleAreaClick,
   handleFullscreen,
@@ -147,7 +145,6 @@ const MapContainer = ({
   };
 
   const currentGeoJSON = useMemo(() => {
-    console.log("currentGeoJSON", mapState.selectedAreas[mapState.currentLevel]);
     if (!mapState.selectedAreas[mapState.currentLevel]) return null;
     let displayedGeoJSON: GeoJSON.FeatureCollection | GeoJSON.Feature[] | null = null;
     if (mapState.currentLevel === "department" && mapState.departmentView === "epci") {
@@ -243,7 +240,8 @@ const MapContainer = ({
               >
                 {popupInfo.properties.NAME}
               </p>
-              {mapState.currentLevel === "department" && mapState.departmentView === "city" && (
+              {((mapState.currentLevel === "department" && mapState.departmentView === "city") ||
+                mapState.currentLevel === "epci") && (
                 <p style={{ fontSize: "0.8rem", color: "#64748B", marginBottom: "0" }}>
                   Cliquez pour afficher les détails
                 </p>
@@ -499,7 +497,12 @@ const MapContainer = ({
           gap: "8px",
         }}
       >
-        <MapButton onClick={handleFullscreen} aria-label="Plein écran" tooltip="Plein écran" tooltipPosition="left">
+        <MapButton
+          onClick={handleFullscreen}
+          aria-label="Plein écran"
+          tooltip="Plein écran"
+          tooltipPosition="left"
+        >
           <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M22.4008 2.72951L15.8738 9.25654C15.6785 9.4518 15.362 9.4518 15.1667 9.25654L14.7432 8.83305C14.5479 8.63779 14.5479 8.32121 14.7432 8.12595L21.2702 1.59891H15.7057C15.4296 1.59891 15.2057 1.37505 15.2057 1.09891V0.5C15.2057 0.223857 15.4296 0 15.7057 0H23.4997C23.7759 0 23.9997 0.223858 23.9997 0.5V8.29401C23.9997 8.57015 23.7759 8.79401 23.4997 8.79401H22.9008C22.6247 8.79401 22.4008 8.57015 22.4008 8.29401V2.72951Z"

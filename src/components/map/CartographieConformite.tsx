@@ -1,3 +1,4 @@
+import { type Commune } from "@/lib/onboarding";
 import * as turf from "@turf/turf";
 import * as d3 from "d3";
 import { MapLayerMouseEvent } from "maplibre-gl";
@@ -387,7 +388,25 @@ const ConformityMap = () => {
 
     if (level === "city") {
       const selectedCity = newSelectedAreas["department"].cities?.find((c) => c.insee_geo === code);
-      newMapState.selectedCity = selectedCity;
+      console.log(selectedCity);
+      if (selectedCity && selectedCity.siret) {
+        try {
+          const response = await fetch(`/api/communes/${selectedCity.siret}`);
+          if (response.ok) {
+            const commune = await response.json();
+            const communeData: Commune = JSON.parse(JSON.stringify(commune));
+            newMapState.selectedCity = communeData;
+          } else {
+            console.warn(`Failed to fetch organization data for SIRET ${selectedCity.siret}`);
+            newMapState.selectedCity = null;
+          }
+        } catch (error) {
+          console.error("Error fetching organization data:", error);
+          newMapState.selectedCity = null;
+        }
+      } else {
+        newMapState.selectedCity = null;
+      }
 
       if (source === "quickNav") {
         newMapState.departmentView = "city";
@@ -412,6 +431,10 @@ const ConformityMap = () => {
 
   const handleApplyGradient = (colors: string[]) => {
     setColorsConfig({ ...colorsConfig, range: colors });
+  };
+
+  const setDepartmentView = (view: "epci" | "city") => {
+    setMapState({ ...mapState, departmentView: view });
   };
 
   // RENDERING
@@ -443,7 +466,12 @@ const ConformityMap = () => {
   return (
     <div ref={containerRef} style={{ display: "flex", width: "100%", height: "100%" }}>
       <SidePanel>
-        <SidePanelContent getColor={getColor} mapState={mapState} selectLevel={selectLevel} />
+        <SidePanelContent
+          getColor={getColor}
+          mapState={mapState}
+          selectLevel={selectLevel}
+          setDepartmentView={setDepartmentView}
+        />
       </SidePanel>
       <MapContainer
         handleAreaClick={handleAreaClick}

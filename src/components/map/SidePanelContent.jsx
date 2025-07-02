@@ -5,7 +5,7 @@ import CommuneSearch from "../CommuneSearch";
 import CommuneInfo from "../onboarding/CommuneInfo";
 import Breadcrumb from "./Breadcrumb";
 
-const SidePanelContent = ({ getColor, mapState, selectLevel }) => {
+const SidePanelContent = ({ getColor, mapState, selectLevel, setDepartmentView }) => {
   const formatNumber = (value) => {
     return new Intl.NumberFormat("fr-FR").format(value);
   };
@@ -156,6 +156,37 @@ const SidePanelContent = ({ getColor, mapState, selectLevel }) => {
           )}
         </div>
       )}
+      {
+        mapState.currentLevel === "department" && !mapState.selectedCity && (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "1.5rem" }}>
+            <span className={fr.cx("fr-text--sm fr-mb-0")}>Sélection :</span>
+            {
+              ['epci', 'city'].map((type) => (
+                <p style={{
+                  display: "inline-flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  width: "fit-content",
+                  fontSize: "0.875rem",
+                  lineHeight: "1.5rem",
+                  minHeight: "2rem",
+                  padding: "0.25rem 0.75rem",
+                  borderRadius: "1rem",
+                  minWidth: "2.25rem",
+                  justifyContent: "center",
+                  color: "var(--text-title-blue-france)",
+                  marginBottom: "0",
+                  backgroundColor: mapState.departmentView === type ? "var(--background-action-low-blue-france-active)" : "var(--background-action-low-blue-france)",
+                }}
+                onClick={() => setDepartmentView(type)}
+              >
+                  {type === 'epci' ? 'Intercommunalité' : 'Commune'}
+                </p>
+              ))
+            }
+          </div>
+        )
+      }
       {!mapState.selectedCity && mapState.selectedAreas[mapState.currentLevel] && (
         <div>
           {levelStatsDisplay.map(([label, percentage, scoreKey, n_cities], index) => (
@@ -199,6 +230,7 @@ SidePanelContent.propTypes = {
   mapState: PropTypes.object.isRequired,
   selectLevel: PropTypes.func.isRequired,
   getColor: PropTypes.func.isRequired,
+  setDepartmentView: PropTypes.func.isRequired,
 };
 
 export default SidePanelContent;
