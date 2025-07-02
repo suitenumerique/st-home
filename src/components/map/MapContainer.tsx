@@ -11,7 +11,7 @@ import MapButton from "./mapButton";
 import { MapState } from "./types";
 import { FeatureProperties } from "./types";
 
-import { Tooltip } from "@codegouvfr/react-dsfr/Tooltip";
+import Tooltip from "./Tooltip";
 
 const MapContainer = ({
   handleAreaClick,
@@ -424,30 +424,42 @@ const MapContainer = ({
           onClick={() => selectLevel("country", "00")}
           expandable={true}
           arrowPosition="left"
+          tooltip="France hexagonale"
+          tooltipPosition="left"
           expandedButtons={[
             {
               label: "Guadeloupe",
               onClick: () => selectLevel("region", "r01"),
+              tooltip: "Guadeloupe",
+              tooltipPosition: "bottom",
               content: <img src="/icons/guadeloupe.svg" alt="Guadeloupe" />,
             },
             {
               label: "Martinique",
               onClick: () => selectLevel("region", "r02"),
+              tooltip: "Martinique",
+              tooltipPosition: "bottom",
               content: <img src="/icons/martinique.svg" alt="Martinique" />,
             },
             {
               label: "Guyane",
               onClick: () => selectLevel("region", "r03"),
+              tooltip: "Guyane",
+              tooltipPosition: "bottom",
               content: <img src="/icons/guyane.svg" alt="Guyane" />,
             },
             {
               label: "La Réunion",
               onClick: () => selectLevel("region", "r04"),
+              tooltip: "La Réunion",
+              tooltipPosition: "bottom",
               content: <img src="/icons/reunion.svg" alt="La Réunion" />,
             },
             {
               label: "Mayotte",
               onClick: () => selectLevel("region", "r06"),
+              tooltip: "Mayotte",
+              tooltipPosition: "bottom",
               content: <img src="/icons/mayotte.svg" alt="Mayotte" />,
             },
           ]}
@@ -487,12 +499,15 @@ const MapContainer = ({
           </MapButton>
         </Tooltip>
 
-        <div>
+        <div style={{ display: "flex", flexDirection: "column" }}>
           <MapButton
             onClick={handleZoomIn}
             customStyle={{
               borderRadius: "4px 4px 0 0",
+              borderBottom: "none",
             }}
+            tooltip="Zoomer"
+            tooltipPosition="left"
             aria-label="Zoomer"
           >
             <span style={{ backgroundColor: "none" }} className={fr.cx("fr-icon-add-line")}></span>
@@ -502,6 +517,8 @@ const MapContainer = ({
             customStyle={{
               borderRadius: "0 0 4px 4px",
             }}
+            tooltip="Dézoomer"
+            tooltipPosition="left"
             aria-label="Dézoomer"
           >
             <span className={fr.cx("fr-icon-subtract-line")}></span>
