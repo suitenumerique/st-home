@@ -162,6 +162,8 @@ MapButton.propTypes = {
     onClick: PropTypes.func,
     icon: PropTypes.node,
     content: PropTypes.node,
+    tooltip: PropTypes.string,
+    tooltipPosition: PropTypes.oneOf(['left', 'right', 'top', 'bottom']),
     title: PropTypes.string,
     style: PropTypes.object
   })),

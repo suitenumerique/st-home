@@ -11,8 +11,6 @@ import MapButton from "./mapButton";
 import { MapState } from "./types";
 import { FeatureProperties } from "./types";
 
-import Tooltip from "./Tooltip";
-
 const MapContainer = ({
   handleAreaClick,
   handleFullscreen,
@@ -148,7 +146,6 @@ const MapContainer = ({
   };
 
   const currentGeoJSON = useMemo(() => {
-    console.log("currentGeoJSON", mapState.selectedAreas[mapState.currentLevel]);
     if (!mapState.selectedAreas[mapState.currentLevel]) return null;
     let displayedGeoJSON: GeoJSON.FeatureCollection | GeoJSON.Feature[] | null = null;
     if (mapState.currentLevel === "department" && mapState.departmentView === "epci") {
@@ -244,7 +241,8 @@ const MapContainer = ({
               >
                 {popupInfo.properties.NAME}
               </p>
-              {mapState.currentLevel === "department" && mapState.departmentView === "city" && (
+              {((mapState.currentLevel === "department" && mapState.departmentView === "city") ||
+                mapState.currentLevel === "epci") && (
                 <p style={{ fontSize: "0.8rem", color: "#64748B", marginBottom: "0" }}>
                   Cliquez pour afficher les détails
                 </p>
