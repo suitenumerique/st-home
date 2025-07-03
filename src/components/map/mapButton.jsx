@@ -1,9 +1,8 @@
-import { fr } from "@codegouvfr/react-dsfr";
 import PropTypes from 'prop-types';
 import { useState } from 'react';
-import Tooltip from "./Tooltip";
+import { Tooltip } from "@codegouvfr/react-dsfr/Tooltip";
 
-const MapButton = ({ onClick, children, customStyle, expandable, expandedButtons, arrowPosition = 'right', tooltip, tooltipPosition }) => {
+const MapButton = ({ onClick, children, customStyle, expandable, expandedButtons, arrowPosition = 'right', tooltip }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showButtons, setShowButtons] = useState(false);
 
@@ -76,7 +75,7 @@ const MapButton = ({ onClick, children, customStyle, expandable, expandedButtons
     return (
       <div style={containerStyle}>
         {expandedButtons.map((button, index) => (
-          <Tooltip content={button.tooltip} position={button.tooltipPosition}>
+          <Tooltip kind="hover" title={button.tooltip}>
             <button
               key={index}
               onClick={() => handleButtonClick(button.onClick)}
@@ -111,32 +110,30 @@ const MapButton = ({ onClick, children, customStyle, expandable, expandedButtons
     <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       {renderArrow()}
       {renderExpandedButtons()}
-      {
-        <Tooltip content={tooltip} position={tooltipPosition}>
-          <button 
-            onClick={onClick}
-            style={{
-              background: '#ffffff',
-              color: 'var(--text-title-blue-france)',
-              border: '1px solid #C6C6C6',
-              borderRadius: expandable ? '0 4px 4px 0' : '4px',
-              cursor: 'pointer',
-              padding: '4px',
-              margin: '0',
-              width: '40px',
-              height: '40px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 6px 18px 0 rgba(0,0,145,0.05)',
-              position: 'relative',
-              ...customStyle
-            }}
-          >
-            {children}
-          </button>
-        </Tooltip>
-      }
+      <Tooltip kind="hover" title={tooltip}>
+        <button
+          onClick={onClick}
+          style={{
+            background: '#ffffff',
+            color: 'var(--text-title-blue-france)',
+            border: '1px solid #C6C6C6',
+            borderRadius: expandable ? '0 4px 4px 0' : '4px',
+            cursor: 'pointer',
+            padding: '4px',
+            margin: '0',
+            width: '40px',
+            height: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 6px 18px 0 rgba(0,0,145,0.05)',
+            position: 'relative',
+            ...customStyle
+          }}
+        >
+          {children}
+        </button>
+      </Tooltip>
 
       <style jsx>{`
         @keyframes fadeIn {
@@ -163,13 +160,11 @@ MapButton.propTypes = {
     icon: PropTypes.node,
     content: PropTypes.node,
     tooltip: PropTypes.string,
-    tooltipPosition: PropTypes.oneOf(['left', 'right', 'top', 'bottom']),
     title: PropTypes.string,
     style: PropTypes.object
   })),
   arrowPosition: PropTypes.oneOf(['left', 'right', 'top', 'bottom']),
   tooltip: PropTypes.string,
-  tooltipPosition: PropTypes.oneOf(['left', 'right', 'top', 'bottom'])
 };
 
 export default MapButton;

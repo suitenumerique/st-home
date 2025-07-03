@@ -1,3 +1,5 @@
+"use client";
+
 import { fr } from "@codegouvfr/react-dsfr";
 import { bbox } from "@turf/bbox";
 import * as turf from "@turf/turf";
@@ -14,25 +16,23 @@ import { FeatureProperties } from "./types";
 const MapContainer = ({
   handleAreaClick,
   handleFullscreen,
-  handleApplyGradient,
   mapState,
   selectLevel,
-  colorsConfig,
+  selectedGradient,
+  setSelectedGradient,
+  getColor,
 }: {
   handleAreaClick: (event: MapLayerMouseEvent) => void;
   handleFullscreen: () => void;
-  handleApplyGradient: (colors: string[]) => void;
   mapState: MapState;
   selectLevel: (
     level: "country" | "region" | "department" | "epci" | "city",
     code: string,
     source?: string,
   ) => void;
-  colorsConfig: {
-    domain: number[];
-    range: string[];
-    defaultColor: string;
-  };
+  selectedGradient: string[];
+  setSelectedGradient: (gradient: string[]) => void;
+  getColor: (score: number) => string;
 }) => {
   const mapRef = useRef<MapRef>(null);
   const [popupInfo, setPopupInfo] = useState<{
@@ -42,7 +42,7 @@ const MapContainer = ({
   } | null>(null);
   const [hoveredFeature, setHoveredFeature] = useState<{ id: string; score: number } | null>(null);
   const [showGradientSelector, setShowGradientSelector] = useState(false);
-  const [customGradient, setCustomGradient] = useState<string[]>(colorsConfig.range);
+  const [customGradient, setCustomGradient] = useState<string[]>(selectedGradient);
 
   const gradientPresets = [
     {
@@ -159,6 +159,12 @@ const MapContainer = ({
     } else {
       displayedGeoJSON = mapState.selectedAreas[mapState.currentLevel].geoJSON || null;
     }
+    if (displayedGeoJSON) {
+      // @ts-expect-error TODO: fix this
+      displayedGeoJSON.features.forEach((feature) => {
+        feature.properties.color = getColor(feature.properties.SCORE);
+      });
+    }
     return displayedGeoJSON;
   }, [mapState]);
 
@@ -190,7 +196,7 @@ const MapContainer = ({
   }, [mapState.currentLevel, currentGeoJSON]);
 
   return (
-    <div style={{ flex: 1, width: 0, height: "100%", position: "relative" }}>
+    <div style={{ flex: 1, width: 0, height: "100%", position: "relative", overflow: "auto" }}>
       <Map
         ref={mapRef}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -208,6 +214,7 @@ const MapContainer = ({
         onMouseLeave={onMouseLeave}
         onMouseMove={onMouseMove}
         cursor="pointer"
+        attributionControl={false}
       >
         <ScaleControl position="bottom-left" />
         <Source
@@ -269,7 +276,7 @@ const MapContainer = ({
             width: "300px",
             height: "13px",
             borderRadius: "4px",
-            background: `linear-gradient(90deg, ${colorsConfig.range[0]} 0%, ${colorsConfig.range[1]} 50%, ${colorsConfig.range[2]} 100%)`,
+            background: `linear-gradient(90deg, ${selectedGradient[0]} 0%, ${selectedGradient[1]} 50%, ${selectedGradient[2]} 100%)`,
             padding: "0 6px",
           }}
           onClick={handleGradientClick}
@@ -344,7 +351,7 @@ const MapContainer = ({
                       border: "2px solid #000091",
                     }}
                     title={`Préréglage ${index + 1}`}
-                    onClick={() => handleApplyGradient(preset.colors)}
+                    onClick={() => setSelectedGradient(preset.colors)}
                   />
                 ))}
               </div>
@@ -392,7 +399,7 @@ const MapContainer = ({
                 Fermer
               </button>
               <button
-                onClick={() => handleApplyGradient(customGradient)}
+                onClick={() => setSelectedGradient(customGradient)}
                 style={{
                   padding: "4px 8px",
                   fontSize: "12px",
@@ -423,41 +430,35 @@ const MapContainer = ({
           expandable={true}
           arrowPosition="left"
           tooltip="France hexagonale"
-          tooltipPosition="left"
           expandedButtons={[
             {
               label: "Guadeloupe",
               onClick: () => selectLevel("region", "r01"),
               tooltip: "Guadeloupe",
-              tooltipPosition: "bottom",
               content: <img src="/icons/guadeloupe.svg" alt="Guadeloupe" />,
             },
             {
               label: "Martinique",
               onClick: () => selectLevel("region", "r02"),
               tooltip: "Martinique",
-              tooltipPosition: "bottom",
               content: <img src="/icons/martinique.svg" alt="Martinique" />,
             },
             {
               label: "Guyane",
               onClick: () => selectLevel("region", "r03"),
               tooltip: "Guyane",
-              tooltipPosition: "bottom",
               content: <img src="/icons/guyane.svg" alt="Guyane" />,
             },
             {
               label: "La Réunion",
               onClick: () => selectLevel("region", "r04"),
               tooltip: "La Réunion",
-              tooltipPosition: "bottom",
               content: <img src="/icons/reunion.svg" alt="La Réunion" />,
             },
             {
               label: "Mayotte",
               onClick: () => selectLevel("region", "r06"),
               tooltip: "Mayotte",
-              tooltipPosition: "bottom",
               content: <img src="/icons/mayotte.svg" alt="Mayotte" />,
             },
           ]}
@@ -469,7 +470,7 @@ const MapContainer = ({
       <div
         style={{
           position: "absolute",
-          bottom: 60,
+          bottom: 20,
           right: 20,
           zIndex: 10,
           display: "flex",
@@ -477,25 +478,18 @@ const MapContainer = ({
           gap: "8px",
         }}
       >
-        <Tooltip kind="hover" title="Plein écran">
-          <MapButton onClick={handleFullscreen} aria-label="Plein écran">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M22.4008 2.72951L15.8738 9.25654C15.6785 9.4518 15.362 9.4518 15.1667 9.25654L14.7432 8.83305C14.5479 8.63779 14.5479 8.32121 14.7432 8.12595L21.2702 1.59891H15.7057C15.4296 1.59891 15.2057 1.37505 15.2057 1.09891V0.5C15.2057 0.223857 15.4296 0 15.7057 0H23.4997C23.7759 0 23.9997 0.223858 23.9997 0.5V8.29401C23.9997 8.57015 23.7759 8.79401 23.4997 8.79401H22.9008C22.6247 8.79401 22.4008 8.57015 22.4008 8.29401V2.72951Z"
-                fill="#000091"
-              />
-              <path
-                d="M1.59793 21.2712L8.12497 14.7442C8.32023 14.5489 8.63682 14.5489 8.83208 14.7442L9.25556 15.1677C9.45082 15.3629 9.45082 15.6795 9.25556 15.8748L2.72852 22.4018H8.29303C8.56917 22.4018 8.79303 22.6256 8.79303 22.9018V23.5007C8.79303 23.7768 8.56917 24.0007 8.29303 24.0007H0.499024C0.222881 24.0007 -0.000976562 23.7768 -0.000976562 23.5007V15.7067C-0.000976562 15.4306 0.222881 15.2067 0.499023 15.2067H1.09793C1.37408 15.2067 1.59793 15.4306 1.59793 15.7067V21.2712Z"
-                fill="#000091"
-              />
-            </svg>
-          </MapButton>
-        </Tooltip>
+        <MapButton onClick={handleFullscreen} aria-label="Plein écran" tooltip="Plein écran">
+          <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M22.4008 2.72951L15.8738 9.25654C15.6785 9.4518 15.362 9.4518 15.1667 9.25654L14.7432 8.83305C14.5479 8.63779 14.5479 8.32121 14.7432 8.12595L21.2702 1.59891H15.7057C15.4296 1.59891 15.2057 1.37505 15.2057 1.09891V0.5C15.2057 0.223857 15.4296 0 15.7057 0H23.4997C23.7759 0 23.9997 0.223858 23.9997 0.5V8.29401C23.9997 8.57015 23.7759 8.79401 23.4997 8.79401H22.9008C22.6247 8.79401 22.4008 8.57015 22.4008 8.29401V2.72951Z"
+              fill="#000091"
+            />
+            <path
+              d="M1.59793 21.2712L8.12497 14.7442C8.32023 14.5489 8.63682 14.5489 8.83208 14.7442L9.25556 15.1677C9.45082 15.3629 9.45082 15.6795 9.25556 15.8748L2.72852 22.4018H8.29303C8.56917 22.4018 8.79303 22.6256 8.79303 22.9018V23.5007C8.79303 23.7768 8.56917 24.0007 8.29303 24.0007H0.499024C0.222881 24.0007 -0.000976562 23.7768 -0.000976562 23.5007V15.7067C-0.000976562 15.4306 0.222881 15.2067 0.499023 15.2067H1.09793C1.37408 15.2067 1.59793 15.4306 1.59793 15.7067V21.2712Z"
+              fill="#000091"
+            />
+          </svg>
+        </MapButton>
 
         <div style={{ display: "flex", flexDirection: "column" }}>
           <MapButton
@@ -505,7 +499,6 @@ const MapContainer = ({
               borderBottom: "none",
             }}
             tooltip="Zoomer"
-            tooltipPosition="left"
             aria-label="Zoomer"
           >
             <span style={{ backgroundColor: "none" }} className={fr.cx("fr-icon-add-line")}></span>
@@ -516,7 +509,6 @@ const MapContainer = ({
               borderRadius: "0 0 4px 4px",
             }}
             tooltip="Dézoomer"
-            tooltipPosition="left"
             aria-label="Dézoomer"
           >
             <span className={fr.cx("fr-icon-subtract-line")}></span>
@@ -532,8 +524,9 @@ MapContainer.propTypes = {
   handleFullscreen: PropTypes.func.isRequired,
   mapState: PropTypes.object.isRequired,
   selectLevel: PropTypes.func.isRequired,
-  handleApplyGradient: PropTypes.func.isRequired,
-  colorsConfig: PropTypes.object.isRequired,
+  selectedGradient: PropTypes.array.isRequired,
+  setSelectedGradient: PropTypes.func.isRequired,
+  getColor: PropTypes.func.isRequired,
 };
 
 export default MapContainer;

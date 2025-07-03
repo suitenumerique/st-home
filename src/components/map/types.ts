@@ -72,6 +72,7 @@ export interface MapState {
   };
   departmentView: "city" | "epci";
   selectedCity: Commune | null;
+  selectedRef: string | null;
 }
 
 export interface FeatureProperties {
