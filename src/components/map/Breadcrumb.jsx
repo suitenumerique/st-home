@@ -8,7 +8,7 @@ const Breadcrumb = ({ segments, currentPageLabel }) => {
           <>
             {segments.map(({ label, onClick }, i) => (
               <li key={i}>
-                <span className={fr.cx("fr-breadcrumb__link")} onClick={onClick}>
+                <span style={{ cursor: "pointer" }} className={fr.cx("fr-breadcrumb__link")} onClick={onClick}>
                   {label}
                 </span>
               </li>
