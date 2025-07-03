@@ -1,3 +1,5 @@
+"use client";
+
 import { type Commune } from "@/lib/onboarding";
 import * as turf from "@turf/turf";
 import * as d3 from "d3";
@@ -25,38 +27,138 @@ const ConformityMap = () => {
     selectedAreas: {},
     departmentView: "epci",
     selectedCity: null,
+    selectedRef: null,
   });
-  const [displayedRef, setDisplayedRef] = useState<string | null>(null);
+  const [selectedGradient, setSelectedGradient] = useState<string[]>([
+    "#FF6868",
+    "#FFC579",
+    "#009081",
+  ]);
 
   const rcpntRefs = [
-    "1.1",
-    "1.2",
-    "1.3",
-    "1.4",
-    "1.5",
-    "1.6",
-    "1.7",
-    "1.8",
-    "2.1",
-    "2.2",
-    "2.3",
-    "2.4",
-    "2.5",
-    "2.6",
-    "2.7",
-    "1.a",
-    "1.aa",
-    "2.a",
-    "2.aa",
-    "a",
-    "aa",
+    {
+      key: "a",
+      value: "Tous les essentiels",
+      mandatory: true,
+      show_in_selector: false,
+    },
+    {
+      key: "1.a",
+      value: "Essentiels site internet",
+      mandatory: true,
+      show_in_selector: false,
+    },
+    {
+      key: "1.1",
+      value: "Déclaré sur Service-Public.fr",
+      mandatory: true,
+      show_in_selector: true,
+    },
+    {
+      key: "1.2",
+      value: "Usage d’une extension souveraine",
+      mandatory: true,
+      show_in_selector: true,
+    },
+    {
+      key: "1.3",
+      value: "Site joignable",
+      mandatory: true,
+      show_in_selector: true,
+    },
+    {
+      key: "1.4",
+      value: "Usage du protocole HTTPS",
+      mandatory: true,
+      show_in_selector: true,
+    },
+    {
+      key: "1.5",
+      value: "Certificat SSL valide",
+      mandatory: true,
+      show_in_selector: true,
+    },
+    {
+      key: "1.6",
+      value: "Déclaration et redirection identiques",
+      mandatory: true,
+      show_in_selector: true,
+    },
+    {
+      key: "1.7",
+      value: "Redirection fonctionnelle",
+      mandatory: false,
+      show_in_selector: true,
+    },
+    {
+      key: "1.8",
+      value: "Déclaré en HTTPS sur Service-Public.fr ",
+      mandatory: false,
+      show_in_selector: true,
+    },
+    {
+      key: "2.a",
+      value: "Essentiels messagerie",
+      mandatory: true,
+      show_in_selector: false,
+    },
+    {
+      key: "2.1",
+      value: "Déclaré sur Service-Public.fr",
+      mandatory: true,
+      show_in_selector: true,
+    },
+    {
+      key: "2.2",
+      value: "Pas de nom de domaine générique",
+      mandatory: true,
+      show_in_selector: true,
+    },
+    {
+      key: "2.3",
+      value: "Domaine messagerie et site identiques",
+      mandatory: true,
+      show_in_selector: true,
+    },
+    {
+      key: "2.4",
+      value: "Enregistrement MX configuré",
+      mandatory: true,
+      show_in_selector: true,
+    },
+    {
+      key: "2.5",
+      value: "Enregistrement SPF configuré",
+      mandatory: false,
+      show_in_selector: true,
+    },
+    {
+      key: "2.6",
+      value: "Enregistrement DMARC configuré",
+      mandatory: false,
+      show_in_selector: true,
+    },
+    {
+      key: "2.7",
+      value: "Utilisation d'une politique de quarantaine par l'enregistrement DMARC",
+      mandatory: false,
+      show_in_selector: true,
+    },
+    {
+      key: "2.8",
+      value: "Serveur de messagerie situé dans l'Union Européenne",
+      mandatory: true,
+      show_in_selector: true,
+    },
   ];
 
-  const [colorsConfig, setColorsConfig] = useState({
-    domain: displayedRef ? [0, 1] : [0, 1, 2],
-    range: displayedRef ? ["#D3ADFE", "#009081"] : ["#D3ADFE", "#669BBD", "#009081"],
-    defaultColor: "#e2e8f0",
-  });
+  const colorsConfig = useMemo(() => {
+    return {
+      domain: mapState.selectedRef ? [0, 1] : [0, 1, 2],
+      range: mapState.selectedRef ? [selectedGradient[0], selectedGradient[2]] : selectedGradient,
+      defaultColor: "#e2e8f0",
+    };
+  }, [mapState.selectedRef, selectedGradient]);
 
   const colorScale = d3.scaleLinear(colorsConfig.domain, colorsConfig.range);
 
@@ -82,7 +184,7 @@ const ConformityMap = () => {
       epci: "epci",
     };
     const response = await fetch(
-      `/api/rcpnt/stats?scope=${scope[level]}&refs=${rcpntRefs.join(",")}`,
+      `/api/rcpnt/stats?scope=${scope[level]}&refs=${rcpntRefs.map((ref) => ref.key).join(",")}`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -100,18 +202,19 @@ const ConformityMap = () => {
     const countryStats = {
       "00": rcpntRefs.map((ref) => {
         return {
-          ref: ref,
+          ref: ref.key,
           valid: Object.values(regionStats).reduce(
-            (acc, stat) => acc + (stat.find((s) => s.ref === ref)?.valid || 0),
+            (acc, stat) => acc + (stat.find((s) => s.ref === ref.key)?.valid || 0),
             0,
           ),
           total: Object.values(regionStats).reduce(
-            (acc, stat) => acc + (stat.find((s) => s.ref === ref)?.total || 0),
+            (acc, stat) => acc + (stat.find((s) => s.ref === ref.key)?.total || 0),
             0,
           ),
         };
       }),
     };
+    console.log(countryStats);
     setStats({
       region: regionStats,
       department: departmentStats,
@@ -193,9 +296,9 @@ const ConformityMap = () => {
   ) => {
     if (level === "city") {
       const cityRecord = record as CollectiviteRecord;
-      if (displayedRef) {
+      if (mapState.selectedRef) {
         return {
-          score: cityRecord.rcpnt.indexOf(displayedRef) > -1 ? 1 : 0,
+          score: cityRecord.rcpnt.indexOf(mapState.selectedRef) > -1 ? 1 : 0,
         };
       } else {
         return {
@@ -205,9 +308,9 @@ const ConformityMap = () => {
         };
       }
     } else {
-      if (displayedRef) {
+      if (mapState.selectedRef) {
         const stat = stats[level][record.insee_geo.replace("r", "")].find(
-          (s) => s.ref === displayedRef,
+          (s) => s.ref === mapState.selectedRef,
         ) || { valid: 0, total: 0 };
         return {
           n_cities: stat.total,
@@ -264,7 +367,6 @@ const ConformityMap = () => {
           INSEE_DEP: record.insee_dep,
           EPCI_SIREN: record.epci_siren,
           SCORE: score,
-          color: getColor(score),
         },
       };
     });
@@ -296,7 +398,6 @@ const ConformityMap = () => {
         INSEE_REG: record ? record.insee_reg : "EPCI inconnue",
         INSEE_DEP: record ? record.insee_dep : "EPCI inconnue",
         SCORE: score,
-        color: getColor(score),
       };
       return merged;
     });
@@ -388,7 +489,6 @@ const ConformityMap = () => {
 
     if (level === "city") {
       const selectedCity = newSelectedAreas["department"].cities?.find((c) => c.insee_geo === code);
-      console.log(selectedCity);
       if (selectedCity && selectedCity.siret) {
         try {
           const response = await fetch(`/api/communes/${selectedCity.siret}`);
@@ -429,14 +529,6 @@ const ConformityMap = () => {
     }
   };
 
-  const handleApplyGradient = (colors: string[]) => {
-    setColorsConfig({ ...colorsConfig, range: colors });
-  };
-
-  const setDepartmentView = (view: "epci" | "city") => {
-    setMapState({ ...mapState, departmentView: view });
-  };
-
   // RENDERING
   const getColor = (score: number | null | undefined): string => {
     return score === null || score === undefined ? colorsConfig.defaultColor : colorScale(score);
@@ -459,7 +551,6 @@ const ConformityMap = () => {
   }, [stats]);
 
   useEffect(() => {
-    setDisplayedRef(null);
     loadAllStats();
   }, []);
 
@@ -467,10 +558,11 @@ const ConformityMap = () => {
     <div ref={containerRef} style={{ display: "flex", width: "100%", height: "100%" }}>
       <SidePanel>
         <SidePanelContent
+          rcpntRefs={rcpntRefs}
           getColor={getColor}
           mapState={mapState}
           selectLevel={selectLevel}
-          setDepartmentView={setDepartmentView}
+          setMapState={setMapState}
         />
       </SidePanel>
       <MapContainer
@@ -478,8 +570,9 @@ const ConformityMap = () => {
         handleFullscreen={handleFullscreen}
         mapState={mapState}
         selectLevel={selectLevel}
-        colorsConfig={colorsConfig}
-        handleApplyGradient={handleApplyGradient}
+        selectedGradient={selectedGradient}
+        setSelectedGradient={setSelectedGradient}
+        getColor={getColor}
       />
     </div>
   );

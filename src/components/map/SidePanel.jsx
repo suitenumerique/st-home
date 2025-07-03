@@ -12,7 +12,6 @@ const SidePanel = ({ children }) => {
         minWidth: isPanelOpen ? 460 : 0,
         maxWidth: isPanelOpen ? 460 : 0,
         transition: "width 0.3s, min-width 0.3s, max-width 0.3s",
-        overflow: "hidden",
         background: "#fff",
         borderRight: "1px solid #e5e7eb",
         boxShadow: isPanelOpen ? "2px 0 8px rgba(0,0,0,0.04)" : "none",
@@ -21,6 +20,7 @@ const SidePanel = ({ children }) => {
         height: "100%",
         display: "flex",
         flexDirection: "column",
+        overflow: "visible",
       }}
     >
       {/* <button
@@ -39,7 +39,13 @@ const SidePanel = ({ children }) => {
       >
         ×
       </button> */}
-      <div style={{ padding: "1.5rem", flex: 1, height: "100%", overflowY: "auto" }}>
+      <div style={{ 
+        padding: "1.5rem", 
+        flex: 1, 
+        height: "100%", 
+        overflowY: "auto",
+        overflowX: "hidden"
+      }}>
         {children}
       </div>
     </div>
