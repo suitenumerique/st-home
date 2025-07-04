@@ -154,11 +154,11 @@ const ConformityMap = () => {
 
   const colorsConfig = useMemo(() => {
     return {
-      domain: mapState.selectedRef ? [0, 1] : [0, 1, 2],
-      range: mapState.selectedRef ? [selectedGradient[0], selectedGradient[2]] : selectedGradient,
+      domain: [0, 1, 2],
+      range: selectedGradient,
       defaultColor: "#e2e8f0",
     };
-  }, [mapState.selectedRef, selectedGradient]);
+  }, [selectedGradient]);
 
   const colorScale = d3.scaleLinear(colorsConfig.domain, colorsConfig.range);
 
@@ -298,7 +298,7 @@ const ConformityMap = () => {
       const cityRecord = record as CollectiviteRecord;
       if (mapState.selectedRef) {
         return {
-          score: cityRecord.rcpnt.indexOf(mapState.selectedRef) > -1 ? 1 : 0,
+          score: cityRecord.rcpnt.indexOf(mapState.selectedRef) > -1 ? 2 : 0,
         };
       } else {
         return {
@@ -314,10 +314,10 @@ const ConformityMap = () => {
         ) || { valid: 0, total: 0 };
         return {
           n_cities: stat.total,
-          score: stat.valid / stat.total,
+          score: (stat.valid / stat.total) * 2,
           details: {
             "0": stat.total - stat.valid,
-            "1": stat.valid,
+            "2": stat.valid,
           },
         };
       }
@@ -428,6 +428,7 @@ const ConformityMap = () => {
     level: "country" | "region" | "department" | "epci" | "city",
     code: string,
     source = "areaClick",
+    resetSelectedCity = true,
   ) => {
     console.log("selectLevel", level, code, source);
     const allLevels = ["epci", "department", "region", "country"];
@@ -448,8 +449,14 @@ const ConformityMap = () => {
       newSelectedAreas = { ...mapState.selectedAreas };
     }
 
+    if (level !== "city") {
+      newSelectedAreas[level] = await computeSelectedArea(level, code, true);
+    }
+
     if (source === "quickNav") {
+      console.log(parentLevels);
       for (const parentLevel of parentLevels) {
+        console.log(parentLevel, newSelectedAreas);
         if (parentLevel === "epci" || parentLevel === "country") {
           continue;
         }
@@ -479,12 +486,9 @@ const ConformityMap = () => {
       }
     }
 
-    if (level !== "city") {
-      newSelectedAreas[level] = await computeSelectedArea(level, code, true);
-    }
     const newMapState: Partial<MapState> = {
       selectedAreas: newSelectedAreas,
-      selectedCity: null,
+      selectedCity: resetSelectedCity ? null : mapState.selectedCity,
     };
 
     if (level === "city") {
@@ -540,9 +544,10 @@ const ConformityMap = () => {
         mapState.currentLevel as "country" | "region" | "department" | "epci" | "city",
         mapState.selectedAreas[mapState.currentLevel].insee_geo,
         "quickNav",
+        false,
       );
     }
-  }, [colorsConfig]);
+  }, [colorsConfig, mapState.selectedRef]);
 
   useEffect(() => {
     if (Object.keys(stats).length > 0) {
