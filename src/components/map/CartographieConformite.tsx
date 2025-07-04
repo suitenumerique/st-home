@@ -4,7 +4,8 @@ import { type Commune } from "@/lib/onboarding";
 import * as turf from "@turf/turf";
 import * as d3 from "d3";
 import { MapLayerMouseEvent } from "maplibre-gl";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import parentAreas from "../../../public/parent_areas.json";
 import MapContainer from "./MapContainer";
 import SidePanel from "./SidePanel";
@@ -19,9 +20,90 @@ import {
   StatRecord,
 } from "./types";
 
+// Custom hook for URL state management
+const useMapURLState = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const getURLState = useCallback(() => {
+    console.log("searchParams entries:", Array.from(searchParams.entries()));
+    console.log("window.location.search:", window.location.search);
+
+    // Fallback to window.location.search if searchParams is empty
+    let currentLevel = searchParams.get("level") || "country";
+    let currentAreaCode = searchParams.get("area") || "00";
+    let departmentView = (searchParams.get("view") as "city" | "epci") || "epci";
+    let selectedCitySiret = searchParams.get("city");
+    let selectedRef = searchParams.get("ref");
+
+    if (Array.from(searchParams.entries()).length === 0 && typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      console.log("Using window.location.search fallback:", Array.from(urlParams.entries()));
+      currentLevel = urlParams.get("level") || "country";
+      currentAreaCode = urlParams.get("area") || "00";
+      departmentView = (urlParams.get("view") as "city" | "epci") || "epci";
+      selectedCitySiret = urlParams.get("city");
+      selectedRef = urlParams.get("ref");
+    }
+
+    const result = {
+      currentLevel,
+      currentAreaCode,
+      departmentView,
+      selectedCitySiret,
+      selectedRef,
+    };
+
+    console.log("getURLState result:", result);
+    return result;
+  }, [searchParams]);
+
+  const updateURLState = useCallback(
+    (
+      currentLevel: string,
+      currentAreaCode: string,
+      departmentView: "city" | "epci",
+      selectedCity: Commune | null,
+      selectedRef: string | null,
+    ) => {
+      const params = new URLSearchParams();
+
+      if (currentLevel !== "country") {
+        params.set("level", currentLevel);
+      }
+
+      if (currentAreaCode !== "00") {
+        params.set("area", currentAreaCode);
+      }
+
+      if (departmentView !== "epci") {
+        params.set("view", departmentView);
+      }
+
+      if (selectedCity?.siret) {
+        params.set("city", selectedCity.siret);
+      }
+
+      if (selectedRef) {
+        params.set("ref", selectedRef);
+      }
+
+      const newURL = params.toString() ? `?${params.toString()}` : window.location.pathname;
+      router.replace(newURL, { scroll: false });
+    },
+    [router],
+  );
+
+  return { getURLState, updateURLState };
+};
+
 const ConformityMap = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [stats, setStats] = useState<AllStats>({} as AllStats);
+  const [initialUrlLoaded, setInitialUrlLoaded] = useState(false);
+
+  const { getURLState, updateURLState } = useMapURLState();
+
   const [mapState, setMapState] = useState<MapState>({
     currentLevel: "country",
     selectedAreas: {},
@@ -29,6 +111,7 @@ const ConformityMap = () => {
     selectedCity: null,
     selectedRef: null,
   });
+
   const [selectedGradient, setSelectedGradient] = useState<string[]>([
     "#FF6868",
     "#FFC579",
@@ -56,7 +139,7 @@ const ConformityMap = () => {
     },
     {
       key: "1.2",
-      value: "Usage d’une extension souveraine",
+      value: "Usage d'une extension souveraine",
       mandatory: true,
       show_in_selector: true,
     },
@@ -428,14 +511,16 @@ const ConformityMap = () => {
     level: "country" | "region" | "department" | "epci" | "city",
     code: string,
     source = "areaClick",
-    resetSelectedCity = true,
+    selectedRefOverride?: string | null,
   ) => {
-    console.log("selectLevel", level, code, source);
+    console.log("selectLevel", level, code, source, selectedRefOverride);
     const allLevels = ["epci", "department", "region", "country"];
     const parentLevels = allLevels.slice(allLevels.indexOf(level) + 1);
 
     let newSelectedAreas: { [key: string]: SelectedArea };
-    if (source === "quickNav") {
+    if (source === "changeRef" || source === "urlLoad") {
+      newSelectedAreas = { country: await computeSelectedArea("country", "00", true) };
+    } else if (source === "quickNav") {
       newSelectedAreas = { country: mapState.selectedAreas.country };
     } else if (source == "backClick") {
       newSelectedAreas = parentLevels.reduce(
@@ -453,10 +538,8 @@ const ConformityMap = () => {
       newSelectedAreas[level] = await computeSelectedArea(level, code, true);
     }
 
-    if (source === "quickNav") {
-      console.log(parentLevels);
+    if (source === "quickNav" || source === "urlLoad" || source === "changeRef") {
       for (const parentLevel of parentLevels) {
-        console.log(parentLevel, newSelectedAreas);
         if (parentLevel === "epci" || parentLevel === "country") {
           continue;
         }
@@ -488,7 +571,7 @@ const ConformityMap = () => {
 
     const newMapState: Partial<MapState> = {
       selectedAreas: newSelectedAreas,
-      selectedCity: resetSelectedCity ? null : mapState.selectedCity,
+      selectedCity: null,
     };
 
     if (level === "city") {
@@ -523,6 +606,8 @@ const ConformityMap = () => {
       newMapState.currentLevel = level;
     }
 
+    console.log(mapState, newMapState);
+
     setMapState({ ...mapState, ...newMapState } as MapState);
   };
 
@@ -540,24 +625,74 @@ const ConformityMap = () => {
 
   useEffect(() => {
     if (mapState.selectedAreas[mapState.currentLevel]) {
+      const currentArea = mapState.selectedAreas[mapState.currentLevel];
+      updateURLState(
+        mapState.currentLevel,
+        currentArea.insee_geo,
+        mapState.departmentView,
+        mapState.selectedCity,
+        mapState.selectedRef,
+      );
+    }
+  }, [
+    mapState.currentLevel,
+    mapState.selectedAreas,
+    mapState.departmentView,
+    mapState.selectedCity,
+    mapState.selectedRef,
+    updateURLState,
+  ]);
+
+  useEffect(() => {
+    if (mapState.selectedAreas[mapState.currentLevel]) {
       selectLevel(
         mapState.currentLevel as "country" | "region" | "department" | "epci" | "city",
         mapState.selectedAreas[mapState.currentLevel].insee_geo,
-        "quickNav",
-        false,
+        "changeRef",
       );
     }
   }, [colorsConfig, mapState.selectedRef]);
 
   useEffect(() => {
-    if (Object.keys(stats).length > 0) {
-      selectLevel("country", "00");
-    }
-  }, [stats]);
+    loadAllStats();
+    const urlState = getURLState();
+    console.log("urlState", urlState);
+    setMapState({
+      ...mapState,
+      departmentView: urlState.departmentView,
+      selectedRef: urlState.selectedRef,
+    });
+  }, []);
 
   useEffect(() => {
-    loadAllStats();
-  }, []);
+    if (Object.keys(stats).length > 0 && initialUrlLoaded) {
+      console.log("yay2", mapState);
+      const urlState = getURLState();
+      if (urlState.currentLevel !== "country" || urlState.currentAreaCode !== "00") {
+        selectLevel(
+          urlState.currentLevel as "country" | "region" | "department" | "epci" | "city",
+          urlState.currentAreaCode,
+          "urlLoad",
+        );
+      } else {
+        selectLevel("country", "00");
+      }
+    }
+  }, [stats, initialUrlLoaded]);
+
+  useEffect(() => {
+    if (!initialUrlLoaded) {
+      const urlState = getURLState();
+      console.log(urlState);
+      if (
+        mapState.selectedRef === urlState.selectedRef &&
+        mapState.departmentView === urlState.departmentView
+      ) {
+        console.log("yay1", mapState);
+        setInitialUrlLoaded(true);
+      }
+    }
+  }, [initialUrlLoaded, mapState]);
 
   return (
     <div ref={containerRef} style={{ display: "flex", width: "100%", height: "100%" }}>
