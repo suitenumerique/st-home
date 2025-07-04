@@ -48,7 +48,7 @@ export interface ConformityStats {
   n_cities?: number;
   details?: {
     "0": number;
-    "1": number;
+    "1"?: number;
     "2"?: number;
   };
 }

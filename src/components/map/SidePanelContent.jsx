@@ -71,7 +71,7 @@ const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapSt
       return null;
     }
     const chartSeries = mapState.selectedRef ? [
-      ["1", "Conforme"],
+      ["2", "Conforme"],
       ["0", "Non conforme"],
     ] : [
       ["2", "Conforme"],
