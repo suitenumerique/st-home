@@ -507,6 +507,22 @@ const ConformityMap = () => {
     }
   };
 
+  const goBack = () => {
+    const previousLevel = {
+      region: "country",
+      department: "region",
+      epci: "department",
+      city: "epci",
+    }[mapState.currentLevel];
+    if (previousLevel) {
+      selectLevel(
+        previousLevel as "country" | "region" | "department" | "epci" | "city",
+        mapState.selectedAreas[previousLevel]?.insee_geo || "",
+        "backClick",
+      );
+    }
+  };
+
   const selectLevel = async (
     level: "country" | "region" | "department" | "epci" | "city",
     code: string,
@@ -606,8 +622,6 @@ const ConformityMap = () => {
       newMapState.currentLevel = level;
     }
 
-    console.log(mapState, newMapState);
-
     setMapState({ ...mapState, ...newMapState } as MapState);
   };
 
@@ -703,6 +717,7 @@ const ConformityMap = () => {
           mapState={mapState}
           selectLevel={selectLevel}
           setMapState={setMapState}
+          goBack={goBack}
         />
       </SidePanel>
       <MapContainer
