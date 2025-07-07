@@ -7,7 +7,7 @@ import Breadcrumb from "./Breadcrumb";
 import MapButton from "./mapButton";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 
-const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapState }) => {
+const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack }) => {
 
   const [showCriteriaSelector, setShowCriteriaSelector] = useState(false);
 
@@ -123,11 +123,11 @@ const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapSt
           <strong>conformes</strong> dans la <strong>sécurisation</strong> de leur{" "}
           <strong>communication en ligne</strong>.
         </p>
-        <p>
+        <p style={{ marginBottom: "0" }}>
           Les critères sont reliés aux usages d’un <strong>nom de domaine</strong> et{" "}
           <strong>structurés</strong> en <strong>deux parties</strong> :
         </p>
-        <ol>
+        <ol style={{ paddingLeft: "2rem" }}>
           <li>le site internet</li>
           <li>l’adresse de messagerie de la collectivité.</li>
         </ol>
@@ -232,7 +232,7 @@ const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapSt
         {levelStatsDisplay.map(([label, percentage, scoreKey, n_cities], index) => (
           <div
             key={index}
-            style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "0.5rem" }}
+            style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}
           >
             <div
               style={{
@@ -242,13 +242,14 @@ const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapSt
                 borderRadius: "100%",
                 border: "1px solid rgba(255, 255, 255, 0.2)",
                 boxSizing: "border-box",
+                marginRight: "0.5rem",
               }}
             ></div>
-            <span>{label}:</span>
+            <span>{label}&nbsp;:</span>
             <span>
-              <strong>{percentage}%</strong>
+              <strong>&nbsp;{percentage}%</strong>
             </span>
-            <span>({formatNumber(n_cities)})</span>
+            <span>&nbsp;({formatNumber(n_cities)})</span>
           </div>
         ))}
       </div>
@@ -382,11 +383,24 @@ const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapSt
 
   return (
     <div className={fr.cx("fr-pb-3w")}>
-      <CommuneSearch
-        onSelect={handleQuickNav}
-        placeholder="Rechercher une commune ou EPCI"
-        smallButton={true}
-      />
+      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        {mapState.currentLevel !== "country" && (
+          <MapButton
+            onClick={() => goBack()}
+            aria-label="Retour"
+            tooltip="Retour"
+          >
+            <svg width="25" height="26" viewBox="0 0 25 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5.285 7.75L8.455 10.92L6.6875 12.6875L0.5 6.5L6.6875 0.3125L8.455 2.08L5.285 5.25H14.25C16.9022 5.25 19.4457 6.30357 21.3211 8.17893C23.1964 10.0543 24.25 12.5978 24.25 15.25C24.25 17.9022 23.1964 20.4457 21.3211 22.3211C19.4457 24.1964 16.9022 25.25 14.25 25.25H3V22.75H14.25C16.2391 22.75 18.1468 21.9598 19.5533 20.5533C20.9598 19.1468 21.75 17.2391 21.75 15.25C21.75 13.2609 20.9598 11.3532 19.5533 9.9467C18.1468 8.54018 16.2391 7.75 14.25 7.75H5.285Z" fill="#000091"/>
+            </svg>
+          </MapButton>
+        )}
+        <CommuneSearch
+          onSelect={handleQuickNav}
+          placeholder="Rechercher une commune ou EPCI"
+          smallButton={true}
+        />
+      </div>
       {mapState.currentLevel === "country" && !showCriteriaSelector && (
         introduction()
       )}
@@ -421,6 +435,7 @@ SidePanelContent.propTypes = {
   selectLevel: PropTypes.func.isRequired,
   getColor: PropTypes.func.isRequired,
   setMapState: PropTypes.func.isRequired,
+  goBack: PropTypes.func.isRequired,
 };
 
 export default SidePanelContent;

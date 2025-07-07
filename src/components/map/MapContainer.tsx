@@ -68,7 +68,7 @@ const MapContainer = ({
     type: "fill",
     paint: {
       "fill-color": ["get", "color"],
-      "fill-opacity": 0.7,
+      "fill-opacity": 1,
     },
   };
 
@@ -81,13 +81,24 @@ const MapContainer = ({
     },
   };
 
+  const hoveredFillLayerStyle = {
+    id: "polygon-fill-hovered",
+    type: "fill",
+    filter: ["==", ["id"], hoveredFeature?.id],
+    paint: {
+      "fill-color": ["get", "color"],
+      "fill-opacity": 1,
+    },
+  };
+
   const hoveredStrokeLayerStyle = {
     id: "polygon-stroke-hovered",
     type: "line",
     filter: ["==", ["id"], hoveredFeature?.id],
     paint: {
-      "line-color": ["get", "color"],
-      "line-width": 2.5,
+      // "line-color": ["get", "color"],
+      "line-color": "#ffffff",
+      "line-width": 2,
     },
   };
 
@@ -223,10 +234,23 @@ const MapContainer = ({
           data={currentGeoJSON as GeoJSON.FeatureCollection}
           generateId={true}
         >
-          <Layer {...(fillLayerStyle as LayerProps)} />
-          <Layer {...(strokeLayerStyle as LayerProps)} />
-          {hoveredFeature && <Layer {...(hoveredStrokeLayerStyle as LayerProps)} />}
-          {mapState.selectedCity && <Layer {...(selectedCityLayerStyle as LayerProps)} />}
+          <Layer {...(fillLayerStyle as LayerProps)} beforeId="Water point/Sea or ocean" />
+          <Layer {...(strokeLayerStyle as LayerProps)} beforeId="Water point/Sea or ocean" />
+          {hoveredFeature && (
+            <Layer {...(hoveredFillLayerStyle as LayerProps)} beforeId="Water point/Sea or ocean" />
+          )}
+          {hoveredFeature && (
+            <Layer
+              {...(hoveredStrokeLayerStyle as LayerProps)}
+              beforeId="Water point/Sea or ocean"
+            />
+          )}
+          {mapState.selectedCity && (
+            <Layer
+              {...(selectedCityLayerStyle as LayerProps)}
+              beforeId="Water point/Sea or ocean"
+            />
+          )}
         </Source>
         {popupInfo && (
           <Popup
@@ -288,19 +312,21 @@ const MapContainer = ({
               position: "relative",
             }}
           >
-            <div
-              style={{
-                position: "absolute",
-                top: "1px",
-                left: `${hoveredFeature?.score === null ? 50 : (hoveredFeature?.score || 0) * 50}%`,
-                transform: "translateX(-50%)",
-                height: "11px",
-                width: "11px",
-                border: "2px solid #fff",
-                borderRadius: "100%",
-                transition: "left 0.3s ease-in-out",
-              }}
-            ></div>
+            {hoveredFeature && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "1px",
+                  left: `${hoveredFeature?.score === null ? 50 : (hoveredFeature?.score || 0) * 50}%`,
+                  transform: "translateX(-50%)",
+                  height: "11px",
+                  width: "11px",
+                  border: "2px solid #fff",
+                  borderRadius: "100%",
+                  transition: "left 0.3s ease-in-out",
+                }}
+              ></div>
+            )}
           </div>
         </div>
         <div
