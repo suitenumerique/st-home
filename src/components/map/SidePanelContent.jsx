@@ -6,6 +6,7 @@ import CommuneInfo from "../onboarding/CommuneInfo";
 import Breadcrumb from "./Breadcrumb";
 import MapButton from "./mapButton";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
+import { Button } from "@codegouvfr/react-dsfr/Button";
 
 const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack }) => {
 
@@ -258,6 +259,28 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
           <a href="/conformite/referentiel">Référentiel de Conformité</a> :
         </p>
         <CommuneInfo commune={mapState.selectedAreas.city} />
+        {
+          mapState.selectedAreas.city.structures?.length > 0 && (
+            <div style={{
+              borderRadius: "4px",
+              padding: "1.2rem",
+              backgroundColor: "var(--background-alt-blue-france)",
+            }}>
+              <h3>Bonne nouvelle !</h3>
+              <p>
+                La collectivité pourra bientôt être <strong>accompagnée par la structure de mutualisation de son choix</strong> pour utiliser la Suite Territoriale.
+              </p>
+              <Button
+                priority="secondary"
+                linkProps={{
+                  href: "/bienvenue/" + mapState.selectedAreas.city.siret,
+                }}
+              >
+                Voir les structures partenaires
+              </Button>
+            </div>
+          )
+        }
       </div>
     )
   }
