@@ -517,6 +517,7 @@ const ConformityMap = () => {
           selectLevel={selectLevel}
           setMapState={setMapState}
           goBack={goBack}
+          container={containerRef.current}
         />
       </SidePanel>
       <MapContainer

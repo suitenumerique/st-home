@@ -21,6 +21,7 @@ interface CommuneSearchProps {
   type?: "commune" | "epci" | "all";
   smallButton?: boolean;
   style?: React.CSSProperties;
+  container?: HTMLElement | null;
 }
 
 interface SearchInputProps {
@@ -28,6 +29,7 @@ interface SearchInputProps {
   placeholder?: string;
   style?: React.CSSProperties;
   type: "commune" | "epci" | "all";
+  container?: HTMLElement | null;
 }
 
 function CommuneSearchInput(
@@ -35,7 +37,7 @@ function CommuneSearchInput(
     onOptionSelect: (commune: Commune) => void;
   },
 ) {
-  const { id, placeholder, onOptionSelect, style } = props;
+  const { id, placeholder, onOptionSelect, style, container } = props;
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [communes, setCommunes] = useState<Commune[]>([]);
@@ -117,6 +119,11 @@ function CommuneSearchInput(
       }}
       onChange={(_, value) => (value ? onOptionSelect(value) : null)}
       autoHighlight={true}
+      slotProps={{
+        popper: {
+          container: container,
+        },
+      }}
       renderOption={(props, option) => {
         // Remove "key" from props
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -218,6 +225,7 @@ export default function CommuneSearch({
   type = "all",
   style = {},
   smallButton = false,
+  container,
 }: CommuneSearchProps) {
   return (
     <>
@@ -232,6 +240,7 @@ export default function CommuneSearch({
             type={type}
             style={style}
             onOptionSelect={onSelect || (() => {})}
+            container={container}
           />
         )}
       />
