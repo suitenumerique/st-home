@@ -22,7 +22,7 @@ const MapContainer = ({
   selectedGradient,
   setSelectedGradient,
 }: {
-  currentGeoJSON: GeoJSON.FeatureCollection;
+  currentGeoJSON: GeoJSON.FeatureCollection & { id: string };
   handleAreaClick: (event: MapLayerMouseEvent) => void;
   handleFullscreen: () => void;
   mapState: MapState;
@@ -485,8 +485,8 @@ const MapContainer = ({
   };
 
   useEffect(() => {
-    if (!mapRef.current) return;
     if (!currentGeoJSON) return;
+    if (!mapRef.current) return;
     if (mapState.currentLevel === "country") {
       mapRef.current.fitBounds(
         [
@@ -536,7 +536,7 @@ const MapContainer = ({
         <Source
           id="interactive-polygons"
           type="geojson"
-          data={currentGeoJSON as GeoJSON.FeatureCollection}
+          data={currentGeoJSON as GeoJSON.FeatureCollection & { id: string }}
           generateId={true}
         >
           <Layer {...(fillLayerStyle as LayerProps)} beforeId="Water point/Sea or ocean" />

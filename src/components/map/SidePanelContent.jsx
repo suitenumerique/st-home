@@ -349,8 +349,9 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
                   ]}
                 />
                 <div style={{ paddingBottom: "0.75rem"}}>
-                  {['mandatory', 'recommended'].map((level) => (
+                  {['mandatory', 'recommended'].map((level, index) => (
                     <span
+                      key={index}
                       className={fr.cx(
                         "fr-badge",
                         "fr-badge--sm",
@@ -368,6 +369,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
                 <RadioButtons
                   name={`${section.all_key}-criteria`}
                   options={rcpntRefs.filter(ref => ref.key[0] === String(index + 1) && ref.show_in_selector).map((criterion) => ({
+                    key: criterion.key,
                     label: <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
                       <span
                         style={{ marginTop: "2px" }}
