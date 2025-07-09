@@ -7,7 +7,7 @@ import Breadcrumb from "./Breadcrumb";
 import MapButton from "./mapButton";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 
-const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack }) => {
+const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack }) => {
 
   const [showCriteriaSelector, setShowCriteriaSelector] = useState(false);
 
@@ -390,6 +390,7 @@ const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapSt
           </MapButton>
         )}
         <CommuneSearch
+          container={container}
           onSelect={handleQuickNav}
           placeholder="Rechercher une commune ou EPCI"
           smallButton={true}
@@ -424,6 +425,7 @@ const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapSt
 };
 
 SidePanelContent.propTypes = {
+  container: PropTypes.object,
   rcpntRefs: PropTypes.array.isRequired,
   mapState: PropTypes.object.isRequired,
   selectLevel: PropTypes.func.isRequired,
