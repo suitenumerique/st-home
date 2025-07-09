@@ -44,7 +44,8 @@ const SidePanel = ({ children }) => {
         style={{
           position: 'absolute',
           left: isPanelOpen ? 459 : 19,
-          top: 20,
+          top: "50%",
+          transform: "translateY(-50%)",
           zIndex: 50,
           background: '#fff',
           border: '1px solid #e5e7eb',
