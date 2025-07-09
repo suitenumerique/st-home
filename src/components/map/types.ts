@@ -32,17 +32,6 @@ export interface ParentArea {
   epci_siren?: string;
 }
 
-export interface CollectiviteRecord {
-  insee_geo: string;
-  name: string;
-  type: string;
-  insee_reg?: string;
-  insee_dep?: string;
-  epci_siren?: string;
-  rcpnt: string[];
-  siret?: string;
-}
-
 export interface ConformityStats {
   score: number;
   n_cities?: number;
@@ -60,7 +49,7 @@ export interface SelectedArea {
   insee_reg?: string;
   insee_dep?: string;
   conformityStats?: ConformityStats;
-  cities?: CollectiviteRecord[];
+  cities?: Commune[];
   geoJSON?: GeoJSON.FeatureCollection;
   geoJSONEPCI?: GeoJSON.Feature[];
 }
@@ -68,10 +57,9 @@ export interface SelectedArea {
 export interface MapState {
   currentLevel: string;
   selectedAreas: {
-    [key: string]: SelectedArea;
+    [key: string]: SelectedArea | Commune | null;
   };
   departmentView: "city" | "epci";
-  selectedCity: Commune | null;
   selectedRef: string | null;
 }
 

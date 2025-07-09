@@ -6,7 +6,7 @@ import * as turf from "@turf/turf";
 import { MapLayerMouseEvent } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import PropTypes from "prop-types";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Map, { Layer, LayerProps, MapRef, Popup, ScaleControl, Source } from "react-map-gl/maplibre";
 import mapStyle from "./map_style.json";
 import MapButton from "./mapButton";
@@ -14,14 +14,15 @@ import { MapState } from "./types";
 import { FeatureProperties } from "./types";
 
 const MapContainer = ({
+  currentGeoJSON,
   handleAreaClick,
   handleFullscreen,
   mapState,
   selectLevel,
   selectedGradient,
   setSelectedGradient,
-  getColor,
 }: {
+  currentGeoJSON: GeoJSON.FeatureCollection;
   handleAreaClick: (event: MapLayerMouseEvent) => void;
   handleFullscreen: () => void;
   mapState: MapState;
@@ -32,7 +33,6 @@ const MapContainer = ({
   ) => void;
   selectedGradient: string[];
   setSelectedGradient: (gradient: string[]) => void;
-  getColor: (score: number) => string;
 }) => {
   const mapRef = useRef<MapRef>(null);
   const [popupInfo, setPopupInfo] = useState<{
@@ -96,7 +96,6 @@ const MapContainer = ({
     type: "line",
     filter: ["==", ["id"], hoveredFeature?.id],
     paint: {
-      // "line-color": ["get", "color"],
       "line-color": "#ffffff",
       "line-width": 2,
     },
@@ -105,7 +104,7 @@ const MapContainer = ({
   const selectedCityLayerStyle = {
     id: "polygon-stroke-selected",
     type: "line",
-    filter: ["==", ["get", "INSEE_GEO"], mapState.selectedCity?.insee_geo],
+    filter: ["==", ["get", "INSEE_GEO"], mapState.selectedAreas.city?.insee_geo],
     paint: {
       "line-color": "#312DAB",
       "line-width": 2.5,
@@ -156,28 +155,334 @@ const MapContainer = ({
     }
   };
 
-  const currentGeoJSON = useMemo(() => {
-    if (!mapState.selectedAreas[mapState.currentLevel]) return null;
-    let displayedGeoJSON: GeoJSON.FeatureCollection | GeoJSON.Feature[] | null = null;
-    if (mapState.currentLevel === "department" && mapState.departmentView === "epci") {
-      displayedGeoJSON = mapState.selectedAreas[mapState.currentLevel].geoJSONEPCI || null;
-    } else if (mapState.currentLevel === "epci" && mapState.selectedAreas["department"]?.geoJSON) {
-      displayedGeoJSON = { ...mapState.selectedAreas["department"].geoJSON };
-      displayedGeoJSON.features = displayedGeoJSON.features.filter((feature) => {
-        const props = feature.properties as FeatureProperties;
-        return props.EPCI_SIREN === mapState.selectedAreas[mapState.currentLevel].insee_geo;
-      });
-    } else {
-      displayedGeoJSON = mapState.selectedAreas[mapState.currentLevel].geoJSON || null;
-    }
-    if (displayedGeoJSON) {
-      // @ts-expect-error TODO: fix this
-      displayedGeoJSON.features.forEach((feature) => {
-        feature.properties.color = getColor(feature.properties.SCORE);
-      });
-    }
-    return displayedGeoJSON;
-  }, [mapState]);
+  const mapTooltip = (popupInfo: {
+    longitude: number;
+    latitude: number;
+    properties: FeatureProperties;
+  }) => {
+    return (
+      <Popup
+        longitude={popupInfo.longitude}
+        latitude={popupInfo.latitude}
+        closeButton={false}
+        closeOnClick={false}
+        anchor="top"
+        style={{ pointerEvents: "none" }}
+      >
+        <div style={{ backgroundColor: "white", padding: "0.5rem" }}>
+          <p
+            style={{
+              fontWeight: "bold",
+              fontSize: "1rem",
+              color: "#1E293B",
+              marginBottom: "0",
+            }}
+          >
+            {popupInfo.properties.NAME}
+          </p>
+          {((mapState.currentLevel === "department" && mapState.departmentView === "city") ||
+            mapState.currentLevel === "epci") && (
+            <p style={{ fontSize: "0.8rem", color: "#64748B", marginBottom: "0" }}>
+              Cliquez pour afficher les détails
+            </p>
+          )}
+        </div>
+      </Popup>
+    );
+  };
+
+  const gradientSelector = () => {
+    return (
+      <div
+        style={{
+          position: "absolute",
+          bottom: "100%",
+          left: "50%",
+          transform: "translateX(-50%)",
+          marginBottom: "8px",
+          background: "white",
+          border: "1px solid #ccc",
+          borderRadius: "4px",
+          padding: "12px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          zIndex: 20,
+          minWidth: "280px",
+        }}
+      >
+        <h4 style={{ margin: "0 0 12px 0", fontSize: "14px" }}>Sélecteur de gradient</h4>
+
+        <div style={{ marginBottom: "12px" }}>
+          <label style={{ fontSize: "12px", display: "block", marginBottom: "6px" }}>
+            Préréglages:
+          </label>
+          <div style={{ display: "flex", gap: "6px" }}>
+            {gradientPresets.map((preset, index) => (
+              <div
+                key={index}
+                style={{
+                  width: "50px",
+                  height: "20px",
+                  background: `linear-gradient(90deg, ${preset.colors[0]} 0%, ${preset.colors[1]} 50%, ${preset.colors[2]} 100%)`,
+                  borderRadius: "2px",
+                  cursor: "pointer",
+                  border: "2px solid #000091",
+                }}
+                title={`Préréglage ${index + 1}`}
+                onClick={() => setSelectedGradient(preset.colors)}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: "12px" }}>
+          <label style={{ fontSize: "12px", display: "block", marginBottom: "6px" }}>
+            Sélecteur à trois couleurs:
+          </label>
+          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+            <input
+              type="color"
+              value={customGradient[0]}
+              style={{
+                width: "60px",
+                height: "30px",
+                border: "1px solid #ccc",
+                borderRadius: "2px",
+              }}
+              onChange={(e) =>
+                setCustomGradient([e.target.value, customGradient[1], customGradient[2]])
+              }
+            />
+            <input
+              type="color"
+              value={customGradient[1]}
+              style={{
+                width: "60px",
+                height: "30px",
+                border: "1px solid #ccc",
+                borderRadius: "2px",
+              }}
+              onChange={(e) =>
+                setCustomGradient([customGradient[0], e.target.value, customGradient[2]])
+              }
+            />
+            <input
+              type="color"
+              value={customGradient[2]}
+              style={{
+                width: "60px",
+                height: "30px",
+                border: "1px solid #ccc",
+                borderRadius: "2px",
+              }}
+              onChange={(e) =>
+                setCustomGradient([customGradient[0], customGradient[1], e.target.value])
+              }
+            />
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button
+            onClick={() => setShowGradientSelector(false)}
+            style={{
+              padding: "4px 8px",
+              fontSize: "12px",
+              border: "1px solid #ccc",
+              borderRadius: "2px",
+              background: "#f5f5f5",
+              cursor: "pointer",
+            }}
+          >
+            Fermer
+          </button>
+          <button
+            onClick={() => setSelectedGradient(customGradient)}
+            style={{
+              padding: "4px 8px",
+              fontSize: "12px",
+              border: "1px solid #000091",
+              borderRadius: "2px",
+              background: "#000091",
+              color: "white",
+              cursor: "pointer",
+            }}
+          >
+            Appliquer
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  const mapGradient = () => {
+    return (
+      <div
+        style={{
+          position: "absolute",
+          bottom: 20,
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 10,
+          background: "rgba(225, 226, 226, .85)",
+          padding: "8px 8px 4px 8px",
+          borderRadius: "4px",
+        }}
+      >
+        <div
+          style={{
+            width: "300px",
+            height: "13px",
+            borderRadius: "4px",
+            background: `linear-gradient(90deg, ${selectedGradient[0]} 0%, ${selectedGradient[1]} 50%, ${selectedGradient[2]} 100%)`,
+            padding: "0 6px",
+          }}
+          onClick={handleGradientClick}
+        >
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              position: "relative",
+            }}
+          >
+            {hoveredFeature && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "1px",
+                  left: `${hoveredFeature?.score === null ? 50 : (hoveredFeature?.score || 0) * 50}%`,
+                  transform: "translateX(-50%)",
+                  height: "11px",
+                  width: "11px",
+                  border: "2px solid #fff",
+                  borderRadius: "100%",
+                  transition: "left 0.3s ease-in-out",
+                }}
+              ></div>
+            )}
+          </div>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <p style={{ fontSize: "14px", margin: 0 }}>Non conforme</p>
+          <p style={{ fontSize: "14px", margin: 0 }}>Conforme</p>
+        </div>
+
+        {showGradientSelector && gradientSelector()}
+      </div>
+    );
+  };
+
+  const mapDromSelector = () => {
+    return (
+      <div
+        style={{
+          position: "absolute",
+          right: 20,
+          top: 20,
+          zIndex: 10,
+        }}
+      >
+        <MapButton
+          onClick={() => selectLevel("country", "00")}
+          expandable={true}
+          arrowPosition="left"
+          tooltip="France hexagonale"
+          expandedButtons={[
+            {
+              label: "Guadeloupe",
+              onClick: () => selectLevel("region", "r01"),
+              tooltip: "Guadeloupe",
+              content: <img src="/icons/guadeloupe.svg" alt="Guadeloupe" />,
+            },
+            {
+              label: "Martinique",
+              onClick: () => selectLevel("region", "r02"),
+              tooltip: "Martinique",
+              content: <img src="/icons/martinique.svg" alt="Martinique" />,
+            },
+            {
+              label: "Guyane",
+              onClick: () => selectLevel("region", "r03"),
+              tooltip: "Guyane",
+              content: <img src="/icons/guyane.svg" alt="Guyane" />,
+            },
+            {
+              label: "La Réunion",
+              onClick: () => selectLevel("region", "r04"),
+              tooltip: "La Réunion",
+              content: <img src="/icons/reunion.svg" alt="La Réunion" />,
+            },
+            {
+              label: "Mayotte",
+              onClick: () => selectLevel("region", "r06"),
+              tooltip: "Mayotte",
+              content: <img src="/icons/mayotte.svg" alt="Mayotte" />,
+            },
+          ]}
+        >
+          <img src="/icons/france.svg" alt="France" />
+        </MapButton>
+      </div>
+    );
+  };
+
+  const mapActionButtons = () => {
+    return (
+      <div
+        style={{
+          position: "absolute",
+          bottom: 20,
+          right: 20,
+          zIndex: 10,
+          display: "flex",
+          flexDirection: "column",
+          gap: "8px",
+        }}
+      >
+        <MapButton onClick={handleFullscreen} aria-label="Plein écran" tooltip="Plein écran">
+          <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M22.4008 2.72951L15.8738 9.25654C15.6785 9.4518 15.362 9.4518 15.1667 9.25654L14.7432 8.83305C14.5479 8.63779 14.5479 8.32121 14.7432 8.12595L21.2702 1.59891H15.7057C15.4296 1.59891 15.2057 1.37505 15.2057 1.09891V0.5C15.2057 0.223857 15.4296 0 15.7057 0H23.4997C23.7759 0 23.9997 0.223858 23.9997 0.5V8.29401C23.9997 8.57015 23.7759 8.79401 23.4997 8.79401H22.9008C22.6247 8.79401 22.4008 8.57015 22.4008 8.29401V2.72951Z"
+              fill="#000091"
+            />
+            <path
+              d="M1.59793 21.2712L8.12497 14.7442C8.32023 14.5489 8.63682 14.5489 8.83208 14.7442L9.25556 15.1677C9.45082 15.3629 9.45082 15.6795 9.25556 15.8748L2.72852 22.4018H8.29303C8.56917 22.4018 8.79303 22.6256 8.79303 22.9018V23.5007C8.79303 23.7768 8.56917 24.0007 8.29303 24.0007H0.499024C0.222881 24.0007 -0.000976562 23.7768 -0.000976562 23.5007V15.7067C-0.000976562 15.4306 0.222881 15.2067 0.499023 15.2067H1.09793C1.37408 15.2067 1.59793 15.4306 1.59793 15.7067V21.2712Z"
+              fill="#000091"
+            />
+          </svg>
+        </MapButton>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <MapButton
+            onClick={handleZoomIn}
+            customStyle={{
+              borderRadius: "4px 4px 0 0",
+              borderBottom: "none",
+            }}
+            tooltip="Zoomer"
+            aria-label="Zoomer"
+          >
+            <span style={{ backgroundColor: "none" }} className={fr.cx("fr-icon-add-line")}></span>
+          </MapButton>
+          <MapButton
+            onClick={handleZoomOut}
+            customStyle={{
+              borderRadius: "0 0 4px 4px",
+            }}
+            tooltip="Dézoomer"
+            aria-label="Dézoomer"
+          >
+            <span className={fr.cx("fr-icon-subtract-line")}></span>
+          </MapButton>
+        </div>
+      </div>
+    );
+  };
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -245,314 +550,31 @@ const MapContainer = ({
               beforeId="Water point/Sea or ocean"
             />
           )}
-          {mapState.selectedCity && (
+          {mapState.selectedAreas.city && (
             <Layer
               {...(selectedCityLayerStyle as LayerProps)}
               beforeId="Water point/Sea or ocean"
             />
           )}
         </Source>
-        {popupInfo && (
-          <Popup
-            longitude={popupInfo.longitude}
-            latitude={popupInfo.latitude}
-            closeButton={false}
-            closeOnClick={false}
-            anchor="top"
-            style={{ pointerEvents: "none" }}
-          >
-            <div style={{ backgroundColor: "white", padding: "0.5rem" }}>
-              <p
-                style={{
-                  fontWeight: "bold",
-                  fontSize: "1rem",
-                  color: "#1E293B",
-                  marginBottom: "0",
-                }}
-              >
-                {popupInfo.properties.NAME}
-              </p>
-              {((mapState.currentLevel === "department" && mapState.departmentView === "city") ||
-                mapState.currentLevel === "epci") && (
-                <p style={{ fontSize: "0.8rem", color: "#64748B", marginBottom: "0" }}>
-                  Cliquez pour afficher les détails
-                </p>
-              )}
-            </div>
-          </Popup>
-        )}
+        {popupInfo && mapTooltip(popupInfo)}
       </Map>
 
-      <div
-        style={{
-          position: "absolute",
-          bottom: 20,
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 10,
-          background: "rgba(225, 226, 226, .85)",
-          padding: "8px 8px 4px 8px",
-          borderRadius: "4px",
-        }}
-      >
-        <div
-          style={{
-            width: "300px",
-            height: "13px",
-            borderRadius: "4px",
-            background: `linear-gradient(90deg, ${selectedGradient[0]} 0%, ${selectedGradient[1]} 50%, ${selectedGradient[2]} 100%)`,
-            padding: "0 6px",
-          }}
-          onClick={handleGradientClick}
-        >
-          <div
-            style={{
-              width: "100%",
-              height: "100%",
-              position: "relative",
-            }}
-          >
-            {hoveredFeature && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "1px",
-                  left: `${hoveredFeature?.score === null ? 50 : (hoveredFeature?.score || 0) * 50}%`,
-                  transform: "translateX(-50%)",
-                  height: "11px",
-                  width: "11px",
-                  border: "2px solid #fff",
-                  borderRadius: "100%",
-                  transition: "left 0.3s ease-in-out",
-                }}
-              ></div>
-            )}
-          </div>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <p style={{ fontSize: "14px", margin: 0 }}>Non conforme</p>
-          <p style={{ fontSize: "14px", margin: 0 }}>Conforme</p>
-        </div>
-        
-        {showGradientSelector && (
-          <div
-            style={{
-              position: "absolute",
-              bottom: "100%",
-              left: "50%",
-              transform: "translateX(-50%)",
-              marginBottom: "8px",
-              background: "white",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-              padding: "12px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-              zIndex: 20,
-              minWidth: "280px",
-            }}
-          >
-            <h4 style={{ margin: "0 0 12px 0", fontSize: "14px" }}>Sélecteur de gradient</h4>
-            
-            {/* Presets */}
-            <div style={{ marginBottom: "12px" }}>
-              <label style={{ fontSize: "12px", display: "block", marginBottom: "6px" }}>
-                Préréglages:
-              </label>
-              <div style={{ display: "flex", gap: "6px" }}>
-                {gradientPresets.map((preset, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      width: "50px",
-                      height: "20px",
-                      background: `linear-gradient(90deg, ${preset.colors[0]} 0%, ${preset.colors[1]} 50%, ${preset.colors[2]} 100%)`,
-                      borderRadius: "2px",
-                      cursor: "pointer",
-                      border: "2px solid #000091",
-                    }}
-                    title={`Préréglage ${index + 1}`}
-                    onClick={() => setSelectedGradient(preset.colors)}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Three-color selector */}
-            <div style={{ marginBottom: "12px" }}>
-              <label style={{ fontSize: "12px", display: "block", marginBottom: "6px" }}>
-                Sélecteur à trois couleurs:
-              </label>
-              <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-                <input
-                  type="color"
-                  value={customGradient[0]}
-                  style={{ width: "60px", height: "30px", border: "1px solid #ccc", borderRadius: "2px" }}
-                  onChange={(e) => setCustomGradient([e.target.value, customGradient[1], customGradient[2]])}
-                />
-                <input
-                  type="color"
-                  value={customGradient[1]}
-                  style={{ width: "60px", height: "30px", border: "1px solid #ccc", borderRadius: "2px" }}
-                  onChange={(e) => setCustomGradient([customGradient[0], e.target.value, customGradient[2]])}
-                />
-                <input
-                  type="color"
-                  value={customGradient[2]}
-                  style={{ width: "60px", height: "30px", border: "1px solid #ccc", borderRadius: "2px" }}
-                  onChange={(e) => setCustomGradient([customGradient[0], customGradient[1], e.target.value])}
-                />
-              </div>
-            </div>
-
-            <div style={{ display: "flex", gap: "8px" }}>
-              <button
-                onClick={() => setShowGradientSelector(false)}
-                style={{
-                  padding: "4px 8px",
-                  fontSize: "12px",
-                  border: "1px solid #ccc",
-                  borderRadius: "2px",
-                  background: "#f5f5f5",
-                  cursor: "pointer",
-                }}
-              >
-                Fermer
-              </button>
-              <button
-                onClick={() => setSelectedGradient(customGradient)}
-                style={{
-                  padding: "4px 8px",
-                  fontSize: "12px",
-                  border: "1px solid #000091",
-                  borderRadius: "2px",
-                  background: "#000091",
-                  color: "white",
-                  cursor: "pointer",
-                }}
-              >
-                Appliquer
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div
-        style={{
-          position: "absolute",
-          right: 20,
-          top: 20,
-          zIndex: 10,
-        }}
-      >
-        <MapButton
-          onClick={() => selectLevel("country", "00")}
-          expandable={true}
-          arrowPosition="left"
-          tooltip="France hexagonale"
-          expandedButtons={[
-            {
-              label: "Guadeloupe",
-              onClick: () => selectLevel("region", "r01"),
-              tooltip: "Guadeloupe",
-              content: <img src="/icons/guadeloupe.svg" alt="Guadeloupe" />,
-            },
-            {
-              label: "Martinique",
-              onClick: () => selectLevel("region", "r02"),
-              tooltip: "Martinique",
-              content: <img src="/icons/martinique.svg" alt="Martinique" />,
-            },
-            {
-              label: "Guyane",
-              onClick: () => selectLevel("region", "r03"),
-              tooltip: "Guyane",
-              content: <img src="/icons/guyane.svg" alt="Guyane" />,
-            },
-            {
-              label: "La Réunion",
-              onClick: () => selectLevel("region", "r04"),
-              tooltip: "La Réunion",
-              content: <img src="/icons/reunion.svg" alt="La Réunion" />,
-            },
-            {
-              label: "Mayotte",
-              onClick: () => selectLevel("region", "r06"),
-              tooltip: "Mayotte",
-              content: <img src="/icons/mayotte.svg" alt="Mayotte" />,
-            },
-          ]}
-        >
-          <img src="/icons/france.svg" alt="France" />
-        </MapButton>
-      </div>
-
-      <div
-        style={{
-          position: "absolute",
-          bottom: 20,
-          right: 20,
-          zIndex: 10,
-          display: "flex",
-          flexDirection: "column",
-          gap: "8px",
-        }}
-      >
-        <MapButton onClick={handleFullscreen} aria-label="Plein écran" tooltip="Plein écran">
-          <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M22.4008 2.72951L15.8738 9.25654C15.6785 9.4518 15.362 9.4518 15.1667 9.25654L14.7432 8.83305C14.5479 8.63779 14.5479 8.32121 14.7432 8.12595L21.2702 1.59891H15.7057C15.4296 1.59891 15.2057 1.37505 15.2057 1.09891V0.5C15.2057 0.223857 15.4296 0 15.7057 0H23.4997C23.7759 0 23.9997 0.223858 23.9997 0.5V8.29401C23.9997 8.57015 23.7759 8.79401 23.4997 8.79401H22.9008C22.6247 8.79401 22.4008 8.57015 22.4008 8.29401V2.72951Z"
-              fill="#000091"
-            />
-            <path
-              d="M1.59793 21.2712L8.12497 14.7442C8.32023 14.5489 8.63682 14.5489 8.83208 14.7442L9.25556 15.1677C9.45082 15.3629 9.45082 15.6795 9.25556 15.8748L2.72852 22.4018H8.29303C8.56917 22.4018 8.79303 22.6256 8.79303 22.9018V23.5007C8.79303 23.7768 8.56917 24.0007 8.29303 24.0007H0.499024C0.222881 24.0007 -0.000976562 23.7768 -0.000976562 23.5007V15.7067C-0.000976562 15.4306 0.222881 15.2067 0.499023 15.2067H1.09793C1.37408 15.2067 1.59793 15.4306 1.59793 15.7067V21.2712Z"
-              fill="#000091"
-            />
-          </svg>
-        </MapButton>
-
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <MapButton
-            onClick={handleZoomIn}
-            customStyle={{
-              borderRadius: "4px 4px 0 0",
-              borderBottom: "none",
-            }}
-            tooltip="Zoomer"
-            aria-label="Zoomer"
-          >
-            <span style={{ backgroundColor: "none" }} className={fr.cx("fr-icon-add-line")}></span>
-          </MapButton>
-          <MapButton
-            onClick={handleZoomOut}
-            customStyle={{
-              borderRadius: "0 0 4px 4px",
-            }}
-            tooltip="Dézoomer"
-            aria-label="Dézoomer"
-          >
-            <span className={fr.cx("fr-icon-subtract-line")}></span>
-          </MapButton>
-        </div>
-      </div>
+      {mapGradient()}
+      {mapDromSelector()}
+      {mapActionButtons()}
     </div>
   );
 };
 
 MapContainer.propTypes = {
+  currentGeoJSON: PropTypes.object,
   handleAreaClick: PropTypes.func.isRequired,
   handleFullscreen: PropTypes.func.isRequired,
   mapState: PropTypes.object.isRequired,
   selectLevel: PropTypes.func.isRequired,
   selectedGradient: PropTypes.array.isRequired,
   setSelectedGradient: PropTypes.func.isRequired,
-  getColor: PropTypes.func.isRequired,
 };
 
 export default MapContainer;

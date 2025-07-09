@@ -1,0 +1,116 @@
+[
+  {
+    "key": "a",
+    "value": "Tous les essentiels",
+    "mandatory": true,
+    "show_in_selector": false
+  },
+  {
+    "key": "1.a",
+    "value": "Essentiels site internet",
+    "mandatory": true,
+    "show_in_selector": false
+  },
+  {
+    "key": "1.1",
+    "value": "Déclaré sur Service-Public.fr",
+    "mandatory": true,
+    "show_in_selector": true
+  },
+  {
+    "key": "1.2",
+    "value": "Usage d'une extension souveraine",
+    "mandatory": true,
+    "show_in_selector": true
+  },
+  {
+    "key": "1.3",
+    "value": "Site joignable",
+    "mandatory": true,
+    "show_in_selector": true
+  },
+  {
+    "key": "1.4",
+    "value": "Usage du protocole HTTPS",
+    "mandatory": true,
+    "show_in_selector": true
+  },
+  {
+    "key": "1.5",
+    "value": "Certificat SSL valide",
+    "mandatory": true,
+    "show_in_selector": true
+  },
+  {
+    "key": "1.6",
+    "value": "Déclaration et redirection identiques",
+    "mandatory": true,
+    "show_in_selector": true
+  },
+  {
+    "key": "1.7",
+    "value": "Redirection fonctionnelle",
+    "mandatory": false,
+    "show_in_selector": true
+  },
+  {
+    "key": "1.8",
+    "value": "Déclaré en HTTPS sur Service-Public.fr ",
+    "mandatory": false,
+    "show_in_selector": true
+  },
+  {
+    "key": "2.a",
+    "value": "Essentiels messagerie",
+    "mandatory": true,
+    "show_in_selector": false
+  },
+  {
+    "key": "2.1",
+    "value": "Déclaré sur Service-Public.fr",
+    "mandatory": true,
+    "show_in_selector": true
+  },
+  {
+    "key": "2.2",
+    "value": "Pas de nom de domaine générique",
+    "mandatory": true,
+    "show_in_selector": true
+  },
+  {
+    "key": "2.3",
+    "value": "Domaine messagerie et site identiques",
+    "mandatory": true,
+    "show_in_selector": true
+  },
+  {
+    "key": "2.4",
+    "value": "Enregistrement MX configuré",
+    "mandatory": true,
+    "show_in_selector": true
+  },
+  {
+    "key": "2.5",
+    "value": "Enregistrement SPF configuré",
+    "mandatory": false,
+    "show_in_selector": true
+  },
+  {
+    "key": "2.6",
+    "value": "Enregistrement DMARC configuré",
+    "mandatory": false,
+    "show_in_selector": true
+  },
+  {
+    "key": "2.7",
+    "value": "Utilisation d'une politique de quarantaine par l'enregistrement DMARC",
+    "mandatory": false,
+    "show_in_selector": true
+  },
+  {
+    "key": "2.8",
+    "value": "Serveur de messagerie situé dans l'Union Européenne",
+    "mandatory": true,
+    "show_in_selector": true
+  }
+]

@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const SidePanel = ({ children }) => {
   const [isPanelOpen, setIsPanelOpen] = useState(true);
