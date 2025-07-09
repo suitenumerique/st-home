@@ -21,7 +21,7 @@ const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapSt
     if (community.type === "epci") {
       code = community["siret"].slice(0, 9);
     } else {
-      code = community.insee_geo || "";
+      code = community["siret"] || "";
     }
     await selectLevel(level, code, "quickNav");
 
@@ -30,10 +30,7 @@ const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapSt
   const breadcrumbSegments = useMemo(() => {
     const areaLevels = ["country", "region", "department", "epci", "city"];
     const segments = areaLevels.map((level) => {
-      if (
-        mapState.selectedAreas[level] &&
-        (level !== mapState.currentLevel || mapState.selectedCity)
-      ) {
+      if (mapState.selectedAreas[level] && level !== mapState.currentLevel) {
         return {
           level: level,
           label: mapState.selectedAreas[level].name,
@@ -43,17 +40,14 @@ const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapSt
       return null;
     });
     return segments.filter(Boolean);
-  }, [mapState.selectedAreas, mapState.currentLevel, mapState.selectedCity, selectLevel]);
+  }, [mapState.selectedAreas, mapState.currentLevel, selectLevel]);
 
   const currentPageLabel = useMemo(() => {
-    if (mapState.selectedCity) {
-      return mapState.selectedCity.name;
-    }
     if (mapState.selectedAreas[mapState.currentLevel]) {
       return mapState.selectedAreas[mapState.currentLevel].name;
     }
     return null;
-  }, [mapState.selectedAreas, mapState.currentLevel, mapState.selectedCity]);
+  }, [mapState.selectedAreas, mapState.currentLevel]);
 
   const currentLevelLabel = useMemo(() => {
     if (mapState.currentLevel === "country") {
@@ -67,7 +61,7 @@ const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapSt
   }, [mapState.currentLevel]);
 
   const levelStatsDisplay = useMemo(() => {
-    if (mapState.selectedCity) {
+    if (mapState.selectedAreas.city) {
       return null;
     }
     const chartSeries = mapState.selectedRef ? [
@@ -100,7 +94,7 @@ const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapSt
         return [];
       }
     });
-  }, [mapState.selectedAreas, mapState.currentLevel, mapState.selectedCity]);
+  }, [mapState.selectedAreas, mapState.currentLevel]);
 
   const introduction = () => {
     return (
@@ -150,7 +144,7 @@ const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapSt
           <h3 className={fr.cx("fr-mb-0")} style={{ color: "var(--text-title-blue-france)" }}>
             {currentPageLabel}
           </h3>
-          {!mapState.selectedCity ? (
+          {!mapState.selectedAreas.city ? (
             <p className={fr.cx("fr-text--lg")} style={{ color: "var(--text-title-blue-france)" }}>
               {[
                 currentLevelLabel,
@@ -161,7 +155,7 @@ const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapSt
             </p>
           ) : (
             <p className={fr.cx("fr-text--lg")} style={{ color: "var(--text-title-blue-france)" }}>
-              {mapState.selectedCity.zipcode}
+              {mapState.selectedAreas.city.zipcode}
             </p>
           )}
         </div>
@@ -185,7 +179,7 @@ const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapSt
             tooltip="Copier l'URL de cette vue"
           >
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd" clip-rule="evenodd" d="M11.9638 6.59941L13.4967 8.13233C14.919 9.5545 15.7181 11.4835 15.7181 13.4948C15.7181 15.5062 14.919 17.4352 13.4967 18.8573L13.1132 19.2397C10.1516 22.2014 5.34984 22.2014 2.38821 19.2397C-0.573415 16.2781 -0.573415 11.4764 2.38821 8.51474L3.92113 10.0477C2.54275 11.414 2.00075 13.4134 2.50034 15.2889C2.99993 17.1643 4.46474 18.6291 6.34018 19.1287C8.21562 19.6283 10.215 19.0863 11.5814 17.7079L11.9649 17.3244C14.0794 15.2092 14.0794 11.7804 11.9649 9.66524L10.432 8.13233L11.9649 6.60049L11.9638 6.59941ZM17.7098 11.5795C19.0882 10.2131 19.6302 8.21373 19.1306 6.3383C18.631 4.46286 17.1662 2.99804 15.2907 2.49845C13.4153 1.99886 11.4159 2.54086 10.0495 3.91924L9.66605 4.30274C7.55148 6.41795 7.55148 9.8467 9.66605 11.9619L11.199 13.4948L9.66605 15.0267L8.13421 13.4948C6.71189 12.0727 5.91283 10.1437 5.91283 8.13233C5.91283 6.12097 6.71189 4.192 8.13421 2.76983L8.51771 2.38741C10.4335 0.471572 13.2259 -0.276648 15.843 0.424597C18.4601 1.12584 20.5043 3.17002 21.2055 5.7871C21.9068 8.40418 21.1585 11.1966 19.2427 13.1124L17.7098 11.5795Z" fill="#000091"/>
+              <path d="M11.9638 6.59941L13.4967 8.13233C14.919 9.5545 15.7181 11.4835 15.7181 13.4948C15.7181 15.5062 14.919 17.4352 13.4967 18.8573L13.1132 19.2397C10.1516 22.2014 5.34984 22.2014 2.38821 19.2397C-0.573415 16.2781 -0.573415 11.4764 2.38821 8.51474L3.92113 10.0477C2.54275 11.414 2.00075 13.4134 2.50034 15.2889C2.99993 17.1643 4.46474 18.6291 6.34018 19.1287C8.21562 19.6283 10.215 19.0863 11.5814 17.7079L11.9649 17.3244C14.0794 15.2092 14.0794 11.7804 11.9649 9.66524L10.432 8.13233L11.9649 6.60049L11.9638 6.59941ZM17.7098 11.5795C19.0882 10.2131 19.6302 8.21373 19.1306 6.3383C18.631 4.46286 17.1662 2.99804 15.2907 2.49845C13.4153 1.99886 11.4159 2.54086 10.0495 3.91924L9.66605 4.30274C7.55148 6.41795 7.55148 9.8467 9.66605 11.9619L11.199 13.4948L9.66605 15.0267L8.13421 13.4948C6.71189 12.0727 5.91283 10.1437 5.91283 8.13233C5.91283 6.12097 6.71189 4.192 8.13421 2.76983L8.51771 2.38741C10.4335 0.471572 13.2259 -0.276648 15.843 0.424597C18.4601 1.12584 20.5043 3.17002 21.2055 5.7871C21.9068 8.40418 21.1585 11.1966 19.2427 13.1124L17.7098 11.5795Z" fill="#000091"/>
             </svg>
           </MapButton>
         </div>
@@ -198,8 +192,8 @@ const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapSt
       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "1.5rem" }}>
         <span className={fr.cx("fr-text--sm fr-mb-0")}>Sélection :</span>
         {
-          ['epci', 'city'].map((type) => (
-            <p style={{
+          ['epci', 'city'].map((type, index) => (
+            <p key={index} style={{
               display: "inline-flex",
               flexDirection: "row",
               alignItems: "center",
@@ -263,7 +257,7 @@ const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapSt
           Voici la situation de la présence numérique de la commune, selon notre{" "}
           <a href="/conformite/referentiel">Référentiel de Conformité</a> :
         </p>
-        <CommuneInfo commune={mapState.selectedCity} />
+        <CommuneInfo commune={mapState.selectedAreas.city} />
       </div>
     )
   }
@@ -281,7 +275,7 @@ const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapSt
           >
             Fermer
             <svg className={fr.cx("fr-ml-1w")} width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd" clip-rule="evenodd" d="M5.00048 4.05781L8.30048 0.757812L9.24315 1.70048L5.94315 5.00048L9.24315 8.30048L8.30048 9.24315L5.00048 5.94315L1.70048 9.24315L0.757812 8.30048L4.05781 5.00048L0.757812 1.70048L1.70048 0.757812L5.00048 4.05781Z" fill="#000091"/>
+              <path d="M5.00048 4.05781L8.30048 0.757812L9.24315 1.70048L5.94315 5.00048L9.24315 8.30048L8.30048 9.24315L5.00048 5.94315L1.70048 9.24315L0.757812 8.30048L4.05781 5.00048L0.757812 1.70048L1.70048 0.757812L5.00048 4.05781Z" fill="#000091"/>
             </svg>
           </button>
         </div>
@@ -411,16 +405,16 @@ const SidePanelContent = ({ rcpntRefs, getColor, mapState, selectLevel, setMapSt
         criteriaSelector()
       ) : (
         <>
-          {mapState.selectedAreas["country"] && (
+          {mapState.selectedAreas["country"] && mapState.selectedAreas[mapState.currentLevel] && (
             levelHeader()
           )}
-          {mapState.currentLevel === "department" && !mapState.selectedCity && (
+          {mapState.currentLevel === "department" && !mapState.selectedAreas.city && (
             departmentViewSelector()
           )}
-          {!mapState.selectedCity && mapState.selectedAreas[mapState.currentLevel] && (
+          {!mapState.selectedAreas.city && mapState.selectedAreas[mapState.currentLevel] && (
             levelStats()
           )}
-          {mapState.selectedCity && !showCriteriaSelector && (
+          {mapState.selectedAreas.city && !showCriteriaSelector && (
             communeInfo()
           )}
         </>

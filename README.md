@@ -99,19 +99,19 @@ Télécharger la dernière version des données ADMIN EXPRESS de l'IGN, version 
 #### 2. Génération du geoJSON des régions
 
 ```bash
-mapshaper -i REGION.shp snap -proj wgs84 -simplify 5% weighted keep-shapes -filter-fields INSEE_REG,NOM -rename-fields CODE=INSEE_REG -o format=geojson precision=0.00001 france.json
+mapshaper -i REGION.shp snap -proj wgs84 -simplify 5% weighted keep-shapes -filter-fields INSEE_REG,NOM -rename-fields INSEE_GEO=INSEE_REG,NAME=NOM -o format=geojson precision=0.00001 regions.json
 ```
 
 #### 3. Génération des geoJSON des départements par région
 
 ```bash
-mapshaper -i REGION.shp name=regions -i DEPARTEMENT.shp name=depts -clip target=depts source=regions -proj wgs84 -simplify 5% weighted keep-shapes -filter-fields INSEE_DEP,INSEE_REG,NOM -rename-fields CODE=INSEE_DEP -split INSEE_REG -o format=geojson precision=0.00001
+mapshaper -i REGION.shp name=regions -i DEPARTEMENT.shp name=depts -clip target=depts source=regions -proj wgs84 -simplify 5% weighted keep-shapes -filter-fields INSEE_DEP,INSEE_REG,NOM -rename-fields INSEE_GEO=INSEE_DEP,NAME=NOM -split INSEE_REG -o format=geojson precision=0.00001
 ```
 
 #### 4. Génération des geoJSON des communes par département
 
 ```bash
-mapshaper -i DEPARTEMENT.shp name=depts -i COMMUNE.shp name=communes -clip target=communes source=depts -proj wgs84 -simplify 5% weighted keep-shapes -filter-fields INSEE_COM,INSEE_DEP,NOM -rename-fields CODE=INSEE_COM -split INSEE_DEP -o format=geojson precision=0.00001
+mapshaper -i DEPARTEMENT.shp name=depts -i COMMUNE.shp name=communes -clip target=communes source=depts -proj wgs84 -simplify 5% weighted keep-shapes -filter-fields INSEE_COM,INSEE_DEP,NOM -rename-fields INSEE_GEO=INSEE_COM,NAME=NOM -split INSEE_DEP -o format=geojson precision=0.00001
 ```
 
 ### Résultats
