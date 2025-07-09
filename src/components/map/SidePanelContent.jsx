@@ -160,7 +160,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
             </p>
           )}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "8px" }}>
           <MapButton
             onClick={() => setShowCriteriaSelector(true)}
             aria-label="Sélectionner un critère"
@@ -188,12 +188,12 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
     )
   }
 
-  const departmentViewSelector = () => {
+  const selections = () => {
     return (
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "1.5rem" }}>
-        <span className={fr.cx("fr-text--sm fr-mb-0")}>Sélection :</span>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "1.5rem", flexWrap: "wrap" }}>
+        <span style={{ flexShrink: "0" }} className={fr.cx("fr-text--sm fr-mb-0")}>Sélection :</span>
         {
-          ['epci', 'city'].map((type, index) => (
+          mapState.currentLevel === 'department' && (['epci', 'city'].map((type, index) => (
             <p key={index} style={{
               display: "inline-flex",
               flexDirection: "row",
@@ -209,13 +209,37 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
               color: "var(--text-title-blue-france)",
               marginBottom: "0",
               cursor: "pointer",
+              flexShrink: "0",
               backgroundColor: mapState.departmentView === type ? "var(--background-action-low-blue-france-active)" : "var(--background-action-low-blue-france)",
-            }}
-            onClick={() => setMapState({ ...mapState, departmentView: type })}
-          >
-              {type === 'epci' ? 'Intercommunalité' : 'Commune'}
+              }}
+              onClick={() => setMapState({ ...mapState, departmentView: type })}
+            >
+              {type === 'epci' ? 'EPCI' : 'Commune'}
             </p>
-          ))
+          )))
+        }
+        {
+          mapState.selectedRef && (
+            <p style={{
+              display: "inline-flex",
+              flexDirection: "row",
+              alignItems: "center",
+              width: "fit-content",
+              fontSize: "0.875rem",
+              lineHeight: "1.5rem",
+              minHeight: "2rem",
+              padding: "0.25rem 0.75rem",
+              borderRadius: "1rem",
+              minWidth: "2.25rem",
+              justifyContent: "center",
+              marginBottom: "0",
+              flexShrink: "0",
+              backgroundColor: "var(--background-contrast-grey)",
+              }}
+            >
+              Critère {mapState.selectedRef}
+            </p>
+          )
         }
       </div>
     )
@@ -434,8 +458,8 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
           {mapState.selectedAreas["country"] && mapState.selectedAreas[mapState.currentLevel] && (
             levelHeader()
           )}
-          {mapState.currentLevel === "department" && !mapState.selectedAreas.city && (
-            departmentViewSelector()
+          {((mapState.currentLevel === "department" && !mapState.selectedAreas.city) || mapState.selectedRef) && (
+            selections()
           )}
           {!mapState.selectedAreas.city && mapState.selectedAreas[mapState.currentLevel] && (
             levelStats()

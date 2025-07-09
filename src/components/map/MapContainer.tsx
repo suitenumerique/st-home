@@ -388,38 +388,38 @@ const MapContainer = ({
         }}
       >
         <MapButton
-          onClick={() => selectLevel("country", "00")}
+          onClick={() => selectLevel("country", "00", "quickNav")}
           expandable={true}
           arrowPosition="left"
           tooltip="France hexagonale"
           expandedButtons={[
             {
               label: "Guadeloupe",
-              onClick: () => selectLevel("region", "r01"),
+              onClick: () => selectLevel("region", "r01", "quickNav"),
               tooltip: "Guadeloupe",
               content: <img src="/icons/guadeloupe.svg" alt="Guadeloupe" />,
             },
             {
               label: "Martinique",
-              onClick: () => selectLevel("region", "r02"),
+              onClick: () => selectLevel("region", "r02", "quickNav"),
               tooltip: "Martinique",
               content: <img src="/icons/martinique.svg" alt="Martinique" />,
             },
             {
               label: "Guyane",
-              onClick: () => selectLevel("region", "r03"),
+              onClick: () => selectLevel("region", "r03", "quickNav"),
               tooltip: "Guyane",
               content: <img src="/icons/guyane.svg" alt="Guyane" />,
             },
             {
               label: "La Réunion",
-              onClick: () => selectLevel("region", "r04"),
+              onClick: () => selectLevel("region", "r04", "quickNav"),
               tooltip: "La Réunion",
               content: <img src="/icons/reunion.svg" alt="La Réunion" />,
             },
             {
               label: "Mayotte",
-              onClick: () => selectLevel("region", "r06"),
+              onClick: () => selectLevel("region", "r06", "quickNav"),
               tooltip: "Mayotte",
               content: <img src="/icons/mayotte.svg" alt="Mayotte" />,
             },

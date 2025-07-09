@@ -350,6 +350,7 @@ const ConformityMap = () => {
     code: string,
     source = "areaClick",
     departmentView: "city" | "epci" | null = null,
+    selectedRef: string | null = null,
   ) => {
     console.log("selectLevel", level, code, source);
 
@@ -412,6 +413,10 @@ const ConformityMap = () => {
       newMapState.departmentView = departmentView;
     } else if (level === "city" && source === "quickNav") {
       newMapState.departmentView = "city";
+    }
+
+    if (selectedRef) {
+      newMapState.selectedRef = selectedRef;
     }
 
     setMapState({ ...mapState, ...newMapState } as MapState);
@@ -537,9 +542,10 @@ const ConformityMap = () => {
           urlState.currentAreaCode,
           "quickNav",
           urlState.departmentView as "city" | "epci" | null,
+          urlState.selectedRef,
         );
       } else {
-        selectLevel("country", "00");
+        selectLevel("country", "00", "quickNav", null, urlState.selectedRef);
       }
     }
   }, [stats]);

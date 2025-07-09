@@ -75,9 +75,8 @@ const MapButton = ({ onClick, children, customStyle, expandable, expandedButtons
     return (
       <div style={containerStyle}>
         {expandedButtons.map((button, index) => (
-          <Tooltip kind="hover" title={button.tooltip}>
+          <Tooltip kind="hover" title={button.tooltip} key={index}>
             <button
-              key={index}
               onClick={() => handleButtonClick(button.onClick)}
               style={{
                 background: '#ffffff',
