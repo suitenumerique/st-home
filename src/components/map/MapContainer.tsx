@@ -42,6 +42,7 @@ const MapContainer = ({
   const [hoveredFeature, setHoveredFeature] = useState<{ id: string; score: number } | null>(null);
   const [showGradientSelector, setShowGradientSelector] = useState(false);
   const [customGradient, setCustomGradient] = useState<string[]>(selectedGradient);
+  const [isMapUpdating, setIsMapUpdating] = useState(false);
 
   const gradientPresets = [
     {
@@ -118,6 +119,13 @@ const MapContainer = ({
       setPopupInfo(null);
     }
   }, []);
+
+  const handleMapClick = useCallback((event: MapLayerMouseEvent) => {
+    if (isMapUpdating) {
+      return;
+    }
+    handleAreaClick(event);
+  }, [isMapUpdating, handleAreaClick]);
 
   const onMouseMove = useCallback((event: MapLayerMouseEvent) => {
     if (event.features && event.features.length > 0) {
@@ -488,6 +496,9 @@ const MapContainer = ({
   useEffect(() => {
     if (!currentGeoJSON) return;
     if (!mapRef.current) return;
+    
+    setIsMapUpdating(true);
+    
     if (mapState.currentLevel === "country") {
       mapRef.current.fitBounds(
         [
@@ -510,6 +521,14 @@ const MapContainer = ({
         console.error(e);
       }
     }
+    
+    const timeout = setTimeout(() => {
+      setIsMapUpdating(false);
+    }, 600);
+    
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [mapState.currentLevel, currentGeoJSON]);
 
   return (
@@ -527,7 +546,7 @@ const MapContainer = ({
         }}
         style={{ width: "100%", height: "100%" }}
         interactiveLayerIds={["polygon-fill"]}
-        onClick={handleAreaClick}
+        onClick={handleMapClick}
         onMouseLeave={onMouseLeave}
         onMouseMove={onMouseMove}
         cursor="pointer"
