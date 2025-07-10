@@ -224,7 +224,9 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
         }
         {
           mapState.selectedRef && (
-            <p style={{
+            <p
+              onClick={() => setShowCriteriaSelector(true)}
+              style={{
               display: "inline-flex",
               flexDirection: "row",
               alignItems: "center",
@@ -239,6 +241,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
               marginBottom: "0",
               flexShrink: "0",
               backgroundColor: "var(--background-contrast-grey)",
+              cursor: "pointer",
               }}
             >
               Critère {mapState.selectedRef}
