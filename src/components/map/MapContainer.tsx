@@ -107,7 +107,7 @@ const MapContainer = ({
     type: "line",
     filter: ["==", ["get", "INSEE_GEO"], mapState.selectedAreas.city?.insee_geo],
     paint: {
-      "line-color": ["get", "color_dark"],
+      "line-color": ["get", "color_darker"],
       "line-opacity": 1,
       "line-width": 2.5,
     },
@@ -120,12 +120,15 @@ const MapContainer = ({
     }
   }, []);
 
-  const handleMapClick = useCallback((event: MapLayerMouseEvent) => {
-    if (isMapUpdating) {
-      return;
-    }
-    handleAreaClick(event);
-  }, [isMapUpdating, handleAreaClick]);
+  const handleMapClick = useCallback(
+    (event: MapLayerMouseEvent) => {
+      if (isMapUpdating) {
+        return;
+      }
+      handleAreaClick(event);
+    },
+    [isMapUpdating, handleAreaClick],
+  );
 
   const onMouseMove = useCallback((event: MapLayerMouseEvent) => {
     if (event.features && event.features.length > 0) {
@@ -496,9 +499,9 @@ const MapContainer = ({
   useEffect(() => {
     if (!currentGeoJSON) return;
     if (!mapRef.current) return;
-    
+
     setIsMapUpdating(true);
-    
+
     if (mapState.currentLevel === "country") {
       mapRef.current.fitBounds(
         [
@@ -521,11 +524,11 @@ const MapContainer = ({
         console.error(e);
       }
     }
-    
+
     const timeout = setTimeout(() => {
       setIsMapUpdating(false);
     }, 600);
-    
+
     return () => {
       clearTimeout(timeout);
     };

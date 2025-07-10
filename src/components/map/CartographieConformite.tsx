@@ -435,8 +435,8 @@ const ConformityMap = () => {
     return score === null || score === undefined ? colorsConfig.defaultColor : colorScale(score);
   };
 
-  const darkenColor = (color: string) => {
-    return d3.color(color)?.darker(0.7).formatHex8();
+  const darkenColor = (color: string, amount: number) => {
+    return d3.color(color)?.darker(amount).formatHex8();
   };
 
   const currentGeoJSON = useMemo(() => {
@@ -493,7 +493,8 @@ const ConformityMap = () => {
         )?.score;
         feature.properties!.SCORE = score;
         feature.properties!.color = getColor(score);
-        feature.properties!.color_dark = darkenColor(feature.properties!.color);
+        feature.properties!.color_dark = darkenColor(feature.properties!.color, 0.6);
+        feature.properties!.color_darker = darkenColor(feature.properties!.color, 3);
       });
       displayedGeoJSON = {
         ...(displayedGeoJSON as GeoJSON.FeatureCollection),
