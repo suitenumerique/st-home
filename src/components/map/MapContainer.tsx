@@ -96,8 +96,9 @@ const MapContainer = ({
     type: "line",
     filter: ["==", ["id"], hoveredFeature?.id],
     paint: {
-      "line-color": "#ffffff",
-      "line-width": 2,
+      "line-color": ["get", "color_dark"],
+      "line-opacity": 1,
+      "line-width": 2.5,
     },
   };
 
@@ -106,7 +107,8 @@ const MapContainer = ({
     type: "line",
     filter: ["==", ["get", "INSEE_GEO"], mapState.selectedAreas.city?.insee_geo],
     paint: {
-      "line-color": "#312DAB",
+      "line-color": ["get", "color_dark"],
+      "line-opacity": 1,
       "line-width": 2.5,
     },
   };
@@ -539,8 +541,6 @@ const MapContainer = ({
           data={currentGeoJSON as GeoJSON.FeatureCollection & { id: string }}
           generateId={true}
         >
-          <Layer {...(fillLayerStyle as LayerProps)} beforeId="Water point/Sea or ocean" />
-          <Layer {...(strokeLayerStyle as LayerProps)} beforeId="Water point/Sea or ocean" />
           {hoveredFeature && (
             <Layer {...(hoveredFillLayerStyle as LayerProps)} beforeId="Water point/Sea or ocean" />
           )}
@@ -550,6 +550,8 @@ const MapContainer = ({
               beforeId="Water point/Sea or ocean"
             />
           )}
+          <Layer {...(fillLayerStyle as LayerProps)} beforeId="Water point/Sea or ocean" />
+          <Layer {...(strokeLayerStyle as LayerProps)} beforeId="Water point/Sea or ocean" />
           {mapState.selectedAreas.city && (
             <Layer
               {...(selectedCityLayerStyle as LayerProps)}

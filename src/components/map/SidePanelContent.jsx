@@ -11,6 +11,7 @@ import { Button } from "@codegouvfr/react-dsfr/Button";
 const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack }) => {
 
   const [showCriteriaSelector, setShowCriteriaSelector] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const formatNumber = (value) => {
     return new Intl.NumberFormat("fr-FR").format(value);
@@ -166,22 +167,25 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
             aria-label="Sélectionner un critère"
             tooltip="Sélectionner un critère"
           >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M5.66667 1.33268H19.75V3.49935H5.66667V1.33268ZM1.875 4.04102C1.44402 4.04102 1.0307 3.86981 0.725952 3.56506C0.421205 3.26032 0.25 2.84699 0.25 2.41602C0.25 1.98504 0.421205 1.57171 0.725952 1.26697C1.0307 0.962221 1.44402 0.791016 1.875 0.791016C2.30598 0.791016 2.7193 0.962221 3.02405 1.26697C3.3288 1.57171 3.5 1.98504 3.5 2.41602C3.5 2.84699 3.3288 3.26032 3.02405 3.56506C2.7193 3.86981 2.30598 4.04102 1.875 4.04102ZM1.875 11.6243C1.44402 11.6243 1.0307 11.4531 0.725952 11.1484C0.421205 10.8437 0.25 10.4303 0.25 9.99935C0.25 9.56837 0.421205 9.15505 0.725952 8.8503C1.0307 8.54555 1.44402 8.37435 1.875 8.37435C2.30598 8.37435 2.7193 8.54555 3.02405 8.8503C3.3288 9.15505 3.5 9.56837 3.5 9.99935C3.5 10.4303 3.3288 10.8437 3.02405 11.1484C2.7193 11.4531 2.30598 11.6243 1.875 11.6243ZM1.875 19.0993C1.44402 19.0993 1.0307 18.9281 0.725952 18.6234C0.421205 18.3187 0.25 17.9053 0.25 17.4743C0.25 17.0434 0.421205 16.63 0.725952 16.3253C1.0307 16.0206 1.44402 15.8493 1.875 15.8493C2.30598 15.8493 2.7193 16.0206 3.02405 16.3253C3.3288 16.63 3.5 17.0434 3.5 17.4743C3.5 17.9053 3.3288 18.3187 3.02405 18.6234C2.7193 18.9281 2.30598 19.0993 1.875 19.0993ZM5.66667 8.91602H19.75V11.0827H5.66667V8.91602ZM5.66667 16.4993H19.75V18.666H5.66667V16.4993Z" fill="#000091"/>
-            </svg>
+            <span className={fr.cx("fr-icon-list-unordered")} aria-hidden="true"></span>
           </MapButton>
 
           <MapButton
             onClick={() => {
               navigator.clipboard.writeText(window.location.href);
-              alert("L'URL de cette vue a été copiée dans le presse-papiers");
+              setLinkCopied(true);
+              setTimeout(() => {
+                setLinkCopied(false);
+              }, 2000);
             }}
             aria-label="Copier l'URL de cette vue"
-            tooltip="Copier l'URL de cette vue"
+            tooltip={linkCopied ? "URL copiée" : "Copier l'URL de cette vue"}
           >
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M11.9638 6.59941L13.4967 8.13233C14.919 9.5545 15.7181 11.4835 15.7181 13.4948C15.7181 15.5062 14.919 17.4352 13.4967 18.8573L13.1132 19.2397C10.1516 22.2014 5.34984 22.2014 2.38821 19.2397C-0.573415 16.2781 -0.573415 11.4764 2.38821 8.51474L3.92113 10.0477C2.54275 11.414 2.00075 13.4134 2.50034 15.2889C2.99993 17.1643 4.46474 18.6291 6.34018 19.1287C8.21562 19.6283 10.215 19.0863 11.5814 17.7079L11.9649 17.3244C14.0794 15.2092 14.0794 11.7804 11.9649 9.66524L10.432 8.13233L11.9649 6.60049L11.9638 6.59941ZM17.7098 11.5795C19.0882 10.2131 19.6302 8.21373 19.1306 6.3383C18.631 4.46286 17.1662 2.99804 15.2907 2.49845C13.4153 1.99886 11.4159 2.54086 10.0495 3.91924L9.66605 4.30274C7.55148 6.41795 7.55148 9.8467 9.66605 11.9619L11.199 13.4948L9.66605 15.0267L8.13421 13.4948C6.71189 12.0727 5.91283 10.1437 5.91283 8.13233C5.91283 6.12097 6.71189 4.192 8.13421 2.76983L8.51771 2.38741C10.4335 0.471572 13.2259 -0.276648 15.843 0.424597C18.4601 1.12584 20.5043 3.17002 21.2055 5.7871C21.9068 8.40418 21.1585 11.1966 19.2427 13.1124L17.7098 11.5795Z" fill="#000091"/>
-            </svg>
+            {linkCopied ? (
+              <span aria-hidden="true" className={fr.cx("fr-icon-check-line")}></span>
+            ) : (
+              <span className={fr.cx("fr-icon-links-line")} aria-hidden="true"></span>
+            )}
           </MapButton>
         </div>
       </div>
@@ -433,9 +437,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
             aria-label="Retour"
             tooltip="Retour"
           >
-            <svg width="25" height="26" viewBox="0 0 25 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M5.285 7.75L8.455 10.92L6.6875 12.6875L0.5 6.5L6.6875 0.3125L8.455 2.08L5.285 5.25H14.25C16.9022 5.25 19.4457 6.30357 21.3211 8.17893C23.1964 10.0543 24.25 12.5978 24.25 15.25C24.25 17.9022 23.1964 20.4457 21.3211 22.3211C19.4457 24.1964 16.9022 25.25 14.25 25.25H3V22.75H14.25C16.2391 22.75 18.1468 21.9598 19.5533 20.5533C20.9598 19.1468 21.75 17.2391 21.75 15.25C21.75 13.2609 20.9598 11.3532 19.5533 9.9467C18.1468 8.54018 16.2391 7.75 14.25 7.75H5.285Z" fill="#000091"/>
-            </svg>
+            <span aria-hidden="true" className={fr.cx("fr-icon-arrow-go-back-line")}></span>
           </MapButton>
         )}
         <CommuneSearch
