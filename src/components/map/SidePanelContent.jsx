@@ -134,30 +134,32 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
   const breadcrumbs = () => {
     return (
       <div className={fr.cx("fr-pt-2w")}>
-        <Breadcrumb segments={breadcrumbSegments} currentPageLabel={currentPageLabel} />
+        <Breadcrumb
+          segments={breadcrumbSegments}
+          currentPageLabel={
+            mapState.currentLevel === "city"
+            ? mapState.selectedAreas.city.name + " (" + mapState.selectedAreas.city.zipcode + ")"
+            : currentPageLabel
+          } />
       </div>
     )
   }
 
   const levelHeader = () => {
     return (
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1rem" }}>
         <div>
           <h3 className={fr.cx("fr-mb-0")} style={{ color: "var(--text-title-blue-france)" }}>
             {currentPageLabel}
           </h3>
-          {!mapState.selectedAreas.city ? (
-            <p className={fr.cx("fr-text--lg")} style={{ color: "var(--text-title-blue-france)" }}>
+          {!mapState.selectedAreas.city && (
+            <p className={fr.cx("fr-text--lg fr-mb-0")} style={{ color: "var(--text-title-blue-france)" }}>
               {[
                 currentLevelLabel,
                 `${formatNumber(mapState.selectedAreas[mapState.currentLevel].conformityStats.n_cities)} communes`,
               ]
                 .filter(Boolean)
                 .join(" - ")}
-            </p>
-          ) : (
-            <p className={fr.cx("fr-text--lg")} style={{ color: "var(--text-title-blue-france)" }}>
-              {mapState.selectedAreas.city.zipcode}
             </p>
           )}
         </div>
@@ -285,12 +287,23 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
   const communeInfo = () => {
     return (
       <div>
-        <p>
+        <p className={fr.cx("fr-text--sm")}>
           Voici la situation de la présence numérique de la commune, selon notre{" "}
           <a href="/conformite/referentiel">Référentiel de Conformité</a> :
         </p>
-        <CommuneInfo commune={mapState.selectedAreas.city} />
-        {
+        <CommuneInfo commune={mapState.selectedAreas.city} servicePublicUrlOnExpand={true} />
+        <div style={{ marginTop: "-0.5rem"}}>
+          <Button
+            priority="primary"
+            linkProps={{
+              href: "/bienvenue/" + mapState.selectedAreas.city.siret,
+            }}
+            iconId="fr-icon-arrow-right-line"
+            iconPosition="right"
+          >
+            Vérifier l'éligibilité</Button>
+        </div>
+        {/* {
           mapState.selectedAreas.city.structures?.length > 0 && (
             <div style={{
               borderRadius: "4px",
@@ -311,7 +324,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
               </Button>
             </div>
           )
-        }
+        } */}
       </div>
     )
   }
@@ -432,7 +445,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
   }
 
   return (
-    <div className={fr.cx("fr-pb-3w")}>
+    <div>
       <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
         {mapState.currentLevel !== "country" && (
           <MapButton
