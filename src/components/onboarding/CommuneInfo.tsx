@@ -4,10 +4,11 @@ import { Accordion } from "@codegouvfr/react-dsfr/Accordion";
 import type { AlertProps } from "@codegouvfr/react-dsfr/Alert";
 import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import Link from "next/link";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 
 export type CommuneInfoProps = {
   commune: Commune;
+  servicePublicUrlOnExpand?: boolean;
 };
 
 export const getBadge = (severity: AlertProps.Severity, label: string) => {
@@ -72,7 +73,10 @@ export const MessageLine = ({ children, severity, rcpnt }: MessageLineProps): Re
 /**
  * Component showing detailed commune information in expandable sections
  */
-export default function CommuneInfo({ commune }: CommuneInfoProps) {
+export default function CommuneInfo({
+  commune,
+  servicePublicUrlOnExpand = false,
+}: CommuneInfoProps) {
   const isEligible = commune.st_eligible;
 
   const issues = (commune.issues || ["IN_PROGRESS"]) as string[];
@@ -95,6 +99,9 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
 
   const hasWebsiteRecommendations = rcpnt.includes("1.a") && !rcpnt.includes("1.aa");
   const hasEmailRecommendations = rcpnt.includes("2.a") && !rcpnt.includes("2.aa");
+
+  const [websiteExpanded, setWebsiteExpanded] = useState(false);
+  const [emailExpanded, setEmailExpanded] = useState(false);
 
   const dilaUpdateLink = (
     <Link
@@ -420,6 +427,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
         {/* Website */}
         <Accordion
           titleAs="h2"
+          onExpandedChange={(value) => setWebsiteExpanded(value)}
           label={
             <div className={fr.cx("fr-grid-row", "fr-grid-row--middle")}>
               <span className={fr.cx("fr-icon-earth-line", "fr-mr-1w")} aria-hidden="true" />
@@ -446,6 +454,7 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
         {/* Email */}
         <Accordion
           titleAs="h2"
+          onExpandedChange={(value) => setEmailExpanded(value)}
           label={
             <div className={fr.cx("fr-grid-row", "fr-grid-row--middle")}>
               <span className={fr.cx("fr-icon-mail-line", "fr-mr-1w")} aria-hidden="true" />
@@ -471,28 +480,29 @@ export default function CommuneInfo({ commune }: CommuneInfoProps) {
         </Accordion>
       </div>
 
-      {commune.service_public_url && (
-        <p
-          className={fr.cx("fr-mt-2w", "fr-text--xs", "fr-label--disabled")}
-          style={{ textAlign: "right" }}
-        >
-          {commune.issues_last_checked && (
-            <>
-              Dernière vérification le {String(commune.issues_last_checked).substring(8, 10)}/
-              {String(commune.issues_last_checked).substring(5, 7)}/
-              {String(commune.issues_last_checked).substring(0, 4)}.{" "}
-            </>
-          )}
-          Mettre les informations à jour sur l&rsquo;
-          <Link
-            href={commune.service_public_url + "/demande-de-mise-a-jour"}
-            target="_blank"
-            rel="noopener"
+      {commune.service_public_url &&
+        (!servicePublicUrlOnExpand || websiteExpanded || emailExpanded) && (
+          <p
+            className={fr.cx("fr-mt-2w", "fr-text--xs", "fr-label--disabled")}
+            style={{ textAlign: "right" }}
           >
-            Annuaire du Service Public
-          </Link>
-        </p>
-      )}
+            {commune.issues_last_checked && (
+              <>
+                Dernière vérification le {String(commune.issues_last_checked).substring(8, 10)}/
+                {String(commune.issues_last_checked).substring(5, 7)}/
+                {String(commune.issues_last_checked).substring(0, 4)}.{" "}
+              </>
+            )}
+            Mettre les informations à jour sur l&rsquo;
+            <Link
+              href={commune.service_public_url + "/demande-de-mise-a-jour"}
+              target="_blank"
+              rel="noopener"
+            >
+              Annuaire du Service Public
+            </Link>
+          </p>
+        )}
     </div>
   );
 }
