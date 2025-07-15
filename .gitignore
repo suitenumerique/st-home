@@ -76,6 +76,7 @@ __pycache__/
 *.pyc
 .ruff_cache/
 .coverage
+*.local.py
 
 *.pem
 data/dumps/

@@ -7,6 +7,7 @@ import { Button } from "@codegouvfr/react-dsfr/Button";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { ProConnectButton } from "@codegouvfr/react-dsfr/ProConnectButton";
 import { Stepper } from "@codegouvfr/react-dsfr/Stepper";
+import Link from "next/link";
 
 import { GetServerSideProps } from "next";
 import { NextSeo } from "next-seo";
@@ -55,7 +56,7 @@ export default function Activation(props: PageProps) {
 
   const stepTitles = [
     "Code de sécurité",
-    "Création du compte",
+    "Création de votre compte",
     "Connexion ProConnect"
   ];
 
@@ -340,16 +341,22 @@ export default function Activation(props: PageProps) {
       case 2:
         return (
           <div>
+            
             <p className={fr.cx("fr-text--md", "fr-mb-4w")}>
-              Configurez votre compte personnel pour accéder à la Suite territoriale.
+              Configurez votre compte personnel pour accéder à la Suite territoriale. En tant que premier inscrit, vous êtes administrateur et pourrez créer les comptes pour tous les membres de la collectivité. Vous pourrez désigner un autre administrateur si besoin.
             </p>
+
             <Alert
-              severity="info"
-              title="Compte personnel"
-              description="Vous créez un compte personnel avec vos nom et prénom. Les boîtes partagées (contact, mairie, etc.) seront créées ultérieurement."
-              className={fr.cx("fr-mb-4w")}
-              closable={false}
-            />
+                severity="info"
+                title=<>Nom de domaine de la collectivité</>
+                description=<>
+                Votre collectivité ne dispose pas d&rsquo;un nom de domaine <Link href="/conformite/referentiel" target="_blank">conforme</Link>.<br/><br/> La Suite territoriale vous met donc à disposition gracieusement <b>{emailDomain}</b>. 
+                <br/><br/>Vous pourrez le modifier si vous obtenez ultérieurement un nouveau nom de domaine conforme.
+                </>
+                className={fr.cx("fr-mb-4w")}
+                closable={false}
+              />
+
             <form onSubmit={handleStep2Submit}>
               <div className={fr.cx("fr-mb-4w")}>
                 <Input
@@ -417,10 +424,11 @@ export default function Activation(props: PageProps) {
                   }}
                 />
               </div>
+
               <div className={fr.cx("fr-mb-4w")}>
                 <Input
-                  label="Adresse email"
-                  hintText="Basée sur vos nom et prénom. Vous pouvez la modifier si nécessaire."
+                  label="Adresse email personnelle"
+                  hintText="Elle se base sur votre prénom et nom."
                   state={fieldErrors.email_prefix ? "error" : "default"}
                   stateRelatedMessage={fieldErrors.email_prefix}
                   nativeInputProps={{
