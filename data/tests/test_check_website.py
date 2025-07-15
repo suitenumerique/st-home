@@ -199,7 +199,7 @@ def test_http_www_redirect_nok(http_server, force_all_to_localhost):
 
 def test_https_www_redirect_ok(http_server):
     """Test a site that redirects its www correctly"""
-    issues = check_website("https://www.anct.gouv.fr/")
+    issues = check_website("https://www.sante.gouv.fr/")
     assert Issues.WEBSITE_HTTPS_NOWWW not in issues
 
 
