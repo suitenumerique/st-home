@@ -89,8 +89,11 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
   const introduction = () => {
     return (
       <div
-        className={fr.cx("fr-pt-3w fr-pb-2w fr-mb-3w")}
-        style={{ borderBottom: "2px solid var(--border-default-grey)" }}
+        className={fr.cx("fr-pb-2w fr-mb-3w")}
+        style={{
+          borderBottom: "2px solid var(--border-default-grey)",
+          paddingTop: !isMobile ? "1rem" : "0",
+        }}
       >
         <h2 style={{ color: "var(--text-title-blue-france)" }}>
           Bienvenue sur la Carte de Conformité
@@ -434,23 +437,27 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
 
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-        {mapState.currentLevel !== "country" && (
-          <MapButton
-            onClick={() => goBack()}
-            aria-label="Retour"
-            tooltip="Retour"
-          >
-            <span aria-hidden="true" className={fr.cx("fr-icon-arrow-go-back-line")}></span>
-          </MapButton>
-        )}
-        <CommuneSearch
-          container={container}
-          onSelect={handleQuickNav}
-          placeholder="Rechercher une commune ou EPCI"
-          smallButton={true}
-        />
-      </div>
+      {
+        !isMobile && (
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            {mapState.currentLevel !== "country" && (
+              <MapButton
+                onClick={() => goBack()}
+                aria-label="Retour"
+                tooltip="Retour"
+              >
+                <span aria-hidden="true" className={fr.cx("fr-icon-arrow-go-back-line")}></span>
+              </MapButton>
+            )}
+            <CommuneSearch
+              container={container}
+              onSelect={handleQuickNav}
+              placeholder="Rechercher une commune ou EPCI"
+              smallButton={true}
+            />
+          </div>
+        )
+      }
       {mapState.currentLevel === "country" && !showCriteriaSelector && (
         introduction()
       )}
