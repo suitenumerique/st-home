@@ -82,6 +82,8 @@ const ConformityMap = () => {
     "#009081",
   ]);
 
+  const [isMobile, setIsMobile] = useState(false);
+
   const colorsConfig = useMemo(() => {
     return {
       domain: [0, 1, 2],
@@ -345,6 +347,17 @@ const ConformityMap = () => {
     }
   };
 
+  const handleQuickNav = async (community) => {
+    const level = community.type === "commune" ? "city" : community.type;
+    let code;
+    if (community.type === "epci") {
+      code = community["siret"].slice(0, 9);
+    } else {
+      code = community["siret"] || "";
+    }
+    await selectLevel(level, code, "quickNav");
+  };
+
   const selectLevel = async (
     level: "country" | "region" | "department" | "epci" | "city",
     code: string,
@@ -532,6 +545,15 @@ const ConformityMap = () => {
   ]);
 
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 992);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
     loadAllStats();
   }, []);
 
@@ -566,17 +588,22 @@ const ConformityMap = () => {
           selectLevel={selectLevel}
           setMapState={setMapState}
           goBack={goBack}
+          handleQuickNav={handleQuickNav}
           container={containerRef.current}
+          isMobile={isMobile}
         />
       </SidePanel>
       <MapContainer
         currentGeoJSON={currentGeoJSON as GeoJSON.FeatureCollection & { id: string }}
         handleAreaClick={handleAreaClick}
         handleFullscreen={handleFullscreen}
+        goBack={goBack}
+        handleQuickNav={handleQuickNav}
         mapState={mapState}
         selectLevel={selectLevel}
         selectedGradient={selectedGradient}
         setSelectedGradient={setSelectedGradient}
+        isMobile={isMobile}
       />
     </div>
   );

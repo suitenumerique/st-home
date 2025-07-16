@@ -13,49 +13,15 @@ const SidePanel = ({ children }) => {
   }
 
   return (
-    <div
-      style={{
-        width: isPanelOpen ? 460 : 20,
-        minWidth: isPanelOpen ? 460 : 20,
-        maxWidth: isPanelOpen ? 460 : 20,
-        background: "#fff",
-        borderRight: "1px solid #e5e7eb",
-        boxShadow: isPanelOpen ? "2px 0 8px rgba(0,0,0,0.04)" : "none",
-        zIndex: 100,
-        position: "relative",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div className={`map-side-panel ${!isPanelOpen ? 'map-side-panel--closed' : ''}`}>
       {isPanelOpen && (
-        <div style={{ 
-          padding: "1.5rem", 
-          flex: 1, 
-          height: "100%", 
-          overflowY: "auto",
-          overflowX: "hidden"
-        }}>
+        <div className="map-side-panel__content">
           {children}
         </div>
       )}
       <button
         onClick={togglePanel}
-        style={{
-          position: 'absolute',
-          left: isPanelOpen ? 459 : 19,
-          top: "50%",
-          transform: "translateY(-50%)",
-          zIndex: 50,
-          background: '#fff',
-          border: '1px solid #e5e7eb',
-          borderLeft: 'none',
-          borderRadius: '0 4px 4px 0',
-          boxShadow: '2px 0 8px rgba(0px,0px,0px,0.04)',
-          padding: '8px 2px',
-          cursor: 'pointer',
-          fontSize: 18
-        }}
+        className={`map-side-panel__toggle ${!isPanelOpen ? 'map-side-panel__toggle--closed' : ''}`}
         aria-label={isPanelOpen ? "Fermer le panneau" : "Ouvrir le panneau"}
       >
         {isPanelOpen
