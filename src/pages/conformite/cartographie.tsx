@@ -22,16 +22,7 @@ export default function CartographiePage() {
         title="Cartographie de conformité"
         description="Cartographie de conformité des collectivités"
       />
-      <div
-        style={{
-          position: "fixed",
-          top: 172.5,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: "calc(100% - 172.5px)",
-        }}
-      >
+      <div className="map-container">
         <CartographieConformite />
       </div>
     </>

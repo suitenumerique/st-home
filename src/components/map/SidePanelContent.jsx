@@ -8,25 +8,13 @@ import MapButton from "./MapButton";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 
-const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack }) => {
+const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile }) => {
 
   const [showCriteriaSelector, setShowCriteriaSelector] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
   const formatNumber = (value) => {
     return new Intl.NumberFormat("fr-FR").format(value);
-  };
-
-  const handleQuickNav = async (community) => {
-    const level = community.type === "commune" ? "city" : community.type;
-    let code;
-    if (community.type === "epci") {
-      code = community["siret"].slice(0, 9);
-    } else {
-      code = community["siret"] || "";
-    }
-    await selectLevel(level, code, "quickNav");
-
   };
 
   const breadcrumbSegments = useMemo(() => {
@@ -133,7 +121,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
 
   const breadcrumbs = () => {
     return (
-      <div className={fr.cx("fr-pt-2w")}>
+      <div className="map-side-panel-breadcrumbs">
         <Breadcrumb
           segments={breadcrumbSegments}
           currentPageLabel={
@@ -466,7 +454,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
       {mapState.currentLevel === "country" && !showCriteriaSelector && (
         introduction()
       )}
-      {mapState.currentLevel !== "country" && (
+      {mapState.currentLevel !== "country" && !isMobile && (
         breadcrumbs()
       )}
       {showCriteriaSelector ? (
@@ -499,6 +487,8 @@ SidePanelContent.propTypes = {
   getColor: PropTypes.func.isRequired,
   setMapState: PropTypes.func.isRequired,
   goBack: PropTypes.func.isRequired,
+  handleQuickNav: PropTypes.func.isRequired,
+  isMobile: PropTypes.bool.isRequired,
 };
 
 export default SidePanelContent;
