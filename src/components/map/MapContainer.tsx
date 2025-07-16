@@ -10,8 +10,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import Map, { Layer, LayerProps, MapRef, Popup, ScaleControl, Source } from "react-map-gl/maplibre";
 import mapStyle from "./map_style.json";
 import MapButton from "./mapButton";
-import { MapState } from "./types";
-import { FeatureProperties } from "./types";
+import { FeatureProperties, MapState } from "./types";
 
 const MapContainer = ({
   currentGeoJSON,
