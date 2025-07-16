@@ -347,7 +347,7 @@ const ConformityMap = () => {
     }
   };
 
-  const handleQuickNav = async (community) => {
+  const handleQuickNav = async (community: { type: string; siret: string }) => {
     const level = community.type === "commune" ? "city" : community.type;
     let code;
     if (community.type === "epci") {
@@ -355,7 +355,7 @@ const ConformityMap = () => {
     } else {
       code = community["siret"] || "";
     }
-    await selectLevel(level, code, "quickNav");
+    await selectLevel(level as "epci" | "city", code, "quickNav");
   };
 
   const selectLevel = async (
@@ -549,8 +549,8 @@ const ConformityMap = () => {
       setIsMobile(window.innerWidth <= 992);
     };
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   useEffect(() => {
