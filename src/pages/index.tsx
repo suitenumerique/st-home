@@ -337,6 +337,9 @@ export default function Home() {
                       ? "Nom ou code postal"
                       : "Renseignez le nom ou le code postal de votre collectivité"
                   }
+                  style={{
+                    backgroundColor: "white",
+                  }}
                 />
               </div>
             </div>

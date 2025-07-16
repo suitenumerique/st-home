@@ -1113,6 +1113,9 @@ const ReferentielPage: NextPage = () => {
                         ? "Nom ou code postal"
                         : "Renseignez le nom ou le code postal de votre commune"
                     }
+                    style={{
+                      backgroundColor: "white",
+                    }}
                   />
                 </div>
               </div>

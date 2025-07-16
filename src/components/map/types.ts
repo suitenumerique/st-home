@@ -1,3 +1,4 @@
+import { Commune } from "@/lib/onboarding";
 import L from "leaflet";
 
 export interface StatRecord {
@@ -31,22 +32,12 @@ export interface ParentArea {
   epci_siren?: string;
 }
 
-export interface CollectiviteRecord {
-  insee_geo: string;
-  name: string;
-  type: string;
-  insee_reg?: string;
-  insee_dep?: string;
-  epci_siren?: string;
-  rcpnt: string[];
-}
-
 export interface ConformityStats {
   score: number;
   n_cities?: number;
   details?: {
     "0": number;
-    "1": number;
+    "1"?: number;
     "2"?: number;
   };
 }
@@ -58,7 +49,7 @@ export interface SelectedArea {
   insee_reg?: string;
   insee_dep?: string;
   conformityStats?: ConformityStats;
-  cities?: CollectiviteRecord[];
+  cities?: Commune[];
   geoJSON?: GeoJSON.FeatureCollection;
   geoJSONEPCI?: GeoJSON.Feature[];
 }
@@ -66,11 +57,10 @@ export interface SelectedArea {
 export interface MapState {
   currentLevel: string;
   selectedAreas: {
-    [key: string]: SelectedArea;
+    [key: string]: SelectedArea | Commune | null;
   };
   departmentView: "city" | "epci";
-  selectedCity: CollectiviteRecord | null;
-  updateBounds?: boolean;
+  selectedRef: string | null;
 }
 
 export interface FeatureProperties {

@@ -20,12 +20,16 @@ interface CommuneSearchProps {
   placeholder?: string;
   type?: "commune" | "epci" | "all";
   smallButton?: boolean;
+  style?: React.CSSProperties;
+  container?: HTMLElement | null;
 }
 
 interface SearchInputProps {
   id: string;
   placeholder?: string;
+  style?: React.CSSProperties;
   type: "commune" | "epci" | "all";
+  container?: HTMLElement | null;
 }
 
 function CommuneSearchInput(
@@ -33,7 +37,7 @@ function CommuneSearchInput(
     onOptionSelect: (commune: Commune) => void;
   },
 ) {
-  const { id, placeholder, onOptionSelect } = props;
+  const { id, placeholder, onOptionSelect, style, container } = props;
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [communes, setCommunes] = useState<Commune[]>([]);
@@ -115,6 +119,11 @@ function CommuneSearchInput(
       }}
       onChange={(_, value) => (value ? onOptionSelect(value) : null)}
       autoHighlight={true}
+      slotProps={{
+        popper: {
+          container: container,
+        },
+      }}
       renderOption={(props, option) => {
         // Remove "key" from props
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -140,9 +149,10 @@ function CommuneSearchInput(
               label=""
               nativeInputProps={{
                 placeholder: placeholder || "Rechercher une commune",
-                style: {
-                  backgroundColor: "white",
-                },
+                style: style,
+                // style: {
+                //   backgroundColor: "white",
+                // },
                 ...params.inputProps,
               }}
             />
@@ -213,7 +223,9 @@ export default function CommuneSearch({
   onSelect,
   placeholder,
   type = "all",
+  style = {},
   smallButton = false,
+  container,
 }: CommuneSearchProps) {
   return (
     <>
@@ -226,7 +238,9 @@ export default function CommuneSearch({
             id={id}
             placeholder={placeholder}
             type={type}
+            style={style}
             onOptionSelect={onSelect || (() => {})}
+            container={container}
           />
         )}
       />
