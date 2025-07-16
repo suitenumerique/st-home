@@ -106,11 +106,5 @@
     "value": "Utilisation d'une politique de quarantaine par l'enregistrement DMARC",
     "mandatory": false,
     "show_in_selector": true
-  },
-  {
-    "key": "2.8",
-    "value": "Serveur de messagerie situé dans l'Union Européenne",
-    "mandatory": true,
-    "show_in_selector": true
   }
 ]
