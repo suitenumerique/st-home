@@ -94,7 +94,7 @@ path.leaflet-interactive:focus {
   max-width: 460px;
   background: #fff;
   border-right: 1px solid #e5e7eb;
-  box-shadow: 2px 0 8px rgba(0,0,0,0.04);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
   z-index: 100;
   position: relative;
   height: 100%;
@@ -127,7 +127,7 @@ path.leaflet-interactive:focus {
   border: 1px solid #e5e7eb;
   border-left: none;
   border-radius: 0 4px 4px 0;
-  box-shadow: 2px 0 8px rgba(0,0,0,0.04);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
   padding: 8px 2px;
   cursor: pointer;
   font-size: 18px;
@@ -160,7 +160,7 @@ path.leaflet-interactive:focus {
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
-  background: rgba(225, 226, 226, .85);
+  background: rgba(225, 226, 226, 0.85);
   padding: 8px 8px 4px 8px;
   border-radius: 4px;
 }
@@ -227,7 +227,7 @@ path.leaflet-interactive:focus {
     justify-content: center;
   }
 
-  .map-side-panel__toggle span{
+  .map-side-panel__toggle span {
     transform: rotate(-90deg);
   }
 
@@ -241,5 +241,4 @@ path.leaflet-interactive:focus {
     bottom: 10px;
     right: 10px;
   }
-
 }

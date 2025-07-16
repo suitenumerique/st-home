@@ -8,10 +8,10 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import PropTypes from "prop-types";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Map, { Layer, LayerProps, MapRef, Popup, ScaleControl, Source } from "react-map-gl/maplibre";
+import CommuneSearch from "../CommuneSearch";
 import mapStyle from "./map_style.json";
 import MapButton from "./mapButton";
 import { FeatureProperties, MapState } from "./types";
-import CommuneSearch from "../CommuneSearch";
 
 const MapContainer = ({
   currentGeoJSON,
@@ -38,7 +38,14 @@ const MapContainer = ({
   setSelectedGradient: (gradient: string[]) => void;
   isMobile: boolean;
   goBack: () => void;
-  handleQuickNav: () => void;
+  handleQuickNav: (commune: {
+    siret: string;
+    name: string;
+    insee_geo?: string;
+    zipcode?: string;
+    type: "commune" | "epci";
+    population: number;
+  }) => void;
 }) => {
   const mapRef = useRef<MapRef>(null);
   const [popupInfo, setPopupInfo] = useState<{
@@ -555,13 +562,20 @@ const MapContainer = ({
       </Map>
 
       {isMobile && (
-        <div style={{ position: "absolute", width: "100%", padding: "10px", top: "0", display: "flex", alignItems: "center", gap: "1rem", zIndex: 10 }}>
+        <div
+          style={{
+            position: "absolute",
+            width: "100%",
+            padding: "10px",
+            top: "0",
+            display: "flex",
+            alignItems: "center",
+            gap: "1rem",
+            zIndex: 10,
+          }}
+        >
           {mapState.currentLevel !== "country" && (
-            <MapButton
-              onClick={() => goBack()}
-              aria-label="Retour"
-              tooltip="Retour"
-            >
+            <MapButton onClick={() => goBack()} aria-label="Retour" tooltip="Retour">
               <span aria-hidden="true" className={fr.cx("fr-icon-arrow-go-back-line")}></span>
             </MapButton>
           )}
@@ -573,7 +587,7 @@ const MapContainer = ({
         </div>
       )}
 
-      { !isMobile && mapGradient()}
+      {!isMobile && mapGradient()}
       {mapDromSelector()}
       {mapActionButtons()}
     </div>
