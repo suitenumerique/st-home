@@ -33,6 +33,7 @@ yarn-error.log*
 .env.production.local
 .env.staging
 .env.production
+.env
 
 # vercel
 .vercel
@@ -75,6 +76,7 @@ __pycache__/
 *.pyc
 .ruff_cache/
 .coverage
+*.local.py
 
 *.pem
 data/dumps/

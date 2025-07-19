@@ -52,7 +52,7 @@ function StructureCard({
 
       <Button
         linkProps={{
-          href: `/bienvenue/${commune.siret}/inscription?structureId=${structure.id}`,
+          href: `/bienvenue/${commune.siret}/groupe-pilote?structureId=${structure.id}`,
         }}
       >
         Rejoindre le Groupe pilote
@@ -87,7 +87,7 @@ export default function OPSNChoiceView({ commune }: OPSNChoiceViewProps) {
         <p className={fr.cx("fr-text--lg", "fr-mt-4w")}>
           En cas de doute ou si vous ne souhaitez pas adhérer aux structures proposées,{" "}
           <Link
-            href={`/bienvenue/${commune.siret}/inscription`}
+            href={`/bienvenue/${commune.siret}/groupe-pilote`}
             className={fr.cx("fr-link", "fr-text--lg")}
           >
             contactez-nous

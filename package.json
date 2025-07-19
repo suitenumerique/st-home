@@ -48,17 +48,10 @@
     "test:e2e": "playwright test",
     "test:data": "docker-compose run -T --rm data_tests",
     "test:playwright": "NEXT_PUBLIC_BASE_PATH='' NODE_ENV=production npm run build && playwright test",
-    "db:reset:local": "npm run db:drop:local && npm run db:push:local && npm run db:seed:local",
-    "db:reset:local:sample": "npm run db:drop:local && npm run db:push:local && npm run db:seed:local:sample",
-    "db:reset:staging": "npm run db:drop:staging && npm run db:push:staging && npm run db:seed:staging",
-    "db:drop:local": "dotenv -e .env.local -- node -r @swc-node/register scripts/db-drop.ts",
-    "db:drop:staging": "dotenv -e .env.staging -- node -r @swc-node/register scripts/db-drop.ts",
-    "db:browse:local": "dotenv -e .env.local -- drizzle-kit studio",
-    "db:browse:staging": "dotenv -e .env.staging -- drizzle-kit studio",
-    "db:browse:production": "dotenv -e .env.production -- drizzle-kit studio",
-    "db:push:local": "dotenv -e .env.local -- drizzle-kit push",
+    "db:drop": "node -r @swc-node/register scripts/db-drop.ts",
+    "db:push": "drizzle-kit push",
     "db:push:staging": "dotenv -e .env.staging -- drizzle-kit push",
-    "db:seed:sample:local": "dotenv -e .env.local -- node -r @swc-node/register scripts/db-seed.ts ./data/dumps-sample",
+    "db:seed:sample": "node -r @swc-node/register scripts/db-seed.ts ./data/dumps-sample",
     "db:seed:local": "dotenv -e .env.local -- npm run db:seed",
     "db:seed:staging": "dotenv -e .env.staging -- npm run db:seed",
     "db:seed": "node -r @swc-node/register scripts/db-seed.ts ./data/dumps"
@@ -143,6 +136,8 @@
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.37.0",
-    "@swc/core-linux-x64-gnu": "^1.10.12"
+    "@swc/core-linux-x64-gnu": "^1.10.12",
+    "@rollup/rollup-linux-arm64-gnu": "^4.37.0",
+    "@swc/core-linux-arm64-gnu": "^1.10.12"
   }
 }

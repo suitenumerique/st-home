@@ -9,6 +9,17 @@ services:
     ports:
       - "5432:5432"
 
+  postgresql-web:
+    image: sosedoff/pgweb
+    profiles:
+      - tools
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env.development
+    depends_on:
+      - postgresql
+
   # mailcatcher:
   #   image: maildev/maildev:2.2.1
   #   ports:
@@ -114,3 +125,28 @@ services:
     ports:
       - "5557:5557"
     command: celery -A celery_app flower --port=5557
+
+  frontend:
+    user: "${DOCKER_USER:-1000}"
+    build:
+      dockerfile: ./Dockerfile
+    command: ["npm", "run", "dev"]
+    volumes:
+      - .:/home/frontend/
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgresql
+    env_file:
+      - .env.development
+
+  frontend-tools:
+    user: "${DOCKER_USER:-1000}"
+    profiles:
+      - frontend-tools
+    build:
+      dockerfile: ./Dockerfile
+    volumes:
+      - .:/home/frontend/
+    env_file:
+      - .env.development
