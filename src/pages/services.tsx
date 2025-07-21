@@ -258,6 +258,7 @@ const SERVICES_DATA = [
       <>Gérez facilement l&rsquo;accès à une adresse email collaborative ;</>,
       <>Importez votre carnet d&rsquo;adresse et historique simplement.</>,
     ],
+    image: "/images/screen-messages.png",
     faqs: [
       {
         question: <>Quelle est la capacité de stockage de ma boîte mail ?</>,
@@ -336,7 +337,7 @@ const SERVICES_DATA = [
       <>Importez vos documents simplement ;</>,
       <>Retrouvez rapidement tous vos documents.</>,
     ],
-    image: "/images/screen-fichiers.png",
+    image: "/images/screen-fichiers-2.png",
     faqs: [
       {
         question: <>A quelle capacité de stockage ai-je accès ?</>,
@@ -387,63 +388,61 @@ const SERVICES_DATA = [
     ],
   },
   {
-    id: "regie",
-    name: "La Régie",
-    title: <>La Régie, l&rsquo;interface d&rsquo;administration</>,
+    id: "projets",
+    name: "Projets",
+    title: <>Projets, la gestion de projets collaborative</>,
     description: (
       <>
-        Gérez vos contacts, groupes de travail et droits d&rsquo;accès aux services depuis une
-        interface d&rsquo;administration unique.
+        Organisez, visualisez et coordonnez simplement les projets de votre équipe avec un outil de kanban adapté aux collectiviés territoriales.
       </>
     ),
     features: [
-      <>Créez votre compte utilisateur et ceux de vos collègues ;</>,
-      <>Définissez les rôles et permissions de chaque utilisateur ;</>,
-      <>Créez toutes les adresses de messagerie de votre équipe ;</>,
-      <>Supervisez l&rsquo;utilisation des différents services de la Suite territoriale.</>,
+      <>Rejoignez les espaces de travail partagés de chacune de vos collectivités ;</>,
+      <>Créez un nombre illimité de tableaux, personnels ou collaboratifs ;</>,
+      <>Suivez et personnalisez chaque carte correspondant aux différentes tâches ;</>,
+      <>Retrouvez des modèles de gestion de projet adaptés aux métiers de la fonction publique territoriale</>,
     ],
-    image: "/images/screen-regie.png",
+    image: "/images/screen-projets.png",
     faqs: [
       {
-        question: <>À qui s&rsquo;adresse cette interface d&rsquo;administration ?</>,
+        question: <> Mes tableaux sont-ils partagés à toute mon organisation ?</>,
         answer: (
           <>
-            La Régie s&rsquo;adresse à tous les utilisateurs de la Suite territoriale, quelle que
-            soit leur organisation : commune ou structure de mutualisation de toute nature (OPSN,
-            intercommunalité, département...).
+            Non, tous les tableaux sont personnels, c'est à dire qu'ils ne sont ni consultables,
+            ni éditables par défaut, même aux autres membres de votre organisation.
+
           </>
         ),
       },
       {
-        question: <>Comment ajouter, modifier ou supprimer un utilisateur ?</>,
+        question: <>Comment partager un tableau à mes collègues ?</>,
         answer: (
           <>
-            Différents niveaux d&rsquo;administration sont définis selon que la commune est couverte
-            par un OPSN, une intercommunalité partenaire ou directement par l&rsquo;ANCT. La Régie
-            permet l&rsquo;ajout, la modification ou la suppression d&rsquo;utilisateurs en fonction
-            du niveau d&rsquo;administration défini.
-          </>
-        ),
-      },
-      {
-        question: <>Puis-je créer et gérer des groupes d&rsquo;utilisateurs de ma commune ?</>,
-        answer: (
-          <>
-            Oui, la Régie permet, pour chaque organisation, de créer des groupes
-            d&rsquo;utilisateurs pour leur donner accès à des services ou des fonctionnalités
-            spécifiques.
+            Pour partager un tableau et commencer à collaborer, vous pouvez cliquer sur l'icône "Ajouter un membre" et inviter vos collègues.
+            Un compte ProConnect ainsi qu'une première connexion préalable à Projets sont aujourd'hui nécessaires pour être invité à un tableau.
           </>
         ),
       },
       {
         question: (
-          <>La Régie permet-elle de piloter uniquement les services Messages et Fichiers ?</>
+          <>
+            Comment utiliser un modèle de tableau pré-défini ?
+          </>
         ),
         answer: (
           <>
-            Non, la Régie permet de centraliser tous les services numériques utilisés au sein de la
-            collectivité, si ces services sont raccordés à ProConnect en tant que fournisseur de
-            service.
+            A la création d'un nouveau tableau, vous pouvez choisir de créer un tableau pré-défini.
+            Ces tableaux sont édités par des structures de mutualisation partenaires ou associations d'élus par exemple.
+            Cliquez simplement sur le modèle qui vous convient dans la liste des modèles proposés
+          </>
+        ),
+      },
+      {
+        question: <>Comment proposer un modèle de tableau pré-défini ?</>,
+        answer: (
+          <>
+          Quiconque est invité à proposer un nouveau modèle de tableau pré-défini qui pourra être utilisé par tous les utilisateurs.
+          Pour ce faire, contactez l'équipe de la Suite territoriale (<contact@suite.anct.gouv.fr>) pour demander l'accès à l'espace partagé des "Modèles".
           </>
         ),
       },
