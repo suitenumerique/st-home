@@ -45,8 +45,8 @@ export default function ContactUs() {
         </p>
         <p>
           Écrivez-nous à{" "}
-          <Link href="mailto:lasuiteterritoriale@anct.gouv.fr" className={fr.cx("fr-link")}>
-            lasuiteterritoriale@anct.gouv.fr
+          <Link href="mailto:contact@suite.anct.gouv.fr" className={fr.cx("fr-link")}>
+            contact@suite.anct.gouv.fr
           </Link>
         </p>
       </div>
