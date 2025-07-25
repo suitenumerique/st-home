@@ -11,6 +11,9 @@
     {
       "command": "0 0 1 * * python -m tasks.historize",
       "size": "M"
+    },
+    {
+      "command": "0 0 * * * scripts/scalingo_pgdump.sh"
     }
   ]
 }
