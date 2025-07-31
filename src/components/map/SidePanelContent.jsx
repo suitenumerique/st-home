@@ -109,15 +109,15 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
         </h2>
         <p>
           Développée par l'ANCT, la{" "}
-          <strong>Carte de Conformité de Présence Numérique des Territoires (CCNPT)</strong> est
-          basée sur le{" "}
+          <strong>Carte de Conformité de Présence Numérique des Territoires (CCPNT)</strong> est
+          fondée sur le{" "}
           <a href="/conformite/referentiel">Référentiel de Conformité de la Présence Numérique des Territoires</a>{" "}
           (RCPNT).
         </p>
         <p>
           Elle permet d'identifier les <strong>communes</strong> françaises{" "}
-          <strong>conformes</strong> dans la <strong>sécurisation</strong> de leur{" "}
-          <strong>communication en ligne</strong>.
+          <strong>conformes</strong> aux <strong>critères de sécurité</strong>{" "}
+          dans leur <strong>communication en ligne</strong>.
         </p>
         <p style={{ marginBottom: "0" }}>
           Les critères sont reliés aux usages d’un <strong>nom de domaine</strong> et{" "}
