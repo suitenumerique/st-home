@@ -393,14 +393,18 @@ const SERVICES_DATA = [
     title: <>Projets, la gestion de projets collaborative</>,
     description: (
       <>
-        Organisez, visualisez et coordonnez simplement les projets de votre équipe avec un outil de kanban adapté aux collectiviés territoriales.
+        Organisez, visualisez et coordonnez simplement les projets de votre équipe avec un outil de
+        kanban adapté aux collectiviés territoriales.
       </>
     ),
     features: [
       <>Rejoignez les espaces de travail partagés de chacune de vos collectivités ;</>,
       <>Créez un nombre illimité de tableaux, personnels ou collaboratifs ;</>,
       <>Suivez et personnalisez chaque carte correspondant aux différentes tâches ;</>,
-      <>Retrouvez des modèles de gestion de projet adaptés aux métiers de la fonction publique territoriale</>,
+      <>
+        Retrouvez des modèles de gestion de projet adaptés aux métiers de la fonction publique
+        territoriale
+      </>,
     ],
     image: "/images/screen-projets.png",
     faqs: [
@@ -408,9 +412,8 @@ const SERVICES_DATA = [
         question: <> Mes tableaux sont-ils partagés à toute mon organisation ?</>,
         answer: (
           <>
-            Non, tous les tableaux sont personnels, c'est à dire qu'ils ne sont ni consultables,
-            ni éditables par défaut, même aux autres membres de votre organisation.
-
+            Non, tous les tableaux sont personnels, c'est à dire qu'ils ne sont ni consultables, ni
+            éditables par défaut, même aux autres membres de votre organisation.
           </>
         ),
       },
@@ -418,22 +421,21 @@ const SERVICES_DATA = [
         question: <>Comment partager un tableau à mes collègues ?</>,
         answer: (
           <>
-            Pour partager un tableau et commencer à collaborer, vous pouvez cliquer sur l'icône "Ajouter un membre" et inviter vos collègues.
-            Un compte ProConnect ainsi qu'une première connexion préalable à Projets sont aujourd'hui nécessaires pour être invité à un tableau.
+            Pour partager un tableau et commencer à collaborer, vous pouvez cliquer sur l'icône
+            "Ajouter un membre" et inviter vos collègues. Un compte ProConnect ainsi qu'une première
+            connexion préalable à Projets sont aujourd'hui nécessaires pour être invité à un
+            tableau.
           </>
         ),
       },
       {
-        question: (
-          <>
-            Comment utiliser un modèle de tableau pré-défini ?
-          </>
-        ),
+        question: <>Comment utiliser un modèle de tableau pré-défini ?</>,
         answer: (
           <>
             A la création d'un nouveau tableau, vous pouvez choisir de créer un tableau pré-défini.
-            Ces tableaux sont édités par des structures de mutualisation partenaires ou associations d'élus par exemple.
-            Cliquez simplement sur le modèle qui vous convient dans la liste des modèles proposés
+            Ces tableaux sont édités par des structures de mutualisation partenaires ou associations
+            d'élus par exemple. Cliquez simplement sur le modèle qui vous convient dans la liste des
+            modèles proposés
           </>
         ),
       },
@@ -441,8 +443,11 @@ const SERVICES_DATA = [
         question: <>Comment proposer un modèle de tableau pré-défini ?</>,
         answer: (
           <>
-          Quiconque est invité à proposer un nouveau modèle de tableau pré-défini qui pourra être utilisé par tous les utilisateurs.
-          Pour ce faire, contactez l'équipe de la Suite territoriale (<contact@suite.anct.gouv.fr>) pour demander l'accès à l'espace partagé des "Modèles".
+            Quiconque est invité à proposer un nouveau modèle de tableau pré-défini qui pourra être
+            utilisé par tous les utilisateurs. Pour ce faire, contactez l'équipe de la Suite
+            territoriale (
+            <Link href="mailto:contact@suite.anct.gouv.fr">contact@suite.anct.gouv.fr</Link>) pour
+            demander l'accès à l'espace partagé des "Modèles".
           </>
         ),
       },
@@ -452,6 +457,7 @@ const SERVICES_DATA = [
     id: "ecosysteme",
     name: "Ecosystème applicatif",
     image: "/images/screen-ecosysteme.png",
+    wrapImage: true,
     title: <>Ecosystème applicatif, les services mutualisés</>,
     description: (
       <>
@@ -584,40 +590,51 @@ export default function ServicesPage() {
                     <div
                       role="img"
                       aria-label={`Capture d'écran du service ${service.name}`}
-                      style={{
-                        borderRadius: "6px",
-                        overflow: "hidden",
-                        boxShadow: "0px 0px 15px 0px rgba(0, 0, 0, 0.2)",
-                      }}
+                      style={
+                        service?.wrapImage
+                          ? {
+                              borderRadius: "6px",
+                              overflow: "hidden",
+                              boxShadow: "0px 0px 15px 0px rgba(0, 0, 0, 0.2)",
+                            }
+                          : {}
+                      }
                     >
-                      <div
-                        style={{ margin: "8px", display: "flex", flexDirection: "row", gap: "4px" }}
-                      >
+                      {service.wrapImage && (
                         <div
                           style={{
-                            width: "6px",
-                            height: "6px",
-                            borderRadius: "50%",
-                            backgroundColor: "#ccc",
+                            margin: "8px",
+                            display: "flex",
+                            flexDirection: "row",
+                            gap: "4px",
                           }}
-                        />
-                        <div
-                          style={{
-                            width: "6px",
-                            height: "6px",
-                            borderRadius: "50%",
-                            backgroundColor: "#ccc",
-                          }}
-                        />
-                        <div
-                          style={{
-                            width: "6px",
-                            height: "6px",
-                            borderRadius: "50%",
-                            backgroundColor: "#ccc",
-                          }}
-                        />
-                      </div>
+                        >
+                          <div
+                            style={{
+                              width: "6px",
+                              height: "6px",
+                              borderRadius: "50%",
+                              backgroundColor: "#ccc",
+                            }}
+                          />
+                          <div
+                            style={{
+                              width: "6px",
+                              height: "6px",
+                              borderRadius: "50%",
+                              backgroundColor: "#ccc",
+                            }}
+                          />
+                          <div
+                            style={{
+                              width: "6px",
+                              height: "6px",
+                              borderRadius: "50%",
+                              backgroundColor: "#ccc",
+                            }}
+                          />
+                        </div>
+                      )}
 
                       <Image
                         src={service.image}
