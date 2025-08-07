@@ -21,7 +21,7 @@ jobs:
       - name: Create env files
         run: make create-env-files
       - name: Run linting checks
-        run: make back-lint-check
+        run: make data-lint-check
 
   data-test:
     runs-on: ubuntu-latest
@@ -40,5 +40,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Create env files
         run: make create-env-files
+      - name: Install dependencies
+        run: make front-install-deps
       - name: Run linting checks
         run: make front-lint-check
