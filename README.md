@@ -13,18 +13,67 @@ Après avoir cloné le projet :
 ### Développement
 
 ```bash
-docker-compose up -d # pour lancer les conteneurs de base de données
-npm install # pour installer les dépendances
-npx husky install # ajouter les vérifications pre-commit
-npm run dev # pour lancer en mode développement
+make bootstrap
 ```
 
-Il suffit ensuite de se rendre sur [http://127.0.0.1:3000/](http://127.0.0.1:3000/).
+Il suffit ensuite de se rendre sur [http://localhost:8950/](http://localhost:8950/).
+
+Pour voir toutes les commandes disponibles, il est possible de lancer :
+
+```bash
+make help
+```
+
+### Services de développement
+
+Les services suivants sont disponibles :
+
+| Service        | URL / Port                                     | Description                      | Identifiants  |
+| -------------- | ---------------------------------------------- | -------------------------------- | ------------- |
+| **Frontend**   | [http://localhost:8950](http://localhost:8950) | Site vitrine en développement    | Aucun         |
+| **PostgreSQL** | 8951                                           | Serveur de base de données       | `usr` / `pwd` |
+| **Redis**      | 8952                                           | Cache et courtier de messages    | Aucun         |
+| **Celery UI**  | [http://localhost:8953](http://localhost:8953) | Supervision de la file de tâches | Aucun         |
+| **Drizzle Studio** | [http://localhost:8954](http://localhost:8954) | Interface de gestion de la base de données | Aucun         |
+
+### Production de données
+
+![Production des données RPNT](./docs/rpnt-data-process.png)
+
+Un conteneur Python utilisant le code de `data/` est lançable avec :
+
+```bash
+make data-shell
+```
+
+Une fois dedans, il est possible de lancer les tâches de synchronisation des données :
+
+```bash
+# Tout synchroniser
+python -m tasks.sync
+
+# Lancer une tâche de vérification manuellement
+python -m tasks.check_website [SIRET]
+python -m tasks.check_dns [SIRET]
+
+```
+
+Cela peut permettre de débugguer des problèmes liés à certains SIRETs en particulier.
+
+Il est recommandé d'ajouter des tests unitaires à chaque nouveau cas pour rendre les vérifications plus robustes.
+
+### Mise à jour des dépendances
 
 Après avoir modifié une dépendance Python dans `data/pyproject.toml`, il est nécessaire de recréer le lockfile :
 
 ```bash
-npm run data:poetry:lock
+make data-freeze-deps
+```
+
+Idem pour le frontend :
+
+```bash
+make front-freeze-deps
 ```
 
 ### Base de données
@@ -35,53 +84,22 @@ Pour réinitialiser la base de données avec des données de test :
 
 ```bash
 # Appliquer les migrations
-npm run db:reset:local
+make db-reset-sample
 
 # Explorer la base de données avec Drizzle Studio
-npm run db:browse:local
-```
-
-### Importer les données des communes
-
-L'application utilise une base de données des communes françaises. Vous pouvez importer ces données en utilisant les commandes suivantes :
-
-```bash
-# Importer les données de test (un petit ensemble de communes)
-npm run db:seed:sample:local
-
-# Générer les données complètes en JSON avec toutes les communes de France (nécessite une clé Grist)
-npm run data:sync:local
-
-# Puis importer ces données en local
-npm run db:seed:local
+make db-browse
 ```
 
 ### Tests
 
 ```
 # lancer tous les tests
-npm test
+make test
 
 # a refaire avant chaque commit
-npm run lint
+make lint
 ```
 
-### Lancer des vérifications RCPNT manuellement
-
-Il est possible de rentrer dans le conteneur `data` et éxecuter des tâches. Par exemple :
-
-```
-npm run data:shell
-
-# Puis, une fois dedans :
-python3 -m tasks.check_website [SIRET]
-python3 -m tasks.check_dns [SIRET]
-python3 -m tasks.sync
-```
-
-Cela peut permettre de débugguer des problèmes liés à certains SIRETs en particulier.
-
-Il est recommandé d'ajouter des tests unitaires à chaque nouveau cas pour rendre les vérifications plus robustes.
 
 ## Mise à jour des fichiers geoJSON
 

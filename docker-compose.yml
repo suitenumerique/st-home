@@ -1,3 +1,5 @@
+name: st-home
+
 # Services for local development
 services:
   postgresql:
@@ -7,18 +9,12 @@ services:
       - POSTGRES_USER=usr
       - POSTGRES_PASSWORD=pwd
     ports:
-      - "5432:5432"
-
-  # mailcatcher:
-  #   image: maildev/maildev:2.2.1
-  #   ports:
-  #     - "1081:1080"
-  #     - "1025:1025"
+      - "8951:5432"
 
   redis:
     image: redis:5
     ports:
-      - "6379:6379"
+      - "8952:6379"
 
   # Don't launch this with "docker compose up"
   data_tests:
@@ -53,17 +49,8 @@ services:
     volumes:
       - ./data:/app/data
     env_file:
-      - .env.development
-    environment:
-      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
-      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
-      - DATABASE_URL=${DATABASE_URL}
-      - GRIST_API_KEY=${GRIST_API_KEY}
-      - GRIST_DOC_ID=${GRIST_DOC_ID}
-      - GRIST_SELF_MANAGED=${GRIST_SELF_MANAGED}
-      - GRIST_SELF_MANAGED_HOME=${GRIST_SELF_MANAGED_HOME}
-      - GRIST_SELF_MANAGED_SINGLE_ORG=${GRIST_SELF_MANAGED_SINGLE_ORG}
-      - GRIST_TEAM_SITE=${GRIST_TEAM_SITE}
+      - .env.defaults
+      - .env.local
     command: watchmedo auto-restart --patterns="*.py" --recursive -- celery -A celery_app worker -E -Q celery,check_website,check_dns --loglevel=debug --concurrency=2
 
   flower:
@@ -72,14 +59,14 @@ services:
       target: runtime-dev
     depends_on:
       - redis
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - FLOWER_UNAUTHENTICATED_API=true
+    env_file:
+      - .env.defaults
+      - .env.local
     volumes:
       - ./data:/app/data
     ports:
-      - "5556:5556"
-    command: celery -A celery_app flower --port=5556
+      - "8953:8953"
+    command: celery -A celery_app flower --port=8953
 
   flower_staging:
     profiles:
@@ -91,12 +78,11 @@ services:
       target: runtime-dev
     pull_policy: build
     env_file:
+      - .env.defaults
       - .env.staging
-    environment:
-      - FLOWER_UNAUTHENTICATED_API=true
     ports:
-      - "5557:5557"
-    command: celery -A celery_app flower --port=5557
+      - "8953:8953"
+    command: celery -A celery_app flower --port=8953
 
   flower_production:
     profiles:
@@ -108,9 +94,32 @@ services:
       target: runtime-dev
     pull_policy: build
     env_file:
+      - .env.defaults
       - .env.production
-    environment:
-      - FLOWER_UNAUTHENTICATED_API=true
     ports:
-      - "5557:5557"
-    command: celery -A celery_app flower --port=5557
+      - "8953:8953"
+    command: celery -A celery_app flower --port=8953
+
+  frontend-dev:
+    build:
+      context: .
+      target: runtime-dev
+    ports:
+      - "8950:8950"
+    volumes:
+      - ./:/app
+    env_file:
+      - .env.defaults
+      - .env.local
+    depends_on:
+      - postgresql
+
+  frontend-base:
+    build:
+      context: .
+      target: runtime-dev
+    volumes:
+      - ./:/app
+    env_file:
+      - .env.defaults
+      - .env.local
