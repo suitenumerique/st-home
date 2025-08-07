@@ -1,84 +1,46 @@
 name: Tests
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
       - "**"
-  pull_request:
-    branches:
-      - "**"
+
+env:
+  COMPOSE_BAKE: true
 
 jobs:
-  lint-front:
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .node-version
-          cache: "npm"
-      - name: Install dependencies
-        run: npm ci
-        env:
-          NODE_ENV: development
-      - name: Run lint
-        run: npm run lint:front:check
 
-  lint-back:
-    runs-on: ubuntu-24.04
-    defaults:
-      run:
-        working-directory: data
+  data-lint:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-      - name: Install development dependencies
-        run: pip install --user .[dev]
-      - name: Run lint
-        run: ruff check . && ruff format --check .
+      - name: Create env files
+        run: make create-env-files
+      - name: Run linting checks
+        run: make data-lint-check
 
-  test-front:
-    runs-on: ubuntu-24.04
+  data-test:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .node-version
-          cache: "npm"
-      - name: Install dependencies
-        run: npm ci
-        env:
-          NODE_ENV: development
-      - name: Install Playwright browsers
-        run: npm run test:e2e:install
+      - name: Create env files
+        run: make create-env-files
       - name: Run tests
-        run: npm run test
+        run: make data-test
 
-
-  test-back:
-    runs-on: ubuntu-24.04
-    defaults:
-      run:
-        working-directory: data
+  front-lint:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Install Python poetry
-        run: pipx install poetry
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-          cache: 'poetry'
-      - name: Install development dependencies
-        run: poetry install --extras dev
-      - name: Run tests
-        run: poetry run pytest tests/ -vv
+      - name: Create env files
+        run: make create-env-files
+      - name: Install dependencies
+        run: make front-install-deps
+      - name: Run linting checks
+        run: make front-lint-check

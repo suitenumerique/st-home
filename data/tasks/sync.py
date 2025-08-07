@@ -1,3 +1,4 @@
+import csv
 import json
 import logging
 import os
@@ -24,6 +25,7 @@ from .dumps import (
     dump_insee_communes,
     dump_perimetre_epci,
     reset_dila_issues,
+    upload_file_to_data_gouv,
 )
 from .lib import (
     duplicates,
@@ -236,7 +238,7 @@ def run():
                 "insee_geo": commune["_st_insee"]["COM"],
                 "insee_dep": commune["_st_insee"]["DEP"],
                 "insee_reg": commune["_st_insee"]["REG"],
-                "rcpnt": list(commune["_st_rcpnt"]) if commune.get("_st_rcpnt") else None,
+                "rcpnt": sorted(commune["_st_rcpnt"]) if commune.get("_st_rcpnt") else None,
                 "issues": commune.get("_st_conformite"),
                 "issues_last_checked": str(commune.get("_st_conformite_checks_dt") or ""),
                 "email_official": commune.get("_st_email") or None,
@@ -291,6 +293,51 @@ def run():
 
     with open("dumps/epcis.json", "w") as f:
         json.dump(list(final_data_epci.values()), f, ensure_ascii=False, indent=4)
+
+    # Dump public files for data.gouv.fr
+    full_dpnt = []
+    for commune in final_data:
+        full_dpnt.append(
+            {
+                "type": "commune",
+                "siret": commune["siret"],
+                "siren": commune["siren"],
+                "libelle": commune["name"],
+                "population": commune["population"],
+                "code_insee": commune["insee_geo"],
+                "code_postal": commune["zipcode"],
+                "epci_libelle": commune["epci_name"],
+                "epci_siren": commune["epci_siren"],
+                "epci_population": commune["epci_population"],
+                "departement_code_insee": commune["insee_dep"],
+                "region_code_insee": commune["insee_reg"],
+                "adresse_messagerie": commune["email_official"],
+                "site_internet": commune["website_url"],
+                "telephone": commune["phone"],
+                "rpnt": commune["rcpnt"],
+                "service_public_url": commune["service_public_url"],
+            }
+        )
+    with open("dumps/dpnt-quotidien.json", "w") as f:
+        json.dump(full_dpnt, f, separators=(",", ":"))
+    os.system("rm -rf dumps/dpnt-quotidien.json.gz && gzip -9 -f dumps/dpnt-quotidien.json")
+    upload_file_to_data_gouv(
+        "fd73a12f-572c-4b04-89e9-91cc8c6ebcb3", "dumps/dpnt-quotidien.json.gz"
+    )
+
+    # Write the same data in a zipped CSV
+    with open("dumps/dpnt-quotidien.csv", "w") as f:
+        writer = csv.DictWriter(f, fieldnames=full_dpnt[0].keys(), delimiter=";")
+        writer.writeheader()
+        for row in full_dpnt:
+            row["rpnt"] = ",".join(row["rpnt"]) if row.get("rpnt") else ""
+            writer.writerow(row)
+    os.system(
+        "rm -rf dumps/dpnt-quotidien.csv.zip && cd dumps && zip -9 dpnt-quotidien.csv.zip dpnt-quotidien.csv"
+    )
+    upload_file_to_data_gouv(
+        "551a41a5-4ac7-40df-99cb-930aedb3c3ac", "dumps/dpnt-quotidien.csv.zip"
+    )
 
 
 def associate_epci_to_communes(communes: list):

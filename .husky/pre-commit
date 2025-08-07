@@ -1,1 +1,1 @@
-npm run lint:front:check && npm run test:unit && npm run lint:data:check && npm run test:data
+make data-lint-check

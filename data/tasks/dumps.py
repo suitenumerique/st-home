@@ -2,6 +2,8 @@ import bz2
 import csv
 import io
 import json
+import logging
+import os
 import subprocess
 import tarfile
 from pathlib import Path
@@ -160,3 +162,35 @@ def dump_groupements_memberships():
     ]
     with open("dumps/groupements_memberships.json", "w") as f:
         json.dump(df_selected.to_dict(orient="records"), f, ensure_ascii=False, indent=4)
+
+
+def upload_file_to_data_gouv(resource_id, file_path):
+    """Upload public files to data.gouv.fr"""
+
+    if not os.environ.get("DATA_GOUV_API_KEY"):
+        logging.warning("DATA_GOUV_API_KEY is not set, skipping upload to data.gouv.fr")
+        return
+
+    # https://guides.data.gouv.fr/guide-data.gouv.fr/readme-1/gerer-un-jeu-de-donnees-par-lapi
+    # https://www.data.gouv.fr/datasets/donnees-de-la-presence-numerique-des-territoires/
+    API = "https://www.data.gouv.fr/api/1"
+    API_KEY = os.environ.get("DATA_GOUV_API_KEY")
+    DATASET = "689383a2211ca2c3053d83d1"
+    HEADERS = {
+        "X-API-KEY": API_KEY,
+    }
+
+    response = requests.post(
+        API + "/datasets/{}/resources/{}/upload/".format(DATASET, resource_id),
+        files={
+            "file": open(file_path, "rb"),
+        },
+        headers=HEADERS,
+    )
+
+    data = response.json()
+
+    if not data["success"]:
+        raise Exception(f"Failed to upload file to data.gouv.fr: {data}")
+
+    return data
