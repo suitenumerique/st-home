@@ -192,6 +192,10 @@ front-shell:  ## Open a shell in the frontend container
 	$(COMPOSE_RUN) frontend-dev bash
 .PHONY: front-shell
 
+front-install-deps:  ## Install the frontend dependencies with the lockfile
+	$(COMPOSE_RUN) frontend-dev npm ci
+.PHONY: front-install-deps
+
 front-freeze-deps:  ## Freeze the frontend dependencies
 	rm -rf package-lock.json
 	$(COMPOSE_RUN) frontend-dev npm install
