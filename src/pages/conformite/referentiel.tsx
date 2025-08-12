@@ -39,7 +39,7 @@ const DILA_LINK = (
 const REF_INTRO = (
   <>
     <p>
-      Le <strong>Référentiel de Conformité de la Présence Numérique des Territoires</strong> (RCPNT)
+      Le <strong>Référentiel de la Présence Numérique des Territoires</strong> (RCPNT)
       est édité par l&rsquo;
       <Link href="https://anct.gouv.fr/" target="_blank">
         Agence nationale de la cohésion des territoires
@@ -1078,7 +1078,7 @@ const ReferentielPage: NextPage = () => {
   return (
     <>
       <NextSeo
-        title="RCPNT - Référentiel de Conformité de la Présence Numérique des Territoires"
+        title="RCPNT - Référentiel de la Présence Numérique des Territoires"
         description="Garantir l'identification officielle des collectivités dans leurs usages numériques afin de renforcer leur sécurité et la confiance des usagers."
       />
 
@@ -1089,7 +1089,7 @@ const ReferentielPage: NextPage = () => {
               className={fr.cx("fr-h1", "fr-mb-2w")}
               style={{ color: "var(--text-title-blue-france)" }}
             >
-              Référentiel de Conformité
+              Référentiel
               <br /> de la Présence Numérique des Territoires
             </h1>
             <h2
