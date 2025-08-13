@@ -73,7 +73,7 @@ export default function BlogPostPage({ document }: BlogPostProps) {
 
 export const getServerSideProps: GetServerSideProps = async ({ params, query }) => {
   const docId = params?.slug as string;
-  const parentId = process.env.DOCS_NEWS_DOCID || "";
+  const parentId = process.env.DOCS_NEWS_PARENTID || "";
   const forceRefresh = query?.refresh === "1";
 
   if (!docId) {

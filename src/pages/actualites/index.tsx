@@ -65,7 +65,7 @@ export default function BlogIndex({ posts }: BlogIndexProps) {
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  const parentId = process.env.DOCS_NEWS_DOCID || "";
+  const parentId = process.env.DOCS_NEWS_PARENTID || "";
   const forceRefresh = query?.refresh === "1";
 
   try {
