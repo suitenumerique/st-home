@@ -21,7 +21,7 @@ const moduleExports = {
   reactStrictMode: false,
 
   images: {
-    remotePatterns: [new URL(process.env.DOCS_CMS_URL + "/**")],
+    remotePatterns: process.env.DOCS_CMS_URL ? [new URL(process.env.DOCS_CMS_URL + "/**")] : [],
   },
 
   webpack: (config) => {
