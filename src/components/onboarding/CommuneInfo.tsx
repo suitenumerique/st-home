@@ -1,4 +1,5 @@
 import type { Commune } from "@/lib/onboarding";
+import { ISO_3166_1_ALPHA_2_TO_NAME } from "@/lib/string";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion";
 import type { AlertProps } from "@codegouvfr/react-dsfr/Alert";
@@ -399,6 +400,54 @@ export default function CommuneInfo({
             <MessageLine severity="success" rcpnt="2.7">
               L&rsquo;enregistrement DMARC du domaine <strong>{emailDomain}</strong> utilise une
               politique de quarantaine stricte.
+            </MessageLine>
+          )}
+
+          {rcpnt.includes("2.1") && !issues.includes("DNS_DOWN") && !rcpnt.includes("2.8") && (
+            <MessageLine severity="error" rcpnt="2.8">
+              L&rsquo;enregistrement MX désigne un serveur{" "}
+              {commune.email_metadata?.mx_tld && (
+                <>
+                  <strong>{commune.email_metadata?.mx_tld}</strong>
+                </>
+              )}{" "}
+              situé en dehors de l&rsquo;Union européenne
+              {commune.email_metadata?.mx_country && (
+                <>
+                  {" "}
+                  (
+                  <strong>
+                    {ISO_3166_1_ALPHA_2_TO_NAME[commune.email_metadata?.mx_country] ||
+                      commune.email_metadata?.mx_country}
+                  </strong>
+                  )
+                </>
+              )}
+              .
+            </MessageLine>
+          )}
+
+          {rcpnt.includes("2.1") && rcpnt.includes("2.8") && commune.email_metadata?.mx_country && (
+            <MessageLine severity="success" rcpnt="2.8">
+              L&rsquo;enregistrement MX désigne un serveur{" "}
+              {commune.email_metadata?.mx_tld && (
+                <>
+                  <strong>{commune.email_metadata?.mx_tld}</strong>
+                </>
+              )}{" "}
+              situé dans l&rsquo;Union européenne
+              {commune.email_metadata?.mx_country && (
+                <>
+                  {" "}
+                  (
+                  <strong>
+                    {ISO_3166_1_ALPHA_2_TO_NAME[commune.email_metadata?.mx_country] ||
+                      commune.email_metadata?.mx_country}
+                  </strong>
+                  )
+                </>
+              )}
+              .
             </MessageLine>
           )}
 

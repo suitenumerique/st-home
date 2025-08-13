@@ -34,6 +34,7 @@ bootstrap: ## Prepare the project for local development
 	@echo "$(GREEN)Starting bootstrap process...$(RESET)"
 	@echo ""
 	@$(MAKE) update
+	@$(MAKE) data-geoip-download
 	@$(MAKE) start
 	@echo ""
 	@echo "$(GREEN)🎉 Bootstrap completed successfully!$(RESET)"
@@ -135,6 +136,10 @@ data-lint:  ## Lint and format data code
 data-lint-check:  ## Check data code linting without fixing
 	$(COMPOSE_RUN) -T data_tests sh -c 'ruff check . && ruff format --check .'
 .PHONY: data-lint-check
+
+data-geoip-download:  ## Download the GeoIP database
+	$(COMPOSE_RUN) worker mkdir -p data/dumps && curl -LSs -o data/dumps/geoip-country.mmdb 'https://cdn.jsdelivr.net/npm/@ip-location-db/dbip-geo-whois-asn-country-mmdb/dbip-geo-whois-asn-country-ipv4.mmdb'
+.PHONY: data-geoip-download
 
 # ==============================================================================
 # FLOWER MONITORING

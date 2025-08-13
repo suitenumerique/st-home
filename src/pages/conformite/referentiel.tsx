@@ -39,8 +39,8 @@ const DILA_LINK = (
 const REF_INTRO = (
   <>
     <p>
-      Le <strong>Référentiel de la Présence Numérique des Territoires</strong> (RPNT)
-      est édité par l&rsquo;
+      Le <strong>Référentiel de la Présence Numérique des Territoires</strong> (RPNT) est édité par
+      l&rsquo;
       <Link href="https://anct.gouv.fr/" target="_blank">
         Agence nationale de la cohésion des territoires
       </Link>{" "}
@@ -231,13 +231,6 @@ export const ReferentielConformite: ReferentielSection[] = [
           <>
             <p>Pour obtenir un protocole sécurisé HTTPS pour le site internet de votre commune :</p>
             <ol>
-              <li>
-                Utilisez un service comme{" "}
-                <Link href="https://letsencrypt.org/fr/" target="_blank">
-                  Let&rsquo;s Encrypt
-                </Link>{" "}
-                pour obtenir un certificat SSL gratuitement&nbsp;;
-              </li>
               <li>
                 Allez sur votre espace client de votre hébergeur, section «&nbsp;Certificat
                 SSL&nbsp;» ou «&nbsp;HTTPS&nbsp;»&nbsp;;
@@ -830,6 +823,77 @@ export const ReferentielConformite: ReferentielSection[] = [
         type: "tested",
         level: "recommended",
       },
+      {
+        num: "2.8",
+        title: <>Le serveur de messagerie doit être situé dans l&rsquo;Union Européenne</>,
+        whyItsImportant: (
+          <>
+            <p>
+              L&rsquo;hébergement des serveurs de messagerie au sein de l&rsquo;Union Européenne est
+              crucial pour :
+            </p>
+            <ul>
+              <li>
+                Garantir la conformité avec le RGPD et assurer une meilleure protection des données
+                personnelles des administrés&nbsp;;
+              </li>
+              <li>
+                Préserver la souveraineté numérique de la collectivité en évitant
+                l&rsquo;application de législations étrangères comme le{" "}
+                <Link href="https://fr.wikipedia.org/wiki/CLOUD_Act" target="_blank">
+                  CLOUD Act
+                </Link>{" "}
+                américain&nbsp;;
+              </li>
+              <li>
+                S&rsquo;aligner avec les recommandations{" "}
+                <Link
+                  href="https://cyber.gouv.fr/secnumcloud-pour-les-fournisseurs-de-services-cloud"
+                  target="_blank"
+                >
+                  SecNumCloud
+                </Link>{" "}
+                de l&rsquo;ANSSI qui préconisent l&rsquo;utilisation de services cloud de confiance
+                hébergés sur le territoire européen.
+              </li>
+            </ul>
+          </>
+        ),
+        howToFix: (
+          <>
+            <p>
+              Pour vous assurer que votre messagerie est hébergée dans l&rsquo;Union européenne :
+            </p>
+            <ol>
+              <li>
+                Vérifiez la localisation géographique des serveurs de votre fournisseur actuel de
+                messagerie&nbsp;;
+              </li>
+              <li>
+                Si nécessaire, choisissez un prestataire de messagerie garantissant un hébergement
+                exclusivement européen et conforme au RGPD&nbsp;;
+              </li>
+              <li>
+                Privilégiez les solutions proposées par :
+                <ul>
+                  <li>votre structure de mutualisation départementale ou régionale&nbsp;;</li>
+                  <li>
+                    des fournisseurs européens spécialisés dans les services aux collectivités
+                    territoriales&nbsp;;
+                  </li>
+                  <li>la Suite territoriale.</li>
+                </ul>
+              </li>
+              <li>
+                Incluez systématiquement des clauses concernant la localisation des données dans vos
+                cahiers des charges et contrats de service.
+              </li>
+            </ol>
+          </>
+        ),
+        type: "tested",
+        level: "mandatory",
+      },
     ],
   },
 ];
@@ -878,9 +942,15 @@ const FAQS = [
           <li>les retours d&rsquo;expérience des collectivités&nbsp;;</li>
           <li>les nouvelles obligations réglementaires.</li>
         </ul>
-        <p>
-          Chaque mise à jour majeure sera communiquée avec un délai d&rsquo;adaptation approprié.
-        </p>
+        <p>Voici son historique :</p>
+        <ul>
+          <li>
+            <strong>Version 0.2</strong> (23 Mai 2025) : Ajout du critère 2.8
+          </li>
+          <li>
+            <strong>Version 0.1</strong> (10 Avril 2025) : Première version publique
+          </li>
+        </ul>
       </>
     ),
   },
@@ -1146,7 +1216,7 @@ const ReferentielPage: NextPage = () => {
                   }
                 }}
               >
-                Version 0.1, publiée le 10 Avril 2025
+                Version 0.2, publiée le 14 Août 2025
               </div>
 
               <div className={fr.cx("fr-text--lg", "fr-mb-5w")}>{REF_INTRO}</div>

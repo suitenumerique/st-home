@@ -5,6 +5,8 @@ set -o pipefail   # don't ignore exit codes when piping output
 
 echo "-----> Running post-frontend script"
 
+make data-geoip-download
+
 mv data/* .
 
 echo "3.13" > .python-version

@@ -28,6 +28,8 @@ interface Commune extends BaseOrganization {
   issues_last_checked: string;
   website_domain: string | null;
   email_domain: string | null;
+  website_metadata: Record<string, any> | null;
+  email_metadata: Record<string, any> | null;
   website_tld: string | null;
   email_tld: string | null;
   epci_name: string;
@@ -147,6 +149,8 @@ async function importOrganizations(dumpsDir: string) {
         website_url: commune.website_url || null,
         website_domain: commune.website_domain || null,
         website_tld: commune.website_tld || null,
+        website_metadata: commune.website_metadata || null,
+        email_metadata: commune.email_metadata || null,
         issues: commune.issues,
         issues_last_checked: commune.issues_last_checked
           ? new Date(commune.issues_last_checked)

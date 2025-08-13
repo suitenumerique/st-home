@@ -30,6 +30,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Create env files
         run: make create-env-files
+      - name: Download GeoIP database
+        run: make data-geoip-download
       - name: Run tests
         run: make data-test
 

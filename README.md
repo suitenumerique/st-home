@@ -85,12 +85,23 @@ L'application utilise [Drizzle ORM](https://orm.drizzle.team/) pour gérer la ba
 Pour réinitialiser la base de données avec des données de test :
 
 ```bash
-# Appliquer les migrations
+# Réinitialiser la base de données avec des données de test
 make db-reset-sample
 
 # Explorer la base de données avec Drizzle Studio
 make db-browse
 ```
+
+#### Ajout de colonnes dans la base de données
+
+En cas d'ajout de colonnes gérées par Drizzle dans la base de données Postgres, voici la procédure à suivre :
+
+- Modifier `src/lib/schema.ts`
+- Executer `make db-push` pour modifier la table
+- Executer `make db-seed` pour importer les nouvelles données
+- Si besoin, ajouter ces colonnes aux tables `history_*` manuellement
+
+Ces étapes sont à répéter en staging puis en prod.
 
 ### Tests
 

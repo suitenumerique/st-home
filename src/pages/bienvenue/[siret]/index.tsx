@@ -76,7 +76,10 @@ export default function Bienvenue(props: PageProps) {
           <>
             <p>
               Voici la situation de la commune par rapport au{" "}
-              <Link href="/conformite/referentiel">Référentiel de la Présence Numérique des Territoires</Link> :
+              <Link href="/conformite/referentiel">
+                Référentiel de la Présence Numérique des Territoires
+              </Link>{" "}
+              :
             </p>
             <CommuneInfo commune={commune} />
           </>
