@@ -75,8 +75,8 @@ export default function Bienvenue(props: PageProps) {
         {commune.type === "commune" && (
           <>
             <p>
-              Voici la situation de la présence numérique de la commune, selon notre{" "}
-              <Link href="/conformite/referentiel">Référentiel de Conformité</Link> :
+              Voici la situation de la commune par rapport au{" "}
+              <Link href="/conformite/referentiel">Référentiel de la Présence Numérique des Territoires</Link> :
             </p>
             <CommuneInfo commune={commune} />
           </>

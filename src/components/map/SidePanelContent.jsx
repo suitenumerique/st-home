@@ -288,8 +288,8 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
     return (
       <div>
         <p className={fr.cx("fr-text--sm")}>
-          Voici la situation de la présence numérique de la commune, selon notre{" "}
-          <a href="/conformite/referentiel">Référentiel de la Présence Numérique</a> :
+          Voici la situation de la commune par rapport au{" "}
+          <a href="/conformite/referentiel">Référentiel de la Présence Numérique des Territoires</a> :
         </p>
         <CommuneInfo commune={mapState.selectedAreas.city} servicePublicUrlOnExpand={true} />
         <div style={{ marginTop: "-0.5rem"}}>
