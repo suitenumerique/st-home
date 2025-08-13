@@ -154,6 +154,13 @@ export function PageLayout({ children }: LayoutProps) {
             isActive: router.asPath.startsWith("/services"),
           },
           {
+            text: "Actualités",
+            linkProps: {
+              href: "/actualites",
+            },
+            isActive: router.asPath.startsWith("/actualites"),
+          },
+          {
             text: "Conformité",
             isActive: router.asPath.startsWith("/conformite"),
             menuLinks: [

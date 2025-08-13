@@ -70,11 +70,13 @@ Après avoir modifié une dépendance Python dans `data/pyproject.toml`, il est 
 make data-freeze-deps
 ```
 
-Idem pour le frontend :
+Idem pour le frontend. Après avoir modifié une dépendance dans `package.json`, il est nécessaire de recréer le lockfile :
 
 ```bash
 make front-freeze-deps
 ```
+
+Une autre méthode est de lancer `make front-shell` et de faire un `npm install _package_` depuis le conteneur.
 
 ### Base de données
 

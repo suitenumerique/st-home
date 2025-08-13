@@ -1,26 +1,5 @@
-import createMDX from "@next/mdx";
 import { withSentryConfig } from "@sentry/nextjs";
-import rehypeRaw from "rehype-raw";
-import rehypeSlug from "rehype-slug";
-import remarkGfm from "remark-gfm";
 import ContentSecurityPolicy from "./csp.config.mjs";
-import remarkAlerts from "./src/lib/remark-alerts.mjs";
-
-const withMDX = createMDX({
-  extension: /\.mdx?$/,
-  options: {
-    remarkPlugins: [remarkGfm, remarkAlerts],
-    rehypePlugins: [
-      [
-        rehypeRaw,
-        {
-          passThrough: ["mdxjsEsm", "mdxFlowExpression", "mdxJsxFlowElement", "mdxJsxTextElement"],
-        },
-      ],
-      rehypeSlug,
-    ],
-  },
-});
 
 // const withBundleAnalyzer = bundleAnalyzer({
 //   enabled: process.env.ANALYZE === "true",
@@ -40,6 +19,10 @@ const moduleExports = {
 
   // This causes double-renders of pages in developement to avoid concurrency bugs!
   reactStrictMode: false,
+
+  images: {
+    remotePatterns: [new URL(process.env.DOCS_CMS_URL + "/**")],
+  },
 
   webpack: (config) => {
     config.module.rules.push({
@@ -69,4 +52,4 @@ const moduleExports = {
   },
 };
 
-export default withMDX(withSentryConfig(moduleExports, { silent: true }));
+export default withSentryConfig(moduleExports, { silent: true });

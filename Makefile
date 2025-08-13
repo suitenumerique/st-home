@@ -193,34 +193,34 @@ front-shell:  ## Open a shell in the frontend container
 .PHONY: front-shell
 
 front-install-deps:  ## Install the frontend dependencies with the lockfile
-	$(COMPOSE_RUN) frontend-dev npm ci
+	$(COMPOSE_RUN) frontend-base npm ci
 .PHONY: front-install-deps
 
 front-freeze-deps:  ## Freeze the frontend dependencies
 	rm -rf package-lock.json
-	$(COMPOSE_RUN) frontend-dev npm install
+	$(COMPOSE_RUN) frontend-base npm install
 .PHONY: front-freeze-deps
 
 front-update-deps-check:  ## Check the frontend dependencies for updates
-	$(COMPOSE_RUN) frontend-dev npx npm-check-updates
+	$(COMPOSE_RUN) frontend-base npx npm-check-updates
 .PHONY: front-update-deps-check
 
 front-update-deps-minor:  ## Update the frontend dependencies to the minor version
-	$(COMPOSE_RUN) frontend-dev npx npm-check-updates -t minor -u
+	$(COMPOSE_RUN) frontend-base npx npm-check-updates -t minor -u
 	@$(MAKE) front-freeze-deps
 .PHONY: front-update-deps-minor
 
 front-update-deps-latest:  ## Update the frontend dependencies to the major version
-	$(COMPOSE_RUN) frontend-dev npx npm-check-updates -t latest -u
+	$(COMPOSE_RUN) frontend-base npx npm-check-updates -t latest -u
 	@$(MAKE) front-freeze-deps
 .PHONY: front-update-deps-latest
 
 front-lint:  ## Lint the frontend code
-	$(COMPOSE_RUN) frontend-dev npm run lint
+	$(COMPOSE_RUN) frontend-base npm run lint
 .PHONY: front-lint
 
 front-lint-check:  ## Check the frontend code linting without fixing
-	$(COMPOSE_RUN) frontend-dev npm run lint:check
+	$(COMPOSE_RUN) frontend-base npm run lint:check
 .PHONY: front-lint-check
 
 help:
