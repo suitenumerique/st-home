@@ -156,7 +156,7 @@ def historize_table(table_name: str):
     Args:
         table_name: The name of the table to historize.
     """
-    history_table_name = f"history_{table_name}"
+    history_table_name = f"{table_name}_history"
 
     with get_db() as db:
         with db.cursor() as cur:

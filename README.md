@@ -99,7 +99,7 @@ En cas d'ajout de colonnes gérées par Drizzle dans la base de données Postgre
 - Modifier `src/lib/schema.ts`
 - Executer `make db-push` pour modifier la table
 - Executer `make db-seed` pour importer les nouvelles données
-- Si besoin, ajouter ces colonnes aux tables `history_*` manuellement
+- Si besoin, ajouter ces colonnes aux tables `*_history` manuellement
 
 Ces étapes sont à répéter en staging puis en prod.
 

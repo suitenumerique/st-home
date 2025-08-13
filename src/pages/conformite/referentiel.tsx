@@ -945,7 +945,7 @@ const FAQS = [
         <p>Voici son historique :</p>
         <ul>
           <li>
-            <strong>Version 0.2</strong> (23 Mai 2025) : Ajout du critère 2.8
+            <strong>Version 0.2</strong> (14 Août 2025) : Ajout du critère 2.8
           </li>
           <li>
             <strong>Version 0.1</strong> (10 Avril 2025) : Première version publique
