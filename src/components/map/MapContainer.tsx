@@ -9,7 +9,7 @@ import PropTypes from "prop-types";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Map, { Layer, LayerProps, MapRef, Popup, ScaleControl, Source } from "react-map-gl/maplibre";
 import mapStyle from "./map_style.json";
-import MapButton from "./mapButton";
+import MapButton from "./MapButton";
 import { FeatureProperties, MapState } from "./types";
 
 const MapContainer = ({

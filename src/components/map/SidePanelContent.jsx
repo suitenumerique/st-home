@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import CommuneSearch from "../CommuneSearch";
 import CommuneInfo from "../onboarding/CommuneInfo";
 import Breadcrumb from "./Breadcrumb";
-import MapButton from "./mapButton";
+import MapButton from "./MapButton";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 

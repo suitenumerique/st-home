@@ -123,3 +123,14 @@ services:
     env_file:
       - .env.defaults
       - .env.local
+
+  frontend-base-amd64:
+    build:
+      context: .
+      target: runtime-dev
+    platform: linux/amd64
+    volumes:
+      - ./:/app
+    env_file:
+      - .env.defaults
+      - .env.local

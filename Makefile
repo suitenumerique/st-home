@@ -201,6 +201,11 @@ front-freeze-deps:  ## Freeze the frontend dependencies
 	$(COMPOSE_RUN) frontend-base npm install
 .PHONY: front-freeze-deps
 
+front-freeze-deps-amd64:  ## Freeze the frontend dependencies
+	rm -rf package-lock.json
+	$(COMPOSE_RUN) frontend-base-amd64 npm install
+.PHONY: front-freeze-deps-amd64
+
 front-update-deps-check:  ## Check the frontend dependencies for updates
 	$(COMPOSE_RUN) frontend-base npx npm-check-updates
 .PHONY: front-update-deps-check
