@@ -138,7 +138,7 @@ data-lint-check:  ## Check data code linting without fixing
 .PHONY: data-lint-check
 
 data-geoip-download:  ## Download the GeoIP database
-	$(COMPOSE_RUN) worker mkdir -p data/dumps && curl -LSs -o data/dumps/geoip-country.mmdb 'https://cdn.jsdelivr.net/npm/@ip-location-db/dbip-geo-whois-asn-country-mmdb/dbip-geo-whois-asn-country-ipv4.mmdb'
+	mkdir -p data/dumps && curl -LSs -o data/dumps/geoip-country.mmdb 'https://cdn.jsdelivr.net/npm/@ip-location-db/dbip-geo-whois-asn-country-mmdb/dbip-geo-whois-asn-country-ipv4.mmdb'
 .PHONY: data-geoip-download
 
 # ==============================================================================
