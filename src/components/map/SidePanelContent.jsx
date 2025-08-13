@@ -105,14 +105,14 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
         style={{ borderBottom: "2px solid var(--border-default-grey)" }}
       >
         <h2 style={{ color: "var(--text-title-blue-france)" }}>
-          Bienvenue sur la Carte de Conformité
+          Bienvenue sur la Carte de la Présence Numérique des Territoires
         </h2>
         <p>
           Développée par l'ANCT, la{" "}
-          <strong>Carte de Conformité de Présence Numérique des Territoires (CCPNT)</strong> est
+          <strong>Cartographie de la Présence Numérique des Territoires (CPNT)</strong> est
           fondée sur le{" "}
-          <a href="/conformite/referentiel">Référentiel de Conformité de la Présence Numérique des Territoires</a>{" "}
-          (RCPNT).
+          <a href="/conformite/referentiel">Référentiel de la Présence Numérique des Territoires</a>{" "}
+          (RPNT).
         </p>
         <p>
           Elle permet d'identifier les <strong>communes</strong> françaises{" "}
@@ -289,7 +289,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
       <div>
         <p className={fr.cx("fr-text--sm")}>
           Voici la situation de la présence numérique de la commune, selon notre{" "}
-          <a href="/conformite/referentiel">Référentiel de Conformité</a> :
+          <a href="/conformite/referentiel">Référentiel de la Présence Numérique</a> :
         </p>
         <CommuneInfo commune={mapState.selectedAreas.city} servicePublicUrlOnExpand={true} />
         <div style={{ marginTop: "-0.5rem"}}>
@@ -348,8 +348,8 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
         </div>
         <p>
           Retrouvez le détail des critères sur le {" "}
-          <a href="/conformite/referentiel">Référentiel de Conformité de la Présence Numérique des Territoires</a>{" "}
-            (RCPNT).
+          <a href="/conformite/referentiel">Référentiel de la Présence Numérique des Territoires</a>{" "}
+            (RPNT).
         </p>
         <form>
           <RadioButtons
