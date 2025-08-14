@@ -123,7 +123,7 @@ export async function getDocument(
 
   // Extract frontmatter from the document content
   const frontmatter = document.content.match(
-    /^<p>---<\/p>((<p>[a-z0-9_-]+\:\s[^<]*<\/p>)+)<p>---<\/p>/,
+    /^<p>---<\/p>((<p>[a-z0-9_-]+\:\s.+?<\/p>)+)<p>---<\/p>/,
   );
   if (frontmatter && frontmatter[1]) {
     document.frontmatter =

@@ -5,6 +5,7 @@ import { SideMenu, SideMenuProps } from "@codegouvfr/react-dsfr/SideMenu";
 import { GetServerSideProps } from "next";
 import { NextSeo } from "next-seo";
 import { useEffect } from "react";
+import NextLink from "next/link";
 
 export default function ServicesPage({ sections }: { sections: DocsChild[] }) {
   // Add smooth scrolling behavior
@@ -81,6 +82,13 @@ export default function ServicesPage({ sections }: { sections: DocsChild[] }) {
                     {service.document?.frontmatter.summary && (
                       <p className={fr.cx("fr-text--lead")}>
                         {service.document?.frontmatter.summary}
+                      </p>
+                    )}
+                    {service.document?.frontmatter.url && (
+                      <p>
+                        <NextLink className={fr.cx("fr-link")} target="_blank" href={service.document?.frontmatter.url.replace(/<[^>]*>?/g, "")}>
+                          {service.document?.frontmatter.url.replace(/<[^>]*>?/g, "")}
+                        </NextLink>
                       </p>
                     )}
                     <DocumentContent document={service.document} />
