@@ -172,6 +172,10 @@ db-drop:  ## Drop the local database
 	$(COMPOSE_RUN) frontend-dev npm run db:drop
 .PHONY: db-drop
 
+db-migrate:  ## Run database migrations
+	$(COMPOSE_RUN) frontend-dev npm run db:migrate
+.PHONY: db-migrate
+
 db-push:  ## Push the local database schema to the remote database
 	$(COMPOSE_RUN) frontend-dev npm run db:push
 .PHONY: db-push

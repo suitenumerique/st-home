@@ -5,7 +5,8 @@ async function migrate() {
   try {
     console.log("Migrating...");
 
-    // Drop all tables in the correct order (respecting foreign key constraints)
+    // Perform migrations sequentially here
+
     await db.execute(sql`
       ALTER TABLE data_checks ADD COLUMN IF NOT EXISTS metadata JSONB NOT NULL DEFAULT '{}';
     `);
