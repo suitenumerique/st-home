@@ -74,9 +74,7 @@ path.leaflet-interactive:focus {
   }
 }
 
-.maplibregl-popup-content {
-  pointer-events: none !important;
-}
+/* Map styling */
 
 .map-container {
   position: fixed;
@@ -182,6 +180,28 @@ path.leaflet-interactive:focus {
   transition: left 0.3s ease-in-out;
 }
 
+.map-gradient-label {
+  font-size: 14px;
+  margin: 0;
+}
+
+.maplibregl-popup-content {
+  pointer-events: none !important;
+  padding: 0 !important;
+}
+
+.map-tooltip-content {
+  background: white;
+  padding: 0.7rem;
+}
+
+.map-tooltip-title {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #1e293b;
+  margin-bottom: 0;
+}
+
 @media (max-width: 992px) {
   .map-container {
     top: 94px;
@@ -192,9 +212,9 @@ path.leaflet-interactive:focus {
     width: 100%;
     min-width: 100%;
     max-width: 100%;
-    height: 60%;
-    min-height: 60%;
     max-height: 60%;
+    min-height: 15px;
+    height: fit-content;
     position: fixed;
     bottom: 0;
     left: 0;
@@ -203,9 +223,9 @@ path.leaflet-interactive:focus {
   }
 
   .map-side-panel--closed {
-    height: 15px;
+    /* height: 15px;
     min-height: 15px;
-    max-height: 15px;
+    max-height: 15px; */
   }
 
   .map-side-panel__content {
@@ -241,5 +261,29 @@ path.leaflet-interactive:focus {
   .map-action-buttons {
     bottom: 10px;
     right: 10px;
+  }
+
+  .map-gradient {
+    bottom: 50px;
+    left: 10px;
+    transform: none;
+    padding: 0 8px;
+  }
+
+  .map-gradient-bar {
+    width: 13px;
+    height: 100px;
+  }
+
+  .map-gradient-label {
+    text-align: center;
+  }
+
+  .map-tooltip-content {
+    padding: 0.5rem;
+  }
+
+  .map-tooltip-title {
+    font-size: 0.9rem;
   }
 }

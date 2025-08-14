@@ -15,28 +15,30 @@ import { FeatureProperties, MapState } from "./types";
 
 const MapContainer = ({
   currentGeoJSON,
+  mapState,
+  selectedGradient,
+  isMobile,
+  panelState,
   handleAreaClick,
   handleFullscreen,
-  mapState,
   selectLevel,
-  selectedGradient,
   setSelectedGradient,
-  isMobile,
   goBack,
   handleQuickNav,
 }: {
   currentGeoJSON: GeoJSON.FeatureCollection & { id: string };
+  mapState: MapState;
+  selectedGradient: string[];
+  isMobile: boolean;
+  panelState: "closed" | "open" | "partial";
   handleAreaClick: (event: MapLayerMouseEvent) => void;
   handleFullscreen: () => void;
-  mapState: MapState;
   selectLevel: (
     level: "country" | "region" | "department" | "epci" | "city",
     code: string,
     source?: string,
   ) => void;
-  selectedGradient: string[];
   setSelectedGradient: (gradient: string[]) => void;
-  isMobile: boolean;
   goBack: () => void;
   handleQuickNav: (commune: {
     siret: string;
@@ -57,6 +59,7 @@ const MapContainer = ({
   const [showGradientSelector, setShowGradientSelector] = useState(false);
   const [customGradient, setCustomGradient] = useState<string[]>(selectedGradient);
   const [isMapUpdating, setIsMapUpdating] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(true);
 
   const gradientPresets = [
     {
@@ -193,19 +196,10 @@ const MapContainer = ({
         closeButton={false}
         closeOnClick={false}
         anchor="top"
-        style={{ pointerEvents: "none" }}
+        style={{ padding: 0, pointerEvents: "none" }}
       >
-        <div style={{ backgroundColor: "white", padding: "0.5rem" }}>
-          <p
-            style={{
-              fontWeight: "bold",
-              fontSize: "1rem",
-              color: "#1E293B",
-              marginBottom: "0",
-            }}
-          >
-            {popupInfo.properties.NAME}
-          </p>
+        <div className="map-tooltip-content">
+          <p className="map-tooltip-title">{popupInfo.properties.NAME}</p>
           {((mapState.currentLevel === "department" && mapState.departmentView === "city") ||
             mapState.currentLevel === "epci") && (
             <p style={{ fontSize: "0.8rem", color: "#64748B", marginBottom: "0" }}>
@@ -343,12 +337,17 @@ const MapContainer = ({
   const mapGradient = () => {
     return (
       <div className="map-gradient">
+        {isMobile && <p className="map-gradient-label">+</p>}
         <div
-          className="map-gradient-bar"
+          className={`map-gradient-bar ${isMobile ? "map-gradient-bar-vertical" : ""}`}
           style={{
-            background: `
-              linear-gradient(90deg, ${selectedGradient[0]} 0%, ${selectedGradient[1]} 50%, ${selectedGradient[2]} 100%)
-            `,
+            background: isMobile
+              ? `
+                linear-gradient(180deg, ${selectedGradient[2]} 0%, ${selectedGradient[1]} 50%, ${selectedGradient[0]} 100%)
+              `
+              : `
+                linear-gradient(90deg, ${selectedGradient[0]} 0%, ${selectedGradient[1]} 50%, ${selectedGradient[2]} 100%)
+              `,
           }}
           onClick={handleGradientClick}
         >
@@ -359,7 +358,7 @@ const MapContainer = ({
               position: "relative",
             }}
           >
-            {hoveredFeature && (
+            {hoveredFeature && !isMobile && (
               <div
                 className="map-gradient-dot"
                 style={{
@@ -369,16 +368,20 @@ const MapContainer = ({
             )}
           </div>
         </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <p style={{ fontSize: "14px", margin: 0 }}>Non conforme</p>
-          <p style={{ fontSize: "14px", margin: 0 }}>Conforme</p>
-        </div>
+        {isMobile && <p className="map-gradient-label">-</p>}
+        {!isMobile && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "space-between",
+            }}
+          >
+            <p className="map-gradient-label">Non conforme</p>
+            <p className="map-gradient-label">Conforme</p>
+          </div>
+        )}
         {showGradientSelector && gradientSelector()}
       </div>
     );
@@ -490,6 +493,7 @@ const MapContainer = ({
         { padding: 40, duration: 1000 },
       );
     } else {
+      setSearchOpen(false);
       try {
         const bounds = bbox(currentGeoJSON as GeoJSON.FeatureCollection);
         mapRef.current.fitBounds(
@@ -570,6 +574,7 @@ const MapContainer = ({
             top: "0",
             display: "flex",
             alignItems: "center",
+            justifyContent: mapState.currentLevel === "country" ? "flex-end" : "space-between",
             gap: "1rem",
             zIndex: 10,
           }}
@@ -579,17 +584,39 @@ const MapContainer = ({
               <span aria-hidden="true" className={fr.cx("fr-icon-arrow-go-back-line")}></span>
             </MapButton>
           )}
-          <CommuneSearch
-            onSelect={handleQuickNav}
-            placeholder="Rechercher une commune ou EPCI"
-            smallButton={true}
-          />
+          {searchOpen ? (
+            <CommuneSearch
+              onSelect={handleQuickNav}
+              placeholder="Rechercher une commune ou EPCI"
+              smallButton={true}
+              style={{
+                backgroundColor: "white",
+                fontSize: "14px",
+              }}
+            />
+          ) : (
+            <MapButton
+              onClick={() => setSearchOpen(true)}
+              aria-label="Rechercher..."
+              tooltip="Rechercher..."
+              customStyle={{ backgroundColor: "var(--background-action-high-blue-france)" }}
+            >
+              <span
+                aria-hidden="true"
+                style={{ color: "#fff" }}
+                className={fr.cx("fr-icon-search-line")}
+              ></span>
+            </MapButton>
+          )}
         </div>
       )}
-
-      {!isMobile && mapGradient()}
-      {mapDromSelector()}
-      {mapActionButtons()}
+      {panelState === "closed" && (
+        <>
+          {mapGradient()}
+          {mapDromSelector()}
+          {mapActionButtons()}
+        </>
+      )}
     </div>
   );
 };
@@ -603,6 +630,7 @@ MapContainer.propTypes = {
   selectedGradient: PropTypes.array.isRequired,
   setSelectedGradient: PropTypes.func.isRequired,
   isMobile: PropTypes.bool.isRequired,
+  panelState: PropTypes.string.isRequired,
   goBack: PropTypes.func.isRequired,
   handleQuickNav: PropTypes.func.isRequired,
 };

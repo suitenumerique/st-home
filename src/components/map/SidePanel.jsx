@@ -1,30 +1,31 @@
 import PropTypes from "prop-types";
-import { useState } from "react";
+import { useCallback } from "react";
 
-const SidePanel = ({ children }) => {
-  const [isPanelOpen, setIsPanelOpen] = useState(true);
+const SidePanel = ({ children, panelState, setPanelState, isMobile }) => {
 
-  const togglePanel = () => {
-    if (isPanelOpen) {
-      setIsPanelOpen(false);
-    } else {
-      setIsPanelOpen(true);
+  const nextState = useCallback(() => {
+    if (panelState === "closed") {
+      return "open";
+    } else if (panelState === "open") {
+      return isMobile ? "partial" : "closed";
+    } else if (panelState === "partial") {
+      return "closed";
     }
-  }
+  }, [panelState]);
 
   return (
-    <div className={`map-side-panel ${!isPanelOpen ? 'map-side-panel--closed' : ''}`}>
-      {isPanelOpen && (
+    <div className={`map-side-panel ${panelState === "closed" ? 'map-side-panel--closed' : ''}`}>
+      {(panelState === "open" || panelState === "partial") && (
         <div className="map-side-panel__content">
           {children}
         </div>
       )}
       <button
-        onClick={togglePanel}
-        className={`map-side-panel__toggle ${!isPanelOpen ? 'map-side-panel__toggle--closed' : ''}`}
-        aria-label={isPanelOpen ? "Fermer le panneau" : "Ouvrir le panneau"}
+        onClick={() => setPanelState(nextState())}
+        className={`map-side-panel__toggle ${panelState === "closed" ? 'map-side-panel__toggle--closed' : ''}`}
+        aria-label={panelState === "closed" ? "Fermer le panneau" : "Ouvrir le panneau"}
       >
-        {isPanelOpen
+        {panelState === "open" || panelState === "partial"
           ? <span className="fr-icon-arrow-left-s-line" style={{ color: "var(--text-action-high-blue-france)" }} aria-hidden="true"></span>
           : <span className="fr-icon-arrow-right-s-line" style={{ color: "var(--text-action-high-blue-france)" }} aria-hidden="true"></span>
         }
@@ -35,6 +36,9 @@ const SidePanel = ({ children }) => {
 
 SidePanel.propTypes = {
   children: PropTypes.node.isRequired,
+  panelState: PropTypes.string.isRequired,
+  setPanelState: PropTypes.func.isRequired,
+  isMobile: PropTypes.bool.isRequired,
 };
 
 export default SidePanel;

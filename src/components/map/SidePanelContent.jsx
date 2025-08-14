@@ -8,7 +8,7 @@ import MapButton from "./mapButton";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 
-const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile }) => {
+const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, setPanelState }) => {
 
   const [showCriteriaSelector, setShowCriteriaSelector] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -138,7 +138,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
 
   const levelHeader = () => {
     return (
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1rem" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
         <div>
           <h3 className={fr.cx("fr-mb-0")} style={{ color: "var(--text-title-blue-france)" }}>
             {currentPageLabel}
@@ -458,7 +458,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
           </div>
         )
       }
-      {mapState.currentLevel === "country" && !showCriteriaSelector && (
+      {mapState.currentLevel === "country" && !showCriteriaSelector && panelState === 'open' && (
         introduction()
       )}
       {mapState.currentLevel !== "country" && !isMobile && (
@@ -468,17 +468,21 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
         criteriaSelector()
       ) : (
         <>
-          {mapState.selectedAreas["country"] && mapState.selectedAreas[mapState.currentLevel] && (
+          {mapState.selectedAreas["country"] && mapState.selectedAreas[mapState.currentLevel] && (panelState === 'open' || panelState === 'partial') && (
             levelHeader()
           )}
-          {((mapState.currentLevel === "department" && !mapState.selectedAreas.city) || mapState.selectedRef) && (
-            selections()
-          )}
-          {!mapState.selectedAreas.city && mapState.selectedAreas[mapState.currentLevel] && (
-            levelStats()
-          )}
-          {mapState.selectedAreas.city && !showCriteriaSelector && (
-            communeInfo()
+          {panelState === 'open' && (
+            <div style={{ marginTop: "1rem" }}>
+              {((mapState.currentLevel === "department" && !mapState.selectedAreas.city) || mapState.selectedRef) && (
+                selections()
+              )}
+              {!mapState.selectedAreas.city && mapState.selectedAreas[mapState.currentLevel] && (
+                levelStats()
+              )}
+              {mapState.selectedAreas.city && !showCriteriaSelector && (
+                communeInfo()
+              )}
+            </div>
           )}
         </>
       )}
@@ -496,6 +500,8 @@ SidePanelContent.propTypes = {
   goBack: PropTypes.func.isRequired,
   handleQuickNav: PropTypes.func.isRequired,
   isMobile: PropTypes.bool.isRequired,
+  panelState: PropTypes.string.isRequired,
+  setPanelState: PropTypes.func.isRequired,
 };
 
 export default SidePanelContent;
