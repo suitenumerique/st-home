@@ -56,6 +56,13 @@ body {
   min-width: 320px;
 }
 
+/* Services page */
+
+.services-section ul > li > p {
+  margin-bottom: 0 !important;
+}
+
+
 /* Leaflet */
 
 path.leaflet-interactive:focus {

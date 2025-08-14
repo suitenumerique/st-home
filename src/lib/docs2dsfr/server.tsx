@@ -123,7 +123,7 @@ export async function getDocument(
 
   // Extract frontmatter from the document content
   const frontmatter = document.content.match(
-    /^<p>---<\/p>((<p>[a-z0-9]+\:\s[^<]*<\/p>)+)<p>---<\/p>/,
+    /^<p>---<\/p>((<p>[a-z0-9_-]+\:\s[^<]*<\/p>)+)<p>---<\/p>/,
   );
   if (frontmatter && frontmatter[1]) {
     document.frontmatter =
@@ -176,7 +176,5 @@ export async function getDocumentChildren(
     doc.document = await getDocument(doc.id, forceRefresh);
   }
 
-  return response.results.sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-  );
+  return response.results;
 }

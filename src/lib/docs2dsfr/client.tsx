@@ -23,6 +23,7 @@ export interface DocsChild {
   excerpt?: string;
   numchild: number;
   document?: DocsContentResponse;
+  children: DocsChild[];
 }
 
 export interface DocsChildrenResponse {
@@ -41,7 +42,8 @@ export interface DocsContentResponse {
   frontmatter: Record<string, string>;
 }
 
-export function DocumentContent({ document }: { document: DocsContentResponse }) {
+export function DocumentContent({ document }: { document: DocsContentResponse | undefined }) {
+  if (!document) return <></>;
   return useProcessor(document.content);
 }
 
