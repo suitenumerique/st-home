@@ -167,6 +167,9 @@ def test_get_rcpnt_conformance():
     ]
     assert get_rcpnt_conformance(issues) == {"2.1", "2.2", "2.4", "2.5", "2.8", "2.a"}
 
+    issues = validate_conformance("maville@wanadoo.fr", "")
+    assert get_rcpnt_conformance(issues) == {"2.1", "2.4", "2.5", "2.6", "2.7", "2.8"}
+
     issues = validate_conformance("valide@maville.fr", "https://www.maville.fr")
     assert get_rcpnt_conformance(issues) == FULL_CONFORMANCE
 

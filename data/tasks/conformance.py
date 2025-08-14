@@ -229,7 +229,7 @@ def get_rcpnt_conformance(issue_list):
         },
         str(Issues.WEBSITE_DECLARED_HTTP): {"1.8"},
         str(Issues.EMAIL_DOMAIN_MISMATCH): {"2.3"},
-        str(Issues.EMAIL_DOMAIN_GENERIC): {"2.2", "2.3", "2.4", "2.5", "2.6", "2.7"},
+        str(Issues.EMAIL_DOMAIN_GENERIC): {"2.2", "2.3"},
         str(Issues.WEBSITE_DOMAIN_EXTENSION): {"1.2"},
         str(Issues.EMAIL_DOMAIN_EXTENSION): {"2.3"},
         # Issues that are tested in check_website

@@ -65,6 +65,16 @@ export function PageLayout({ children }: LayoutProps) {
   // const { data: session } = useSession();
   const contentSecurityPolicy = process.env.CONTENT_SECURITY_POLICY;
 
+  const quickAccessItems = [
+    {
+      iconId: "fr-icon-question-line" as const,
+      linkProps: {
+        href: "https://docs.numerique.gouv.fr/docs/043871cb-be2b-4b36-a221-3e97936ee0ef/",
+      },
+      text: <>Centre d&rsquo;aide</>,
+    },
+  ];
+
   // const quickAccessItems = session && session.user
   //   ? [
   //       {
@@ -128,7 +138,7 @@ export function PageLayout({ children }: LayoutProps) {
         //serviceTitle="La Suite territoriale"
         //serviceTagline="Un socle commun d&rsquo;outils numériques pour les collectivités"
         homeLinkProps={homeLinkPops}
-        // quickAccessItems={quickAccessItems}
+        quickAccessItems={quickAccessItems}
         operatorLogo={{
           alt: "La Suite territoriale",
           imgUrl: "/images/logo-st.svg",
