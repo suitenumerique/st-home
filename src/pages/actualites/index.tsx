@@ -72,7 +72,9 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
     const { getDocumentChildren } = await import("@/lib/docs2dsfr/server");
     const posts = await getDocumentChildren(parentId, forceRefresh);
     posts.sort(
-      (a, b) => new Date(b.document?.frontmatter.date || "").getTime() - new Date(a.document?.frontmatter.date || "").getTime(),
+      (a, b) =>
+        new Date(b.document?.frontmatter.date || "").getTime() -
+        new Date(a.document?.frontmatter.date || "").getTime(),
     );
 
     return {

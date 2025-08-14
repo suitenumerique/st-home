@@ -1,13 +1,10 @@
 import BackToTop from "@/components/BackToTop";
-import FaqList from "@/components/FaqList";
-import { fr } from "@codegouvfr/react-dsfr";
-import { SideMenu, SideMenuItem } from "@codegouvfr/react-dsfr/SideMenu";
-import { NextSeo } from "next-seo";
-import Image from "next/image";
-import Link from "next/link";
-import { useEffect } from "react";
-import { GetServerSideProps } from "next";
 import { DocsChild, DocumentContent } from "@/lib/docs2dsfr/client";
+import { fr } from "@codegouvfr/react-dsfr";
+import { SideMenu, SideMenuProps } from "@codegouvfr/react-dsfr/SideMenu";
+import { GetServerSideProps } from "next";
+import { NextSeo } from "next-seo";
+import { useEffect } from "react";
 
 export default function ServicesPage({ sections }: { sections: DocsChild[] }) {
   // Add smooth scrolling behavior
@@ -33,44 +30,61 @@ export default function ServicesPage({ sections }: { sections: DocsChild[] }) {
               align="left"
               burgerMenuButtonText="Services"
               items={sections.map((section) => {
-                const ret: SideMenuItem = {
+                const ret: SideMenuProps.Item.Link = {
                   isActive: false,
                   linkProps: {
                     href: `#${section.document?.frontmatter.path}`,
                   },
-                  text: section.title
+                  text: section.title,
                 };
-                if (section.children.length > 0) {
-                  ret.items = section.children.map((child) => ({
+                if (section.children.length === 0) return ret;
+
+                const retWithItems: SideMenuProps.Item.SubMenu = {
+                  ...ret,
+                  items: section.children.map((child) => ({
                     isActive: false,
                     linkProps: {
                       href: `#${child.document?.frontmatter.path}`,
                     },
                     text: child.title,
-                  }));
-                }
-                return ret;
+                  })),
+                };
+                return retWithItems;
               })}
             />
           </div>
 
           {/* Main Content */}
           <div className={fr.cx("fr-col-12", "fr-col-md-9")}>
-
-
             {sections.map((section) => (
               <>
-              <section key={section.id} id={section.document?.frontmatter.path} className={fr.cx("fr-mb-8w")+" services-section"}>
-                <h1>{section.document?.frontmatter.title || section.title}</h1>
-                {section.document?.frontmatter.summary && <p className={fr.cx("fr-text--lead")}>{section.document?.frontmatter.summary}</p>}
-                <DocumentContent document={section.document} />
-              </section>
-              {section.children.map((service) => (
-                <section key={service.id} id={service.document?.frontmatter.path} className={fr.cx("fr-mb-8w")+" services-section"}>
-                  <h2>{service.document?.frontmatter.title || service.title}</h2>
-                  {service.document?.frontmatter.summary && <p className={fr.cx("fr-text--lead")}>{service.document?.frontmatter.summary}</p>}
-                  <DocumentContent document={service.document} />
+                <section
+                  key={section.id}
+                  id={section.document?.frontmatter.path}
+                  className={fr.cx("fr-mb-8w") + " services-section"}
+                >
+                  <h1>{section.document?.frontmatter.title || section.title}</h1>
+                  {section.document?.frontmatter.summary && (
+                    <p className={fr.cx("fr-text--lead")}>
+                      {section.document?.frontmatter.summary}
+                    </p>
+                  )}
+                  <DocumentContent document={section.document} />
                 </section>
+                {section.children.map((service) => (
+                  <section
+                    key={service.id}
+                    id={service.document?.frontmatter.path}
+                    className={fr.cx("fr-mb-8w") + " services-section"}
+                  >
+                    <h2>{service.document?.frontmatter.title || service.title}</h2>
+                    {service.document?.frontmatter.summary && (
+                      <p className={fr.cx("fr-text--lead")}>
+                        {service.document?.frontmatter.summary}
+                      </p>
+                    )}
+                    <DocumentContent document={service.document} />
+                  </section>
                 ))}
               </>
             ))}
@@ -82,7 +96,6 @@ export default function ServicesPage({ sections }: { sections: DocsChild[] }) {
     </>
   );
 }
-
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const parentId = process.env.DOCS_SERVICES_PARENTID || "";

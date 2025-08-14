@@ -43,8 +43,7 @@ export interface DocsContentResponse {
 }
 
 export function DocumentContent({ document }: { document: DocsContentResponse | undefined }) {
-  if (!document) return <></>;
-  return useProcessor(document.content);
+  return useProcessor(document?.content || "");
 }
 
 function useProcessor(text: string) {
