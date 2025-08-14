@@ -14,6 +14,7 @@ import rcpntRefs from "./rcpntRefs.json";
 
 import {
   AllStats,
+  ConformityStats,
   FeatureProperties,
   MapState,
   ParentArea,
@@ -66,6 +67,7 @@ const useMapURLState = () => {
 const ConformityMap = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [stats, setStats] = useState<AllStats>({} as AllStats);
+  const [panelState, setPanelState] = useState<"closed" | "open" | "partial">("open");
 
   const { getURLState, updateURLState } = useMapURLState();
 
@@ -141,21 +143,29 @@ const ConformityMap = () => {
     const regionStats = await loadStats("region");
     const departmentStats = await loadStats("department");
     const epciStats = await loadStats("epci");
-    const countryStats = {
-      "00": rcpntRefs.map((ref) => {
-        return {
-          ref: ref.key,
-          valid: Object.values(regionStats).reduce(
-            (acc, stat) => acc + (stat.find((s) => s.ref === ref.key)?.valid || 0),
-            0,
-          ),
-          total: Object.values(regionStats).reduce(
-            (acc, stat) => acc + (stat.find((s) => s.ref === ref.key)?.total || 0),
-            0,
-          ),
-        };
-      }),
-    };
+    let countryStats;
+    try {
+      countryStats = {
+        "00": rcpntRefs.map((ref) => {
+          return {
+            ref: ref.key,
+            valid: Object.values(regionStats).reduce(
+              (acc, stat) => acc + (stat.find((s) => s.ref === ref.key)?.valid || 0),
+              0,
+            ),
+            total: Object.values(regionStats).reduce(
+              (acc, stat) => acc + (stat.find((s) => s.ref === ref.key)?.total || 0),
+              0,
+            ),
+          };
+        }),
+      };
+    } catch {
+      countryStats = {
+        "00": [],
+      };
+    }
+
     setStats({
       region: regionStats,
       department: departmentStats,
@@ -218,7 +228,7 @@ const ConformityMap = () => {
           (parentAreas as ParentArea[]).find((area) => area.insee_geo === code) ||
           ({ insee_geo: code, name: "Unknown", type: "unknown" } as ParentArea);
       }
-      selectedArea.conformityStats = computeAreaStats(level, code) || undefined;
+      selectedArea.conformityStats = computeAreaStats(level, code) as ConformityStats;
       if (level !== "epci") {
         const geoJSON = await fetchGeoJSON(level, code);
         selectedArea.geoJSON = geoJSON;
@@ -291,7 +301,7 @@ const ConformityMap = () => {
         };
       }
     } catch {
-      return null;
+      return {};
     }
   };
 
@@ -580,8 +590,10 @@ const ConformityMap = () => {
 
   return (
     <div ref={containerRef} style={{ display: "flex", width: "100%", height: "100%" }}>
-      <SidePanel>
+      <SidePanel panelState={panelState} setPanelState={setPanelState} isMobile={isMobile}>
         <SidePanelContent
+          panelState={panelState}
+          setPanelState={setPanelState}
           rcpntRefs={rcpntRefs}
           getColor={getColor}
           mapState={mapState}
@@ -604,6 +616,7 @@ const ConformityMap = () => {
         selectedGradient={selectedGradient}
         setSelectedGradient={setSelectedGradient}
         isMobile={isMobile}
+        panelState={panelState}
       />
     </div>
   );

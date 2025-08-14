@@ -76,3 +76,13 @@ export interface FeatureProperties {
 export interface MapViewHandlerProps {
   bounds: L.LatLngBounds | null;
 }
+
+export interface ConformityStats {
+  score: number;
+  n_cities?: number;
+  details?: {
+    "0": number;
+    "1"?: number;
+    "2"?: number;
+  };
+}
