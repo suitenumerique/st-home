@@ -218,7 +218,7 @@ path.leaflet-interactive:focus {
     width: 100%;
     min-width: 100%;
     max-width: 100%;
-    max-height: 400px;
+    max-height: 60%;
     min-height: 15px;
     height: auto;
     position: fixed;

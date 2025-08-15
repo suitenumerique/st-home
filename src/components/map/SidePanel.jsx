@@ -11,7 +11,7 @@ const SidePanel = ({ children, panelState, setPanelState, isMobile }) => {
     } else if (panelState === "partial") {
       return "closed";
     }
-  }, [panelState]);
+  }, [panelState, isMobile]);
 
   return (
     <div className={`map-side-panel ${panelState === "closed" ? 'map-side-panel--closed' : ''}`}>
