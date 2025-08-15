@@ -218,20 +218,14 @@ path.leaflet-interactive:focus {
     width: 100%;
     min-width: 100%;
     max-width: 100%;
-    max-height: 60%;
+    max-height: 400px;
     min-height: 15px;
-    height: fit-content;
+    height: auto;
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     border-top: 1px solid #e5e7eb;
-  }
-
-  .map-side-panel--closed {
-    /* height: 15px;
-    min-height: 15px;
-    max-height: 15px; */
   }
 
   .map-side-panel__content {
