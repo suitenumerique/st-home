@@ -45,12 +45,7 @@ export default function BlogIndex({ posts }: BlogIndexProps) {
                   title={post.title}
                   titleAs="h2"
                   detail=<>
-                    Publié le{" "}
-                    {new Date(post.document?.frontmatter.date || "").toLocaleDateString("fr-FR", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
+                    Publié le {post.document?.frontmatter.dateFormatted}
                   </>
                   imageUrl={post.document?.frontmatter.image || ""}
                   imageAlt={post.title}

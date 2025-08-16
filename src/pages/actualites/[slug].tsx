@@ -43,13 +43,7 @@ export default function BlogPostPage({ document }: BlogPostProps) {
                 className={fr.cx("fr-text--sm", "fr-mb-2w")}
                 style={{ color: "var(--text-mention-grey)" }}
               >
-                Publié le{" "}
-                {new Date(document.frontmatter.date).toLocaleDateString("fr-FR", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                  timeZone: "UTC",
-                })}
+                Publié le {document.frontmatter.dateFormatted}
               </div>
             </header>
 

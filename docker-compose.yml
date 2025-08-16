@@ -124,6 +124,19 @@ services:
       - .env.defaults
       - .env.local
 
+  frontend-built:
+    build:
+      context: .
+      target: runtime-prod
+    ports:
+      - "8950:8950"
+    env_file:
+      - .env.defaults
+      - .env.local
+      - .env.staging
+    depends_on:
+      - postgresql
+
   frontend-base-amd64:
     build:
       context: .

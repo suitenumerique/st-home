@@ -15,10 +15,10 @@ const moduleExports = {
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx", "md"],
   poweredByHeader: false,
   bundlePagesRouterDependencies: true,
-  productionBrowserSourceMaps: false,
+  productionBrowserSourceMaps: process.env.PRODUCTION_SOURCE_MAPS === "1",
 
   // This causes double-renders of pages in developement to avoid concurrency bugs!
-  reactStrictMode: false,
+  reactStrictMode: process.env.NODE_ENV !== "production",
 
   images: {
     remotePatterns: process.env.DOCS_CMS_URL ? [new URL(process.env.DOCS_CMS_URL + "/**")] : [],

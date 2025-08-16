@@ -58,6 +58,10 @@ start:  ## Start the development environment
 	$(COMPOSE) up -d --build frontend-dev
 .PHONY: start
 
+start-built:  ## Start the production-like environment
+	$(COMPOSE) up -d --build frontend-built
+.PHONY: start-built
+
 stop:  ## Stop the development environment
 	$(COMPOSE) stop
 .PHONY: stop

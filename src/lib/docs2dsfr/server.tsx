@@ -141,6 +141,18 @@ export async function getDocument(
     document.content = document.content.slice(frontmatter[0].length);
   }
 
+  if (document.frontmatter.date) {
+    // Make sure the date formatting always happens on the server side to avoid hydration errors
+    document.frontmatter.dateFormatted = new Date(document.frontmatter.date).toLocaleDateString(
+      "fr-FR",
+      {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      },
+    );
+  }
+
   // Convert custom tags to components (must have a "-" in the name)
   Object.keys(htmlComponents).forEach((component) => {
     if (component.includes("-")) {
