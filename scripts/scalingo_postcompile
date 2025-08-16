@@ -11,7 +11,10 @@ echo "-----> Running post-compile script"
 rm -rf ./node_modules/@next/swc-linux-x64-musl
 find node_modules -type f -name '*.map' -delete
 
-find .next -type f -name '*.map' -delete
+if [ "$PRODUCTION_SOURCE_MAPS" != "1" ]; then
+  find .next -type f -name '*.map' -delete
+fi
+
 rm -rf .next/cache
 
 # echo "-----> Listing top files/dirs by size"
