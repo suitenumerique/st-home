@@ -7,21 +7,36 @@ export const htmlComponents = {
   blockquote: (props: React.BlockquoteHTMLAttributes<HTMLQuoteElement>) => {
     return <Quote text={props.children} size="large" />;
   },
-  img: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
+  img: (props: React.ImgHTMLAttributes<HTMLImageElement> & { "data-text-alignment"?: string }) => {
     const { src, alt, width, height } = props;
 
     if (!src) return null;
+
+    const isFullWidth = !width || Number(width) >= 760;
+
+    const align = props["data-text-alignment"] || "left";
 
     return (
       <Image
         src={src as string}
         alt={alt || ""}
-        width={Number(width) || 800}
-        height={Number(height) || 600}
-        style={{
-          maxWidth: "100%",
-          height: "auto",
-        }}
+        loading="eager"
+        width={isFullWidth ? 960 : Math.min(Number(width) || 960, 960)}
+        height={isFullWidth ? 640 : Math.min(Number(height) || 640, 640)}
+        style={
+          isFullWidth
+            ? {
+                width: "100%",
+                height: "auto",
+              }
+            : {
+                display: "block",
+                marginLeft: align === "center" || align === "right" ? "auto" : "0",
+                marginRight: align === "center" || align === "left" ? "auto" : "0",
+                maxWidth: "100%",
+                height: "auto",
+              }
+        }
       />
     );
   },

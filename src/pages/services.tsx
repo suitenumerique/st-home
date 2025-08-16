@@ -1,20 +1,37 @@
 import BackToTop from "@/components/BackToTop";
 import { DocsChild, DocumentContent } from "@/lib/docs2dsfr/client";
+import { useScrollToHash } from "@/lib/scrollToHash";
+import { useActiveSection } from "@/lib/useActiveSection";
 import { fr } from "@codegouvfr/react-dsfr";
 import { SideMenu, SideMenuProps } from "@codegouvfr/react-dsfr/SideMenu";
 import { GetServerSideProps } from "next";
 import { NextSeo } from "next-seo";
-import { useEffect } from "react";
 import NextLink from "next/link";
+import { useEffect } from "react";
 
 export default function ServicesPage({ sections }: { sections: DocsChild[] }) {
-  // Add smooth scrolling behavior
+  // Use the extracted scrolling hook with custom options for services page
+  useScrollToHash({
+    onComplete: () => {
+      document.documentElement.style.scrollBehavior = "smooth";
+    },
+  });
+
   useEffect(() => {
-    document.documentElement.style.scrollBehavior = "smooth";
     return () => {
       document.documentElement.style.scrollBehavior = "auto";
     };
   }, []);
+
+  // Track which section is currently active for SideMenu highlighting
+  const sectionIds = sections
+    .flatMap((section) => [
+      section.document?.frontmatter.path || section.id,
+      ...section.children.map((child) => child.document?.frontmatter.path || child.id),
+    ])
+    .filter(Boolean);
+
+  const activeSection = useActiveSection(sectionIds);
 
   return (
     <>
@@ -31,10 +48,19 @@ export default function ServicesPage({ sections }: { sections: DocsChild[] }) {
               align="left"
               burgerMenuButtonText="Services"
               items={sections.map((section) => {
+                const sectionId = section.document?.frontmatter.path || section.id;
+                const isSectionActive = activeSection === sectionId;
+
+                // Check if any child is active
+                const hasActiveChild = section.children.some((child) => {
+                  const childId = child.document?.frontmatter.path || child.id;
+                  return activeSection === childId;
+                });
+
                 const ret: SideMenuProps.Item.Link = {
-                  isActive: false,
+                  isActive: isSectionActive,
                   linkProps: {
-                    href: `#${section.document?.frontmatter.path}`,
+                    href: `#${sectionId}`,
                   },
                   text: section.title,
                 };
@@ -42,13 +68,17 @@ export default function ServicesPage({ sections }: { sections: DocsChild[] }) {
 
                 const retWithItems: SideMenuProps.Item.SubMenu = {
                   ...ret,
-                  items: section.children.map((child) => ({
-                    isActive: false,
-                    linkProps: {
-                      href: `#${child.document?.frontmatter.path}`,
-                    },
-                    text: child.title,
-                  })),
+                  expandedByDefault: hasActiveChild || isSectionActive,
+                  items: section.children.map((child) => {
+                    const childId = child.document?.frontmatter.path || child.id;
+                    return {
+                      isActive: activeSection === childId,
+                      linkProps: {
+                        href: `#${childId}`,
+                      },
+                      text: child.title,
+                    };
+                  }),
                 };
                 return retWithItems;
               })}
@@ -58,9 +88,8 @@ export default function ServicesPage({ sections }: { sections: DocsChild[] }) {
           {/* Main Content */}
           <div className={fr.cx("fr-col-12", "fr-col-md-9")}>
             {sections.map((section) => (
-              <>
+              <section key={section.id}>
                 <section
-                  key={section.id}
                   id={section.document?.frontmatter.path}
                   className={fr.cx("fr-mb-8w") + " services-section"}
                 >
@@ -86,7 +115,11 @@ export default function ServicesPage({ sections }: { sections: DocsChild[] }) {
                     )}
                     {service.document?.frontmatter.url && (
                       <p>
-                        <NextLink className={fr.cx("fr-link")} target="_blank" href={service.document?.frontmatter.url.replace(/<[^>]*>?/g, "")}>
+                        <NextLink
+                          className={fr.cx("fr-link")}
+                          target="_blank"
+                          href={service.document?.frontmatter.url.replace(/<[^>]*>?/g, "")}
+                        >
                           {service.document?.frontmatter.url.replace(/<[^>]*>?/g, "")}
                         </NextLink>
                       </p>
@@ -94,7 +127,7 @@ export default function ServicesPage({ sections }: { sections: DocsChild[] }) {
                     <DocumentContent document={service.document} />
                   </section>
                 ))}
-              </>
+              </section>
             ))}
 
             <BackToTop />

@@ -194,6 +194,11 @@ db-reset-sample: \
 	db-seed-sample
 .PHONY: db-reset
 
+cms-refresh:  ## Refresh the CMS
+	curl 'http://suiteterritoriale.anct.gouv.fr/services?refresh=1'
+	curl 'http://suiteterritoriale.anct.gouv.fr/actualites?refresh=1'
+.PHONY: cms-refresh
+
 # ==============================================================================
 # FRONTEND DEVELOPMENT
 

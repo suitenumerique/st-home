@@ -46,7 +46,7 @@ export default function BlogIndex({ posts }: BlogIndexProps) {
                   titleAs="h2"
                   detail=<>
                     Publié le{" "}
-                    {new Date(post.created_at).toLocaleDateString("fr-FR", {
+                    {new Date(post.document?.frontmatter.date || "").toLocaleDateString("fr-FR", {
                       year: "numeric",
                       month: "long",
                       day: "numeric",

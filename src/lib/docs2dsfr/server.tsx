@@ -28,7 +28,8 @@ async function cachedFetch(
     cacheEntry = await cache.get(cacheKey);
 
     // If we have cached data and it's not expired, return it immediately
-    if (cacheEntry && !isExpired(cacheEntry, 600)) {
+    // Cache for 4000 seconds (1h+)
+    if (cacheEntry && !isExpired(cacheEntry, 4000)) {
       return JSON.parse(cacheEntry.value.toString());
     }
   }

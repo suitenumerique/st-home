@@ -80,8 +80,8 @@ class PostgresCache {
 export const cache = new PostgresCache();
 
 // Helper function to check if cache entry is expired
-export function isExpired(entry: CacheEntry, expiryMinutes: number): boolean {
+export function isExpired(entry: CacheEntry, expirySeconds: number): boolean {
   const now = new Date();
-  const expiryTime = new Date(entry.created_at.getTime() + expiryMinutes * 60 * 1000);
+  const expiryTime = new Date(entry.created_at.getTime() + expirySeconds * 1000);
   return now > expiryTime;
 }

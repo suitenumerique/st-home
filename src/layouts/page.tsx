@@ -65,6 +65,50 @@ export function PageLayout({ children }: LayoutProps) {
   // const { data: session } = useSession();
   const contentSecurityPolicy = process.env.CONTENT_SECURITY_POLICY;
 
+  const navItems = [
+    {
+      text: "Présentation",
+      linkProps: {
+        href: "/",
+      },
+      isActive: router.asPath === "/",
+    },
+    {
+      text: "Services numériques",
+      linkProps: {
+        href: "/services",
+      },
+      isActive: router.asPath.startsWith("/services"),
+    },
+    {
+      text: "Conformité",
+      isActive: router.asPath.startsWith("/conformite"),
+      menuLinks: [
+        {
+          text: "Référentiel",
+          linkProps: {
+            href: "/conformite/referentiel",
+          },
+        },
+        {
+          text: "Cartographie",
+          linkProps: {
+            href: "/conformite/cartographie",
+          },
+        },
+      ],
+    },
+  ];
+  if (process.env.DOCS_NEWS_PARENTID) {
+    navItems.push({
+      text: "Actualités",
+      linkProps: {
+        href: "/actualites",
+      },
+      isActive: router.asPath.startsWith("/actualites"),
+    });
+  }
+
   const quickAccessItems = [
     {
       iconId: "fr-icon-question-line" as const,
@@ -148,47 +192,7 @@ export function PageLayout({ children }: LayoutProps) {
             title: "La Suite territoriale",
           },
         }}
-        navigation={[
-          {
-            text: "Présentation",
-            linkProps: {
-              href: "/",
-            },
-            isActive: router.asPath === "/",
-          },
-          {
-            text: "Services numériques",
-            linkProps: {
-              href: "/services",
-            },
-            isActive: router.asPath.startsWith("/services"),
-          },
-          {
-            text: "Conformité",
-            isActive: router.asPath.startsWith("/conformite"),
-            menuLinks: [
-              {
-                text: "Référentiel",
-                linkProps: {
-                  href: "/conformite/referentiel",
-                },
-              },
-              {
-                text: "Cartographie",
-                linkProps: {
-                  href: "/conformite/cartographie",
-                },
-              },
-            ],
-          },
-          {
-            text: "Actualités",
-            linkProps: {
-              href: "/actualites",
-            },
-            isActive: router.asPath.startsWith("/actualites"),
-          },
-        ]}
+        navigation={navItems}
       />
       <main role="main" id="content">
         {children}

@@ -945,7 +945,7 @@ const FAQS = [
         <p>Voici son historique :</p>
         <ul>
           <li>
-            <strong>Version 0.2</strong> (14 Août 2025) : Ajout du critère 2.8
+            <strong>Version 0.2</strong> (16 Août 2025) : Ajout du critère 2.8
           </li>
           <li>
             <strong>Version 0.1</strong> (10 Avril 2025) : Première version publique
@@ -1027,6 +1027,27 @@ const FAQS = [
           (ANCT, ANSSI, DILA), de partenaires (associations d&rsquo;élus, opérateurs publics de
           services numériques) et des collectivités territoriales qui entendent répondre au besoin
           d&rsquo;élever le niveau de sécurité numérique des collectivités.
+        </p>
+      </>
+    ),
+  },
+  {
+    question: <>Que faire si mon site internet est signalé injoignable par erreur ?</>,
+    answer: (
+      <>
+        <p>
+          Les vérifications quotidiennes du RPNT sont effectuées par des robots qui peuvent être
+          bloqués par certaines configurations ou services tiers.
+          <br />
+          Veuillez vous assurer que votre site est accessible depuis toutes nos adresses IP
+          publiques, listées sur{" "}
+          <Link
+            href="https://docs.outscale.com/en/userguide/OUTSCALE-Public-IPs.html"
+            target="_blank"
+          >
+            cette page
+          </Link>{" "}
+          dans la ligne "cloudgouv-eu-west-1".
         </p>
       </>
     ),
@@ -1216,7 +1237,7 @@ const ReferentielPage: NextPage = () => {
                   }
                 }}
               >
-                Version 0.2, publiée le 14 Août 2025
+                Version 0.2, publiée le 16 Août 2025
               </div>
 
               <div className={fr.cx("fr-text--lg", "fr-mb-5w")}>{REF_INTRO}</div>
