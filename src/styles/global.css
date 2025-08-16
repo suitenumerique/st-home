@@ -219,14 +219,14 @@ path.leaflet-interactive:focus {
 @media (max-width: 992px) {
   .map-container {
     top: 94px;
-    height: calc(100% - 109px);
+    height: calc(100% - 94px);
   }
 
   .map-side-panel {
     width: 100%;
     min-width: 100%;
     max-width: 100%;
-    max-height: 60%;
+    max-height: calc(50% - 47px);
     min-height: 15px;
     height: auto;
     position: fixed;
