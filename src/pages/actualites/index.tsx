@@ -44,9 +44,7 @@ export default function BlogIndex({ posts }: BlogIndexProps) {
                   enlargeLink={true}
                   title={post.title}
                   titleAs="h2"
-                  detail=<>
-                    Publié le {post.document?.frontmatter.dateFormatted}
-                  </>
+                  detail=<>Publié le {post.document?.frontmatter.dateFormatted}</>
                   imageUrl={post.document?.frontmatter.image || ""}
                   imageAlt={post.title}
                   desc={post.document?.frontmatter.summary || ""}

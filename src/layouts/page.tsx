@@ -98,16 +98,14 @@ export function PageLayout({ children }: LayoutProps) {
         },
       ],
     },
+    // {
+    //   text: "Actualités",
+    //   linkProps: {
+    //     href: "/actualites",
+    //   },
+    //   isActive: router.asPath.startsWith("/actualites"),
+    // }
   ];
-  if (process.env.DOCS_NEWS_PARENTID) {
-    navItems.push({
-      text: "Actualités",
-      linkProps: {
-        href: "/actualites",
-      },
-      isActive: router.asPath.startsWith("/actualites"),
-    });
-  }
 
   const quickAccessItems = [
     {
