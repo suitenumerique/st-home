@@ -383,7 +383,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
                     }
                   ]}
                 />
-                <div style={{ paddingBottom: "0.75rem"}}>
+                <div style={{ paddingBottom: "0.75rem", paddingLeft: "0.75rem" }}>
                   {['mandatory', 'recommended'].map((level, index) => (
                     <span
                       key={index}
