@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import random
 from collections import defaultdict
@@ -28,6 +29,7 @@ def init_db():
                     type VARCHAR(16) NOT NULL,
                     issues VARCHAR(64)[] NOT NULL,
                     details TEXT[] NOT NULL,
+                    metadata JSONB NOT NULL,
                     dt TIMESTAMP WITH TIME ZONE NOT NULL,
                     PRIMARY KEY (siret, type)
                 );
@@ -35,7 +37,9 @@ def init_db():
             db.commit()
 
 
-def upsert_issues(siret: str, check_type: str, issues: Dict[Issues, str]):
+def upsert_issues(
+    siret: str, check_type: str, issues: Dict[Issues, str], metadata: Dict[str, str]
+):
     """
     Insert or update issues for a given SIRET and check type
 
@@ -57,11 +61,12 @@ def upsert_issues(siret: str, check_type: str, issues: Dict[Issues, str]):
         with db.cursor() as cur:
             cur.execute(
                 """
-                INSERT INTO data_checks (siret, type, issues, details, dt)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO data_checks (siret, type, issues, details, metadata, dt)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 ON CONFLICT (siret, type) DO UPDATE SET
                     issues = EXCLUDED.issues,
                     details = EXCLUDED.details,
+                    metadata = EXCLUDED.metadata,
                     dt = EXCLUDED.dt
             """,
                 (
@@ -69,6 +74,7 @@ def upsert_issues(siret: str, check_type: str, issues: Dict[Issues, str]):
                     check_type,
                     issue_keys,
                     issue_details,
+                    json.dumps(metadata or {}),
                     datetime.datetime.now(datetime.timezone.utc),
                 ),
             )
@@ -82,7 +88,7 @@ def get_all_data_checks():
 
     with get_db() as db:
         with db.cursor() as cur:
-            cur.execute("SELECT siret, type, issues, details, dt FROM data_checks")
+            cur.execute("SELECT siret, type, issues, details, metadata, dt FROM data_checks")
             for check in cur.fetchall():
                 all_data_checks[check["siret"]].append(check)
 
@@ -90,28 +96,37 @@ def get_all_data_checks():
 
 
 def get_data_checks_by_siret(all_data_checks, conformance_issues, siret: str):
-    """Get issues from checks for a given SIRET. We must have at least one row of each type of check."""
+    """Get issues and metadata from checks for a given SIRET.
+    We must have at least one row of each type of check."""
 
     min_dt = datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
-
-    for check in all_data_checks.get(siret, []):
-        conformance_issues.extend(check["issues"])
 
     expected_types = data_checks_doable(conformance_issues)
     checked_types = {check["type"] for check in all_data_checks.get(siret, [])}
     if not expected_types.issubset(checked_types):
-        return {
-            "IN_PROGRESS": "Checks still in progress: %s"
-            % ", ".join(expected_types - checked_types)
-        }, min_dt
+        return (
+            {
+                "IN_PROGRESS": "Checks still in progress: %s"
+                % ", ".join(expected_types - checked_types)
+            },
+            {},
+            {},
+            min_dt,
+        )
 
+    email_metadata = {}
+    website_metadata = {}
     issues = {}
     for check in all_data_checks[siret]:
         for idx, issue in enumerate(check["issues"]):
             issues[issue] = check["details"][idx]
+        if check["type"] == "dns":
+            email_metadata = check.get("metadata", {})
+        elif check["type"] == "website":
+            website_metadata = check.get("metadata", {})
         min_dt = min(min_dt, check["dt"])
 
-    return issues, min_dt.replace(microsecond=0)
+    return issues, website_metadata, email_metadata, min_dt.replace(microsecond=0)
 
 
 def find_org_by_siret(siret: str):

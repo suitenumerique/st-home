@@ -65,6 +65,58 @@ export function PageLayout({ children }: LayoutProps) {
   // const { data: session } = useSession();
   const contentSecurityPolicy = process.env.CONTENT_SECURITY_POLICY;
 
+  const navItems = [
+    {
+      text: "Présentation",
+      linkProps: {
+        href: "/",
+      },
+      isActive: router.asPath === "/",
+    },
+    {
+      text: "Services numériques",
+      linkProps: {
+        href: "/services",
+      },
+      isActive: router.asPath.startsWith("/services"),
+    },
+    {
+      text: "Conformité",
+      isActive: router.asPath.startsWith("/conformite"),
+      menuLinks: [
+        {
+          text: "Référentiel",
+          linkProps: {
+            href: "/conformite/referentiel",
+          },
+        },
+        {
+          text: "Cartographie",
+          linkProps: {
+            href: "/conformite/cartographie",
+          },
+        },
+      ],
+    },
+    // {
+    //   text: "Actualités",
+    //   linkProps: {
+    //     href: "/actualites",
+    //   },
+    //   isActive: router.asPath.startsWith("/actualites"),
+    // }
+  ];
+
+  const quickAccessItems = [
+    {
+      iconId: "fr-icon-question-line" as const,
+      linkProps: {
+        href: "https://docs.numerique.gouv.fr/docs/043871cb-be2b-4b36-a221-3e97936ee0ef/",
+      },
+      text: <>Centre d&rsquo;aide</>,
+    },
+  ];
+
   // const quickAccessItems = session && session.user
   //   ? [
   //       {
@@ -128,7 +180,7 @@ export function PageLayout({ children }: LayoutProps) {
         //serviceTitle="La Suite territoriale"
         //serviceTagline="Un socle commun d&rsquo;outils numériques pour les collectivités"
         homeLinkProps={homeLinkPops}
-        // quickAccessItems={quickAccessItems}
+        quickAccessItems={quickAccessItems}
         operatorLogo={{
           alt: "La Suite territoriale",
           imgUrl: "/images/logo-st.svg",
@@ -138,40 +190,7 @@ export function PageLayout({ children }: LayoutProps) {
             title: "La Suite territoriale",
           },
         }}
-        navigation={[
-          {
-            text: "Présentation",
-            linkProps: {
-              href: "/",
-            },
-            isActive: router.asPath === "/",
-          },
-          {
-            text: "Services numériques",
-            linkProps: {
-              href: "/services",
-            },
-            isActive: router.asPath.startsWith("/services"),
-          },
-          {
-            text: "Conformité",
-            isActive: router.asPath.startsWith("/conformite"),
-            menuLinks: [
-              {
-                text: "Référentiel",
-                linkProps: {
-                  href: "/conformite/referentiel",
-                },
-              },
-              {
-                text: "Cartographie",
-                linkProps: {
-                  href: "/conformite/cartographie",
-                },
-              },
-            ],
-          },
-        ]}
+        navigation={navItems}
       />
       <main role="main" id="content">
         {children}

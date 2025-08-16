@@ -103,8 +103,14 @@
   },
   {
     "key": "2.7",
-    "value": "Utilisation d'une politique de quarantaine par l'enregistrement DMARC",
+    "value": "Enregistrement DMARC avec quarantaine",
     "mandatory": false,
+    "show_in_selector": true
+  },
+  {
+    "key": "2.8",
+    "value": "Serveur de messagerie dans l'UE",
+    "mandatory": true,
     "show_in_selector": true
   }
 ]

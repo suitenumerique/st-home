@@ -4,29 +4,17 @@ import { useMemo, useState } from "react";
 import CommuneSearch from "../CommuneSearch";
 import CommuneInfo from "../onboarding/CommuneInfo";
 import Breadcrumb from "./Breadcrumb";
-import MapButton from "./mapButton";
+import MapButton from "./MapButton";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 
-const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack }) => {
+const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, setPanelState }) => {
 
   const [showCriteriaSelector, setShowCriteriaSelector] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
   const formatNumber = (value) => {
     return new Intl.NumberFormat("fr-FR").format(value);
-  };
-
-  const handleQuickNav = async (community) => {
-    const level = community.type === "commune" ? "city" : community.type;
-    let code;
-    if (community.type === "epci") {
-      code = community["siret"].slice(0, 9);
-    } else {
-      code = community["siret"] || "";
-    }
-    await selectLevel(level, code, "quickNav");
-
   };
 
   const breadcrumbSegments = useMemo(() => {
@@ -101,8 +89,11 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
   const introduction = () => {
     return (
       <div
-        className={fr.cx("fr-pt-3w fr-pb-2w fr-mb-3w")}
-        style={{ borderBottom: "2px solid var(--border-default-grey)" }}
+        className={fr.cx("fr-pb-2w fr-mb-3w")}
+        style={{
+          borderBottom: "2px solid var(--border-default-grey)",
+          paddingTop: !isMobile ? "1rem" : "0",
+        }}
       >
         <h2 style={{ color: "var(--text-title-blue-france)" }}>
           Bienvenue sur la Carte de la Présence Numérique des Territoires
@@ -133,7 +124,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
 
   const breadcrumbs = () => {
     return (
-      <div className={fr.cx("fr-pt-2w")}>
+      <div className="map-side-panel-breadcrumbs">
         <Breadcrumb
           segments={breadcrumbSegments}
           currentPageLabel={
@@ -147,7 +138,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
 
   const levelHeader = () => {
     return (
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1rem" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
         <div>
           <h3 className={fr.cx("fr-mb-0")} style={{ color: "var(--text-title-blue-france)" }}>
             {currentPageLabel}
@@ -288,8 +279,8 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
     return (
       <div>
         <p className={fr.cx("fr-text--sm")}>
-          Voici la situation de la présence numérique de la commune, selon notre{" "}
-          <a href="/conformite/referentiel">Référentiel de la Présence Numérique</a> :
+          Voici la situation de la commune par rapport au{" "}
+          <a href="/conformite/referentiel">Référentiel de la Présence Numérique des Territoires</a> :
         </p>
         <CommuneInfo commune={mapState.selectedAreas.city} servicePublicUrlOnExpand={true} />
         <div style={{ marginTop: "-0.5rem"}}>
@@ -392,7 +383,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
                     }
                   ]}
                 />
-                <div style={{ paddingBottom: "0.75rem"}}>
+                <div style={{ paddingBottom: "0.75rem", paddingLeft: "0.75rem" }}>
                   {['mandatory', 'recommended'].map((level, index) => (
                     <span
                       key={index}
@@ -446,44 +437,52 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
 
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-        {mapState.currentLevel !== "country" && (
-          <MapButton
-            onClick={() => goBack()}
-            aria-label="Retour"
-            tooltip="Retour"
-          >
-            <span aria-hidden="true" className={fr.cx("fr-icon-arrow-go-back-line")}></span>
-          </MapButton>
-        )}
-        <CommuneSearch
-          container={container}
-          onSelect={handleQuickNav}
-          placeholder="Rechercher une commune ou EPCI"
-          smallButton={true}
-        />
-      </div>
-      {mapState.currentLevel === "country" && !showCriteriaSelector && (
+      {
+        !isMobile && (
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            {mapState.currentLevel !== "country" && (
+              <MapButton
+                onClick={() => goBack()}
+                aria-label="Retour"
+                tooltip="Retour"
+              >
+                <span aria-hidden="true" className={fr.cx("fr-icon-arrow-go-back-line")}></span>
+              </MapButton>
+            )}
+            <CommuneSearch
+              container={container}
+              onSelect={handleQuickNav}
+              placeholder="Rechercher une commune ou EPCI"
+              smallButton={true}
+            />
+          </div>
+        )
+      }
+      {mapState.currentLevel === "country" && !showCriteriaSelector && panelState === 'open' && (
         introduction()
       )}
-      {mapState.currentLevel !== "country" && (
+      {mapState.currentLevel !== "country" && !isMobile && (
         breadcrumbs()
       )}
       {showCriteriaSelector ? (
         criteriaSelector()
       ) : (
         <>
-          {mapState.selectedAreas["country"] && mapState.selectedAreas[mapState.currentLevel] && (
+          {mapState.selectedAreas["country"] && mapState.selectedAreas[mapState.currentLevel] && (panelState === 'open' || panelState === 'partial') && (
             levelHeader()
           )}
-          {((mapState.currentLevel === "department" && !mapState.selectedAreas.city) || mapState.selectedRef) && (
-            selections()
-          )}
-          {!mapState.selectedAreas.city && mapState.selectedAreas[mapState.currentLevel] && (
-            levelStats()
-          )}
-          {mapState.selectedAreas.city && !showCriteriaSelector && (
-            communeInfo()
+          {panelState === 'open' && (
+            <div style={{ marginTop: "1rem" }}>
+              {((mapState.currentLevel === "department" && !mapState.selectedAreas.city) || mapState.selectedRef) && (
+                selections()
+              )}
+              {!mapState.selectedAreas.city && mapState.selectedAreas[mapState.currentLevel] && (
+                levelStats()
+              )}
+              {mapState.selectedAreas.city && !showCriteriaSelector && (
+                communeInfo()
+              )}
+            </div>
           )}
         </>
       )}
@@ -499,6 +498,10 @@ SidePanelContent.propTypes = {
   getColor: PropTypes.func.isRequired,
   setMapState: PropTypes.func.isRequired,
   goBack: PropTypes.func.isRequired,
+  handleQuickNav: PropTypes.func.isRequired,
+  isMobile: PropTypes.bool.isRequired,
+  panelState: PropTypes.string.isRequired,
+  setPanelState: PropTypes.func.isRequired,
 };
 
 export default SidePanelContent;

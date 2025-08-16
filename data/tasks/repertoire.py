@@ -3,6 +3,10 @@ from pathlib import Path
 
 from pygrister.api import GristApi
 
+# TODO: retries could be implemented with:
+# https://pygrister.readthedocs.io/en/latest/misc.html#using-requests-sessions-in-pygrister
+# https://stackoverflow.com/a/35504626
+
 
 def dump_repertoire_structures():
     """

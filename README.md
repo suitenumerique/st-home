@@ -70,11 +70,13 @@ Après avoir modifié une dépendance Python dans `data/pyproject.toml`, il est 
 make data-freeze-deps
 ```
 
-Idem pour le frontend :
+Idem pour le frontend. Après avoir modifié une dépendance dans `package.json`, il est nécessaire de recréer le lockfile :
 
 ```bash
 make front-freeze-deps
 ```
+
+Une autre méthode est de lancer `make front-shell` et de faire un `npm install _package_` depuis le conteneur.
 
 ### Base de données
 
@@ -83,12 +85,23 @@ L'application utilise [Drizzle ORM](https://orm.drizzle.team/) pour gérer la ba
 Pour réinitialiser la base de données avec des données de test :
 
 ```bash
-# Appliquer les migrations
+# Réinitialiser la base de données avec des données de test
 make db-reset-sample
 
 # Explorer la base de données avec Drizzle Studio
 make db-browse
 ```
+
+#### Ajout de colonnes dans la base de données
+
+En cas d'ajout de colonnes gérées par Drizzle dans la base de données Postgres, voici la procédure à suivre :
+
+- Modifier `src/lib/schema.ts`
+- Executer `make db-push` pour modifier la table
+- Executer `make db-seed` pour importer les nouvelles données
+- Si besoin, ajouter ces colonnes aux tables `*_history` manuellement
+
+Ces étapes sont à répéter en staging puis en prod.
 
 ### Tests
 

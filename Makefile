@@ -34,6 +34,7 @@ bootstrap: ## Prepare the project for local development
 	@echo "$(GREEN)Starting bootstrap process...$(RESET)"
 	@echo ""
 	@$(MAKE) update
+	@$(MAKE) data-geoip-download
 	@$(MAKE) start
 	@echo ""
 	@echo "$(GREEN)🎉 Bootstrap completed successfully!$(RESET)"
@@ -56,6 +57,10 @@ create-env-files:  ## Create the environment configuration files
 start:  ## Start the development environment
 	$(COMPOSE) up -d --build frontend-dev
 .PHONY: start
+
+start-built:  ## Start the production-like environment
+	$(COMPOSE) up -d --build frontend-built
+.PHONY: start-built
 
 stop:  ## Stop the development environment
 	$(COMPOSE) stop
@@ -136,6 +141,10 @@ data-lint-check:  ## Check data code linting without fixing
 	$(COMPOSE_RUN) -T data_tests sh -c 'ruff check . && ruff format --check .'
 .PHONY: data-lint-check
 
+data-geoip-download:  ## Download the GeoIP database
+	mkdir -p data/dumps && curl -LSs -o data/dumps/geoip-country.mmdb 'https://cdn.jsdelivr.net/npm/@ip-location-db/dbip-geo-whois-asn-country-mmdb/dbip-geo-whois-asn-country-ipv4.mmdb'
+.PHONY: data-geoip-download
+
 # ==============================================================================
 # FLOWER MONITORING
 
@@ -167,6 +176,10 @@ db-drop:  ## Drop the local database
 	$(COMPOSE_RUN) frontend-dev npm run db:drop
 .PHONY: db-drop
 
+db-migrate:  ## Run database migrations
+	$(COMPOSE_RUN) frontend-dev npm run db:migrate
+.PHONY: db-migrate
+
 db-push:  ## Push the local database schema to the remote database
 	$(COMPOSE_RUN) frontend-dev npm run db:push
 .PHONY: db-push
@@ -185,6 +198,11 @@ db-reset-sample: \
 	db-seed-sample
 .PHONY: db-reset
 
+cms-refresh:  ## Refresh the CMS
+	curl 'http://suiteterritoriale.anct.gouv.fr/services?refresh=1'
+	curl 'http://suiteterritoriale.anct.gouv.fr/actualites?refresh=1'
+.PHONY: cms-refresh
+
 # ==============================================================================
 # FRONTEND DEVELOPMENT
 
@@ -193,34 +211,39 @@ front-shell:  ## Open a shell in the frontend container
 .PHONY: front-shell
 
 front-install-deps:  ## Install the frontend dependencies with the lockfile
-	$(COMPOSE_RUN) frontend-dev npm ci
+	$(COMPOSE_RUN) frontend-base npm ci
 .PHONY: front-install-deps
 
 front-freeze-deps:  ## Freeze the frontend dependencies
 	rm -rf package-lock.json
-	$(COMPOSE_RUN) frontend-dev npm install
+	$(COMPOSE_RUN) frontend-base npm install
 .PHONY: front-freeze-deps
 
+front-freeze-deps-amd64:  ## Freeze the frontend dependencies
+	rm -rf package-lock.json
+	$(COMPOSE_RUN) frontend-base-amd64 npm install
+.PHONY: front-freeze-deps-amd64
+
 front-update-deps-check:  ## Check the frontend dependencies for updates
-	$(COMPOSE_RUN) frontend-dev npx npm-check-updates
+	$(COMPOSE_RUN) frontend-base npx npm-check-updates
 .PHONY: front-update-deps-check
 
 front-update-deps-minor:  ## Update the frontend dependencies to the minor version
-	$(COMPOSE_RUN) frontend-dev npx npm-check-updates -t minor -u
+	$(COMPOSE_RUN) frontend-base npx npm-check-updates -t minor -u
 	@$(MAKE) front-freeze-deps
 .PHONY: front-update-deps-minor
 
 front-update-deps-latest:  ## Update the frontend dependencies to the major version
-	$(COMPOSE_RUN) frontend-dev npx npm-check-updates -t latest -u
+	$(COMPOSE_RUN) frontend-base npx npm-check-updates -t latest -u
 	@$(MAKE) front-freeze-deps
 .PHONY: front-update-deps-latest
 
 front-lint:  ## Lint the frontend code
-	$(COMPOSE_RUN) frontend-dev npm run lint
+	$(COMPOSE_RUN) frontend-base npm run lint
 .PHONY: front-lint
 
 front-lint-check:  ## Check the frontend code linting without fixing
-	$(COMPOSE_RUN) frontend-dev npm run lint:check
+	$(COMPOSE_RUN) frontend-base npm run lint:check
 .PHONY: front-lint-check
 
 help:

@@ -14,6 +14,7 @@ import rcpntRefs from "./rcpntRefs.json";
 
 import {
   AllStats,
+  ConformityStats,
   FeatureProperties,
   MapState,
   ParentArea,
@@ -66,6 +67,7 @@ const useMapURLState = () => {
 const ConformityMap = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [stats, setStats] = useState<AllStats>({} as AllStats);
+  const [panelState, setPanelState] = useState<"closed" | "open" | "partial">("open");
 
   const { getURLState, updateURLState } = useMapURLState();
 
@@ -81,6 +83,8 @@ const ConformityMap = () => {
     "#FFC579",
     "#009081",
   ]);
+
+  const [isMobile, setIsMobile] = useState(false);
 
   const colorsConfig = useMemo(() => {
     return {
@@ -139,21 +143,29 @@ const ConformityMap = () => {
     const regionStats = await loadStats("region");
     const departmentStats = await loadStats("department");
     const epciStats = await loadStats("epci");
-    const countryStats = {
-      "00": rcpntRefs.map((ref) => {
-        return {
-          ref: ref.key,
-          valid: Object.values(regionStats).reduce(
-            (acc, stat) => acc + (stat.find((s) => s.ref === ref.key)?.valid || 0),
-            0,
-          ),
-          total: Object.values(regionStats).reduce(
-            (acc, stat) => acc + (stat.find((s) => s.ref === ref.key)?.total || 0),
-            0,
-          ),
-        };
-      }),
-    };
+    let countryStats;
+    try {
+      countryStats = {
+        "00": rcpntRefs.map((ref) => {
+          return {
+            ref: ref.key,
+            valid: Object.values(regionStats).reduce(
+              (acc, stat) => acc + (stat.find((s) => s.ref === ref.key)?.valid || 0),
+              0,
+            ),
+            total: Object.values(regionStats).reduce(
+              (acc, stat) => acc + (stat.find((s) => s.ref === ref.key)?.total || 0),
+              0,
+            ),
+          };
+        }),
+      };
+    } catch {
+      countryStats = {
+        "00": [],
+      };
+    }
+
     setStats({
       region: regionStats,
       department: departmentStats,
@@ -216,7 +228,7 @@ const ConformityMap = () => {
           (parentAreas as ParentArea[]).find((area) => area.insee_geo === code) ||
           ({ insee_geo: code, name: "Unknown", type: "unknown" } as ParentArea);
       }
-      selectedArea.conformityStats = computeAreaStats(level, code) || undefined;
+      selectedArea.conformityStats = computeAreaStats(level, code) as ConformityStats;
       if (level !== "epci") {
         const geoJSON = await fetchGeoJSON(level, code);
         selectedArea.geoJSON = geoJSON;
@@ -289,7 +301,7 @@ const ConformityMap = () => {
         };
       }
     } catch {
-      return null;
+      return {};
     }
   };
 
@@ -343,6 +355,17 @@ const ConformityMap = () => {
         "backClick",
       );
     }
+  };
+
+  const handleQuickNav = async (community: { type: string; siret: string }) => {
+    const level = community.type === "commune" ? "city" : community.type;
+    let code;
+    if (community.type === "epci") {
+      code = community["siret"].slice(0, 9);
+    } else {
+      code = community["siret"] || "";
+    }
+    await selectLevel(level as "epci" | "city", code, "quickNav");
   };
 
   const selectLevel = async (
@@ -532,6 +555,15 @@ const ConformityMap = () => {
   ]);
 
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 992);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
     loadAllStats();
   }, []);
 
@@ -558,25 +590,33 @@ const ConformityMap = () => {
 
   return (
     <div ref={containerRef} style={{ display: "flex", width: "100%", height: "100%" }}>
-      <SidePanel>
+      <SidePanel panelState={panelState} setPanelState={setPanelState} isMobile={isMobile}>
         <SidePanelContent
+          panelState={panelState}
+          setPanelState={setPanelState}
           rcpntRefs={rcpntRefs}
           getColor={getColor}
           mapState={mapState}
           selectLevel={selectLevel}
           setMapState={setMapState}
           goBack={goBack}
+          handleQuickNav={handleQuickNav}
           container={containerRef.current}
+          isMobile={isMobile}
         />
       </SidePanel>
       <MapContainer
         currentGeoJSON={currentGeoJSON as GeoJSON.FeatureCollection & { id: string }}
         handleAreaClick={handleAreaClick}
         handleFullscreen={handleFullscreen}
+        goBack={goBack}
+        handleQuickNav={handleQuickNav}
         mapState={mapState}
         selectLevel={selectLevel}
         selectedGradient={selectedGradient}
         setSelectedGradient={setSelectedGradient}
+        isMobile={isMobile}
+        panelState={panelState}
       />
     </div>
   );

@@ -120,12 +120,15 @@ def run():
 
         # Add the issues added in asynchronous checks
         if commune.get("_st_siret"):
-            issues, min_dt = get_data_checks_by_siret(
+            issues, website_metadata, email_metadata, min_dt = get_data_checks_by_siret(
                 all_data_checks, commune["_st_conformite"], commune["_st_siret"]
             )
+
             commune["_st_conformite"].extend([str(x) for x in issues.keys()])
             commune["_st_conformite_checks"] = issues
             commune["_st_conformite_checks_dt"] = min_dt
+            commune["_st_website_metadata"] = website_metadata
+            commune["_st_email_metadata"] = email_metadata
 
         # Add the RCPNT conformance info
         if commune.get("_st_siret"):
@@ -242,10 +245,12 @@ def run():
                 "issues": commune.get("_st_conformite"),
                 "issues_last_checked": str(commune.get("_st_conformite_checks_dt") or ""),
                 "email_official": commune.get("_st_email") or None,
+                "email_metadata": commune.get("_st_email_metadata") or None,
                 "website_url": commune.get("_st_website") or None,
                 "website_domain": website_domain,
                 "email_domain": email_domain,
                 "website_tld": website_tld,
+                "website_metadata": commune.get("_st_website_metadata") or None,
                 "email_tld": email_tld,
                 "zipcode": commune.get("_st_zipcode") or None,
                 "phone": phone,
