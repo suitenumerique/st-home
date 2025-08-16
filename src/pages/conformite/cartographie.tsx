@@ -9,10 +9,10 @@ export default function CartographiePage() {
     if (footer) {
       footer.style.display = "none";
     }
-    
+
     // Prevent body overflow
     document.body.style.overflow = "hidden";
-    
+
     return () => {
       if (footer) {
         footer.style.display = "";
