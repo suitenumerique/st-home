@@ -97,7 +97,7 @@ path.leaflet-interactive:focus {
   bottom: 0;
   top: 174px;
   height: calc(100% - 174px);
-  z-index: 1000;
+  z-index: 200;
 }
 
 .map-side-panel {
