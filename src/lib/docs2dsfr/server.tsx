@@ -12,33 +12,17 @@ const getDocsApiUrl = (path: string): string => {
   return `${getDocsBaseUrl()}/api/v1.0${path}`;
 };
 
-// Cached fetch function with 10-minute (600s) expiry and 5-second timeout for stale cache
-// Returns parsed JSON directly instead of Response object
-async function cachedFetch(
+async function fetchUrl(
   url: string,
   options: RequestInit = {},
-  forceRefresh: boolean = false,
-): Promise<object> {
-  const cacheKey = `url:${url}`;
-
-  let cacheEntry: CacheEntry | null = null;
-
-  // If force refresh is requested, delete the cache entry and fetch fresh
-  if (!forceRefresh) {
-    cacheEntry = await cache.get(cacheKey);
-
-    // If we have cached data and it's not expired, return it immediately
-    // Cache for 4000 seconds (1h+)
-    if (cacheEntry && !isExpired(cacheEntry, 4000)) {
-      return JSON.parse(cacheEntry.value.toString());
-    }
-  }
-
-  // If we have stale cache data, try to fetch fresh data with a 5-second timeout
-  if (cacheEntry) {
-    try {
+  timeout: number = 5,
+  requiredKey: string | null = null,
+  retries: number = 2,
+): Promise<object | null> {
+  try {
+    for (let i = 0; i < retries; i++) {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const timeoutId = setTimeout(() => controller.abort(), timeout * 1000);
 
       const freshResponse = await fetch(url, {
         ...options,
@@ -49,30 +33,65 @@ async function cachedFetch(
 
       if (freshResponse.ok) {
         const freshData = await freshResponse.json();
-        const buffer = Buffer.from(JSON.stringify(freshData));
-        await cache.set(cacheKey, buffer);
-        return freshData;
+        if (!requiredKey || freshData[requiredKey]) {
+          return freshData;
+        }
       }
-    } catch (error) {
-      // If fetch fails or times out, return stale cache
-      if (error.name === "AbortError") {
-        console.warn(`Using stale cache for ${url} due to timeout`);
-        return JSON.parse(cacheEntry.value.toString());
-      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error(
+      `Error fetching ${url}: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    return null;
+  }
+}
+
+// Cached fetch function with expiry and timeout for stale cache
+// Returns parsed JSON directly instead of Response object
+async function cachedFetch(
+  url: string,
+  options: RequestInit = {},
+  forceRefresh: boolean = false,
+  requiredKey: string | null = null,
+  cacheTTL: number = 4000,
+  staleCacheTimeout: number = 5,
+  requestTimeout: number = 10,
+  retries: number = 2,
+): Promise<object> {
+  const cacheKey = `url:${url}`;
+
+  let cacheEntry: CacheEntry | null = null;
+
+  // If force refresh is requested, don't read from the cache
+  if (!forceRefresh) {
+    cacheEntry = await cache.get(cacheKey);
+
+    // If we have cached data and it's not expired, return it immediately
+    // Cache for 4000 seconds (1h+)
+    if (cacheEntry && !isExpired(cacheEntry, cacheTTL)) {
+      return JSON.parse(cacheEntry.value.toString());
     }
   }
 
-  // No cache or fresh fetch required
-  const response = await fetch(url, options);
-
-  if (response.ok) {
-    const data = await response.json();
-    const buffer = Buffer.from(JSON.stringify(data));
+  const freshData = await fetchUrl(
+    url,
+    options,
+    cacheEntry ? staleCacheTimeout : requestTimeout,
+    requiredKey,
+    retries,
+  );
+  if (freshData) {
+    const buffer = Buffer.from(JSON.stringify(freshData));
     await cache.set(cacheKey, buffer);
-    return data;
+    return freshData;
+  } else if (cacheEntry) {
+    console.warn(`Using stale cache for ${url} due to timeout or error`);
+    return JSON.parse(cacheEntry.value.toString());
+  } else {
+    throw new Error(`Failed to fetch ${url}`);
   }
-
-  throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
 }
 
 export async function fetchDocumentContent(
@@ -89,6 +108,7 @@ export async function fetchDocumentContent(
       },
     },
     forceRefresh,
+    "content",
   );
 
   return data as DocsContentResponse;
@@ -108,6 +128,7 @@ export async function fetchDocumentChildren(
       },
     },
     forceRefresh,
+    "results",
   );
 
   return data as DocsChildrenResponse;
