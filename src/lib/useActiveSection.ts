@@ -40,7 +40,7 @@ export function useActiveSection(sectionIds: string[]) {
         observerRef.current.disconnect();
       }
     };
-  });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const initializeObserver = () => {
     // Get all section elements
