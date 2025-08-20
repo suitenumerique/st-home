@@ -286,7 +286,7 @@ const ConformityMap = () => {
         return {};
       }
     },
-    [stats],
+    [stats, mapState.selectedRef, mapState.selectedAreas],
   );
 
   const processGeoJSONEPCI = useCallback((geoJSON: GeoJSON.FeatureCollection) => {
@@ -605,26 +605,26 @@ const ConformityMap = () => {
   }, [loadAllStats]);
 
   useEffect(() => {
-    console.log("in here");
     if (Object.keys(stats).length > 0) {
-      // const urlState = getURLState();
-      // if (
-      //   urlState.currentLevel &&
-      //   urlState.currentAreaCode &&
-      //   (urlState.currentLevel !== "country" || urlState.currentAreaCode !== "00")
-      // ) {
-      //   selectLevel(
-      //     urlState.currentLevel as "country" | "region" | "department" | "epci" | "city",
-      //     urlState.currentAreaCode,
-      //     "quickNav",
-      //     urlState.departmentView as "city" | "epci" | null,
-      //     urlState.selectedRef,
-      //   );
-      // } else {
-      selectLevel("country", "00", "quickNav", null); //, urlState.selectedRef);
-      // }
+      const urlState = getURLState();
+      if (
+        urlState.currentLevel &&
+        urlState.currentAreaCode &&
+        (urlState.currentLevel !== "country" || urlState.currentAreaCode !== "00")
+      ) {
+        selectLevel(
+          urlState.currentLevel as "country" | "region" | "department" | "epci" | "city",
+          urlState.currentAreaCode,
+          "quickNav",
+          urlState.departmentView as "city" | "epci" | null,
+          urlState.selectedRef,
+        );
+      } else {
+        selectLevel("country", "00", "quickNav", null, urlState.selectedRef);
+      }
     }
-  }, [stats]); // getURLState
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stats]);
 
   return (
     <div ref={containerRef} style={{ display: "flex", width: "100%", height: "100%" }}>
