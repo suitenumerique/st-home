@@ -455,8 +455,9 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
             <CommuneSearch
               container={container}
               onSelect={handleQuickNav}
-              placeholder="Rechercher une commune ou EPCI"
+              placeholder="Rechercher une commune ou un EPCI"
               smallButton={true}
+              includeRegionsAndDepartments={true}
             />
           </div>
         )

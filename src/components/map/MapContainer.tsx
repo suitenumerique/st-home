@@ -46,7 +46,7 @@ const MapContainer = ({
     name: string;
     insee_geo?: string;
     zipcode?: string;
-    type: "commune" | "epci";
+    type: "commune" | "epci" | "department" | "region";
     population: number;
   }) => void;
 }) => {
@@ -197,9 +197,9 @@ const MapContainer = ({
         [bounds[0], bounds[1]],
         [bounds[2], bounds[3]],
       ],
-      { padding: 40, duration: 1000 },
+      { padding: isMobile ? 40 : 100, duration: 1000 },
     );
-  }, [currentGeoJSON]);
+  }, [currentGeoJSON, isMobile]);
 
   const handleGradientClick = (event: React.MouseEvent) => {
     if (event.altKey) {
@@ -607,8 +607,9 @@ const MapContainer = ({
           {searchOpen ? (
             <CommuneSearch
               onSelect={handleQuickNav}
-              placeholder="Rechercher une commune ou EPCI"
+              placeholder="Rechercher une commune ou un EPCI"
               smallButton={true}
+              includeRegionsAndDepartments={true}
               style={{
                 backgroundColor: "white",
                 fontSize: "14px",
