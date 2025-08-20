@@ -5,6 +5,7 @@ import { bbox } from "@turf/bbox";
 import * as turf from "@turf/turf";
 import { MapLayerMouseEvent } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import Image from "next/image";
 import PropTypes from "prop-types";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Map, { Layer, LayerProps, MapRef, Popup, ScaleControl, Source } from "react-map-gl/maplibre";
@@ -45,7 +46,7 @@ const MapContainer = ({
     name: string;
     insee_geo?: string;
     zipcode?: string;
-    type: "commune" | "epci";
+    type: "commune" | "epci" | "department" | "region";
     population: number;
   }) => void;
 }) => {
@@ -135,7 +136,7 @@ const MapContainer = ({
       setHoveredFeature(null);
       setPopupInfo(null);
     }
-  }, []);
+  }, [hoveredFeature]);
 
   const handleMapClick = useCallback(
     (event: MapLayerMouseEvent) => {
@@ -176,6 +177,29 @@ const MapContainer = ({
     const map = mapRef.current?.getMap();
     if (map) map.zoomOut();
   };
+
+  const fitToFrance = useCallback(() => {
+    if (!mapRef.current) return;
+    mapRef.current.fitBounds(
+      [
+        [-5.2, 41.3],
+        [9.5, 51.1],
+      ],
+      { padding: 40, duration: 1000 },
+    );
+  }, []);
+
+  const fitToGeoJSONBounds = useCallback(() => {
+    if (!mapRef.current) return;
+    const bounds = bbox(currentGeoJSON as GeoJSON.FeatureCollection);
+    mapRef.current.fitBounds(
+      [
+        [bounds[0], bounds[1]],
+        [bounds[2], bounds[3]],
+      ],
+      { padding: isMobile ? 40 : 100, duration: 1000 },
+    );
+  }, [currentGeoJSON, isMobile]);
 
   const handleGradientClick = (event: React.MouseEvent) => {
     if (event.altKey) {
@@ -393,42 +417,45 @@ const MapContainer = ({
         <MapButton
           onClick={() => selectLevel("country", "00", "quickNav")}
           expandable={true}
-          arrowPosition="left"
           tooltip="France hexagonale"
           expandedButtons={[
             {
               label: "Guadeloupe",
-              onClick: () => selectLevel("region", "r01", "quickNav"),
+              onClick: () => selectLevel("department", "971", "quickNav"),
               tooltip: "Guadeloupe",
-              content: <img src="/icons/guadeloupe.svg" alt="Guadeloupe" />,
+              content: (
+                <Image src="/icons/guadeloupe.svg" alt="Guadeloupe" width={24} height={24} />
+              ),
             },
             {
               label: "Martinique",
-              onClick: () => selectLevel("region", "r02", "quickNav"),
+              onClick: () => selectLevel("department", "972", "quickNav"),
               tooltip: "Martinique",
-              content: <img src="/icons/martinique.svg" alt="Martinique" />,
+              content: (
+                <Image src="/icons/martinique.svg" alt="Martinique" width={24} height={24} />
+              ),
             },
             {
               label: "Guyane",
-              onClick: () => selectLevel("region", "r03", "quickNav"),
+              onClick: () => selectLevel("department", "973", "quickNav"),
               tooltip: "Guyane",
-              content: <img src="/icons/guyane.svg" alt="Guyane" />,
+              content: <Image src="/icons/guyane.svg" alt="Guyane" width={24} height={24} />,
             },
             {
               label: "La Réunion",
-              onClick: () => selectLevel("region", "r04", "quickNav"),
+              onClick: () => selectLevel("department", "974", "quickNav"),
               tooltip: "La Réunion",
-              content: <img src="/icons/reunion.svg" alt="La Réunion" />,
+              content: <Image src="/icons/reunion.svg" alt="La Réunion" width={24} height={24} />,
             },
             {
               label: "Mayotte",
-              onClick: () => selectLevel("region", "r06", "quickNav"),
+              onClick: () => selectLevel("department", "976", "quickNav"),
               tooltip: "Mayotte",
-              content: <img src="/icons/mayotte.svg" alt="Mayotte" />,
+              content: <Image src="/icons/mayotte.svg" alt="Mayotte" width={24} height={24} />,
             },
           ]}
         >
-          <img src="/icons/france.svg" alt="France" />
+          <Image src="/icons/france.svg" alt="France" width={24} height={24} />
         </MapButton>
       </div>
     );
@@ -485,24 +512,11 @@ const MapContainer = ({
     setIsMapUpdating(true);
 
     if (mapState.currentLevel === "country") {
-      mapRef.current.fitBounds(
-        [
-          [-5.2, 41.3],
-          [9.5, 51.1],
-        ],
-        { padding: 40, duration: 1000 },
-      );
+      fitToFrance();
     } else {
       setSearchOpen(false);
       try {
-        const bounds = bbox(currentGeoJSON as GeoJSON.FeatureCollection);
-        mapRef.current.fitBounds(
-          [
-            [bounds[0], bounds[1]],
-            [bounds[2], bounds[3]],
-          ],
-          { padding: 100, duration: 1000 },
-        );
+        fitToGeoJSONBounds();
       } catch (e) {
         console.error(e);
       }
@@ -515,27 +529,33 @@ const MapContainer = ({
     return () => {
       clearTimeout(timeout);
     };
-  }, [mapState.currentLevel, currentGeoJSON]);
+  }, [mapState.currentLevel, currentGeoJSON, fitToFrance, fitToGeoJSONBounds]);
 
   return (
-    <div style={{ position: "relative", flex: 1 }}>
+    <div style={{ position: "relative", flex: 1, overflow: "hidden" }}>
       <Map
         ref={mapRef}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         mapStyle={mapStyle as any}
-        initialViewState={{
-          bounds: [
-            [-5.2, 41.3],
-            [9.5, 51.1],
-          ],
-          fitBoundsOptions: { padding: 40 },
-        }}
         interactiveLayerIds={["polygon-fill"]}
         onClick={handleMapClick}
         onMouseLeave={onMouseLeave}
         onMouseMove={onMouseMove}
         cursor="pointer"
         attributionControl={false}
+        onResize={() => {
+          if (!mapRef.current || !currentGeoJSON) return;
+
+          try {
+            if (mapState.currentLevel === "country") {
+              fitToFrance();
+            } else {
+              fitToGeoJSONBounds();
+            }
+          } catch (e) {
+            console.error("Error fitting bounds on resize:", e);
+          }
+        }}
       >
         <ScaleControl position="bottom-left" />
         <Source
@@ -587,8 +607,9 @@ const MapContainer = ({
           {searchOpen ? (
             <CommuneSearch
               onSelect={handleQuickNav}
-              placeholder="Rechercher une commune ou EPCI"
+              placeholder="Rechercher une commune ou un EPCI"
               smallButton={true}
+              includeRegionsAndDepartments={true}
               style={{
                 backgroundColor: "white",
                 fontSize: "14px",
@@ -610,7 +631,7 @@ const MapContainer = ({
           )}
         </div>
       )}
-      {panelState === "closed" && (
+      {(panelState === "closed" || !isMobile) && (
         <>
           {mapGradient()}
           {mapDromSelector()}

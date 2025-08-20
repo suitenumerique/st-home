@@ -2,7 +2,8 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { SearchBar } from "@codegouvfr/react-dsfr/SearchBar";
 import Autocomplete from "@mui/material/Autocomplete";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
 // Cache for storing search results
 const searchCache = new Map<string, Commune[]>();
 
@@ -11,8 +12,16 @@ interface Commune {
   name: string;
   insee_geo?: string;
   zipcode?: string;
-  type: "commune" | "epci";
+  type: "commune" | "epci" | "department" | "region";
   population: number;
+}
+
+interface ParentArea {
+  insee_geo: string;
+  type: "department" | "region";
+  name: string;
+  insee_reg: string;
+  insee_dep: string | null;
 }
 
 interface CommuneSearchProps {
@@ -22,6 +31,7 @@ interface CommuneSearchProps {
   smallButton?: boolean;
   style?: React.CSSProperties;
   container?: HTMLElement | null;
+  includeRegionsAndDepartments?: boolean;
 }
 
 interface SearchInputProps {
@@ -30,6 +40,7 @@ interface SearchInputProps {
   style?: React.CSSProperties;
   type: "commune" | "epci" | "all";
   container?: HTMLElement | null;
+  includeRegionsAndDepartments?: boolean;
 }
 
 function CommuneSearchInput(
@@ -37,12 +48,50 @@ function CommuneSearchInput(
     onOptionSelect: (commune: Commune) => void;
   },
 ) {
-  const { id, placeholder, onOptionSelect, style, container } = props;
+  const { id, placeholder, onOptionSelect, style, container, includeRegionsAndDepartments } = props;
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [communes, setCommunes] = useState<Commune[]>([]);
   const [loading, setLoading] = useState(false);
+  const [parentAreas, setParentAreas] = useState<ParentArea[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const getOptionType = (option: Commune) => {
+    switch (option.type) {
+      case "commune":
+        return option.zipcode;
+      case "epci":
+        return "EPCI";
+      case "department":
+        return ["971", "972", "973", "974", "976"].includes(option.insee_geo || "")
+          ? "DROM"
+          : "Département";
+      case "region":
+        return "Région";
+      default:
+        return "";
+    }
+  };
+
+  // Load parent areas data when component mounts
+  useEffect(() => {
+    if (includeRegionsAndDepartments) {
+      fetch("/parent_areas.json")
+        .then((response) => response.json())
+        .then((data) => {
+          const areas = data.filter(
+            (area: ParentArea) =>
+              area.type === "department" ||
+              (area.type === "region" &&
+                !["r01", "r02", "r03", "r04", "r06", "r11"].includes(area.insee_geo)),
+          );
+          setParentAreas(areas);
+        })
+        .catch((error) => {
+          console.error("Error loading parent areas:", error);
+        });
+    }
+  }, [includeRegionsAndDepartments]);
 
   const handleInputChange = async (value: string) => {
     if (value.length === 0) {
@@ -51,8 +100,9 @@ function CommuneSearchInput(
     }
 
     // Check cache first
-    if (searchCache.has(props.type + "/" + value)) {
-      setCommunes(searchCache.get(props.type + "/" + value) || []);
+    const cacheKey = `${props.type}/${value}/${includeRegionsAndDepartments ? "with-areas" : "without-areas"}`;
+    if (searchCache.has(cacheKey)) {
+      setCommunes(searchCache.get(cacheKey) || []);
       return;
     }
 
@@ -68,7 +118,10 @@ function CommuneSearchInput(
       setLoading(true);
       const response = await fetch(`/api/communes/search`, {
         method: "POST",
-        body: JSON.stringify({ q: value, type: props.type }),
+        body: JSON.stringify({
+          q: value,
+          type: props.type,
+        }),
         headers: { "Content-Type": "application/json" },
         signal: abortControllerRef.current.signal,
         next: { revalidate: 3600 },
@@ -76,12 +129,51 @@ function CommuneSearchInput(
 
       const data = await response.json();
 
+      let allResults = [...data];
+
       // wait 1 second
       // await new Promise((resolve) => setTimeout(resolve, 1000));
 
+      if (includeRegionsAndDepartments && parentAreas.length > 0) {
+        const searchQuery = value.toLowerCase().trim();
+
+        const matchingAreas = parentAreas.filter((area) =>
+          area.name.toLowerCase().includes(searchQuery),
+        );
+
+        const areasAsCommunes: Commune[] = matchingAreas.map((area) => ({
+          siret: area.insee_geo,
+          name: area.name,
+          insee_geo: area.insee_geo,
+          zipcode: undefined,
+          type: area.type,
+          population: 0,
+        }));
+
+        allResults = [...data, ...areasAsCommunes];
+
+        const typePriority: Record<string, number> = {
+          commune: 4,
+          epci: 3,
+          department: 2,
+          region: 1,
+        };
+        allResults.sort((a, b) => {
+          const priorityA = typePriority[a.type] || 5;
+          const priorityB = typePriority[b.type] || 5;
+          if (priorityA !== priorityB) {
+            return priorityA - priorityB;
+          }
+          if (a.type === "commune" || a.type === "epci") {
+            return (b.population || 0) - (a.population || 0);
+          }
+          return a.name.localeCompare(b.name);
+        });
+      }
+
       // Cache the results
-      searchCache.set(props.type + "/" + value, data);
-      setCommunes(data);
+      searchCache.set(cacheKey, allResults);
+      setCommunes(allResults);
       setLoading(false);
     } catch (error) {
       // Ignore abort errors
@@ -109,9 +201,7 @@ function CommuneSearchInput(
       noOptionsText={
         inputValue.length < 1 ? "Saisissez au moins 1 caractère" : "Aucune commune trouvée"
       }
-      getOptionLabel={(option) =>
-        `${option.name} (${option.type === "commune" ? option.zipcode : "EPCI"})`
-      }
+      getOptionLabel={(option) => `${option.name} (${getOptionType(option)})`}
       filterOptions={(x) => x} // Disable client-side filtering
       onInputChange={(_, value) => {
         setInputValue(value);
@@ -136,7 +226,7 @@ function CommuneSearchInput(
                 className={fr.cx("fr-text--sm", "fr-ml-1w")}
                 style={{ color: "var(--text-mention-grey)" }}
               >
-                {option.type === "commune" ? option.zipcode : "EPCI"}
+                {getOptionType(option)}
               </span>
             </div>
           </li>
@@ -226,6 +316,7 @@ export default function CommuneSearch({
   style = {},
   smallButton = false,
   container,
+  includeRegionsAndDepartments = false,
 }: CommuneSearchProps) {
   return (
     <>
@@ -241,6 +332,7 @@ export default function CommuneSearch({
             style={style}
             onOptionSelect={onSelect || (() => {})}
             container={container}
+            includeRegionsAndDepartments={includeRegionsAndDepartments}
           />
         )}
       />

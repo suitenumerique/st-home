@@ -43,12 +43,15 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
     if (mapState.currentLevel === "country") {
       return null;
     }
+    if (mapState.currentLevel === "department" && ["971", "972", "973", "974", "976"].includes(mapState.selectedAreas.department.insee_geo)) {
+      return "DROM";
+    }
     return {
       region: "Région",
       department: "Département",
       epci: "EPCI",
     }[mapState.currentLevel];
-  }, [mapState.currentLevel]);
+  }, [mapState.currentLevel, mapState.selectedAreas]);
 
   const levelStatsDisplay = useMemo(() => {
     if (mapState.selectedAreas.city) {
@@ -403,8 +406,8 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
               <div style={{ paddingLeft: "1.5rem" }}>
                 <RadioButtons
                   name={`${section.all_key}-criteria`}
-                  options={rcpntRefs.filter(ref => ref.key[0] === String(index + 1) && ref.show_in_selector).map((criterion) => ({
-                    key: criterion.key,
+                  options={rcpntRefs[index].items.map((criterion) => ({
+                    key: criterion.num,
                     label: <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
                       <span
                         style={{ marginTop: "2px" }}
@@ -412,16 +415,16 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
                           "fr-badge",
                           "fr-badge--sm",
                           "fr-badge--no-icon",
-                          criterion.mandatory ? "fr-badge--success" : "fr-badge--info",
+                          criterion.level === "mandatory" ? "fr-badge--success" : "fr-badge--info",
                         )}
                       >
-                        {criterion.key}
+                        {criterion.num}
                       </span>
-                      <span style={{ fontSize: "var(--text-sm)" }}>{criterion.value}</span>
+                      <span style={{ fontSize: "var(--text-sm)" }}>{criterion.shortTitle}</span>
                     </div>,
                     nativeInputProps: {
-                      checked: mapState.selectedRef === criterion.key,
-                      onChange: () => setMapState({ ...mapState, selectedRef: criterion.key })
+                      checked: mapState.selectedRef === criterion.num,
+                      onChange: () => setMapState({ ...mapState, selectedRef: criterion.num })
                     },
                   }))}
                 />
@@ -452,8 +455,9 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
             <CommuneSearch
               container={container}
               onSelect={handleQuickNav}
-              placeholder="Rechercher une commune ou EPCI"
+              placeholder="Rechercher une commune ou un EPCI"
               smallButton={true}
+              includeRegionsAndDepartments={true}
             />
           </div>
         )
