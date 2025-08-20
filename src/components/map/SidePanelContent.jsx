@@ -43,12 +43,15 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
     if (mapState.currentLevel === "country") {
       return null;
     }
+    if (mapState.currentLevel === "department" && ["971", "972", "973", "974", "976"].includes(mapState.selectedAreas.department.insee_geo)) {
+      return "DROM";
+    }
     return {
       region: "Région",
       department: "Département",
       epci: "EPCI",
     }[mapState.currentLevel];
-  }, [mapState.currentLevel]);
+  }, [mapState.currentLevel, mapState.selectedAreas]);
 
   const levelStatsDisplay = useMemo(() => {
     if (mapState.selectedAreas.city) {

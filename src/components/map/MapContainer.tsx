@@ -178,6 +178,29 @@ const MapContainer = ({
     if (map) map.zoomOut();
   };
 
+  const fitToFrance = useCallback(() => {
+    if (!mapRef.current) return;
+    mapRef.current.fitBounds(
+      [
+        [-5.2, 41.3],
+        [9.5, 51.1],
+      ],
+      { padding: 40, duration: 1000 },
+    );
+  }, []);
+
+  const fitToGeoJSONBounds = useCallback(() => {
+    if (!mapRef.current) return;
+    const bounds = bbox(currentGeoJSON as GeoJSON.FeatureCollection);
+    mapRef.current.fitBounds(
+      [
+        [bounds[0], bounds[1]],
+        [bounds[2], bounds[3]],
+      ],
+      { padding: 40, duration: 1000 },
+    );
+  }, [currentGeoJSON]);
+
   const handleGradientClick = (event: React.MouseEvent) => {
     if (event.altKey) {
       event.preventDefault();
@@ -489,24 +512,11 @@ const MapContainer = ({
     setIsMapUpdating(true);
 
     if (mapState.currentLevel === "country") {
-      mapRef.current.fitBounds(
-        [
-          [-5.2, 41.3],
-          [9.5, 51.1],
-        ],
-        { padding: 40, duration: 1000 },
-      );
+      fitToFrance();
     } else {
       setSearchOpen(false);
       try {
-        const bounds = bbox(currentGeoJSON as GeoJSON.FeatureCollection);
-        mapRef.current.fitBounds(
-          [
-            [bounds[0], bounds[1]],
-            [bounds[2], bounds[3]],
-          ],
-          { padding: 100, duration: 1000 },
-        );
+        fitToGeoJSONBounds();
       } catch (e) {
         console.error(e);
       }
@@ -519,7 +529,7 @@ const MapContainer = ({
     return () => {
       clearTimeout(timeout);
     };
-  }, [mapState.currentLevel, currentGeoJSON]);
+  }, [mapState.currentLevel, currentGeoJSON, fitToFrance, fitToGeoJSONBounds]);
 
   return (
     <div style={{ position: "relative", flex: 1, overflow: "hidden" }}>
@@ -527,19 +537,25 @@ const MapContainer = ({
         ref={mapRef}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         mapStyle={mapStyle as any}
-        initialViewState={{
-          bounds: [
-            [-5.2, 41.3],
-            [9.5, 51.1],
-          ],
-          fitBoundsOptions: { padding: 40 },
-        }}
         interactiveLayerIds={["polygon-fill"]}
         onClick={handleMapClick}
         onMouseLeave={onMouseLeave}
         onMouseMove={onMouseMove}
         cursor="pointer"
         attributionControl={false}
+        onResize={() => {
+          if (!mapRef.current || !currentGeoJSON) return;
+
+          try {
+            if (mapState.currentLevel === "country") {
+              fitToFrance();
+            } else {
+              fitToGeoJSONBounds();
+            }
+          } catch (e) {
+            console.error("Error fitting bounds on resize:", e);
+          }
+        }}
       >
         <ScaleControl position="bottom-left" />
         <Source

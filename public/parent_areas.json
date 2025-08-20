@@ -9496,40 +9496,35 @@
     "type": "region",
     "name": "Guadeloupe",
     "insee_reg": "r01",
-    "insee_dep": null,
-    "is_drom": true
+    "insee_dep": null
   },
   {
     "insee_geo": "r02",
     "type": "region",
     "name": "Martinique",
     "insee_reg": "r02",
-    "insee_dep": null,
-    "is_drom": true
+    "insee_dep": null
   },
   {
     "insee_geo": "r03",
     "type": "region",
     "name": "Guyane",
     "insee_reg": "r03",
-    "insee_dep": null,
-    "is_drom": true
+    "insee_dep": null
   },
   {
     "insee_geo": "r04",
     "type": "region",
     "name": "La Réunion",
     "insee_reg": "r04",
-    "insee_dep": null,
-    "is_drom": true
+    "insee_dep": null
   },
   {
     "insee_geo": "r06",
     "type": "region",
     "name": "Mayotte",
     "insee_reg": "r06",
-    "insee_dep": null,
-    "is_drom": true
+    "insee_dep": null
   },
   {
     "insee_geo": "r11",

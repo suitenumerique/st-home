@@ -354,10 +354,10 @@ const ConformityMap = () => {
     if (event.features && event.features.length > 0) {
       const feature = event.features[0];
       if (nextLevel) {
-        const regionMatch = parentAreas.find((area) => {
-          return area.insee_geo === feature.properties.INSEE_GEO && area.type === "region";
-        });
-        if (regionMatch && regionMatch.is_drom) {
+        if (
+          nextLevel === "region" &&
+          ["r01", "r02", "r03", "r04", "r06"].includes(feature.properties.INSEE_GEO)
+        ) {
           const departmentMatch = parentAreas.find((area) => {
             return area.insee_reg === feature.properties.INSEE_GEO && area.type === "department";
           });
@@ -627,7 +627,15 @@ const ConformityMap = () => {
   }, [stats]);
 
   return (
-    <div ref={containerRef} style={{ display: "flex", width: "100%", height: "100%" }}>
+    <div
+      ref={containerRef}
+      style={{
+        display: "flex",
+        flexDirection: isMobile ? "column-reverse" : "row",
+        width: "100%",
+        height: "100%",
+      }}
+    >
       <SidePanel panelState={panelState} setPanelState={setPanelState} isMobile={isMobile}>
         <SidePanelContent
           panelState={panelState}
