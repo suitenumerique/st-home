@@ -5,6 +5,7 @@ import { bbox } from "@turf/bbox";
 import * as turf from "@turf/turf";
 import { MapLayerMouseEvent } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import Image from "next/image";
 import PropTypes from "prop-types";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Map, { Layer, LayerProps, MapRef, Popup, ScaleControl, Source } from "react-map-gl/maplibre";
@@ -135,7 +136,7 @@ const MapContainer = ({
       setHoveredFeature(null);
       setPopupInfo(null);
     }
-  }, []);
+  }, [hoveredFeature]);
 
   const handleMapClick = useCallback(
     (event: MapLayerMouseEvent) => {
@@ -393,42 +394,45 @@ const MapContainer = ({
         <MapButton
           onClick={() => selectLevel("country", "00", "quickNav")}
           expandable={true}
-          arrowPosition="left"
           tooltip="France hexagonale"
           expandedButtons={[
             {
               label: "Guadeloupe",
-              onClick: () => selectLevel("region", "r01", "quickNav"),
+              onClick: () => selectLevel("department", "971", "quickNav"),
               tooltip: "Guadeloupe",
-              content: <img src="/icons/guadeloupe.svg" alt="Guadeloupe" />,
+              content: (
+                <Image src="/icons/guadeloupe.svg" alt="Guadeloupe" width={24} height={24} />
+              ),
             },
             {
               label: "Martinique",
-              onClick: () => selectLevel("region", "r02", "quickNav"),
+              onClick: () => selectLevel("department", "972", "quickNav"),
               tooltip: "Martinique",
-              content: <img src="/icons/martinique.svg" alt="Martinique" />,
+              content: (
+                <Image src="/icons/martinique.svg" alt="Martinique" width={24} height={24} />
+              ),
             },
             {
               label: "Guyane",
-              onClick: () => selectLevel("region", "r03", "quickNav"),
+              onClick: () => selectLevel("department", "973", "quickNav"),
               tooltip: "Guyane",
-              content: <img src="/icons/guyane.svg" alt="Guyane" />,
+              content: <Image src="/icons/guyane.svg" alt="Guyane" width={24} height={24} />,
             },
             {
               label: "La Réunion",
-              onClick: () => selectLevel("region", "r04", "quickNav"),
+              onClick: () => selectLevel("department", "974", "quickNav"),
               tooltip: "La Réunion",
-              content: <img src="/icons/reunion.svg" alt="La Réunion" />,
+              content: <Image src="/icons/reunion.svg" alt="La Réunion" width={24} height={24} />,
             },
             {
               label: "Mayotte",
-              onClick: () => selectLevel("region", "r06", "quickNav"),
+              onClick: () => selectLevel("department", "976", "quickNav"),
               tooltip: "Mayotte",
-              content: <img src="/icons/mayotte.svg" alt="Mayotte" />,
+              content: <Image src="/icons/mayotte.svg" alt="Mayotte" width={24} height={24} />,
             },
           ]}
         >
-          <img src="/icons/france.svg" alt="France" />
+          <Image src="/icons/france.svg" alt="France" width={24} height={24} />
         </MapButton>
       </div>
     );
@@ -518,7 +522,7 @@ const MapContainer = ({
   }, [mapState.currentLevel, currentGeoJSON]);
 
   return (
-    <div style={{ position: "relative", flex: 1 }}>
+    <div style={{ position: "relative", flex: 1, overflow: "hidden" }}>
       <Map
         ref={mapRef}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -610,7 +614,7 @@ const MapContainer = ({
           )}
         </div>
       )}
-      {panelState === "closed" && (
+      {(panelState === "closed" || !isMobile) && (
         <>
           {mapGradient()}
           {mapDromSelector()}

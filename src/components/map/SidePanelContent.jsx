@@ -403,8 +403,8 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
               <div style={{ paddingLeft: "1.5rem" }}>
                 <RadioButtons
                   name={`${section.all_key}-criteria`}
-                  options={rcpntRefs.filter(ref => ref.key[0] === String(index + 1) && ref.show_in_selector).map((criterion) => ({
-                    key: criterion.key,
+                  options={rcpntRefs[index].items.map((criterion) => ({
+                    key: criterion.num,
                     label: <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
                       <span
                         style={{ marginTop: "2px" }}
@@ -412,16 +412,16 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
                           "fr-badge",
                           "fr-badge--sm",
                           "fr-badge--no-icon",
-                          criterion.mandatory ? "fr-badge--success" : "fr-badge--info",
+                          criterion.level === "mandatory" ? "fr-badge--success" : "fr-badge--info",
                         )}
                       >
-                        {criterion.key}
+                        {criterion.num}
                       </span>
-                      <span style={{ fontSize: "var(--text-sm)" }}>{criterion.value}</span>
+                      <span style={{ fontSize: "var(--text-sm)" }}>{criterion.shortTitle}</span>
                     </div>,
                     nativeInputProps: {
-                      checked: mapState.selectedRef === criterion.key,
-                      onChange: () => setMapState({ ...mapState, selectedRef: criterion.key })
+                      checked: mapState.selectedRef === criterion.num,
+                      onChange: () => setMapState({ ...mapState, selectedRef: criterion.num })
                     },
                   }))}
                 />

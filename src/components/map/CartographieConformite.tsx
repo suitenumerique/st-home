@@ -1,6 +1,7 @@
 "use client";
 
 import { type Commune } from "@/lib/onboarding";
+import { ReferentielConformite } from "@/pages/conformite/referentiel";
 import * as turf from "@turf/turf";
 import * as d3 from "d3";
 import { MapLayerMouseEvent } from "maplibre-gl";
@@ -10,7 +11,6 @@ import parentAreas from "../../../public/parent_areas.json";
 import MapContainer from "./MapContainer";
 import SidePanel from "./SidePanel";
 import SidePanelContent from "./SidePanelContent";
-import rcpntRefs from "./rcpntRefs.json";
 
 import {
   AllStats,
@@ -86,6 +86,15 @@ const ConformityMap = () => {
 
   const [isMobile, setIsMobile] = useState(false);
 
+  const allRcpntRefs = useMemo(() => {
+    return [
+      "a",
+      "1.a",
+      "2.a",
+      ...ReferentielConformite.flatMap((section) => section.items).map((item) => item.num),
+    ];
+  }, []);
+
   const colorsConfig = useMemo(() => {
     return {
       domain: [0, 1, 2],
@@ -119,42 +128,43 @@ const ConformityMap = () => {
   }, [mapState.currentLevel, mapState.departmentView]);
 
   // DATA LOADING
-  const loadStats = async (
-    level: "region" | "department" | "epci",
-  ): Promise<Record<string, StatRecord[]>> => {
-    const scope = {
-      region: "reg",
-      department: "dep",
-      epci: "epci",
-    };
-    const response = await fetch(
-      `/api/rcpnt/stats?scope=${scope[level]}&refs=${rcpntRefs.map((ref) => ref.key).join(",")}`,
-      {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        next: { revalidate: 3600 },
-      },
-    );
-    const data = await response.json();
-    return data;
-  };
+  const loadStats = useCallback(
+    async (level: "region" | "department" | "epci"): Promise<Record<string, StatRecord[]>> => {
+      const scope = {
+        region: "reg",
+        department: "dep",
+        epci: "epci",
+      };
+      const response = await fetch(
+        `/api/rcpnt/stats?scope=${scope[level]}&refs=${allRcpntRefs.join(",")}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          next: { revalidate: 3600 },
+        },
+      );
+      const data = await response.json();
+      return data;
+    },
+    [allRcpntRefs],
+  );
 
-  const loadAllStats = async () => {
+  const loadAllStats = useCallback(async () => {
     const regionStats = await loadStats("region");
     const departmentStats = await loadStats("department");
     const epciStats = await loadStats("epci");
     let countryStats;
     try {
       countryStats = {
-        "00": rcpntRefs.map((ref) => {
+        "00": allRcpntRefs.map((ref) => {
           return {
-            ref: ref.key,
+            ref: ref,
             valid: Object.values(regionStats).reduce(
-              (acc, stat) => acc + (stat.find((s) => s.ref === ref.key)?.valid || 0),
+              (acc, stat) => acc + (stat.find((s) => s.ref === ref)?.valid || 0),
               0,
             ),
             total: Object.values(regionStats).reduce(
-              (acc, stat) => acc + (stat.find((s) => s.ref === ref.key)?.total || 0),
+              (acc, stat) => acc + (stat.find((s) => s.ref === ref)?.total || 0),
               0,
             ),
           };
@@ -172,9 +182,9 @@ const ConformityMap = () => {
       epci: epciStats,
       country: countryStats,
     });
-  };
+  }, [allRcpntRefs, loadStats]);
 
-  const loadDepartmentCities = async (departmentCode: string) => {
+  const loadDepartmentCities = useCallback(async (departmentCode: string) => {
     const response = await fetch(`/api/rcpnt/stats?scope=list-commune&dep=${departmentCode}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -182,21 +192,24 @@ const ConformityMap = () => {
     });
     const data = await response.json();
     return data;
-  };
+  }, []);
 
-  const fetchGeoJSON = async (level: "country" | "region" | "department", code: string) => {
-    let filePath = "";
-    if (level === "country") {
-      filePath = "regions.json";
-    } else if (level === "region") {
-      filePath = `departements_par_region/${code.replace("r", "")}.json`;
-    } else if (level === "department") {
-      filePath = `communes_par_departement/${code}.json`;
-    }
-    const response = await fetch(`/geojson/${filePath}`);
-    const geoJSON = await response.json();
-    return geoJSON;
-  };
+  const fetchGeoJSON = useCallback(
+    async (level: "country" | "region" | "department", code: string) => {
+      let filePath = "";
+      if (level === "country") {
+        filePath = "regions.json";
+      } else if (level === "region") {
+        filePath = `departements_par_region/${code.replace("r", "")}.json`;
+      } else if (level === "department") {
+        filePath = `communes_par_departement/${code}.json`;
+      }
+      const response = await fetch(`/geojson/${filePath}`);
+      const geoJSON = await response.json();
+      return geoJSON;
+    },
+    [],
+  );
 
   const fetchSelectedCity = async (siret: string) => {
     try {
@@ -215,97 +228,68 @@ const ConformityMap = () => {
   };
 
   // PROCESSING
-  const computeSelectedArea = async (
-    level: "country" | "region" | "department" | "epci",
-    code: string,
-  ): Promise<SelectedArea | null> => {
-    try {
-      let selectedArea: SelectedArea;
-      if (level === "country") {
-        selectedArea = { insee_geo: "00", name: "France" };
-      } else {
-        selectedArea =
-          (parentAreas as ParentArea[]).find((area) => area.insee_geo === code) ||
-          ({ insee_geo: code, name: "Unknown", type: "unknown" } as ParentArea);
-      }
-      selectedArea.conformityStats = computeAreaStats(level, code) as ConformityStats;
-      if (level !== "epci") {
-        const geoJSON = await fetchGeoJSON(level, code);
-        selectedArea.geoJSON = geoJSON;
-        if (level === "department") {
-          selectedArea.cities = await loadDepartmentCities(code);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          selectedArea.geoJSONEPCI = processGeoJSONEPCI(geoJSON) as any;
-        }
-      }
-      return selectedArea;
-    } catch {
-      return null;
-    }
-  };
-
-  const computeAreaStats = (
-    level: "country" | "region" | "department" | "epci" | "city",
-    insee_geo: string,
-  ) => {
-    try {
-      if (level === "city") {
-        const cityRecord = (mapState.selectedAreas.department as SelectedArea)?.cities?.find(
-          (c) => c.insee_geo === insee_geo,
-        );
-        if (!cityRecord?.rcpnt) {
-          return null;
-        }
-        if (mapState.selectedRef) {
-          return {
-            score: cityRecord.rcpnt.indexOf(mapState.selectedRef) > -1 ? 2 : 0,
-          };
+  const computeAreaStats = useCallback(
+    (level: "country" | "region" | "department" | "epci" | "city", insee_geo: string) => {
+      try {
+        if (level === "city") {
+          const cityRecord = (mapState.selectedAreas.department as SelectedArea)?.cities?.find(
+            (c) => c.insee_geo === insee_geo,
+          );
+          if (!cityRecord?.rcpnt) {
+            return null;
+          }
+          if (mapState.selectedRef) {
+            return {
+              score: cityRecord.rcpnt.indexOf(mapState.selectedRef) > -1 ? 2 : 0,
+            };
+          } else {
+            return {
+              score: ["1.a", "2.a"].reduce((acc, ref) => {
+                return acc + (cityRecord.rcpnt!.indexOf(ref) > -1 ? 1 : 0);
+              }, 0),
+            };
+          }
         } else {
+          if (mapState.selectedRef) {
+            const stat = stats[level][insee_geo.replace("r", "")].find(
+              (s) => s.ref === mapState.selectedRef,
+            ) || { valid: 0, total: 0 };
+            return {
+              n_cities: stat.total,
+              score: (stat.valid / stat.total) * 2,
+              details: {
+                "0": stat.total - stat.valid,
+                "2": stat.valid,
+              },
+            };
+          }
+
+          const stat = stats[level][insee_geo.replace("r", "")];
+          const stat_a = stat.find((s) => s.ref === "a") || { valid: 0, total: 0 };
+          const stat_1a = stat.find((s) => s.ref === "1.a") || { valid: 0, total: 0 };
+          const stat_2a = stat.find((s) => s.ref === "2.a") || { valid: 0, total: 0 };
+          const n_cities = stat["2"].total;
+          const n_score_2 = stat_a.valid;
+          const n_score_1 = stat_1a.valid - stat_a.valid + stat_2a.valid - stat_a.valid;
+          const score = (n_score_2 * 2 + n_score_1 * 1) / stat_a.total;
           return {
-            score: ["1.a", "2.a"].reduce((acc, ref) => {
-              return acc + (cityRecord.rcpnt!.indexOf(ref) > -1 ? 1 : 0);
-            }, 0),
-          };
-        }
-      } else {
-        if (mapState.selectedRef) {
-          const stat = stats[level][insee_geo.replace("r", "")].find(
-            (s) => s.ref === mapState.selectedRef,
-          ) || { valid: 0, total: 0 };
-          return {
-            n_cities: stat.total,
-            score: (stat.valid / stat.total) * 2,
+            n_cities: n_cities,
+            score: score,
             details: {
-              "0": stat.total - stat.valid,
-              "2": stat.valid,
+              "0": n_cities - n_score_2 - n_score_1,
+              "1": n_score_1,
+              "2": n_score_2,
             },
           };
         }
-
-        const stat = stats[level][insee_geo.replace("r", "")];
-        const stat_a = stat.find((s) => s.ref === "a") || { valid: 0, total: 0 };
-        const stat_1a = stat.find((s) => s.ref === "1.a") || { valid: 0, total: 0 };
-        const stat_2a = stat.find((s) => s.ref === "2.a") || { valid: 0, total: 0 };
-        const n_cities = stat["2"].total;
-        const n_score_2 = stat_a.valid;
-        const n_score_1 = stat_1a.valid - stat_a.valid + stat_2a.valid - stat_a.valid;
-        const score = (n_score_2 * 2 + n_score_1 * 1) / stat_a.total;
-        return {
-          n_cities: n_cities,
-          score: score,
-          details: {
-            "0": n_cities - n_score_2 - n_score_1,
-            "1": n_score_1,
-            "2": n_score_2,
-          },
-        };
+      } catch {
+        return {};
       }
-    } catch {
-      return {};
-    }
-  };
+    },
+    [stats],
+  );
 
-  const processGeoJSONEPCI = (geoJSON: GeoJSON.FeatureCollection) => {
+  const processGeoJSONEPCI = useCallback((geoJSON: GeoJSON.FeatureCollection) => {
     const features = geoJSON.features.map((f) => JSON.parse(JSON.stringify(f)));
     const groupedFeatures = d3.group(features, (d) => d.properties.EPCI_SIREN);
     const processedGeoJSONFeatures = Array.from(groupedFeatures, ([epciSiren, features]) => {
@@ -331,18 +315,63 @@ const ConformityMap = () => {
         GeoJSON.GeoJsonProperties
       >[],
     };
-  };
+  }, []);
+
+  const computeSelectedArea = useCallback(
+    async (
+      level: "country" | "region" | "department" | "epci",
+      code: string,
+    ): Promise<SelectedArea | null> => {
+      try {
+        let selectedArea: SelectedArea;
+        if (level === "country") {
+          selectedArea = { insee_geo: "00", name: "France" };
+        } else {
+          selectedArea =
+            (parentAreas as ParentArea[]).find((area) => area.insee_geo === code) ||
+            ({ insee_geo: code, name: "Unknown", type: "unknown" } as ParentArea);
+        }
+        selectedArea.conformityStats = computeAreaStats(level, code) as ConformityStats;
+        if (level !== "epci") {
+          const geoJSON = await fetchGeoJSON(level, code);
+          selectedArea.geoJSON = geoJSON;
+          if (level === "department") {
+            selectedArea.cities = await loadDepartmentCities(code);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            selectedArea.geoJSONEPCI = processGeoJSONEPCI(geoJSON) as any;
+          }
+        }
+        return selectedArea;
+      } catch {
+        return null;
+      }
+    },
+    [fetchGeoJSON, computeAreaStats, loadDepartmentCities, processGeoJSONEPCI],
+  );
 
   // INTERACTIONS
   const handleAreaClick = async (event: MapLayerMouseEvent) => {
     if (event.features && event.features.length > 0) {
       const feature = event.features[0];
       if (nextLevel) {
-        await selectLevel(
-          nextLevel as "region" | "department" | "city",
-          nextLevel === "city" ? feature.properties.SIRET : feature.properties.INSEE_GEO,
-          "areaClick",
-        );
+        const regionMatch = parentAreas.find((area) => {
+          return area.insee_geo === feature.properties.INSEE_GEO && area.type === "region";
+        });
+        if (regionMatch && regionMatch.is_drom) {
+          const departmentMatch = parentAreas.find((area) => {
+            return area.insee_reg === feature.properties.INSEE_GEO && area.type === "department";
+          });
+          if (departmentMatch) {
+            await selectLevel("department", departmentMatch.insee_geo, "areaClick");
+            return;
+          }
+        } else {
+          await selectLevel(
+            nextLevel as "region" | "department" | "city",
+            nextLevel === "city" ? feature.properties.SIRET : feature.properties.INSEE_GEO,
+            "areaClick",
+          );
+        }
       }
     }
   };
@@ -368,82 +397,85 @@ const ConformityMap = () => {
     await selectLevel(level as "epci" | "city", code, "quickNav");
   };
 
-  const selectLevel = async (
-    level: "country" | "region" | "department" | "epci" | "city",
-    code: string,
-    source = "areaClick",
-    departmentView: "city" | "epci" | null = null,
-    selectedRef: string | null = null,
-  ) => {
-    console.log("selectLevel", level, code, source);
+  const selectLevel = useCallback(
+    async (
+      level: "country" | "region" | "department" | "epci" | "city",
+      code: string,
+      source = "areaClick",
+      departmentView: "city" | "epci" | null = null,
+      selectedRef: string | null = null,
+    ) => {
+      console.log("selectLevel", level, code, source);
 
-    const allLevels = ["city", "epci", "department", "region", "country"];
-    const parentLevels = allLevels.slice(allLevels.indexOf(level) + 1);
+      const allLevels = ["city", "epci", "department", "region", "country"];
+      const parentLevels = allLevels.slice(allLevels.indexOf(level) + 1);
 
-    let newSelectedAreas: { [key: string]: SelectedArea | Commune | null } = {};
+      let newSelectedAreas: { [key: string]: SelectedArea | Commune | null } = {};
 
-    if (source === "backClick") {
-      newSelectedAreas = parentLevels.reduce(
-        (acc, lev) => {
-          acc[lev] = mapState.selectedAreas[lev] as SelectedArea;
-          return acc;
-        },
-        {} as { [key: string]: SelectedArea },
-      );
-    } else if (source === "areaClick") {
-      newSelectedAreas = { ...mapState.selectedAreas };
-    }
-
-    if (level !== "city") {
-      newSelectedAreas[level] = await computeSelectedArea(level, code);
-    } else {
-      newSelectedAreas[level] = await fetchSelectedCity(code);
-    }
-
-    if (!newSelectedAreas[level]) {
-      selectLevel("country", "00");
-      return;
-    }
-
-    if (source === "quickNav") {
-      for (const parentLevel of parentLevels) {
-        let parentCode;
-        if (parentLevel === "epci") {
-          parentCode = (newSelectedAreas["city"] as Commune)?.epci_siren;
-        }
-        if (parentLevel === "department") {
-          parentCode = (newSelectedAreas["epci"] as SelectedArea)?.insee_dep || "";
-        }
-        if (parentLevel === "region") {
-          parentCode = (newSelectedAreas["department"] as SelectedArea)?.insee_reg || "";
-        }
-        if (parentLevel === "country") {
-          parentCode = "00";
-        }
-        newSelectedAreas[parentLevel] = await computeSelectedArea(
-          parentLevel as "country" | "region" | "department" | "epci",
-          parentCode as string,
+      if (source === "backClick") {
+        newSelectedAreas = parentLevels.reduce(
+          (acc, lev) => {
+            acc[lev] = mapState.selectedAreas[lev] as SelectedArea;
+            return acc;
+          },
+          {} as { [key: string]: SelectedArea },
         );
+      } else if (source === "areaClick") {
+        newSelectedAreas = { ...mapState.selectedAreas };
       }
-    }
 
-    const newMapState: Partial<MapState> = {
-      currentLevel: level,
-      selectedAreas: newSelectedAreas,
-    };
+      if (level !== "city") {
+        newSelectedAreas[level] = await computeSelectedArea(level, code);
+      } else {
+        newSelectedAreas[level] = await fetchSelectedCity(code);
+      }
 
-    if (departmentView) {
-      newMapState.departmentView = departmentView;
-    } else if (level === "city" && source === "quickNav") {
-      newMapState.departmentView = "city";
-    }
+      if (!newSelectedAreas[level]) {
+        selectLevel("country", "00");
+        return;
+      }
 
-    if (selectedRef) {
-      newMapState.selectedRef = selectedRef;
-    }
+      if (source === "quickNav") {
+        for (const parentLevel of parentLevels) {
+          let parentCode;
+          if (parentLevel === "epci") {
+            parentCode = (newSelectedAreas["city"] as Commune)?.epci_siren;
+          }
+          if (parentLevel === "department") {
+            parentCode = (newSelectedAreas["epci"] as SelectedArea)?.insee_dep || "";
+          }
+          if (parentLevel === "region") {
+            parentCode = (newSelectedAreas["department"] as SelectedArea)?.insee_reg || "";
+          }
+          if (parentLevel === "country") {
+            parentCode = "00";
+          }
+          newSelectedAreas[parentLevel] = await computeSelectedArea(
+            parentLevel as "country" | "region" | "department" | "epci",
+            parentCode as string,
+          );
+        }
+      }
 
-    setMapState({ ...mapState, ...newMapState } as MapState);
-  };
+      const newMapState: Partial<MapState> = {
+        currentLevel: level,
+        selectedAreas: newSelectedAreas,
+      };
+
+      if (departmentView) {
+        newMapState.departmentView = departmentView;
+      } else if (level === "city" && source === "quickNav") {
+        newMapState.departmentView = "city";
+      }
+
+      if (selectedRef) {
+        newMapState.selectedRef = selectedRef;
+      }
+
+      setMapState({ ...mapState, ...newMapState } as MapState);
+    },
+    [computeSelectedArea, mapState],
+  );
 
   const handleFullscreen = () => {
     const container = containerRef.current;
@@ -453,14 +485,17 @@ const ConformityMap = () => {
   };
 
   // RENDERING
-  const getColor = (score: number | null | undefined): string => {
-    const colorScale = d3.scaleLinear(colorsConfig.domain, colorsConfig.range);
-    return score === null || score === undefined ? colorsConfig.defaultColor : colorScale(score);
-  };
+  const getColor = useCallback(
+    (score: number | null | undefined): string => {
+      const colorScale = d3.scaleLinear(colorsConfig.domain, colorsConfig.range);
+      return score === null || score === undefined ? colorsConfig.defaultColor : colorScale(score);
+    },
+    [colorsConfig],
+  );
 
-  const darkenColor = (color: string, amount: number) => {
+  const darkenColor = useCallback((color: string, amount: number) => {
     return d3.color(color)?.darker(amount).formatHex8();
-  };
+  }, []);
 
   const currentGeoJSON = useMemo(() => {
     const getEPCIGeoJSON = (geoJSON: GeoJSON.FeatureCollection | null) => {
@@ -530,8 +565,9 @@ const ConformityMap = () => {
     mapState.currentLevel,
     mapState.selectedAreas,
     mapState.departmentView,
-    mapState.selectedRef,
-    selectedGradient,
+    computeAreaStats,
+    getColor,
+    darkenColor,
   ]);
 
   useEffect(() => {
@@ -552,6 +588,7 @@ const ConformityMap = () => {
     mapState.selectedAreas,
     mapState.selectedRef,
     mapState.departmentView,
+    updateURLState,
   ]);
 
   useEffect(() => {
@@ -565,28 +602,29 @@ const ConformityMap = () => {
 
   useEffect(() => {
     loadAllStats();
-  }, []);
+  }, [loadAllStats]);
 
   useEffect(() => {
+    console.log("in here");
     if (Object.keys(stats).length > 0) {
-      const urlState = getURLState();
-      if (
-        urlState.currentLevel &&
-        urlState.currentAreaCode &&
-        (urlState.currentLevel !== "country" || urlState.currentAreaCode !== "00")
-      ) {
-        selectLevel(
-          urlState.currentLevel as "country" | "region" | "department" | "epci" | "city",
-          urlState.currentAreaCode,
-          "quickNav",
-          urlState.departmentView as "city" | "epci" | null,
-          urlState.selectedRef,
-        );
-      } else {
-        selectLevel("country", "00", "quickNav", null, urlState.selectedRef);
-      }
+      // const urlState = getURLState();
+      // if (
+      //   urlState.currentLevel &&
+      //   urlState.currentAreaCode &&
+      //   (urlState.currentLevel !== "country" || urlState.currentAreaCode !== "00")
+      // ) {
+      //   selectLevel(
+      //     urlState.currentLevel as "country" | "region" | "department" | "epci" | "city",
+      //     urlState.currentAreaCode,
+      //     "quickNav",
+      //     urlState.departmentView as "city" | "epci" | null,
+      //     urlState.selectedRef,
+      //   );
+      // } else {
+      selectLevel("country", "00", "quickNav", null); //, urlState.selectedRef);
+      // }
     }
-  }, [stats]);
+  }, [stats]); // getURLState
 
   return (
     <div ref={containerRef} style={{ display: "flex", width: "100%", height: "100%" }}>
@@ -594,7 +632,7 @@ const ConformityMap = () => {
         <SidePanelContent
           panelState={panelState}
           setPanelState={setPanelState}
-          rcpntRefs={rcpntRefs}
+          rcpntRefs={ReferentielConformite}
           getColor={getColor}
           mapState={mapState}
           selectLevel={selectLevel}

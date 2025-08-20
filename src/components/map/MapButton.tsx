@@ -15,7 +15,6 @@ interface MapButtonProps {
     title?: string;
     style?: React.CSSProperties;
   }>;
-  arrowPosition?: "left" | "right" | "top" | "bottom";
   tooltip?: string;
   "aria-label"?: string;
 }
@@ -26,7 +25,6 @@ const MapButton = ({
   customStyle = {},
   expandable = false,
   expandedButtons = [],
-  arrowPosition = "right",
   tooltip,
 }: MapButtonProps) => {
   const [isExpanded, setIsExpanded] = useState(false);

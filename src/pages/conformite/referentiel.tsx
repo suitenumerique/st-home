@@ -17,6 +17,7 @@ import { ReactNode, useEffect, useState } from "react";
 type ReferentielItem = {
   num: string;
   title: ReactNode;
+  shortTitle: string;
   whyItsImportant: ReactNode;
   howToFix: ReactNode;
   type: "declarative" | "tested";
@@ -66,6 +67,7 @@ export const ReferentielConformite: ReferentielSection[] = [
       {
         num: "1.1",
         title: <>Un site internet doit être déclaré auprès de Service-Public.fr</>,
+        shortTitle: "Déclaré sur Service-Public.fr",
         whyItsImportant: (
           <>
             <p>
@@ -101,6 +103,7 @@ export const ReferentielConformite: ReferentielSection[] = [
       {
         num: "1.2",
         title: <>Le site internet doit utiliser une extension de domaine souveraine</>,
+        shortTitle: "Usage d'une extension souveraine",
         whyItsImportant: (
           <>
             <p>
@@ -172,6 +175,7 @@ export const ReferentielConformite: ReferentielSection[] = [
       {
         num: "1.3",
         title: <>Le site internet doit être joignable</>,
+        shortTitle: "Site joignable",
         whyItsImportant: (
           <>
             <p>
@@ -212,6 +216,7 @@ export const ReferentielConformite: ReferentielSection[] = [
       {
         num: "1.4",
         title: <>Le site internet doit utiliser le protocole HTTPS</>,
+        shortTitle: "Usage du protocole HTTPS",
         whyItsImportant: (
           <>
             <p>
@@ -267,6 +272,7 @@ export const ReferentielConformite: ReferentielSection[] = [
       {
         num: "1.5",
         title: <>Le certificat SSL doit être valide</>,
+        shortTitle: "Certificat SSL valide",
         whyItsImportant: (
           <>
             <p>
@@ -313,6 +319,7 @@ export const ReferentielConformite: ReferentielSection[] = [
       {
         num: "1.6",
         title: <>Le site déclaré sur Service-Public.fr ne doit pas rediriger ailleurs</>,
+        shortTitle: "Déclaration et redirection identiques",
         whyItsImportant: (
           <>
             <p>
@@ -346,6 +353,7 @@ export const ReferentielConformite: ReferentielSection[] = [
       {
         num: "1.7",
         title: <>Les redirections d&rsquo;usage doivent fonctionner</>,
+        shortTitle: "Redirection fonctionnelle",
         whyItsImportant: (
           <>
             <p>
@@ -396,6 +404,7 @@ export const ReferentielConformite: ReferentielSection[] = [
       {
         num: "1.8",
         title: <>L&rsquo;adresse du site déclarée sur Service-Public.fr doit être en HTTPS</>,
+        shortTitle: "Déclaré en HTTPS sur Service-Public.fr",
         whyItsImportant: (
           <>
             <p>
@@ -439,6 +448,7 @@ export const ReferentielConformite: ReferentielSection[] = [
       {
         num: "2.1",
         title: <>Une adresse de messagerie doit être déclarée sur Service-Public.fr</>,
+        shortTitle: "Déclaré sur Service-Public.fr",
         whyItsImportant: (
           <>
             <p>
@@ -484,6 +494,7 @@ export const ReferentielConformite: ReferentielSection[] = [
       {
         num: "2.2",
         title: <>L&rsquo;adresse de messagerie ne doit pas utiliser un nom de domaine générique</>,
+        shortTitle: "Pas de nom de domaine générique",
         whyItsImportant: (
           <>
             <p>
@@ -546,6 +557,7 @@ export const ReferentielConformite: ReferentielSection[] = [
       {
         num: "2.3",
         title: <>Le nom de domaine de la messagerie doit correspondre à celui du site</>,
+        shortTitle: "Domaine messagerie et site identiques",
         whyItsImportant: (
           <>
             <p>
@@ -602,6 +614,7 @@ export const ReferentielConformite: ReferentielSection[] = [
       {
         num: "2.4",
         title: <>Un enregistrement MX doit être configuré</>,
+        shortTitle: "Enregistrement MX configuré",
         whyItsImportant: (
           <>
             <p>
@@ -653,6 +666,7 @@ export const ReferentielConformite: ReferentielSection[] = [
       {
         num: "2.5",
         title: <>Un enregistrement SPF doit être configuré</>,
+        shortTitle: "Enregistrement SPF configuré",
         whyItsImportant: (
           <>
             <p>
@@ -713,6 +727,7 @@ export const ReferentielConformite: ReferentielSection[] = [
       {
         num: "2.6",
         title: <>Un enregistrement DMARC doit être configuré</>,
+        shortTitle: "Enregistrement DMARC configuré",
         whyItsImportant: (
           <>
             <p>
@@ -777,6 +792,7 @@ export const ReferentielConformite: ReferentielSection[] = [
       {
         num: "2.7",
         title: <>L&rsquo;enregistrement DMARC doit utiliser une politique de quarantaine</>,
+        shortTitle: "Enregistrement DMARC avec quarantaine",
         whyItsImportant: (
           <>
             <p>
@@ -826,6 +842,7 @@ export const ReferentielConformite: ReferentielSection[] = [
       {
         num: "2.8",
         title: <>Le serveur de messagerie doit être situé dans l&rsquo;Union Européenne</>,
+        shortTitle: "Serveur de messagerie dans l'UE",
         whyItsImportant: (
           <>
             <p>
