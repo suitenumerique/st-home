@@ -192,6 +192,7 @@ path.leaflet-interactive:focus {
   border: 2px solid #fff;
   border-radius: 100%;
   transition: left 0.3s ease-in-out;
+  top: 1px;
 }
 
 .map-gradient-label {

@@ -8,7 +8,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import Image from "next/image";
 import PropTypes from "prop-types";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import Map, { Layer, LayerProps, MapRef, Popup, ScaleControl, Source } from "react-map-gl/maplibre";
+import Map, { Layer, MapRef, Popup, ScaleControl, Source } from "react-map-gl/maplibre";
 import CommuneSearch from "../CommuneSearch";
 import mapStyle from "./map_style.json";
 import MapButton from "./MapButton";
@@ -16,6 +16,7 @@ import { FeatureProperties, MapState } from "./types";
 
 const MapContainer = ({
   currentGeoJSON,
+  backgroundGeoJSON,
   mapState,
   selectedGradient,
   isMobile,
@@ -28,11 +29,12 @@ const MapContainer = ({
   handleQuickNav,
 }: {
   currentGeoJSON: GeoJSON.FeatureCollection & { id: string };
+  backgroundGeoJSON: (GeoJSON.FeatureCollection & { id: string }) | null;
   mapState: MapState;
   selectedGradient: string[];
   isMobile: boolean;
   panelState: "closed" | "open" | "partial";
-  handleAreaClick: (event: MapLayerMouseEvent) => void;
+  handleAreaClick: (feature: GeoJSON.Feature) => void;
   handleFullscreen: () => void;
   selectLevel: (
     level: "country" | "region" | "department" | "epci" | "city",
@@ -56,7 +58,13 @@ const MapContainer = ({
     latitude: number;
     properties: FeatureProperties;
   } | null>(null);
-  const [hoveredFeature, setHoveredFeature] = useState<{ id: string; score: number } | null>(null);
+  const [hoveredFeature, setHoveredFeature] = useState<{
+    id: string;
+    layerId: string;
+    sourceId: string;
+    isBackground: boolean;
+    score: number;
+  } | null>(null);
   const [showGradientSelector, setShowGradientSelector] = useState(false);
   const [customGradient, setCustomGradient] = useState<string[]>(selectedGradient);
   const [isMapUpdating, setIsMapUpdating] = useState(false);
@@ -80,57 +88,6 @@ const MapContainer = ({
     },
   ];
 
-  // Layer styles
-  const fillLayerStyle = {
-    id: "polygon-fill",
-    type: "fill",
-    paint: {
-      "fill-color": ["get", "color"],
-      "fill-opacity": 1,
-    },
-  };
-
-  const strokeLayerStyle = {
-    id: "polygon-stroke",
-    type: "line",
-    paint: {
-      "line-color": "#ffffff",
-      "line-width": 2,
-    },
-  };
-
-  const hoveredFillLayerStyle = {
-    id: "polygon-fill-hovered",
-    type: "fill",
-    filter: ["==", ["id"], hoveredFeature?.id],
-    paint: {
-      "fill-color": ["get", "color"],
-      "fill-opacity": 1,
-    },
-  };
-
-  const hoveredStrokeLayerStyle = {
-    id: "polygon-stroke-hovered",
-    type: "line",
-    filter: ["==", ["id"], hoveredFeature?.id],
-    paint: {
-      "line-color": ["get", "color_dark"],
-      "line-opacity": 1,
-      "line-width": 2.5,
-    },
-  };
-
-  const selectedCityLayerStyle = {
-    id: "polygon-stroke-selected",
-    type: "line",
-    filter: ["==", ["get", "INSEE_GEO"], mapState.selectedAreas.city?.insee_geo],
-    paint: {
-      "line-color": ["get", "color_darker"],
-      "line-opacity": 1,
-      "line-width": 2.5,
-    },
-  };
-
   const onMouseLeave = useCallback(() => {
     if (hoveredFeature !== null && mapRef.current) {
       setHoveredFeature(null);
@@ -143,23 +100,39 @@ const MapContainer = ({
       if (isMapUpdating) {
         return;
       }
-      handleAreaClick(event);
+      if (event.features && event.features.length > 0) {
+        const feature = event.features[0];
+
+        if (feature.source === "main-geojson") {
+          handleAreaClick(feature);
+        } else {
+          selectLevel("region", feature.properties.INSEE_GEO as string, "quickNav");
+        }
+      }
     },
-    [isMapUpdating, handleAreaClick],
+    [isMapUpdating, handleAreaClick, selectLevel],
   );
 
   const onMouseMove = useCallback((event: MapLayerMouseEvent) => {
     if (event.features && event.features.length > 0) {
       if (mapRef.current) {
+        const feature = event.features[0];
+        const sourceId = feature.source;
+        const isBackgroundFeature = sourceId === "background-geojson";
+
         setHoveredFeature({
-          id: event.features[0].id as string,
-          score: event.features[0].properties.SCORE as number,
+          id: feature.id as string,
+          layerId: feature.layer.id as string,
+          sourceId: sourceId as string,
+          isBackground: isBackgroundFeature,
+          score: feature.properties.SCORE as number,
         });
-        const center = turf.center(event.features[0]);
+
+        const center = turf.center(feature);
         setPopupInfo({
           longitude: center.geometry.coordinates[0] as number,
           latitude: center.geometry.coordinates[1] as number,
-          properties: event.features[0].properties as FeatureProperties,
+          properties: feature.properties as FeatureProperties,
         });
       }
     } else {
@@ -382,7 +355,7 @@ const MapContainer = ({
               position: "relative",
             }}
           >
-            {hoveredFeature && !isMobile && (
+            {hoveredFeature && !hoveredFeature.isBackground && !isMobile && (
               <div
                 className="map-gradient-dot"
                 style={{
@@ -537,7 +510,7 @@ const MapContainer = ({
         ref={mapRef}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         mapStyle={mapStyle as any}
-        interactiveLayerIds={["polygon-fill"]}
+        interactiveLayerIds={["main-fill", "background-fill"]}
         onClick={handleMapClick}
         onMouseLeave={onMouseLeave}
         onMouseMove={onMouseMove}
@@ -559,26 +532,115 @@ const MapContainer = ({
       >
         <ScaleControl position="bottom-left" />
         <Source
-          id="interactive-polygons"
+          id="main-geojson"
           type="geojson"
           data={currentGeoJSON as GeoJSON.FeatureCollection & { id: string }}
           generateId={true}
         >
-          {hoveredFeature && (
-            <Layer {...(hoveredFillLayerStyle as LayerProps)} beforeId="Water point/Sea or ocean" />
-          )}
-          {hoveredFeature && (
+          <Layer
+            id="main-fill"
+            type="fill"
+            paint={{
+              "fill-color": ["get", "color"],
+              "fill-opacity": 1,
+            }}
+            beforeId="Water point/Sea or ocean"
+          />
+          <Layer
+            id="main-stroke"
+            type="line"
+            paint={{
+              "line-color": "#ffffff",
+              "line-width": 2,
+            }}
+          />
+          {hoveredFeature && !hoveredFeature.isBackground && (
             <Layer
-              {...(hoveredStrokeLayerStyle as LayerProps)}
-              beforeId="Water point/Sea or ocean"
+              id="main-hovered-fill"
+              type="fill"
+              filter={["==", ["id"], hoveredFeature?.id]}
+              paint={{
+                "fill-color": ["get", "color"],
+                "fill-opacity": 1,
+              }}
             />
           )}
-          <Layer {...(fillLayerStyle as LayerProps)} beforeId="Water point/Sea or ocean" />
-          <Layer {...(strokeLayerStyle as LayerProps)} beforeId="Water point/Sea or ocean" />
+          {hoveredFeature && !hoveredFeature.isBackground && (
+            <Layer
+              id="main-hovered-stroke"
+              type="line"
+              filter={["==", ["id"], hoveredFeature?.id]}
+              paint={{
+                "line-color": ["get", "color_dark"],
+                "line-opacity": 1,
+                "line-width": 2.5,
+              }}
+            />
+          )}
           {mapState.selectedAreas.city && (
             <Layer
-              {...(selectedCityLayerStyle as LayerProps)}
-              beforeId="Water point/Sea or ocean"
+              id="main-selected-city"
+              type="line"
+              filter={[
+                "==",
+                ["get", "INSEE_GEO"],
+                mapState.selectedAreas.city?.insee_geo as string,
+              ]}
+              paint={{
+                "line-color": ["get", "color_darker"],
+                "line-opacity": 1,
+                "line-width": 2.5,
+              }}
+            />
+          )}
+        </Source>
+        <Source
+          id="background-geojson"
+          type="geojson"
+          data={backgroundGeoJSON as GeoJSON.FeatureCollection & { id: string }}
+          generateId={true}
+        >
+          <Layer
+            id="background-fill"
+            type="fill"
+            paint={{
+              "fill-color": "#eeeeee",
+              "fill-opacity": 1,
+            }}
+            beforeId="main-fill"
+          />
+          <Layer
+            id="background-stroke"
+            type="line"
+            paint={{
+              "line-color": "#ffffff",
+              "line-width": 2,
+            }}
+            beforeId="main-fill"
+          />
+          {hoveredFeature && hoveredFeature.isBackground && (
+            <Layer
+              id="background-hovered-fill"
+              type="fill"
+              filter={["==", ["id"], hoveredFeature?.id]}
+              paint={{
+                "fill-color": "#cccccc",
+                "fill-opacity": 0.8,
+              }}
+              beforeId="main-fill"
+            />
+          )}
+          {hoveredFeature && hoveredFeature.isBackground && (
+            <Layer
+              id="background-hovered-stroke"
+              type="line"
+              filter={["==", ["id"], hoveredFeature?.id]}
+              paint={{
+                "line-color": "#999999",
+                "line-opacity": 1,
+                "line-width": 3,
+              }}
+              beforeId="main-fill"
             />
           )}
         </Source>
@@ -644,6 +706,7 @@ const MapContainer = ({
 
 MapContainer.propTypes = {
   currentGeoJSON: PropTypes.object,
+  backgroundGeoJSON: PropTypes.object,
   handleAreaClick: PropTypes.func.isRequired,
   handleFullscreen: PropTypes.func.isRequired,
   mapState: PropTypes.object.isRequired,

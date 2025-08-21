@@ -4,7 +4,6 @@ import { type Commune } from "@/lib/onboarding";
 import { ReferentielConformite } from "@/pages/conformite/referentiel";
 import * as turf from "@turf/turf";
 import * as d3 from "d3";
-import { MapLayerMouseEvent } from "maplibre-gl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import parentAreas from "../../../public/parent_areas.json";
@@ -350,28 +349,27 @@ const ConformityMap = () => {
   );
 
   // INTERACTIONS
-  const handleAreaClick = async (event: MapLayerMouseEvent) => {
-    if (event.features && event.features.length > 0) {
-      const feature = event.features[0];
-      if (nextLevel) {
-        if (
-          nextLevel === "region" &&
-          ["r01", "r02", "r03", "r04", "r06"].includes(feature.properties.INSEE_GEO)
-        ) {
-          const departmentMatch = parentAreas.find((area) => {
-            return area.insee_reg === feature.properties.INSEE_GEO && area.type === "department";
-          });
-          if (departmentMatch) {
-            await selectLevel("department", departmentMatch.insee_geo, "areaClick");
-            return;
-          }
-        } else {
-          await selectLevel(
-            nextLevel as "region" | "department" | "city",
-            nextLevel === "city" ? feature.properties.SIRET : feature.properties.INSEE_GEO,
-            "areaClick",
-          );
+  const handleAreaClick = async (feature: GeoJSON.Feature) => {
+    if (nextLevel) {
+      if (
+        nextLevel === "region" &&
+        ["r01", "r02", "r03", "r04", "r06"].includes(feature.properties?.INSEE_GEO as string)
+      ) {
+        const departmentMatch = parentAreas.find((area) => {
+          return area.insee_reg === feature.properties?.INSEE_GEO && area.type === "department";
+        });
+        if (departmentMatch) {
+          await selectLevel("department", departmentMatch.insee_geo, "areaClick");
+          return;
         }
+      } else {
+        await selectLevel(
+          nextLevel as "region" | "department" | "city",
+          nextLevel === "city"
+            ? (feature.properties?.SIRET as string)
+            : (feature.properties?.INSEE_GEO as string),
+          "areaClick",
+        );
       }
     }
   };
@@ -570,6 +568,24 @@ const ConformityMap = () => {
     darkenColor,
   ]);
 
+  const [backgroundGeoJSON, setBackgroundGeoJSON] = useState<
+    (GeoJSON.FeatureCollection & { id: string }) | null
+  >(null);
+
+  useEffect(() => {
+    const fetchBackgroundGeoJSON = async () => {
+      if (mapState.currentLevel === "region") {
+        const geoJSON = await fetchGeoJSON("country", "00");
+        geoJSON.id = `background-geojson-${Math.random().toString(36).substring(2, 15)}`;
+        setBackgroundGeoJSON(geoJSON);
+      } else {
+        setBackgroundGeoJSON(null);
+      }
+    };
+
+    fetchBackgroundGeoJSON();
+  }, [mapState.currentLevel, fetchGeoJSON]);
+
   useEffect(() => {
     if (mapState.selectedAreas[mapState.currentLevel]) {
       const areaCode =
@@ -653,6 +669,7 @@ const ConformityMap = () => {
       </SidePanel>
       <MapContainer
         currentGeoJSON={currentGeoJSON as GeoJSON.FeatureCollection & { id: string }}
+        backgroundGeoJSON={backgroundGeoJSON}
         handleAreaClick={handleAreaClick}
         handleFullscreen={handleFullscreen}
         goBack={goBack}
