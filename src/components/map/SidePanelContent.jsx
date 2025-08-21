@@ -21,6 +21,9 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
     const areaLevels = ["country", "region", "department", "epci", "city"];
     const segments = areaLevels.map((level) => {
       if (mapState.selectedAreas[level] && level !== mapState.currentLevel) {
+        if (level === "region" && ["r01", "r02", "r03", "r04", "r06"].includes(mapState.selectedAreas[level].insee_geo)) {
+          return null;
+        }
         return {
           level: level,
           label: mapState.selectedAreas[level].name,

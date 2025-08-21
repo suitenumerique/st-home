@@ -83,7 +83,7 @@ function CommuneSearchInput(
             (area: ParentArea) =>
               area.type === "department" ||
               (area.type === "region" &&
-                !["r01", "r02", "r03", "r04", "r06", "r11"].includes(area.insee_geo)),
+                !["r01", "r02", "r03", "r04", "r06"].includes(area.insee_geo)),
           );
           setParentAreas(areas);
         })
