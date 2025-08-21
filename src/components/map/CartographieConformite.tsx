@@ -194,12 +194,16 @@ const ConformityMap = () => {
   }, []);
 
   const fetchGeoJSON = useCallback(
-    async (level: "country" | "region" | "department", code: string) => {
+    async (level: "country" | "region" | "department", code?: string) => {
       let filePath = "";
       if (level === "country") {
         filePath = "regions.json";
       } else if (level === "region") {
-        filePath = `departements_par_region/${code.replace("r", "")}.json`;
+        if (code) {
+          filePath = `departements_par_region/${code.replace("r", "")}.json`;
+        } else {
+          filePath = "departments.json";
+        }
       } else if (level === "department") {
         filePath = `communes_par_departement/${code}.json`;
       }
@@ -575,7 +579,11 @@ const ConformityMap = () => {
   useEffect(() => {
     const fetchBackgroundGeoJSON = async () => {
       if (mapState.currentLevel === "region") {
-        const geoJSON = await fetchGeoJSON("country", "00");
+        const geoJSON = await fetchGeoJSON("country");
+        geoJSON.id = `background-geojson-${Math.random().toString(36).substring(2, 15)}`;
+        setBackgroundGeoJSON(geoJSON);
+      } else if (["department", "epci", "city"].includes(mapState.currentLevel)) {
+        const geoJSON = await fetchGeoJSON("region");
         geoJSON.id = `background-geojson-${Math.random().toString(36).substring(2, 15)}`;
         setBackgroundGeoJSON(geoJSON);
       } else {

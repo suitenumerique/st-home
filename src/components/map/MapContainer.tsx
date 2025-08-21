@@ -106,7 +106,8 @@ const MapContainer = ({
         if (feature.source === "main-geojson") {
           handleAreaClick(feature);
         } else {
-          selectLevel("region", feature.properties.INSEE_GEO as string, "quickNav");
+          const level = feature.properties.INSEE_GEO[0] === "r" ? "region" : "department";
+          selectLevel(level, feature.properties.INSEE_GEO as string, "quickNav");
         }
       }
     },
