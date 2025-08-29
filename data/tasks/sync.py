@@ -205,12 +205,16 @@ def run():
         email_domain = None
         website_tld = None
         email_tld = None
+        email_official = None
+        website_official = None
         if not {"WEBSITE_MALFORMED", "WEBSITE_MISSING"}.intersection(commune["_st_conformite"]):
             website_domain = commune["_st_website"].split("://")[1].split("/")[0]
             website_tld = website_domain.split(".")[-1]
+            website_official = commune["_st_website"]
         if not {"EMAIL_MALFORMED", "EMAIL_MISSING"}.intersection(commune["_st_conformite"]):
             email_domain = commune["_st_email"].split("@")[1]
             email_tld = email_domain.split(".")[-1]
+            email_official = commune["_st_email"]
 
         pop = int(commune.get("_st_pmun", {}).replace(" ", "") or 0)
         commune["_st_epci_pop"] = int(
@@ -244,9 +248,9 @@ def run():
                 "rcpnt": sorted(commune["_st_rcpnt"]) if commune.get("_st_rcpnt") else None,
                 "issues": commune.get("_st_conformite"),
                 "issues_last_checked": str(commune.get("_st_conformite_checks_dt") or ""),
-                "email_official": commune.get("_st_email") or None,
+                "email_official": email_official,
                 "email_metadata": commune.get("_st_email_metadata") or None,
-                "website_url": commune.get("_st_website") or None,
+                "website_url": website_official,
                 "website_domain": website_domain,
                 "email_domain": email_domain,
                 "website_tld": website_tld,
