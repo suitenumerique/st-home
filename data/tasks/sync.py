@@ -341,12 +341,8 @@ def run():
         for row in full_dpnt:
             row["rpnt"] = ",".join(row["rpnt"]) if row.get("rpnt") else ""
             writer.writerow(row)
-    os.system(
-        "rm -rf dumps/dpnt-quotidien.csv.zip && cd dumps && zip -9 dpnt-quotidien.csv.zip dpnt-quotidien.csv"
-    )
-    upload_file_to_data_gouv(
-        "551a41a5-4ac7-40df-99cb-930aedb3c3ac", "dumps/dpnt-quotidien.csv.zip"
-    )
+    os.system("rm -rf dumps/dpnt-quotidien.csv.gz && cd dumps && gzip -9 -f dpnt-quotidien.csv")
+    upload_file_to_data_gouv("551a41a5-4ac7-40df-99cb-930aedb3c3ac", "dumps/dpnt-quotidien.csv.gz")
 
 
 def associate_epci_to_communes(communes: list):

@@ -10,7 +10,6 @@ WORKDIR /app/data
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
-    zip \
     && rm -rf /var/lib/apt/lists/*
 
 # ---- Poetry package manager ----
