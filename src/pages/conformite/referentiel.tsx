@@ -41,22 +41,42 @@ const REF_INTRO = (
   <>
     <p>
       Le <strong>Référentiel de la Présence Numérique des Territoires</strong> (RPNT) est édité par
-      l&rsquo;
+      l’{" "}
       <Link href="https://anct.gouv.fr/" target="_blank">
         Agence nationale de la cohésion des territoires
       </Link>{" "}
-      (ANCT). Il vise à garantir l&rsquo;identification officielle des collectivités dans leurs
-      usages numériques afin de renforcer leur sécurité en ligne et la confiance des usagers.
+      (ANCT) dans le cadre de l’<strong>Observatoire de la Présence Numérique des Territoires</strong>. 
+      Il vise à garantir l’identification officielle des collectivités dans leurs usages numériques 
+      afin de renforcer leur sécurité en ligne et la confiance des usagers.
     </p>
     <p>
-      Les critères sont classés selon deux niveaux d&rsquo;importance : <strong>essentiel</strong>{" "}
-      ou <strong>recommandé</strong>. La conformité des collectivités est vérifiée quotidiennement à
-      partir des données connues de l&rsquo;administration française et de la Suite territoriale. Le
-      référentiel est structuré en deux parties qui correspondent aux principaux usages d&rsquo;un
-      nom de domaine : le site internet et l&rsquo;adresse de messagerie de la collectivité.
+      Le Référentiel est illustré par{" "}
+      <Link
+        href="https://suiteterritoriale.anct.gouv.fr/conformite/cartographie"
+        target="_blank"
+      >
+        <strong>la Cartographie (CPNT)</strong>
+      </Link>{" "}
+      dynamique présentant les indices de conformité de chaque collectivité selon leur échelon administratif. 
+      Les{" "}
+      <Link
+        href="https://suiteterritoriale.anct.gouv.fr/conformite/donnees"
+        target="_blank"
+      >
+        Données (DPNT)
+      </Link>{" "}
+      utilisées sont disponibles en <em>open data</em> sur data.gouv.fr.
+    </p>
+    <p>
+      Les critères sont classés selon deux niveaux d’importance : <strong>essentiel</strong> ou{" "}
+      <strong>recommandé</strong>. La conformité des collectivités est vérifiée quotidiennement à
+      partir des données connues de l’administration française et de la Suite territoriale. 
+      Le référentiel est structuré en deux parties qui correspondent aux principaux usages d’un 
+      nom de domaine : le site internet et l’adresse de messagerie de la collectivité.
     </p>
   </>
 );
+
 
 export const ReferentielConformite: ReferentielSection[] = [
   {
