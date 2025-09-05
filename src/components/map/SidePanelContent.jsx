@@ -99,14 +99,15 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
         }}
       >
         <h2 style={{ color: "var(--text-title-blue-france)" }}>
-          Bienvenue sur la Carte de la Présence Numérique des Territoires
+          Bienvenue sur la Cartorgraphie de la Présence Numérique des Territoires
         </h2>
         <p>
-          Développée par l'ANCT, la{" "}
-          <strong>Cartographie de la Présence Numérique des Territoires (CPNT)</strong> est
-          fondée sur le{" "}
-          <a href="/conformite/referentiel">Référentiel de la Présence Numérique des Territoires</a>{" "}
-          (RPNT).
+          Développée par l'ANCT dans le cadre de l'Observatoire de la Présence
+          Numérique des Territoires, <strong>la Cartographie</strong> est fondée sur le{" "}
+          <a href="/conformite/referentiel"><strong>Référentiel (RPNT)</strong></a> et
+          utilise le jeu de{" "}
+          <a href="/conformite/donnees"><strong>Données (DPNT)</strong></a> ouvert publié
+          sur data.gouv.fr.
         </p>
         <p>
           Elle permet d'identifier les <strong>communes</strong> françaises{" "}
