@@ -1,4 +1,5 @@
 import { type DocsChild } from "@/lib/docs2dsfr/client";
+import { Badge } from "@codegouvfr/react-dsfr/Badge";
 import { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
 import { Card } from "@codegouvfr/react-dsfr/Card";
 import { GetServerSideProps } from "next";
@@ -44,6 +45,13 @@ export default function BlogIndex({ posts }: BlogIndexProps) {
                   enlargeLink={true}
                   title={post.title}
                   titleAs="h2"
+                  badge={
+                    post.document?.frontmatter.category ? (
+                      <Badge severity="info" noIcon>
+                        {post.document?.frontmatter.category}
+                      </Badge>
+                    ) : undefined
+                  }
                   detail=<>Publié le {post.document?.frontmatter.dateFormatted}</>
                   imageUrl={post.document?.frontmatter.image || ""}
                   imageAlt={post.title}

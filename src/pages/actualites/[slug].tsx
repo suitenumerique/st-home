@@ -37,7 +37,7 @@ export default function BlogPostPage({ document }: BlogPostProps) {
       <div className={fr.cx("fr-grid-row", "fr-grid-row--center")}>
         <div className={fr.cx("fr-col-12", "fr-col-lg-8")}>
           <article>
-            <header className={fr.cx("fr-mb-6w")} style={{ marginBottom: "2rem !important" }}>
+            <header className={fr.cx("fr-mb-4w")}>
               <h1 className={fr.cx("fr-h1")}>{document.title}</h1>
               <div
                 className={fr.cx("fr-text--sm", "fr-mb-2w")}

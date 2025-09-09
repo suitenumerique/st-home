@@ -184,6 +184,9 @@ export async function getDocument(
     }
   });
 
+  // Remove blank paragraphs at the top
+  document.content = document.content.replace(/^<p><\/p>/, "");
+
   // Extract an image URL if it's right after the frontmatter
   if (!document.frontmatter.image) {
     const image = document.content.match(/^<img\s+[^>]*src="([^"]+)"/);
