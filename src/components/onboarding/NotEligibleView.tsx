@@ -15,24 +15,34 @@ export default function OPSNZeroView({ commune }: Props) {
         style={{ backgroundColor: "var(--background-alt-blue-france)" }}
       >
         <h2>La Suite territoriale arrive bientôt !</h2>
-        {commune.type === "commune" ? (
+
+        {commune.insee_reg?.startsWith("0") ? (
           <p>
-            La commune n&rsquo;est pas directement éligible car sa population de{" "}
-            {commune.population.toLocaleString("fr-FR")} habitants dépasse le seuil fixé par
-            l&rsquo;ANCT (3 500 habitants).
-            <br />
-            <br />
-            Cependant, elle peut bénéficier d&rsquo;un accompagnement spécifique.
+            Les collectivités d'Outre-mer intéressées par la Suite territoriale peuvent bénéficier
+            d&rsquo;un accompagnement spécifique.
           </p>
         ) : (
-          <p>
-            L&rsquo;EPCI n&rsquo;est pas directement éligible car sa population de{" "}
-            {commune.population.toLocaleString("fr-FR")} habitants dépasse le seuil fixé par
-            l&rsquo;ANCT (15 000 habitants).
-            <br />
-            <br />
-            Cependant, il peut bénéficier d&rsquo;un accompagnement spécifique.
-          </p>
+          <>
+            {commune.type === "commune" ? (
+              <p>
+                La commune n&rsquo;est pas directement éligible car sa population de{" "}
+                {commune.population.toLocaleString("fr-FR")} habitants dépasse le seuil fixé par
+                l&rsquo;ANCT (3 500 habitants).
+                <br />
+                <br />
+                Cependant, elle peut bénéficier d&rsquo;un accompagnement spécifique.
+              </p>
+            ) : (
+              <p>
+                L&rsquo;EPCI n&rsquo;est pas directement éligible car sa population de{" "}
+                {commune.population.toLocaleString("fr-FR")} habitants dépasse le seuil fixé par
+                l&rsquo;ANCT (15 000 habitants).
+                <br />
+                <br />
+                Cependant, il peut bénéficier d&rsquo;un accompagnement spécifique.
+              </p>
+            )}
+          </>
         )}
         <Button
           linkProps={{

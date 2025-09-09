@@ -38,7 +38,7 @@ export default function BlogIndex({ posts }: BlogIndexProps) {
               <div key={post.id} className="fr-col-12 fr-col-md-6 fr-col-lg-4 fr-mb-4w">
                 <Card
                   linkProps={{
-                    href: `/actualites/${post.document?.frontmatter.path}`,
+                    href: `/actualites/${post.path}`,
                     title: post.title,
                   }}
                   enlargeLink={true}
@@ -69,6 +69,12 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
         new Date(b.document?.frontmatter.date || "").getTime() -
         new Date(a.document?.frontmatter.date || "").getTime(),
     );
+    posts.forEach((post) => {
+      post.path =
+        post.document?.frontmatter.date.substring(0, 10).replace(/\//g, "") +
+        "-" +
+        post.document?.frontmatter.path;
+    });
 
     return {
       props: {

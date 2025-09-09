@@ -24,6 +24,7 @@ export interface DocsChild {
   numchild: number;
   document?: DocsContentResponse;
   children: DocsChild[];
+  path?: string;
 }
 
 export interface DocsChildrenResponse {

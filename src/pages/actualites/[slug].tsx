@@ -37,7 +37,7 @@ export default function BlogPostPage({ document }: BlogPostProps) {
       <div className={fr.cx("fr-grid-row", "fr-grid-row--center")}>
         <div className={fr.cx("fr-col-12", "fr-col-lg-8")}>
           <article>
-            <header className={fr.cx("fr-mb-6w")}>
+            <header className={fr.cx("fr-mb-6w")} style={{ marginBottom: "2rem !important" }}>
               <h1 className={fr.cx("fr-h1")}>{document.title}</h1>
               <div
                 className={fr.cx("fr-text--sm", "fr-mb-2w")}
@@ -85,7 +85,12 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
 
     let document;
     for (const child of children) {
-      if (child.document?.frontmatter.path == docId || child.id == docId) {
+      child.path =
+        child.document?.frontmatter.date.substring(0, 10).replace(/\//g, "") +
+        "-" +
+        child.document?.frontmatter.path;
+
+      if (child.path == docId || child.id == docId) {
         document = child.document;
       }
     }

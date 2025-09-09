@@ -81,7 +81,7 @@ export function PageLayout({ children }: LayoutProps) {
       isActive: router.asPath.startsWith("/services"),
     },
     {
-      text: "Conformité",
+      text: "Présence Numérique des Territoires",
       isActive: router.asPath.startsWith("/conformite"),
       menuLinks: [
         {
@@ -96,15 +96,22 @@ export function PageLayout({ children }: LayoutProps) {
             href: "/conformite/cartographie",
           },
         },
+        {
+          text: "Données",
+          linkProps: {
+            href: "https://www.data.gouv.fr/datasets/donnees-de-la-presence-numerique-des-territoires/",
+            target: "_blank",
+          },
+        },
       ],
     },
-    // {
-    //   text: "Actualités",
-    //   linkProps: {
-    //     href: "/actualites",
-    //   },
-    //   isActive: router.asPath.startsWith("/actualites"),
-    // }
+    {
+      text: "Actualités",
+      linkProps: {
+        href: "/actualites",
+      },
+      isActive: router.asPath.startsWith("/actualites"),
+    },
   ];
 
   const quickAccessItems = [

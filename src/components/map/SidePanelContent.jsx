@@ -7,6 +7,7 @@ import Breadcrumb from "./Breadcrumb";
 import MapButton from "./MapButton";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import { Button } from "@codegouvfr/react-dsfr/Button";
+import Link from "next/link";
 
 const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, setPanelState }) => {
 
@@ -98,15 +99,15 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
           paddingTop: !isMobile ? "1rem" : "0",
         }}
       >
-        <h2 style={{ color: "var(--text-title-blue-france)" }}>
-          Bienvenue sur la Cartorgraphie de la Présence Numérique des Territoires
+        <h2 style={{ color: "var(--text-title-blue-france)", fontSize: "1.8rem !important" }}>
+          Cartographie de la Présence Numérique des Territoires
         </h2>
         <p>
           Développée par l'ANCT dans le cadre de l'Observatoire de la Présence
-          Numérique des Territoires, <strong>la Cartographie</strong> est fondée sur le{" "}
-          <a href="/conformite/referentiel"><strong>Référentiel (RPNT)</strong></a> et
+          Numérique des Territoires, cette <strong> Cartographie</strong> est fondée sur le{" "}
+          <Link href="/conformite/referentiel"><strong>Référentiel (RPNT)</strong></Link> et
           utilise le jeu de{" "}
-          <a href="/conformite/donnees"><strong>Données (DPNT)</strong></a> ouvert publié
+          <Link href="https://www.data.gouv.fr/datasets/donnees-de-la-presence-numerique-des-territoires/" target="_blank"><strong>Données (DPNT)</strong></Link> publié
           sur data.gouv.fr.
         </p>
         <p>
