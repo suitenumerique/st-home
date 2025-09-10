@@ -30,6 +30,7 @@
     "db:drop": "node -r @swc-node/register scripts/db-drop.ts",
     "db:browse": "drizzle-kit studio --host=0.0.0.0 --port=8954",
     "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
     "db:seed:sample": "node -r @swc-node/register scripts/db-seed.ts ./data/dumps-sample",
     "db:seed": "node -r @swc-node/register scripts/db-seed.ts ./data/dumps",
     "db:migrate": "node -r @swc-node/register scripts/db-migrate.ts"

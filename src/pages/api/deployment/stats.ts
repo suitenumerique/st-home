@@ -22,7 +22,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ${organizations.epci_siren} as id,
           ${organizations.insee_dep} as dep,
           ${organizations.insee_reg} as reg,
-          SUM(${organizations.population}) as pop,
           COUNT(DISTINCT ${organizationsToServices.organizationSiret})::int as total,
           COUNT(DISTINCT CASE WHEN ${organizationsToServices.active} = true THEN ${organizationsToServices.organizationSiret} END)::int as active
         FROM ${organizations}
@@ -41,7 +40,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ${organizations.siret} as id,
           ${organizations.insee_dep} as dep,
           ${organizations.insee_reg} as reg,
-          ${organizations.population} as pop,
           COUNT(DISTINCT CASE WHEN ${organizationsToServices.active} = true THEN ${organizationsToServices.organizationSiret} END)::int as active
         FROM ${organizations}
         INNER JOIN ${organizationsToServices} ON ${organizations.siret} = ${organizationsToServices.organizationSiret}
