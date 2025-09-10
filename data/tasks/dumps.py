@@ -1,5 +1,6 @@
 import bz2
 import csv
+import gzip
 import io
 import json
 import logging
@@ -222,6 +223,39 @@ def dump_groupements_memberships():
     ]
     with open("dumps/groupements_memberships.json", "w") as f:
         json.dump(df_selected.to_dict(orient="records"), f, ensure_ascii=False, indent=4)
+
+
+def dump_services():
+    if Path("dumps/services.json").exists():
+        return
+
+    # https://www.data.gouv.fr/fr/datasets/68b0a2a1117b75b1b09edc6b/
+    url = "https://www.data.gouv.fr/fr/datasets/r/610560cf-5893-4a53-b4d3-03e17d877e1c"
+    r = requests.get(url)
+    r.raise_for_status()
+
+    # Convert CSV to JSON
+    rows = list(csv.DictReader(r.text.splitlines(), delimiter=";"))
+    assert len(rows) > 1
+    with open("dumps/services.json", "w") as f:
+        json.dump(rows, f, ensure_ascii=False, indent=4)
+
+
+def dump_service_usages():
+    if Path("dumps/service_usages.json").exists():
+        return
+
+    # https://www.data.gouv.fr/fr/datasets/68b0a2a1117b75b1b09edc6b/
+    url = "https://www.data.gouv.fr/fr/datasets/r/8f100b83-73c5-49ce-90ce-03d5c6a1783d"
+    r = requests.get(url)
+    r.raise_for_status()
+
+    # Decompress .csv.gz and parse CSV to JSON
+    with gzip.open(io.BytesIO(r.content), mode="rt", encoding="utf-8") as gzfile:
+        rows = list(csv.DictReader(gzfile, delimiter=";"))
+    assert len(rows) > 20000
+    with open("dumps/service_usages.json", "w") as f:
+        json.dump(rows, f, ensure_ascii=False, indent=4)
 
 
 def upload_file_to_data_gouv(resource_id, file_path):

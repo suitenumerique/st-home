@@ -27,6 +27,8 @@ from .dumps import (
     dump_insee_population,
     dump_insee_regions,
     dump_perimetre_epci,
+    dump_service_usages,
+    dump_services,
     reset_dila_issues,
     upload_file_to_data_gouv,
 )
@@ -81,6 +83,8 @@ def run():
     dump_repertoire_collectivites()
     dump_perimetre_epci()
     dump_groupements_memberships()
+    dump_services()
+    dump_service_usages()
 
     communes = list_communes()
 
