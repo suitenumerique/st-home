@@ -176,11 +176,11 @@ db-drop:  ## Drop the local database
 	$(COMPOSE_RUN) frontend-dev npm run db:drop
 .PHONY: db-drop
 
-db-migrate:  ## Run database migrations
+db-migrate:  ## Run manual database migrations (non-Drizzle managed tables, see scripts/db-migrate.ts)
 	$(COMPOSE_RUN) frontend-dev npm run db:migrate
 .PHONY: db-migrate
 
-db-push:  ## Push the local database schema to the remote database
+db-push:  ## Run database migrations (Drizzle managed tables: st_*)
 	$(COMPOSE_RUN) frontend-dev npm run db:push
 .PHONY: db-push
 

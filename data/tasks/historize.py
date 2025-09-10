@@ -12,6 +12,8 @@ logging.basicConfig(level=logging.INFO)
 @app.task(time_limit=600, acks_late=True)
 def run():
     historize_table("st_organizations")
+    historize_table("st_services")
+    historize_table("st_organizations_to_services")
     historize_table("data_rcpnt_stats")
     return "ok"
 
