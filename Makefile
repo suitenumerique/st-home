@@ -226,6 +226,7 @@ front-freeze-deps-amd64:  ## Freeze the frontend dependencies
 
 front-update-deps-check:  ## Check the frontend dependencies for updates
 	$(COMPOSE_RUN) frontend-base npx npm-check-updates
+	$(COMPOSE_RUN) frontend-base npm audit
 .PHONY: front-update-deps-check
 
 front-update-deps-minor:  ## Update the frontend dependencies to the minor version
