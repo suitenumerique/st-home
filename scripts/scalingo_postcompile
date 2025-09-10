@@ -11,6 +11,8 @@ echo "-----> Running post-compile script"
 rm -rf ./node_modules/@next/swc-linux-x64-musl
 rm -rf ./node_modules/next/next-swc-fallback/@next/swc-linux-x64-musl
 rm -rf ./node_modules/@img/sharp-libvips-linuxmusl-x64
+rm -rf ./node_modules/@swc/core/node_modules/@swc/core-linux-x64-musl
+rm -rf ./node_modules/@swc/core-linux-x64-musl
 find node_modules -type f -name '*.map' -delete
 
 if [ "$PRODUCTION_SOURCE_MAPS" != "1" ]; then
