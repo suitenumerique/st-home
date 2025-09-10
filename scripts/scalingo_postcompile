@@ -22,7 +22,7 @@ fi
 rm -rf .next/cache
 rm -rf .cache
 
-echo "-----> Listing top files/dirs by size"
-du -ah . | sort -rh | head -n 100
+# echo "-----> Listing top files/dirs by size"
+# du -ah . | sort -rh | head -n 100
 
 exit 0
