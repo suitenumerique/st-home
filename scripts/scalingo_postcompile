@@ -20,6 +20,7 @@ if [ "$PRODUCTION_SOURCE_MAPS" != "1" ]; then
 fi
 
 rm -rf .next/cache
+rm -rf .cache
 
 echo "-----> Listing top files/dirs by size"
 du -ah . | sort -rh | head -n 100
