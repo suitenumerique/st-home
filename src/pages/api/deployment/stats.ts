@@ -10,14 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(405).json({ error: "Method not allowed" });
     }
 
-    const { scope = "list-commune", service_id, dep } = req.query;
-
-    // Validate scope parameter
-    if (scope !== "list-commune" && scope !== "list-epci") {
-      return res.status(400).json({
-        error: "Invalid scope. Must be 'list-commune' or 'list-epci'",
-      });
-    }
+    const { scope = "list-commune", service_id, dep, reg, ecpi, commune } = req.query;
 
     // Build query based on scope
     let query;
@@ -41,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ${dep ? sql`AND ${organizations.insee_dep} = ${dep as string}` : sql``}
         GROUP BY ${organizations.epci_siren}, ${organizations.epci_name}, ${organizations.insee_dep}, ${organizations.insee_reg}
       `;
-    } else {
+    } else if (scope === "list-commune") {
       // Group by commune
       query = sql`
         SELECT 
@@ -58,18 +51,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ${dep ? sql`AND ${organizations.insee_dep} = ${dep as string}` : sql``}
         GROUP BY ${organizations.siret}
       `;
+    } else if (scope === "list-service") {
+      // Group by service - show number of communes using each service
+      query = sql`
+        SELECT 
+          ${services.id}::int as id,
+          COUNT(DISTINCT ${organizationsToServices.organizationSiret})::int as total,
+          COUNT(DISTINCT CASE WHEN ${organizationsToServices.active} = true THEN ${organizationsToServices.organizationSiret} END)::int as active
+        FROM ${services}
+        INNER JOIN ${organizationsToServices} ON ${services.id} = ${organizationsToServices.serviceId}
+        INNER JOIN ${organizations} ON ${organizationsToServices.organizationSiret} = ${organizations.siret}
+        WHERE ${organizations.type} = 'commune'
+        ${dep ? sql`AND ${organizations.insee_dep} = ${dep as string}` : sql``}
+        ${reg ? sql`AND ${organizations.insee_reg} = ${reg as string}` : sql``}
+        ${ecpi ? sql`AND ${organizations.epci_siren} = ${ecpi as string}` : sql``}
+        ${commune ? sql`AND ${organizations.siret} = ${commune as string}` : sql``}
+        GROUP BY ${services.id}
+      `;
+    } else {
+      return res.status(400).json({
+        error: "Invalid scope. Must be 'list-commune', 'list-epci', or 'list-service'",
+      });
     }
 
-    const { rows: stats } = await db.execute<{
-      group_id: string;
-      group_name: string;
-      group_type: string;
-      insee_dep: string;
-      insee_reg: string;
-      population: number;
-      total_services: number;
-      active_services: number;
-    }>(query);
+    const { rows: stats } = await db.execute(query);
 
     // Set cache headers for public data
     res.setHeader("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
