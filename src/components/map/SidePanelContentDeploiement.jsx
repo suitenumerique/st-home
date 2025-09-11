@@ -7,9 +7,10 @@ import Breadcrumb from "./Breadcrumb";
 import MapButton from "./MapButton";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import { Button } from "@codegouvfr/react-dsfr/Button";
-import Link from "next/link";
+import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
+import styles from '../../styles/cartographie-deploiement.module.css';
 
-const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, setPanelState, computeAreaStats }) => {
+const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, setPanelState, fakeNCities }) => {
 
   const [showCriteriaSelector, setShowCriteriaSelector] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -55,46 +56,51 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
   }, [mapState.currentLevel, mapState.selectedAreas]);
 
   const levelStatsDisplay = useMemo(() => {
-    if (mapState.selectedAreas.city || !mapState.selectedAreas[mapState.currentLevel]) {
-      return null;
-    }
-    const chartSeries = mapState.selectedRef ? [
-      ["2", "Conforme"],
-      ["0", "Non conforme"],
-    ] : [
-      ["2", "Conforme"],
-      ["1", "Semi-conforme"],
-      ["0", "Non conforme"],
-    ];
-
-    const conformityStats = computeAreaStats(mapState.currentLevel, mapState.selectedAreas[mapState.currentLevel].insee_geo);
-
-    const statsDetails = chartSeries.map(([scoreKey, label]) => {
+    const percentages = [10, 12, 43, 4, 31]; // Fixed percentages that add up to 100%
+    const products = [
+      {
+        key: 'demarches-simplifiees',
+        label: 'Mon Suivi Social',
+      },
+      {
+        key: 'esd',
+        label: 'Espaces sur Demande',
+      },
+      {
+        key: 'fichiers',
+        label: 'Fichiers'
+      },
+      {
+        key: 'messages',
+        label: 'Messages'
+      },
+      {
+        key: 'projets',
+        label: 'Projets'
+      }
+    ].map((product, index) => {
       if (!mapState.selectedAreas[mapState.currentLevel]) {
         return [];
       }
-      try {
-        const percentage = Math.round(
-          (conformityStats.details[scoreKey] / conformityStats?.n_cities) * 100,
-        );
-        return [
-          label,
-          percentage,
-          scoreKey,
-          conformityStats.details[scoreKey],
-        ];
-      } catch (error) {
-        console.error(error);
-        return [];
+      return {
+        ...product,
+        value: Math.floor((percentages[index] * mapState.selectedAreas[mapState.currentLevel].conformityStats.n_cities) / 100),
       }
-    });
-
-    return {
-      n_cities: conformityStats?.n_cities,
-      details: statsDetails,
+    }).sort((a, b) => b.value - a.value);
+    
+    // Ensure the total adds up to n_cities by adjusting the largest value
+    const total = products.reduce((sum, product) => sum + product.value, 0);
+    const targetTotal = mapState.selectedAreas[mapState.currentLevel]?.conformityStats.n_cities || 0;
+    if (total !== targetTotal && products.length > 0) {
+      const difference = targetTotal - total;
+      products[0].value += difference; // Add the difference to the largest value
     }
-
-  }, [mapState.selectedAreas, mapState.currentLevel, mapState.selectedRef, computeAreaStats]);
+    
+    return {
+      max: products[0].value,
+      stats: products,
+    }
+  }, [mapState.selectedAreas, mapState.currentLevel]);
 
   const introduction = () => {
     return (
@@ -105,16 +111,15 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
           paddingTop: !isMobile ? "1rem" : "0",
         }}
       >
-        <h2 style={{ color: "var(--text-title-blue-france)", fontSize: "1.8rem !important" }}>
-          Cartographie de la Présence Numérique des Territoires
+        <h2 style={{ color: "var(--text-title-blue-france)" }}>
+          Bienvenue sur la Carte de la Présence Numérique des Territoires
         </h2>
         <p>
-          Développée par l'ANCT dans le cadre de l'Observatoire de la Présence
-          Numérique des Territoires, cette <strong> Cartographie</strong> est fondée sur le{" "}
-          <Link href="/conformite/referentiel"><strong>Référentiel (RPNT)</strong></Link> et
-          utilise le jeu de{" "}
-          <Link href="https://www.data.gouv.fr/datasets/donnees-de-la-presence-numerique-des-territoires/" target="_blank"><strong>Données (DPNT)</strong></Link> publié
-          sur data.gouv.fr.
+          Développée par l'ANCT, la{" "}
+          <strong>Cartographie de la Présence Numérique des Territoires (CPNT)</strong> est
+          fondée sur le{" "}
+          <a href="/conformite/referentiel">Référentiel de la Présence Numérique des Territoires</a>{" "}
+          (RPNT).
         </p>
         <p>
           Elle permet d'identifier les <strong>communes</strong> françaises{" "}
@@ -158,7 +163,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
             <p className={fr.cx("fr-text--lg fr-mb-0")} style={{ color: "var(--text-title-blue-france)" }}>
               {[
                 currentLevelLabel,
-                `${formatNumber(levelStatsDisplay.n_cities)} communes`,
+                `${formatNumber(fakeNCities)} collectivités inscrites`,
               ]
                 .filter(Boolean)
                 .join(" - ")}
@@ -166,14 +171,6 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
           )}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "8px" }}>
-          <MapButton
-            onClick={() => setShowCriteriaSelector(true)}
-            aria-label="Sélectionner un critère"
-            tooltip="Sélectionner un critère"
-          >
-            <span className={fr.cx("fr-icon-list-unordered")} aria-hidden="true"></span>
-          </MapButton>
-
           <MapButton
             onClick={() => {
               navigator.clipboard.writeText(window.location.href);
@@ -259,27 +256,48 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
   const levelStats = () => {
     return (
       <div>
-        {levelStatsDisplay && levelStatsDisplay.details.map(([label, percentage, scoreKey, n_cities], index) => (
+        <div style={{ marginBottom: "1.5rem" }}>
+          <ToggleSwitch
+            checked={mapState.selectedAreas[mapState.currentLevel].conformityStats.n_cities_active}
+            onChange={() => setMapState({ ...mapState, selectedAreas: { ...mapState.selectedAreas, [mapState.currentLevel]: { ...mapState.selectedAreas[mapState.currentLevel], conformityStats: { ...mapState.selectedAreas[mapState.currentLevel].conformityStats, n_cities_active: !mapState.selectedAreas[mapState.currentLevel].conformityStats.n_cities_active } } } })}
+            showCheckedHint={false}
+            containerWidth="100%"
+            label="Actives sur les 12 derniers mois"
+          />
+        </div>
+        <h3 style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "0.75rem" }}>
+          Produits
+        </h3>
+        {levelStatsDisplay.stats.map(({ key, label, value }) => (
           <div
-            key={index}
-            style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}
+            key={key}
+            className={styles.productItem}
           >
-            <div
-              style={{
-                width: "16px",
-                height: "16px",
-                backgroundColor: getColor(scoreKey),
-                borderRadius: "100%",
-                border: "1px solid rgba(255, 255, 255, 0.2)",
-                boxSizing: "border-box",
-                marginRight: "0.5rem",
-              }}
-            ></div>
-            <span>{label}&nbsp;:</span>
-            <span>
-              <strong>&nbsp;{percentage}%</strong>
-            </span>
-            <span>&nbsp;({formatNumber(n_cities)})</span>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <img src={`logos/logo-${key}.png`} alt={label} style={{ width: "18px", height: "18px", marginRight: "0.4rem" }} />
+              <span style={{ fontSize: "0.875rem"}}>{label}&nbsp;</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", width: 'calc(100% - 50px)', position: "relative" }}>
+                <div
+                  style={{
+                    position: "absolute",
+                    left: "0",
+                    top: "0",
+                    zIndex: "1",
+                    width: `${value / levelStatsDisplay.max * 100}%`,
+                    height: "12px",
+                    backgroundColor: "#2A3C84",
+                    borderRadius: "4px",
+                    border: "1px solid rgba(255, 255, 255, 0.2)",
+                    boxSizing: "border-box",
+                    marginRight: "0.5rem",
+                  }}
+                ></div>
+                <div style={{ width: "100%", height: "12px", backgroundColor: "var(--background-alt-blue-france)", borderRadius: "4px" }}></div>
+              </div>
+              <span style={{ fontSize: "0.875rem", fontWeight: "bold", width: "50px", textAlign: "right", marginRight: "4px" }}>{formatNumber(value)}</span>
+            </div>
           </div>
         ))}
       </div>
@@ -470,34 +488,21 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
           </div>
         )
       }
-      {mapState.currentLevel === "country" && !showCriteriaSelector && panelState === 'open' && (
-        introduction()
-      )}
-      {mapState.currentLevel !== "country" && !isMobile && (
+      {mapState.currentLevel !== "country" && !isMobile ? (
         breadcrumbs()
-      )}
-      {showCriteriaSelector ? (
-        criteriaSelector()
-      ) : (
-        <>
-          {mapState.selectedAreas["country"] && mapState.selectedAreas[mapState.currentLevel] && (panelState === 'open' || panelState === 'partial') && (
-            levelHeader()
-          )}
-          {panelState === 'open' && (
-            <div style={{ marginTop: "1rem" }}>
-              {((mapState.currentLevel === "department" && !mapState.selectedAreas.city) || mapState.selectedRef) && (
-                selections()
-              )}
-              {!mapState.selectedAreas.city && mapState.selectedAreas[mapState.currentLevel] && (
-                levelStats()
-              )}
-              {mapState.selectedAreas.city && !showCriteriaSelector && (
-                communeInfo()
-              )}
-            </div>
-          )}
-        </>
-      )}
+       ) : <div style={{ marginTop: "1rem" }}></div>}
+      <>
+        {mapState.selectedAreas["country"] && mapState.selectedAreas[mapState.currentLevel] && (panelState === 'open' || panelState === 'partial') && (
+          levelHeader()
+        )}
+        {panelState === 'open' && (
+          <div style={{ marginTop: "1rem" }}>
+            {!mapState.selectedAreas.city && mapState.selectedAreas[mapState.currentLevel] && (
+              levelStats()
+            )}
+          </div>
+        )}
+      </>
     </div>
   );
 };
@@ -514,7 +519,7 @@ SidePanelContent.propTypes = {
   isMobile: PropTypes.bool.isRequired,
   panelState: PropTypes.string.isRequired,
   setPanelState: PropTypes.func.isRequired,
-  computeAreaStats: PropTypes.func.isRequired,
+  fakeNCities: PropTypes.number.isRequired,
 };
 
 export default SidePanelContent;

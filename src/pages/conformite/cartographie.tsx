@@ -1,6 +1,7 @@
 import CartographieConformite from "@/components/map/CartographieConformite";
 import { NextSeo } from "next-seo";
 import { useEffect } from "react";
+import styles from "../../styles/cartographie-conformite.module.css";
 
 export default function CartographiePage() {
   // Hide the footer and prevent body overflow on this page
@@ -27,7 +28,7 @@ export default function CartographiePage() {
         title="Cartographie de conformité"
         description="Cartographie de conformité des collectivités"
       />
-      <div className="map-container">
+      <div className={styles.mapContainer}>
         <CartographieConformite />
       </div>
     </>

@@ -15,7 +15,7 @@ import MapButton from "./MapButton";
 import { FeatureProperties, MapState } from "./types";
 import styles from "../../styles/cartographie-conformite.module.css";
 
-const MapContainer = ({
+const MapContainerDeploiement = ({
   currentGeoJSON,
   mapState,
   selectedGradient,
@@ -62,24 +62,6 @@ const MapContainer = ({
   const [customGradient, setCustomGradient] = useState<string[]>(selectedGradient);
   const [isMapUpdating, setIsMapUpdating] = useState(false);
   const [searchOpen, setSearchOpen] = useState(true);
-
-  const gradientPresets = [
-    {
-      colors: ["#D3ADFE", "#669BBD", "#009081"],
-    },
-    {
-      colors: ["#FCC73B", "#E0812E", "#C03220"],
-    },
-    {
-      colors: ["#FF6565", "#807A73", "#009081"],
-    },
-    {
-      colors: ["#FCC73B", "#7EAB5E", "#009081"],
-    },
-    {
-      colors: ["#FF6868", "#FFC579", "#009081"],
-    },
-  ];
 
   // Layer styles
   const fillLayerStyle = {
@@ -169,7 +151,7 @@ const MapContainer = ({
     const features = (currentGeoJSON as GeoJSON.FeatureCollection).features.map((feature) => {
       // Calculate centroid of the polygon
       const centroid = turf.centroid(feature);
-      const randomNumber = Math.floor(Math.random() * 100) + 1; // Random number between 1-100
+      const randomNumber = feature.properties?.n_cities || 0;
       
       return {
         type: "Feature" as const,
@@ -258,13 +240,6 @@ const MapContainer = ({
     );
   }, [currentGeoJSON, isMobile]);
 
-  const handleGradientClick = (event: React.MouseEvent) => {
-    if (event.altKey) {
-      event.preventDefault();
-      setShowGradientSelector(true);
-    }
-  };
-
   const mapTooltip = (popupInfo: {
     longitude: number;
     latitude: number;
@@ -289,182 +264,6 @@ const MapContainer = ({
           )}
         </div>
       </Popup>
-    );
-  };
-
-  const gradientSelector = () => {
-    return (
-      <div
-        style={{
-          position: "absolute",
-          bottom: "100%",
-          left: "50%",
-          transform: "translateX(-50%)",
-          marginBottom: "8px",
-          background: "white",
-          border: "1px solid #ccc",
-          borderRadius: "4px",
-          padding: "12px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          zIndex: 20,
-          minWidth: "280px",
-        }}
-      >
-        <h4 style={{ margin: "0 0 12px 0", fontSize: "14px" }}>Sélecteur de gradient</h4>
-
-        <div style={{ marginBottom: "12px" }}>
-          <label style={{ fontSize: "12px", display: "block", marginBottom: "6px" }}>
-            Préréglages:
-          </label>
-          <div style={{ display: "flex", gap: "6px" }}>
-            {gradientPresets.map((preset, index) => (
-              <div
-                key={index}
-                style={{
-                  width: "50px",
-                  height: "20px",
-                  background: `linear-gradient(90deg, ${preset.colors[0]} 0%, ${preset.colors[1]} 50%, ${preset.colors[2]} 100%)`,
-                  borderRadius: "2px",
-                  cursor: "pointer",
-                  border: "2px solid #000091",
-                }}
-                title={`Préréglage ${index + 1}`}
-                onClick={() => setSelectedGradient(preset.colors)}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div style={{ marginBottom: "12px" }}>
-          <label style={{ fontSize: "12px", display: "block", marginBottom: "6px" }}>
-            Sélecteur à trois couleurs:
-          </label>
-          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-            <input
-              type="color"
-              value={customGradient[0]}
-              style={{
-                width: "60px",
-                height: "30px",
-                border: "1px solid #ccc",
-                borderRadius: "2px",
-              }}
-              onChange={(e) =>
-                setCustomGradient([e.target.value, customGradient[1], customGradient[2]])
-              }
-            />
-            <input
-              type="color"
-              value={customGradient[1]}
-              style={{
-                width: "60px",
-                height: "30px",
-                border: "1px solid #ccc",
-                borderRadius: "2px",
-              }}
-              onChange={(e) =>
-                setCustomGradient([customGradient[0], e.target.value, customGradient[2]])
-              }
-            />
-            <input
-              type="color"
-              value={customGradient[2]}
-              style={{
-                width: "60px",
-                height: "30px",
-                border: "1px solid #ccc",
-                borderRadius: "2px",
-              }}
-              onChange={(e) =>
-                setCustomGradient([customGradient[0], customGradient[1], e.target.value])
-              }
-            />
-          </div>
-        </div>
-
-        <div style={{ display: "flex", gap: "8px" }}>
-          <button
-            onClick={() => setShowGradientSelector(false)}
-            style={{
-              padding: "4px 8px",
-              fontSize: "12px",
-              border: "1px solid #ccc",
-              borderRadius: "2px",
-              background: "#f5f5f5",
-              cursor: "pointer",
-            }}
-          >
-            Fermer
-          </button>
-          <button
-            onClick={() => setSelectedGradient(customGradient)}
-            style={{
-              padding: "4px 8px",
-              fontSize: "12px",
-              border: "1px solid #000091",
-              borderRadius: "2px",
-              background: "#000091",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
-            Appliquer
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  const mapGradient = () => {
-    return (
-      <div className={styles.mapGradient}>
-        {isMobile && <p className={styles.mapGradientLabel}>+</p>}
-        <div
-          className={`${styles.mapGradientBar} ${isMobile ? styles.mapGradientBarVertical : ""}`}
-          style={{
-            background: isMobile
-              ? `
-                linear-gradient(180deg, ${selectedGradient[2]} 0%, ${selectedGradient[1]} 50%, ${selectedGradient[0]} 100%)
-              `
-              : `
-                linear-gradient(90deg, ${selectedGradient[0]} 0%, ${selectedGradient[1]} 50%, ${selectedGradient[2]} 100%)
-              `,
-          }}
-          onClick={handleGradientClick}
-        >
-          <div
-            style={{
-              width: "100%",
-              height: "100%",
-              position: "relative",
-            }}
-          >
-            {hoveredFeature && !isMobile && (
-              <div
-                className={styles.mapGradientDot}
-                style={{
-                  left: `${hoveredFeature?.score === null ? 50 : (hoveredFeature?.score || 0) * 50}%`,
-                }}
-              ></div>
-            )}
-          </div>
-        </div>
-        {isMobile && <p className={styles.mapGradientLabel}>-</p>}
-        {!isMobile && (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "space-between",
-            }}
-          >
-            <p className={styles.mapGradientLabel}>Non conforme</p>
-            <p className={styles.mapGradientLabel}>Conforme</p>
-          </div>
-        )}
-        {showGradientSelector && gradientSelector()}
-      </div>
     );
   };
 
@@ -701,7 +500,6 @@ const MapContainer = ({
       )}
       {(panelState === "closed" || !isMobile) && (
         <>
-          {mapGradient()}
           {mapDromSelector()}
           {mapActionButtons()}
         </>
@@ -710,7 +508,7 @@ const MapContainer = ({
   );
 };
 
-MapContainer.propTypes = {
+MapContainerDeploiement.propTypes = {
   currentGeoJSON: PropTypes.object,
   handleAreaClick: PropTypes.func.isRequired,
   handleFullscreen: PropTypes.func.isRequired,
@@ -724,4 +522,4 @@ MapContainer.propTypes = {
   handleQuickNav: PropTypes.func.isRequired,
 };
 
-export default MapContainer;
+export default MapContainerDeploiement;
