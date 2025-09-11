@@ -14,7 +14,6 @@ import SidePanelContent from "./SidePanelContent";
 
 import {
   AllStats,
-  ConformityStats,
   FeatureProperties,
   MapState,
   ParentArea,
@@ -331,7 +330,6 @@ const ConformityMap = () => {
             (parentAreas as ParentArea[]).find((area) => area.insee_geo === code) ||
             ({ insee_geo: code, name: "Unknown", type: "unknown" } as ParentArea);
         }
-        selectedArea.conformityStats = computeAreaStats(level, code) as ConformityStats;
         if (level !== "epci") {
           const geoJSON = await fetchGeoJSON(level, code);
           selectedArea.geoJSON = geoJSON;
@@ -346,7 +344,7 @@ const ConformityMap = () => {
         return null;
       }
     },
-    [fetchGeoJSON, computeAreaStats, loadDepartmentCities, processGeoJSONEPCI],
+    [fetchGeoJSON, loadDepartmentCities, processGeoJSONEPCI],
   );
 
   // INTERACTIONS
@@ -571,15 +569,6 @@ const ConformityMap = () => {
   ]);
 
   useEffect(() => {
-    const level = mapState.currentLevel as "city" | "epci" | "country" | "region" | "department";
-    const code = mapState.selectedAreas[level]?.insee_geo || "";
-    const selectedArea = mapState.selectedAreas[level] as SelectedArea;
-    if (!selectedArea) return;
-    selectedArea.conformityStats = computeAreaStats(level, code) as ConformityStats;
-    setMapState({ ...mapState, selectedAreas: { ...mapState.selectedAreas, [level]: selectedArea } } as MapState);
-  }, [mapState.selectedRef])
-
-  useEffect(() => {
     if (mapState.selectedAreas[mapState.currentLevel]) {
       const areaCode =
         mapState.currentLevel === "city"
@@ -654,6 +643,7 @@ const ConformityMap = () => {
           mapState={mapState}
           selectLevel={selectLevel}
           setMapState={setMapState}
+          computeAreaStats={computeAreaStats}
           goBack={goBack}
           handleQuickNav={handleQuickNav}
           container={containerRef.current}

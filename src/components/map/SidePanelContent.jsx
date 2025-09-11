@@ -8,7 +8,7 @@ import MapButton from "./MapButton";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 
-const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, setPanelState }) => {
+const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, setPanelState, computeAreaStats }) => {
 
   const [showCriteriaSelector, setShowCriteriaSelector] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -66,28 +66,34 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
       ["0", "Non conforme"],
     ];
 
-    return chartSeries.map(([scoreKey, label]) => {
+    const conformityStats = computeAreaStats(mapState.currentLevel, mapState.selectedAreas[mapState.currentLevel].insee_geo);
+
+    const statsDetails = chartSeries.map(([scoreKey, label]) => {
       if (!mapState.selectedAreas[mapState.currentLevel]) {
         return [];
       }
       try {
         const percentage = Math.round(
-          (mapState.selectedAreas[mapState.currentLevel].conformityStats.details[scoreKey] /
-            mapState.selectedAreas[mapState.currentLevel].conformityStats?.n_cities) *
-            100,
+          (conformityStats.details[scoreKey] / conformityStats?.n_cities) * 100,
         );
         return [
           label,
           percentage,
           scoreKey,
-          mapState.selectedAreas[mapState.currentLevel].conformityStats.details[scoreKey],
+          conformityStats.details[scoreKey],
         ];
       } catch (error) {
         console.error(error);
         return [];
       }
     });
-  }, [mapState.selectedAreas, mapState.currentLevel, mapState.selectedRef]);
+
+    return {
+      n_cities: conformityStats?.n_cities,
+      details: statsDetails,
+    }
+
+  }, [mapState.selectedAreas, mapState.currentLevel, mapState.selectedRef, computeAreaStats]);
 
   const introduction = () => {
     return (
@@ -150,7 +156,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
             <p className={fr.cx("fr-text--lg fr-mb-0")} style={{ color: "var(--text-title-blue-france)" }}>
               {[
                 currentLevelLabel,
-                `${formatNumber(mapState.selectedAreas[mapState.currentLevel].conformityStats.n_cities)} communes`,
+                `${formatNumber(levelStatsDisplay.n_cities)} communes`,
               ]
                 .filter(Boolean)
                 .join(" - ")}
@@ -251,7 +257,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
   const levelStats = () => {
     return (
       <div>
-        {levelStatsDisplay.map(([label, percentage, scoreKey, n_cities], index) => (
+        {levelStatsDisplay && levelStatsDisplay.details.map(([label, percentage, scoreKey, n_cities], index) => (
           <div
             key={index}
             style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}
@@ -506,6 +512,7 @@ SidePanelContent.propTypes = {
   isMobile: PropTypes.bool.isRequired,
   panelState: PropTypes.string.isRequired,
   setPanelState: PropTypes.func.isRequired,
+  computeAreaStats: PropTypes.func.isRequired,
 };
 
 export default SidePanelContent;
