@@ -571,6 +571,15 @@ const ConformityMap = () => {
   ]);
 
   useEffect(() => {
+    const level = mapState.currentLevel as "city" | "epci" | "country" | "region" | "department";
+    const code = mapState.selectedAreas[level]?.insee_geo || "";
+    const selectedArea = mapState.selectedAreas[level] as SelectedArea;
+    if (!selectedArea) return;
+    selectedArea.conformityStats = computeAreaStats(level, code) as ConformityStats;
+    setMapState({ ...mapState, selectedAreas: { ...mapState.selectedAreas, [level]: selectedArea } } as MapState);
+  }, [mapState.selectedRef])
+
+  useEffect(() => {
     if (mapState.selectedAreas[mapState.currentLevel]) {
       const areaCode =
         mapState.currentLevel === "city"

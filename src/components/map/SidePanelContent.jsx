@@ -87,7 +87,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
         return [];
       }
     });
-  }, [mapState.selectedAreas, mapState.currentLevel]);
+  }, [mapState.selectedAreas, mapState.currentLevel, mapState.selectedRef]);
 
   const introduction = () => {
     return (
