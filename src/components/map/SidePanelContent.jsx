@@ -54,7 +54,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
   }, [mapState.currentLevel, mapState.selectedAreas]);
 
   const levelStatsDisplay = useMemo(() => {
-    if (mapState.selectedAreas.city) {
+    if (mapState.selectedAreas.city || !mapState.selectedAreas[mapState.currentLevel]) {
       return null;
     }
     const chartSeries = mapState.selectedRef ? [
