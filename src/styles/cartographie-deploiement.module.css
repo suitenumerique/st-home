@@ -1,0 +1,29 @@
+.mapContainer {
+  height: 100vh;
+  width: 100%;
+}
+
+.productItem {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid white;
+  border-radius: 4px;
+  padding: 0.3rem 0;
+  cursor: pointer;
+  position: relative;
+}
+
+.productItem:hover::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -8px;
+  width: calc(100% + 16px);
+  height: calc(100% + 4px);
+  border: 1px solid #C6C6C6;
+  border-radius: 4px;
+  z-index: 1000;
+}
+
+@media (max-width: 992px) {
+}

@@ -88,17 +88,7 @@ path.leaflet-interactive:focus {
   }
 }
 
-/* Map styling */
-
-.map-container {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  top: 174px;
-  height: calc(100% - 174px);
-  z-index: 200;
-}
+/* Cartographie */
 
 .map-side-panel {
   width: 460px;
@@ -145,10 +135,6 @@ path.leaflet-interactive:focus {
   font-size: 18px;
 }
 
-.map-side-panel-breadcrumbs {
-  display: block;
-}
-
 .map-drom-selector {
   position: absolute;
   right: 20px;
@@ -164,39 +150,6 @@ path.leaflet-interactive:focus {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.map-gradient {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-  background: rgba(225, 226, 226, 0.85);
-  padding: 8px 8px 4px 8px;
-  border-radius: 4px;
-}
-
-.map-gradient-bar {
-  width: 300px;
-  height: 13px;
-  border-radius: 4px;
-  padding: 0 6px;
-}
-
-.map-gradient-dot {
-  position: absolute;
-  transform: translateX(-50%);
-  height: 11px;
-  width: 11px;
-  border: 2px solid #fff;
-  border-radius: 100%;
-  transition: left 0.3s ease-in-out;
-}
-
-.map-gradient-label {
-  font-size: 14px;
-  margin: 0;
 }
 
 .maplibregl-popup-content {
@@ -217,10 +170,6 @@ path.leaflet-interactive:focus {
 }
 
 @media (max-width: 992px) {
-  .map-container {
-    top: 94px;
-    height: calc(100% - 94px);
-  }
 
   .map-side-panel {
     width: 100%;
@@ -229,10 +178,6 @@ path.leaflet-interactive:focus {
     max-height: calc(50% - 47px);
     min-height: 15px;
     height: auto;
-    /* position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0; */
     border-top: 1px solid #e5e7eb;
   }
 
@@ -269,22 +214,6 @@ path.leaflet-interactive:focus {
   .map-action-buttons {
     bottom: 10px;
     right: 10px;
-  }
-
-  .map-gradient {
-    bottom: 50px;
-    left: 10px;
-    transform: none;
-    padding: 0 8px;
-  }
-
-  .map-gradient-bar {
-    width: 13px;
-    height: 100px;
-  }
-
-  .map-gradient-label {
-    text-align: center;
   }
 
   .map-tooltip-content {
