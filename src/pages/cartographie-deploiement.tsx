@@ -31,10 +31,7 @@ export default function CartographieDeploiementPage() {
 
   return (
     <>
-      <NextSeo
-        title="Cartographie de déploiement"
-        description="Cartographie de déploiement"
-      />
+      <NextSeo title="Cartographie de déploiement" description="Cartographie de déploiement" />
       <div className={styles.mapContainer}>
         <CartographieDeploiement />
       </div>

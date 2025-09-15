@@ -76,5 +76,5 @@ export interface MapViewHandlerProps {
 }
 
 export interface StatsParams {
-  [key: string]: { value: string | null, urlParam: string, setValue: (value: string) => void };
+  [key: string]: { value: string | null; urlParam: string; setValue: (value: string) => void };
 }

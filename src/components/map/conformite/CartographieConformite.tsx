@@ -1,28 +1,26 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import SidePanelContent from "./SidePanelContent";
-import MapWrapper from "../MapWrapper";
 import { ReferentielConformite } from "@/pages/conformite/referentiel";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import MapWrapper from "../MapWrapper";
+import SidePanelContent from "./SidePanelContent";
 
-import {
-  AllStats,
-  AreaStats,
-  SelectedArea,
-  StatRecord,
-} from "../types";
+import { AllStats, AreaStats, SelectedArea, StatRecord } from "../types";
 
 const CartographieConformite = () => {
   const [stats, setStats] = useState<AllStats>({} as AllStats);
   const [selectedRef, setSelectedRef] = useState<string | null>(null);
 
-  const statsParams = useMemo(() => ({
-    'selectedRef': {
-      value: selectedRef as string | null,
-      urlParam: 'ref',
-      setValue: setSelectedRef,
-    }
-  }), [selectedRef, setSelectedRef]);
+  const statsParams = useMemo(
+    () => ({
+      selectedRef: {
+        value: selectedRef as string | null,
+        urlParam: "ref",
+        setValue: setSelectedRef,
+      },
+    }),
+    [selectedRef, setSelectedRef],
+  );
 
   const allRcpntRefs = useMemo(() => {
     return [
@@ -94,10 +92,11 @@ const CartographieConformite = () => {
       level: "country" | "region" | "department" | "epci" | "city",
       insee_geo: string,
       department: SelectedArea,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       statsParams?: any,
     ): AreaStats | null => {
       try {
-        const currentSelectedRef = statsParams['selectedRef'].value;
+        const currentSelectedRef = statsParams["selectedRef"].value;
         if (level === "city") {
           const cityRecord = department?.cities?.find((c) => c.insee_geo === insee_geo);
           if (!cityRecord?.rcpnt) {
