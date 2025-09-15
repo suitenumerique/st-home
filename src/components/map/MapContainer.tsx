@@ -7,7 +7,7 @@ import { MapLayerMouseEvent } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import Image from "next/image";
 import PropTypes from "prop-types";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Map, { Layer, LayerProps, MapRef, Popup, ScaleControl, Source } from "react-map-gl/maplibre";
 import CommuneSearch from "../CommuneSearch";
 import mapStyle from "./map_style.json";

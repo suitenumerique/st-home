@@ -20,7 +20,7 @@
   left: -8px;
   width: calc(100% + 16px);
   height: calc(100% + 4px);
-  border: 1px solid #C6C6C6;
+  border: 1px solid #c6c6c6;
   border-radius: 4px;
   z-index: 1000;
 }

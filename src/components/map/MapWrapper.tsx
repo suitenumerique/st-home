@@ -28,10 +28,13 @@ const useMapURLState = () => {
       currentLevel: urlParams.get("level"),
       currentAreaCode: urlParams.get("code"),
       departmentView: urlParams.get("view"),
-      ...Object.entries(statsParams).reduce((acc, [key, param]) => {
-        acc[key] = urlParams.get(param.urlParam) as string;
-        return acc;
-      }, {} as { [key: string]: string }),
+      ...Object.entries(statsParams).reduce(
+        (acc, [key, param]) => {
+          acc[key] = urlParams.get(param.urlParam) as string;
+          return acc;
+        },
+        {} as { [key: string]: string },
+      ),
     };
   }, []);
 
@@ -66,16 +69,22 @@ const useMapURLState = () => {
   return { getURLState, updateURLState };
 };
 
-const MapWrapper = ({ SidePanelContent, gradientColors, computeAreaStats, statsParams = {} }: {
-  SidePanelContent: React.ComponentType<any>,
-  gradientColors: string[],
+const MapWrapper = ({
+  SidePanelContent,
+  gradientColors,
+  computeAreaStats,
+  statsParams = {},
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  SidePanelContent: React.ComponentType<any>;
+  gradientColors: string[];
   computeAreaStats: (
-    level: "country" | "region" | "department" | "epci" | "city", 
+    level: "country" | "region" | "department" | "epci" | "city",
     insee_geo: string,
     department: SelectedArea,
     statsParams?: StatsParams,
-  ) => AreaStats | null,
-  statsParams?: StatsParams,
+  ) => AreaStats | null;
+  statsParams?: StatsParams;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [panelState, setPanelState] = useState<"closed" | "open" | "partial">("open");
@@ -441,6 +450,7 @@ const MapWrapper = ({ SidePanelContent, gradientColors, computeAreaStats, statsP
     computeAreaStats,
     getColor,
     darkenColor,
+    statsParams,
   ]);
 
   useEffect(() => {
@@ -449,12 +459,7 @@ const MapWrapper = ({ SidePanelContent, gradientColors, computeAreaStats, statsP
         mapState.currentLevel === "city"
           ? (mapState.selectedAreas["city"] as Commune)?.siret
           : (mapState.selectedAreas[mapState.currentLevel] as SelectedArea)?.insee_geo || "";
-      updateURLState(
-        mapState.currentLevel,
-        areaCode,
-        mapState.departmentView,
-        statsParams,
-      );
+      updateURLState(mapState.currentLevel, areaCode, mapState.departmentView, statsParams);
     }
   }, [
     mapState.currentLevel,
@@ -477,7 +482,7 @@ const MapWrapper = ({ SidePanelContent, gradientColors, computeAreaStats, statsP
     const urlState = getURLState(statsParams);
     Object.entries(statsParams).forEach(([key, param]) => {
       const setValue = param.setValue;
-      setValue(urlState[key as keyof typeof urlState] as string | null);
+      setValue(urlState[key as keyof typeof urlState] as string);
     });
     if (
       urlState.currentLevel &&
@@ -491,15 +496,10 @@ const MapWrapper = ({ SidePanelContent, gradientColors, computeAreaStats, statsP
         urlState.departmentView as "city" | "epci" | null,
       );
     } else {
-      selectLevel(
-        "country",
-        "00",
-        "quickNav",
-        null,
-      );
+      selectLevel("country", "00", "quickNav", null);
     }
-  }, []);
-  
+  }, [statsParams, selectLevel, getURLState, updateURLState]);
+
   return (
     <div
       ref={containerRef}
