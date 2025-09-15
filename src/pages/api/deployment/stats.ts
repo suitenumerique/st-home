@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(405).json({ error: "Method not allowed" });
     }
 
-    const { scope = "list-commune", service_id, dep, reg, ecpi, commune } = req.query;
+    const { scope = "list-commune", service_id, dep, reg, epci, commune } = req.query;
 
     // Build query based on scope
     let query;
@@ -88,7 +88,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         WHERE ${organizations.type} = 'commune'
         ${dep ? sql`AND ${organizations.insee_dep} = ${dep as string}` : sql``}
         ${reg ? sql`AND ${organizations.insee_reg} = ${reg as string}` : sql``}
-        ${ecpi ? sql`AND ${organizations.epci_siren} = ${ecpi as string}` : sql``}
+        ${epci ? sql`AND ${organizations.epci_siren} = ${epci as string}` : sql``}
         ${commune ? sql`AND ${organizations.siret} = ${commune as string}` : sql``}
         GROUP BY ${services.id}
       `;

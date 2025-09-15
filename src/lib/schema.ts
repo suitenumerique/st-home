@@ -126,7 +126,7 @@ export const organizationsToStructuresRelations = relations(
 export const services = pgTable(
   "st_services",
   {
-    id: text("id").primaryKey(),
+    id: integer("id").primaryKey(),
     name: text("name").notNull(),
     url: text("url").notNull(),
     logo_url: text("logo_url"),
