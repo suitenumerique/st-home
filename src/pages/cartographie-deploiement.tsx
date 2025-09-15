@@ -1,4 +1,4 @@
-import CartographieDeploiement from "@/components/map/CartographieDeploiement";
+import CartographieDeploiement from "@/components/map/deploiement/CartographieDeploiement";
 import { NextSeo } from "next-seo";
 import { useEffect } from "react";
 import styles from "../styles/cartographie-deploiement.module.css";
