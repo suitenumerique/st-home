@@ -32,7 +32,7 @@ export interface ParentArea {
   epci_siren?: string;
 }
 
-export interface ConformityStats {
+export interface AreaStats {
   score: number;
   n_cities?: number;
   details?: {
@@ -48,7 +48,6 @@ export interface SelectedArea {
   type?: string;
   insee_reg?: string;
   insee_dep?: string;
-  conformityStats?: ConformityStats;
   cities?: Commune[];
   geoJSON?: GeoJSON.FeatureCollection;
   geoJSONEPCI?: GeoJSON.Feature[];
@@ -60,7 +59,6 @@ export interface MapState {
     [key: string]: SelectedArea | Commune | null;
   };
   departmentView: "city" | "epci";
-  selectedRef: string | null;
 }
 
 export interface FeatureProperties {
@@ -77,12 +75,6 @@ export interface MapViewHandlerProps {
   bounds: L.LatLngBounds | null;
 }
 
-export interface ConformityStats {
-  score: number;
-  n_cities?: number;
-  details?: {
-    "0": number;
-    "1"?: number;
-    "2"?: number;
-  };
+export interface StatsParams {
+  [key: string]: { value: string | null, urlParam: string, setValue: (value: string) => void };
 }

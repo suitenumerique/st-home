@@ -8,58 +8,9 @@
   z-index: 200;
 }
 
-.mapGradient {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-  background: rgba(225, 226, 226, 0.85);
-  padding: 8px 8px 4px 8px;
-  border-radius: 4px;
-}
-
-.mapGradientBar {
-  width: 300px;
-  height: 13px;
-  border-radius: 4px;
-  padding: 0 6px;
-}
-
-.mapGradientDot {
-  position: absolute;
-  transform: translateX(-50%);
-  height: 11px;
-  width: 11px;
-  border: 2px solid #fff;
-  border-radius: 100%;
-  transition: left 0.3s ease-in-out;
-}
-
-.mapGradientLabel {
-  font-size: 14px;
-  margin: 0;
-}
-
 @media (max-width: 992px) {
   .mapContainer {
     top: 94px;
     height: calc(100% - 94px);
-  }
-
-  .mapGradient {
-    bottom: 50px;
-    left: 10px;
-    transform: none;
-    padding: 0 8px;
-  }
-
-  .mapGradientBar {
-    width: 13px;
-    height: 100px;
-  }
-
-  .mapGradientLabel {
-    text-align: center;
   }
 }
