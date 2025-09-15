@@ -186,7 +186,7 @@ db-push:  ## Run database migrations (Drizzle managed tables: st_*)
 
 db-generate:  ## Run manual database migrations (non-Drizzle managed tables, see scripts/db-migrate.ts)
 	$(COMPOSE_RUN) frontend-dev npm run db:generate
-.PHONY: db-migrate
+.PHONY: db-generate
 
 db-reset:  ## Reset the local database
 db-reset: \
