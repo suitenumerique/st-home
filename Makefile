@@ -47,7 +47,8 @@ bootstrap: ## Prepare the project for local development
 
 update:  ## Update the project dependencies
 update: \
-	create-env-files
+	create-env-files \
+	front-install-deps
 .PHONY: update
 
 create-env-files:  ## Create the environment configuration files
