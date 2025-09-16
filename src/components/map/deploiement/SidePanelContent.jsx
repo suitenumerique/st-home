@@ -1,6 +1,6 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import PropTypes from "prop-types";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import CommuneSearch from "../../CommuneSearch";
 import CommuneInfo from "../../onboarding/CommuneInfo";
 import Breadcrumb from "../Breadcrumb";
@@ -14,6 +14,8 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
 
   const [showCriteriaSelector, setShowCriteriaSelector] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [services, setServices] = useState([]);
+  const [scopedStats, setScopedStats] = useState([]);
 
   const formatNumber = (value) => {
     return new Intl.NumberFormat("fr-FR").format(value);
@@ -56,52 +58,69 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
   }, [mapState.currentLevel, mapState.selectedAreas]);
 
   const levelStatsDisplay = useMemo(() => {
-
     if (mapState.selectedAreas.city  || !mapState.selectedAreas[mapState.currentLevel]) {
       return null;
     }
 
-    const percentages = [10, 12, 43, 4, 31]; // Fixed percentages that add up to 100%
-    const products = [
-      {
-        key: 'demarches-simplifiees',
-        label: 'Mon Suivi Social',
-      },
-      {
-        key: 'esd',
-        label: 'Espaces sur Demande',
-      },
-      {
-        key: 'fichiers',
-        label: 'Fichiers'
-      },
-      {
-        key: 'messages',
-        label: 'Messages'
-      },
-      {
-        key: 'projets',
-        label: 'Projets'
-      }
-    ].map((product, index) => {
-      const usageStats = computeAreaStats(
-        mapState.currentLevel,
-        mapState.selectedAreas[mapState.currentLevel]?.insee_geo || "",
-        mapState.selectedAreas.department,
-        statsParams,
-      );
+    const usageStats = computeAreaStats(
+      mapState.currentLevel,
+      mapState.selectedAreas[mapState.currentLevel]?.insee_geo || "",
+      mapState.selectedAreas.department,
+      statsParams,
+    );
+
+    const servicesStats = services.map((service) => {
+      const serviceStats = scopedStats.find((data) => data.id === parseInt(service.id));
 
       return {
-        ...product,
-        value: Math.floor((percentages[index] * usageStats.n_cities) / 100),
+        ...service,
+        value: serviceStats?.total || 0,
       }
     }).sort((a, b) => b.value - a.value);
     
     return {
-      max: products[0].value,
-      stats: products,
+      n_cities: usageStats?.n_cities,
+      services: servicesStats,
+      max: Math.max(...servicesStats.map((service) => service.value)),
     }
-  }, [mapState.selectedAreas, mapState.currentLevel, computeAreaStats]);
+
+  }, [mapState.selectedAreas, mapState.currentLevel, computeAreaStats, services, scopedStats]);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      const response = await fetch("/api/deployment/services");
+      const data = await response.json();
+      setServices(data);
+    }
+    fetchServices();
+  }, []);
+
+  useEffect(() => {
+    const fetchScopedStats = async () => {
+      if (mapState.selectedAreas.city || !mapState.selectedAreas[mapState.currentLevel]) {
+        setScopedStats([]);
+        return;
+      }
+
+      let filter = '';
+      if (mapState.currentLevel === 'region') {
+        filter = `&reg=${mapState.selectedAreas.region.insee_geo.replace("r", "")}`;
+      } else if (mapState.currentLevel === 'department') {
+        filter = `&dep=${mapState.selectedAreas.department.insee_geo}`;
+      }
+
+      try {
+        const response = await fetch(`/api/deployment/stats?scope=list-service${filter}`);
+        const data = await response.json();
+        setScopedStats(data.data || []);
+      } catch (error) {
+        console.error('Error fetching scoped stats:', error);
+        setScopedStats([]);
+      }
+    };
+
+    fetchScopedStats();
+  }, [mapState.selectedAreas, mapState.currentLevel]);
 
   const breadcrumbs = () => {
     return (
@@ -124,11 +143,11 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
           <h3 className={fr.cx("fr-mb-0")} style={{ color: "var(--text-title-blue-france)" }}>
             {currentPageLabel}
           </h3>
-          {!mapState.selectedAreas.city && (
+          {!mapState.selectedAreas.city && levelStatsDisplay && (
             <p className={fr.cx("fr-text--lg fr-mb-0")} style={{ color: "var(--text-title-blue-france)" }}>
               {[
                 currentLevelLabel,
-                `${formatNumber(Math.random() * 1000)} collectivités inscrites`,
+                `${formatNumber(levelStatsDisplay.n_cities)} collectivités inscrites`,
               ]
                 .filter(Boolean)
                 .join(" - ")}
@@ -161,7 +180,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
   const levelStats = () => {
     return (
       <div>
-        <div style={{ marginBottom: "1.5rem" }}>
+        {/* <div style={{ marginBottom: "1.5rem" }}>
           <ToggleSwitch
             // checked={mapState.selectedAreas[mapState.currentLevel].conformityStats.n_cities_active}
             // onChange={() => setMapState({ ...mapState, selectedAreas: { ...mapState.selectedAreas, [mapState.currentLevel]: { ...mapState.selectedAreas[mapState.currentLevel], conformityStats: { ...mapState.selectedAreas[mapState.currentLevel].conformityStats, n_cities_active: !mapState.selectedAreas[mapState.currentLevel].conformityStats.n_cities_active } } } })}
@@ -169,18 +188,18 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
             containerWidth="100%"
             label="Actives sur les 12 derniers mois"
           />
-        </div>
+        </div> */}
         <h3 style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "0.75rem" }}>
           Produits
         </h3>
-        {levelStatsDisplay.stats.map(({ key, label, value }) => (
+        {levelStatsDisplay && levelStatsDisplay.services && levelStatsDisplay.services.map(({ id, name, logo_url, value }) => (
           <div
-            key={key}
+            key={id}
             className={styles.productItem}
           >
             <div style={{ display: "flex", alignItems: "center" }}>
-              <img src={`logos/logo-${key}.png`} alt={label} style={{ width: "18px", height: "18px", marginRight: "0.4rem" }} />
-              <span style={{ fontSize: "0.875rem"}}>{label}&nbsp;</span>
+              <img src={logo_url} alt={name} style={{ width: "18px", height: "18px", marginRight: "0.4rem" }} />
+              <span style={{ fontSize: "0.875rem"}}>{name}&nbsp;</span>
             </div>
             <div style={{ display: "flex", alignItems: "center" }}>
               <div style={{ display: "flex", alignItems: "center", width: 'calc(100% - 50px)', position: "relative" }}>

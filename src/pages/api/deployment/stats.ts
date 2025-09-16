@@ -15,7 +15,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Build query based on scope
     let query;
 
-    if (scope === "list-epci") {
+    if (scope === "list-reg") {
+      query = sql`
+        SELECT 
+          ${organizations.insee_reg} as id,
+          COUNT(DISTINCT ${organizationsToServices.organizationSiret})::int as total,
+          COUNT(DISTINCT CASE WHEN ${organizationsToServices.active} = true THEN ${organizationsToServices.organizationSiret} END)::int as active
+        FROM ${organizations}
+        INNER JOIN ${organizationsToServices} ON ${organizations.siret} = ${organizationsToServices.organizationSiret}
+        ${service_id ? sql`INNER JOIN ${services} ON ${organizationsToServices.serviceId} = ${services.id}` : sql``}
+        WHERE ${organizations.type} = 'commune'
+        ${service_id ? sql`AND ${services.id} = ${service_id as string}` : sql``}
+        GROUP BY ${organizations.insee_reg}
+      `;
+    } else if (scope === "list-dep") {
+      query = sql`
+        SELECT 
+          ${organizations.insee_dep} as id,
+          COUNT(DISTINCT ${organizationsToServices.organizationSiret})::int as total,
+          COUNT(DISTINCT CASE WHEN ${organizationsToServices.active} = true THEN ${organizationsToServices.organizationSiret} END)::int as active
+        FROM ${organizations}
+        INNER JOIN ${organizationsToServices} ON ${organizations.siret} = ${organizationsToServices.organizationSiret}
+        ${service_id ? sql`INNER JOIN ${services} ON ${organizationsToServices.serviceId} = ${services.id}` : sql``}
+        WHERE ${organizations.type} = 'commune'
+        ${service_id ? sql`AND ${services.id} = ${service_id as string}` : sql``}
+        GROUP BY ${organizations.insee_dep}
+      `;
+    } else if (scope === "list-epci") {
       // Group by EPCI
       query = sql`
         SELECT 
@@ -68,7 +94,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       `;
     } else {
       return res.status(400).json({
-        error: "Invalid scope. Must be 'list-commune', 'list-epci', or 'list-service'",
+        error:
+          "Invalid scope. Must be 'list-reg', 'list-dep', 'list-epci', 'list-commune', or 'list-service'",
       });
     }
 
