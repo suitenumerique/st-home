@@ -47,7 +47,8 @@ bootstrap: ## Prepare the project for local development
 
 update:  ## Update the project dependencies
 update: \
-	create-env-files
+	create-env-files \
+	front-install-deps
 .PHONY: update
 
 create-env-files:  ## Create the environment configuration files
@@ -186,7 +187,7 @@ db-push:  ## Run database migrations (Drizzle managed tables: st_*)
 
 db-generate:  ## Run manual database migrations (non-Drizzle managed tables, see scripts/db-migrate.ts)
 	$(COMPOSE_RUN) frontend-dev npm run db:generate
-.PHONY: db-migrate
+.PHONY: db-generate
 
 db-reset:  ## Reset the local database
 db-reset: \
