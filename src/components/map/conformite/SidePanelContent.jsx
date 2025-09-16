@@ -73,6 +73,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     const conformityStats = computeAreaStats(
       mapState.currentLevel,
       mapState.selectedAreas[mapState.currentLevel]?.insee_geo || "",
+      null,
       mapState.selectedAreas.department,
       statsParams,
     );

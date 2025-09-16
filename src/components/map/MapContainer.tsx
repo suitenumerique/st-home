@@ -19,6 +19,7 @@ const MapContainer = ({
   mapState,
   gradientColors,
   isMobile,
+  showGradientLegend,
   panelState,
   handleAreaClick,
   handleFullscreen,
@@ -30,6 +31,7 @@ const MapContainer = ({
   mapState: MapState;
   gradientColors: string[];
   isMobile: boolean;
+  showGradientLegend: boolean;
   panelState: "closed" | "open" | "partial";
   handleAreaClick: (event: MapLayerMouseEvent) => void;
   handleFullscreen: () => void;
@@ -483,7 +485,7 @@ const MapContainer = ({
       {isMobile && mapMobileButtons()}
       {(panelState === "closed" || !isMobile) && (
         <>
-          {mapGradient()}
+          {showGradientLegend && mapGradient()}
           {mapDromSelector()}
           {mapActionButtons()}
         </>
@@ -500,6 +502,7 @@ MapContainer.propTypes = {
   selectLevel: PropTypes.func.isRequired,
   gradientColors: PropTypes.array.isRequired,
   isMobile: PropTypes.bool.isRequired,
+  showGradientLegend: PropTypes.bool.isRequired,
   panelState: PropTypes.string.isRequired,
   goBack: PropTypes.func.isRequired,
   handleQuickNav: PropTypes.func.isRequired,

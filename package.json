@@ -108,7 +108,6 @@
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-musl": "4.46.2",
     "@rollup/rollup-linux-x64-gnu": "4.46.2",
-    "@rollup/rollup-linux-arm64-gnu": "4.46.2",
     "@swc/core-linux-x64-gnu": "1.13.5",
     "@swc/core-linux-x64-musl": "1.13.5",
     "@swc/core-linux-arm64-gnu": "1.13.5",

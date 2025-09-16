@@ -72,18 +72,27 @@ const useMapURLState = () => {
 const MapWrapper = ({
   SidePanelContent,
   gradientColors,
+  gradientDomain,
+  showGradientLegend = true,
   computeAreaStats,
   statsParams = {},
+  mapState,
+  setMapState,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   SidePanelContent: React.ComponentType<any>;
   gradientColors: string[];
+  gradientDomain: number[];
+  showGradientLegend: boolean;
   computeAreaStats: (
     level: "country" | "region" | "department" | "epci" | "city",
     insee_geo: string,
+    siret: string,
     department: SelectedArea,
     statsParams?: StatsParams,
   ) => AreaStats | null;
+  mapState: MapState;
+  setMapState: (mapState: MapState) => void;
   statsParams?: StatsParams;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -91,21 +100,15 @@ const MapWrapper = ({
 
   const { getURLState, updateURLState } = useMapURLState();
 
-  const [mapState, setMapState] = useState<MapState>({
-    currentLevel: "country",
-    selectedAreas: {},
-    departmentView: "epci",
-  });
-
   const [isMobile, setIsMobile] = useState(false);
 
   const colorsConfig = useMemo(() => {
     return {
-      domain: [0, 1, 2],
+      domain: gradientDomain,
       range: gradientColors,
       defaultColor: "#e2e8f0",
     };
-  }, [gradientColors]);
+  }, [gradientColors, gradientDomain]);
 
   const previousLevel = useMemo(() => {
     if (mapState.currentLevel === "city") {
@@ -354,7 +357,7 @@ const MapWrapper = ({
 
       setMapState({ ...mapState, ...newMapState } as MapState);
     },
-    [computeSelectedArea, mapState],
+    [computeSelectedArea, mapState, setMapState],
   );
 
   const handleFullscreen = () => {
@@ -428,6 +431,7 @@ const MapWrapper = ({
         const score = computeAreaStats(
           scoreLevel as "region" | "department" | "city",
           feature.properties?.INSEE_GEO || "",
+          feature.properties?.SIRET || "",
           mapState.selectedAreas.department as SelectedArea,
           statsParams,
         )?.score;
@@ -498,7 +502,8 @@ const MapWrapper = ({
     } else {
       selectLevel("country", "00", "quickNav", null);
     }
-  }, [statsParams, selectLevel, getURLState, updateURLState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div
@@ -538,6 +543,7 @@ const MapWrapper = ({
         gradientColors={gradientColors}
         isMobile={isMobile}
         panelState={panelState}
+        showGradientLegend={showGradientLegend}
       />
     </div>
   );

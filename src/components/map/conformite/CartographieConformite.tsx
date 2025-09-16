@@ -5,10 +5,17 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import MapWrapper from "../MapWrapper";
 import SidePanelContent from "./SidePanelContent";
 
-import { AllStats, AreaStats, SelectedArea, StatRecord } from "../types";
+import { AreaStats, SelectedArea } from "../types";
+import { AllStats, StatRecord } from "./types";
 
 const CartographieConformite = () => {
   const [stats, setStats] = useState<AllStats>({} as AllStats);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [mapState, setMapState] = useState<any>({
+    currentLevel: "country",
+    selectedAreas: {},
+    departmentView: "epci",
+  });
   const [selectedRef, setSelectedRef] = useState<string | null>(null);
 
   const statsParams = useMemo(
@@ -91,6 +98,7 @@ const CartographieConformite = () => {
     (
       level: "country" | "region" | "department" | "epci" | "city",
       insee_geo: string,
+      siret: string,
       department: SelectedArea,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       statsParams?: any,
@@ -161,8 +169,12 @@ const CartographieConformite = () => {
     <MapWrapper
       SidePanelContent={SidePanelContent}
       gradientColors={["#FF6868", "#FFC579", "#009081"]}
+      gradientDomain={[0, 1, 2]}
       computeAreaStats={computeAreaStats}
       statsParams={statsParams}
+      showGradientLegend={true}
+      mapState={mapState}
+      setMapState={setMapState}
     />
   );
 };
