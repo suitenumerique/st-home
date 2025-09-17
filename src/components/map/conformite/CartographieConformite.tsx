@@ -175,6 +175,7 @@ const CartographieConformite = () => {
       showGradientLegend={true}
       mapState={mapState}
       setMapState={setMapState}
+      displayCircleValue={false}
     />
   );
 };
