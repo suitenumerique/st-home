@@ -21,7 +21,8 @@ const CartographieDeploiement = () => {
     selectedAreas: {},
     departmentView: "city",
   });
-  const [citiesByDepartment, setCitiesByDepartment] = useState({});
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [citiesByDepartment, setCitiesByDepartment] = useState<any>({});
 
   const statsParams = useMemo(() => ({}), []);
 
@@ -94,7 +95,8 @@ const CartographieDeploiement = () => {
     ): AreaStats | null => {
       try {
         if (level === "city") {
-          const city = citiesByDepartment[department.insee_geo].find((city) => city.id === siret);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const city = citiesByDepartment[department.insee_geo].find((city: any) => city.id === siret);
           return {
             score: city ? 1 : 0,
           };
@@ -103,7 +105,7 @@ const CartographieDeploiement = () => {
             stats[level].find((stat) => stat.id === insee_geo.replace("r", ""))?.total || 0;
           return {
             n_cities: nCities,
-            score: nCities / maxValues[level] || 0,
+            score: maxValues[level] && maxValues[level] > 0 ? nCities / maxValues[level] : 0,
           };
         }
       } catch {
