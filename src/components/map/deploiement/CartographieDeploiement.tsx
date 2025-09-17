@@ -95,8 +95,9 @@ const CartographieDeploiement = () => {
     ): AreaStats | null => {
       try {
         if (level === "city") {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const city = citiesByDepartment[department.insee_geo].find((city: any) => city.id === siret);
+          const city = citiesByDepartment[department.insee_geo].find(
+            (city: { id: string }) => city.id === siret,
+          );
           return {
             score: city ? 1 : 0,
           };
@@ -118,7 +119,7 @@ const CartographieDeploiement = () => {
   useEffect(() => {
     const fetchCitiesByDepartment = async () => {
       const data = await loadDepartmentCities(mapState.selectedAreas.department.insee_geo);
-      setCitiesByDepartment((prev) => ({
+      setCitiesByDepartment((prev: { [key: string]: { id: string }[] }) => ({
         ...prev,
         [mapState.selectedAreas.department.insee_geo]: data,
       }));
