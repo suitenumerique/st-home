@@ -78,6 +78,7 @@ const MapWrapper = ({
   statsParams = {},
   mapState,
   setMapState,
+  displayCircleValue = false,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   SidePanelContent: React.ComponentType<any>;
@@ -94,6 +95,7 @@ const MapWrapper = ({
   mapState: MapState;
   setMapState: (mapState: MapState) => void;
   statsParams?: StatsParams;
+  displayCircleValue?: boolean;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [panelState, setPanelState] = useState<"closed" | "open" | "partial">("open");
@@ -428,15 +430,16 @@ const MapWrapper = ({
           epci: "city",
           city: "city",
         }[mapState.currentLevel];
-        const score = computeAreaStats(
+        const stats = computeAreaStats(
           scoreLevel as "region" | "department" | "city",
           feature.properties?.INSEE_GEO || "",
           feature.properties?.SIRET || "",
           mapState.selectedAreas.department as SelectedArea,
           statsParams,
-        )?.score;
-        feature.properties!.SCORE = score;
-        feature.properties!.color = getColor(score);
+        );
+        feature.properties!.VALUE = stats?.n_cities;
+        feature.properties!.SCORE = stats?.score;
+        feature.properties!.color = getColor(stats?.score);
         feature.properties!.color_dark = darkenColor(feature.properties!.color, 0.6);
         feature.properties!.color_darker = darkenColor(feature.properties!.color, 3);
       });
@@ -544,6 +547,7 @@ const MapWrapper = ({
         isMobile={isMobile}
         panelState={panelState}
         showGradientLegend={showGradientLegend}
+        displayCircleValue={displayCircleValue}
       />
     </div>
   );

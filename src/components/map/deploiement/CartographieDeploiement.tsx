@@ -147,6 +147,7 @@ const CartographieDeploiement = () => {
       statsParams={statsParams}
       mapState={mapState}
       setMapState={setMapState}
+      displayCircleValue={true}
     />
   );
 };

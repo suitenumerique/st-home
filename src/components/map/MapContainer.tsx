@@ -7,7 +7,7 @@ import { MapLayerMouseEvent } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import Image from "next/image";
 import PropTypes from "prop-types";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Map, { Layer, LayerProps, MapRef, Popup, ScaleControl, Source } from "react-map-gl/maplibre";
 import CommuneSearch from "../CommuneSearch";
 import mapStyle from "./map_style.json";
@@ -26,6 +26,7 @@ const MapContainer = ({
   selectLevel,
   goBack,
   handleQuickNav,
+  displayCircleValue,
 }: {
   currentGeoJSON: GeoJSON.FeatureCollection & { id: string };
   mapState: MapState;
@@ -49,6 +50,7 @@ const MapContainer = ({
     type: "commune" | "epci" | "department" | "region";
     population: number;
   }) => void;
+  displayCircleValue: boolean;
 }) => {
   const mapRef = useRef<MapRef>(null);
   const [popupInfo, setPopupInfo] = useState<{
@@ -110,6 +112,55 @@ const MapContainer = ({
       "line-width": 2.5,
     },
   };
+
+  const circleLayerStyle = {
+    id: "feature-circles",
+    type: "circle",
+    paint: {
+      "circle-radius": 20,
+      "circle-color": "#ffffff",
+      "circle-stroke-color": "#000000",
+      "circle-stroke-width": 2,
+      "circle-opacity": 0.9,
+    },
+  };
+
+  const textLayerStyle = {
+    id: "feature-labels",
+    type: "symbol",
+    layout: {
+      "text-field": ["get", "circleValue"],
+      "text-font": ["Arial Unicode MS Regular"],
+      "text-size": 14,
+      "text-anchor": "center",
+      "text-allow-overlap": true,
+    },
+    paint: {
+      "text-color": "#000000",
+      "text-halo-color": "#ffffff",
+      "text-halo-width": 1,
+    },
+  };
+
+  const pointFeatures = useMemo(() => {
+    if (!currentGeoJSON || ["department", "epci"].includes(mapState.currentLevel)) return null;
+    const features = (currentGeoJSON as GeoJSON.FeatureCollection).features.map((feature) => {
+      const centroid = turf.centroid(feature);
+      return {
+        type: "Feature" as const,
+        geometry: centroid.geometry,
+        properties: {
+          ...feature.properties,
+          circleValue: feature.properties?.VALUE,
+        },
+      };
+    });
+    return {
+      type: "FeatureCollection" as const,
+      features,
+      id: `point-features-${Math.random().toString(36).substring(2, 15)}`,
+    };
+  }, [currentGeoJSON, mapState.currentLevel]);
 
   const onMouseLeave = useCallback(() => {
     if (hoveredFeature !== null && mapRef.current) {
@@ -479,6 +530,17 @@ const MapContainer = ({
             />
           )}
         </Source>
+        {pointFeatures && displayCircleValue && (
+          <Source
+            id="feature-points"
+            type="geojson"
+            data={pointFeatures as GeoJSON.FeatureCollection & { id: string }}
+            generateId={true}
+          >
+            <Layer {...(circleLayerStyle as LayerProps)} />
+            <Layer {...(textLayerStyle as LayerProps)} />
+          </Source>
+        )}
         {popupInfo && mapTooltip(popupInfo)}
       </Map>
 
