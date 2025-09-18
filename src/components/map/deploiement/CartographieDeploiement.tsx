@@ -102,7 +102,7 @@ const CartographieDeploiement = () => {
     ): AreaStats | null => {
       try {
         if (level === "city") {
-          const city = citiesByDepartment[department.insee_geo].find(
+          const city = citiesByDepartment[`${department.insee_geo}${mapState.filters.service_id ? `_${mapState.filters.service_id}` : ""}`].find(
             (city: { id: string }) => city.id === siret,
           );
           return {
@@ -122,7 +122,7 @@ const CartographieDeploiement = () => {
         return null;
       }
     },
-    [stats, citiesByDepartment],
+    [stats, citiesByDepartment, mapState.filters.service_id],
   );
 
   useEffect(() => {
@@ -139,7 +139,7 @@ const CartographieDeploiement = () => {
     };
     if (
       mapState.currentLevel === "department" &&
-      !citiesByDepartment[mapState.selectedAreas.department.insee_geo]
+      !citiesByDepartment[`${mapState.selectedAreas.department.insee_geo}${mapState.filters.service_id ? `_${mapState.filters.service_id}` : ""}`]
     ) {
       fetchCitiesByDepartment();
     }
