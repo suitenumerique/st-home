@@ -143,7 +143,8 @@ const MapContainer = ({
   };
 
   const pointFeatures = useMemo(() => {
-    if (!currentGeoJSON || ["department", "epci", "city"].includes(mapState.currentLevel)) return null;
+    if (!currentGeoJSON || ["department", "epci", "city"].includes(mapState.currentLevel))
+      return null;
     const features = (currentGeoJSON as GeoJSON.FeatureCollection).features.map((feature) => {
       const centroid = turf.centroid(feature);
       return {

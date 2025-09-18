@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import parentAreas from "../../../../public/parent_areas.json";
 import MapWrapper from "../MapWrapper";
 import SidePanelContent from "./SidePanelContent";
 
@@ -9,12 +10,6 @@ import { AllStats, StatRecord } from "./types";
 
 const CartographieDeploiement = () => {
   const [stats, setStats] = useState<AllStats>({} as AllStats);
-  const [maxValues, setMaxValues] = useState<{
-    country?: number;
-    region?: number;
-    department?: number;
-    epci?: number;
-  }>({});
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [mapState, setMapState] = useState<any>({
     currentLevel: "country",
@@ -77,12 +72,6 @@ const CartographieDeploiement = () => {
       epci: epciStats,
       country: countryStats,
     });
-
-    setMaxValues({
-      region: Math.max(...regionStats.map((stat) => stat.total)),
-      department: Math.max(...departmentStats.map((stat) => stat.total)),
-      epci: Math.max(...epciStats.map((stat) => stat.total)),
-    });
   }, [loadStats]);
 
   const computeAreaStats = useCallback(
@@ -102,18 +91,20 @@ const CartographieDeploiement = () => {
             score: city ? 1 : 0,
           };
         } else {
-          const nCities =
+          const nActiveCities =
             stats[level].find((stat) => stat.id === insee_geo.replace("r", ""))?.total || 0;
+          const nTotalCities =
+            parentAreas.find((area) => area.insee_geo === insee_geo)?.n_cities || 0;
           return {
-            n_cities: nCities,
-            score: maxValues[level] && maxValues[level] > 0 ? nCities / maxValues[level] : 0,
+            n_cities: nActiveCities,
+            score: nTotalCities > 0 ? nActiveCities / nTotalCities : 0,
           };
         }
       } catch {
         return null;
       }
     },
-    [stats, maxValues, citiesByDepartment],
+    [stats, citiesByDepartment],
   );
 
   useEffect(() => {
