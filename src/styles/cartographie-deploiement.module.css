@@ -25,5 +25,21 @@
   z-index: 1000;
 }
 
+.productItem.selected::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -8px;
+  width: calc(100% + 16px);
+  height: calc(100% + 4px);
+  border: 1px solid #2a3c84;
+  border-radius: 4px;
+  z-index: 1000;
+}
+
+.productItem.dimmed {
+  opacity: 0.4;
+}
+
 @media (max-width: 992px) {
 }

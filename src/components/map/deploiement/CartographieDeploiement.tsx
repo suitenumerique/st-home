@@ -15,6 +15,9 @@ const CartographieDeploiement = () => {
     currentLevel: "country",
     selectedAreas: {},
     departmentView: "city",
+    filters: {
+      service_id: null,
+    },
   });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [citiesByDepartment, setCitiesByDepartment] = useState<any>({});
@@ -22,57 +25,72 @@ const CartographieDeploiement = () => {
   const statsParams = useMemo(() => ({}), []);
 
   const loadStats = useCallback(
-    async (level: "region" | "department" | "epci"): Promise<StatRecord[]> => {
+    async (
+      level: "region" | "department" | "epci",
+      service_id: string | null,
+    ): Promise<StatRecord[]> => {
       const scope = {
         region: "reg",
         department: "dep",
         epci: "epci",
       };
-      const response = await fetch(`/api/deployment/stats?scope=list-${scope[level]}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        next: { revalidate: 3600 },
-      });
+      const response = await fetch(
+        `/api/deployment/stats?scope=list-${scope[level]}${service_id ? `&service_id=${service_id}` : ""}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          next: { revalidate: 3600 },
+        },
+      );
       const data = await response.json();
       return data.data;
     },
     [],
   );
 
-  const loadDepartmentCities = useCallback(async (departmentCode: string) => {
-    const response = await fetch(`/api/deployment/stats?scope=list-commune&dep=${departmentCode}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-      next: { revalidate: 3600 },
-    });
-    const data = await response.json();
-    return data.data;
-  }, []);
+  const loadDepartmentCities = useCallback(
+    async (departmentCode: string, service_id: string | null) => {
+      const response = await fetch(
+        `/api/deployment/stats?scope=list-commune&dep=${departmentCode}${service_id ? `&service_id=${service_id}` : ""}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          next: { revalidate: 3600 },
+        },
+      );
+      const data = await response.json();
+      return data.data;
+    },
+    [],
+  );
 
-  const loadAllStats = useCallback(async () => {
-    const regionStats = await loadStats("region");
-    const departmentStats = await loadStats("department");
-    const epciStats = await loadStats("epci");
-    const countryStats = [
-      {
-        id: "00",
-        total: 0,
-        active: 0,
-      } as StatRecord,
-    ];
+  const loadAllStats = useCallback(
+    async (service_id: string | null) => {
+      const regionStats = await loadStats("region", service_id);
+      const departmentStats = await loadStats("department", service_id);
+      const epciStats = await loadStats("epci", service_id);
+      const countryStats = [
+        {
+          id: "00",
+          total: 0,
+          active: 0,
+        } as StatRecord,
+      ];
 
-    regionStats.forEach((curr) => {
-      countryStats[0].total += curr.total;
-      countryStats[0].active += curr.active;
-    });
+      regionStats.forEach((curr) => {
+        countryStats[0].total += curr.total;
+        countryStats[0].active += curr.active;
+      });
 
-    setStats({
-      region: regionStats,
-      department: departmentStats,
-      epci: epciStats,
-      country: countryStats,
-    });
-  }, [loadStats]);
+      setStats({
+        region: regionStats,
+        department: departmentStats,
+        epci: epciStats,
+        country: countryStats,
+      });
+    },
+    [loadStats],
+  );
 
   const computeAreaStats = useCallback(
     (
@@ -109,10 +127,14 @@ const CartographieDeploiement = () => {
 
   useEffect(() => {
     const fetchCitiesByDepartment = async () => {
-      const data = await loadDepartmentCities(mapState.selectedAreas.department.insee_geo);
+      const data = await loadDepartmentCities(
+        mapState.selectedAreas.department.insee_geo,
+        mapState.filters.service_id,
+      );
       setCitiesByDepartment((prev: { [key: string]: { id: string }[] }) => ({
         ...prev,
-        [mapState.selectedAreas.department.insee_geo]: data,
+        [`${mapState.selectedAreas.department.insee_geo}${mapState.filters.service_id ? `_${mapState.filters.service_id}` : ""}`]:
+          data,
       }));
     };
     if (
@@ -122,11 +144,11 @@ const CartographieDeploiement = () => {
       fetchCitiesByDepartment();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapState.currentLevel]);
+  }, [mapState.currentLevel, mapState.filters.service_id]);
 
   useEffect(() => {
-    loadAllStats();
-  }, [loadAllStats]);
+    loadAllStats(mapState.filters.service_id);
+  }, [loadAllStats, mapState.filters.service_id]);
 
   return (
     <MapWrapper

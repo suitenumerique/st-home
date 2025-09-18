@@ -46,6 +46,9 @@ export interface MapState {
     [key: string]: SelectedArea | Commune | null;
   };
   departmentView: "city" | "epci";
+  filters: {
+    service_id: number | null;
+  };
 }
 
 export interface FeatureProperties {
