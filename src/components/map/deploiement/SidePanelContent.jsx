@@ -192,11 +192,22 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
         <h3 style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "0.75rem" }}>
           Produits
         </h3>
-        {levelStatsDisplay && levelStatsDisplay.services && levelStatsDisplay.services.map(({ id, name, logo_url, value }) => (
-          <div
-            key={id}
-            className={styles.productItem}
-          >
+        {levelStatsDisplay && levelStatsDisplay.services && levelStatsDisplay.services.map(({ id, name, logo_url, value }) => {
+          const isSelected = mapState.filters.service_id === id;
+          const isDimmed = mapState.filters.service_id !== null && mapState.filters.service_id !== id;
+          
+          return (
+            <div
+              key={id}
+              className={`${styles.productItem} ${isSelected ? styles.selected : ''} ${isDimmed ? styles.dimmed : ''}`}
+              onClick={() => {
+                if (mapState.filters.service_id === id) {
+                  setMapState({ ...mapState, filters: { ...mapState.filters, service_id: null } });
+                } else {
+                  setMapState({ ...mapState, filters: { ...mapState.filters, service_id: id } });
+                }
+              }}
+            >
             <div style={{ display: "flex", alignItems: "center" }}>
               <img src={logo_url} alt={name} style={{ width: "18px", height: "18px", marginRight: "0.4rem" }} />
               <span style={{ fontSize: "0.875rem"}}>{name}&nbsp;</span>
@@ -223,7 +234,8 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
               <span style={{ fontSize: "0.875rem", fontWeight: "bold", width: "50px", textAlign: "right", marginRight: "4px" }}>{formatNumber(value)}</span>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     )
   }
