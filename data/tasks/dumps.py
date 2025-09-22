@@ -235,7 +235,7 @@ def dump_services():
     r.raise_for_status()
 
     # Convert CSV to JSON
-    rows = list(csv.DictReader(r.text.splitlines(), delimiter=";"))
+    rows = list(csv.DictReader(r.content.decode("utf-8").splitlines(), delimiter=";"))
     assert len(rows) > 1
     with open("dumps/services.json", "w") as f:
         json.dump(rows, f, ensure_ascii=False, indent=4)
