@@ -192,7 +192,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
         <h3 style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "0.75rem" }}>
           Produits
         </h3>
-        {levelStatsDisplay && levelStatsDisplay.services && levelStatsDisplay.services.map(({ id, name, logo_url, value }) => {
+        {levelStatsDisplay && levelStatsDisplay.services && levelStatsDisplay.services.map(({ id, name, logo_url, maturity, value }) => {
           const isSelected = mapState.filters.service_id === id;
           const isDimmed = mapState.filters.service_id !== null && mapState.filters.service_id !== id;
           
@@ -211,6 +211,9 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
             <div style={{ display: "flex", alignItems: "center" }}>
               <img src={logo_url} alt={name} style={{ width: "18px", height: "18px", marginRight: "0.4rem" }} />
               <span style={{ fontSize: "0.875rem"}}>{name}&nbsp;</span>
+              {
+                maturity !== 'stable' && <span className={fr.cx("fr-badge fr-badge--sm fr-badge--info fr-badge--no-icon")}>{maturity.toUpperCase()}</span>
+              }
             </div>
             <div style={{ display: "flex", alignItems: "center" }}>
               <div style={{ display: "flex", alignItems: "center", width: 'calc(100% - 50px)', position: "relative" }}>

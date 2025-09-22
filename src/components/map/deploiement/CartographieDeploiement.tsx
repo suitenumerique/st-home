@@ -69,6 +69,18 @@ const CartographieDeploiement = () => {
       const regionStats = await loadStats("region", service_id);
       const departmentStats = await loadStats("department", service_id);
       const epciStats = await loadStats("epci", service_id);
+      regionStats.forEach((region) => {
+        const parentArea = parentAreas.find((area) => area.insee_geo === `r${region.id}`);
+        if (parentArea) {
+          region.score = ((region.total || 0) / parentArea.n_cities) || 0;
+        }
+      });
+      departmentStats.forEach((department) => {
+        const parentArea = parentAreas.find((area) => area.insee_geo === department.id);
+        if (parentArea) {
+          department.score = ((department.total || 0) / parentArea.n_cities) || 0;
+        }
+      });
       const countryStats = [
         {
           id: "00",
@@ -125,6 +137,21 @@ const CartographieDeploiement = () => {
     [stats, citiesByDepartment, mapState.filters.service_id],
   );
 
+  const maxDomain = useMemo(() => {
+    const level = {
+      'country': 'region',
+      'region': 'department',
+      'department': 'city',
+    }[mapState.currentLevel] as "region" | "department";
+    if (level === 'city') {
+      return 1;
+    }
+    if (stats[level]) {
+      return Math.max(...stats[level].map((stat) => stat.score));
+    }
+    return 0;
+  }, [stats, mapState.currentLevel]);
+
   useEffect(() => {
     const fetchCitiesByDepartment = async () => {
       const data = await loadDepartmentCities(
@@ -154,7 +181,7 @@ const CartographieDeploiement = () => {
     <MapWrapper
       SidePanelContent={SidePanelContent}
       gradientColors={["#FFFFFF", "#2A3C84"]}
-      gradientDomain={[0, 1]}
+      gradientDomain={[0, maxDomain]}
       showGradientLegend={false}
       computeAreaStats={computeAreaStats}
       statsParams={statsParams}
