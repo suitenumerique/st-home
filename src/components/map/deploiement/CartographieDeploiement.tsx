@@ -72,13 +72,13 @@ const CartographieDeploiement = () => {
       regionStats.forEach((region) => {
         const parentArea = parentAreas.find((area) => area.insee_geo === `r${region.id}`);
         if (parentArea) {
-          region.score = ((region.total || 0) / parentArea.n_cities) || 0;
+          region.score = (region.total || 0) / parentArea.n_cities || 0;
         }
       });
       departmentStats.forEach((department) => {
         const parentArea = parentAreas.find((area) => area.insee_geo === department.id);
         if (parentArea) {
-          department.score = ((department.total || 0) / parentArea.n_cities) || 0;
+          department.score = (department.total || 0) / parentArea.n_cities || 0;
         }
       });
       const countryStats = [
@@ -86,6 +86,7 @@ const CartographieDeploiement = () => {
           id: "00",
           total: 0,
           active: 0,
+          score: 0,
         } as StatRecord,
       ];
 
@@ -114,9 +115,9 @@ const CartographieDeploiement = () => {
     ): AreaStats | null => {
       try {
         if (level === "city") {
-          const city = citiesByDepartment[`${department.insee_geo}${mapState.filters.service_id ? `_${mapState.filters.service_id}` : ""}`].find(
-            (city: { id: string }) => city.id === siret,
-          );
+          const city = citiesByDepartment[
+            `${department.insee_geo}${mapState.filters.service_id ? `_${mapState.filters.service_id}` : ""}`
+          ].find((city: { id: string }) => city.id === siret);
           return {
             score: city ? 1 : 0,
           };
@@ -139,11 +140,14 @@ const CartographieDeploiement = () => {
 
   const maxDomain = useMemo(() => {
     const level = {
-      'country': 'region',
-      'region': 'department',
-      'department': 'city',
-    }[mapState.currentLevel] as "region" | "department";
-    if (level === 'city') {
+      country: "region",
+      region: "department",
+      department: "city",
+    }[mapState.currentLevel as "country" | "region" | "department"] as
+      | "region"
+      | "department"
+      | "city";
+    if (level === "city") {
       return 1;
     }
     if (stats[level]) {
@@ -166,7 +170,9 @@ const CartographieDeploiement = () => {
     };
     if (
       mapState.currentLevel === "department" &&
-      !citiesByDepartment[`${mapState.selectedAreas.department.insee_geo}${mapState.filters.service_id ? `_${mapState.filters.service_id}` : ""}`]
+      !citiesByDepartment[
+        `${mapState.selectedAreas.department.insee_geo}${mapState.filters.service_id ? `_${mapState.filters.service_id}` : ""}`
+      ]
     ) {
       fetchCitiesByDepartment();
     }
