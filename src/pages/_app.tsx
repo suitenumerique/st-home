@@ -13,6 +13,7 @@ import { createEmotionSsrAdvancedApproach } from "tss-react/next";
 import { init } from "@socialgouv/matomo-next";
 import { DefaultSeo } from "next-seo";
 
+import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { PageLayout } from "../layouts/page";
 
 declare module "@codegouvfr/react-dsfr/next-pagesdir" {
@@ -81,6 +82,7 @@ function App({ Component, pageProps: { /*session,*/ ...pageProps } }: AppProps) 
         <PageLayout>
           <Component {...pageProps} />
         </PageLayout>
+        <FeedbackWidget />
       </div>
     </>
   );
