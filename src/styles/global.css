@@ -144,7 +144,7 @@ path.leaflet-interactive:focus {
 
 .map-action-buttons {
   position: absolute;
-  bottom: 20px;
+  bottom: 50px;
   right: 20px;
   z-index: 10;
   display: flex;
@@ -239,12 +239,12 @@ path.leaflet-interactive:focus {
 
   .map-drom-selector {
     right: 10px;
-    bottom: 98px;
+    bottom: 148px;
     top: auto;
   }
 
   .map-action-buttons {
-    bottom: 10px;
+    bottom: 50px;
     right: 10px;
   }
 

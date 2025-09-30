@@ -66,7 +66,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ${organizations.siret} as id,
           ${organizations.insee_dep} as dep,
           ${organizations.insee_reg} as reg,
-          COUNT(DISTINCT CASE WHEN ${organizationsToServices.active} = true THEN ${organizationsToServices.organizationSiret} END)::int as active
+          ARRAY_AGG(DISTINCT ${organizationsToServices.serviceId}) as all_services,
+          ARRAY_AGG(DISTINCT CASE WHEN ${organizationsToServices.active} = true THEN ${organizationsToServices.serviceId} END) FILTER (WHERE ${organizationsToServices.active} = true) as active_services
         FROM ${organizations}
         INNER JOIN ${organizationsToServices} ON ${organizations.siret} = ${organizationsToServices.organizationSiret}
         ${service_id ? sql`INNER JOIN ${services} ON ${organizationsToServices.serviceId} = ${services.id}` : sql``}

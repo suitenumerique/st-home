@@ -15,19 +15,10 @@ const CartographieConformite = () => {
     currentLevel: "country",
     selectedAreas: {},
     departmentView: "epci",
+    filters: {
+      rcpnt_ref: null,
+    },
   });
-  const [selectedRef, setSelectedRef] = useState<string | null>(null);
-
-  const statsParams = useMemo(
-    () => ({
-      selectedRef: {
-        value: selectedRef as string | null,
-        urlParam: "ref",
-        setValue: setSelectedRef,
-      },
-    }),
-    [selectedRef, setSelectedRef],
-  );
 
   const allRcpntRefs = useMemo(() => {
     return [
@@ -101,10 +92,9 @@ const CartographieConformite = () => {
       siret: string,
       department: SelectedArea,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      statsParams?: any,
     ): AreaStats | null => {
       try {
-        const currentSelectedRef = statsParams["selectedRef"].value;
+        const currentSelectedRef = mapState.filters.rcpnt_ref;
         if (level === "city") {
           const cityRecord = department?.cities?.find((c) => c.insee_geo === insee_geo);
           if (!cityRecord?.rcpnt) {
@@ -158,7 +148,7 @@ const CartographieConformite = () => {
         return null;
       }
     },
-    [stats],
+    [stats, mapState.filters.rcpnt_ref],
   );
 
   useEffect(() => {
@@ -171,7 +161,6 @@ const CartographieConformite = () => {
       gradientColors={["#FF6868", "#FFC579", "#009081"]}
       gradientDomain={[0, 1, 2]}
       computeAreaStats={computeAreaStats}
-      statsParams={statsParams}
       showGradientLegend={true}
       mapState={mapState}
       setMapState={setMapState}

@@ -10,30 +10,27 @@ import parentAreas from "../../../public/parent_areas.json";
 import MapContainer from "./MapContainer";
 import SidePanel from "./SidePanel";
 
-import {
-  AreaStats,
-  FeatureProperties,
-  MapState,
-  ParentArea,
-  SelectedArea,
-  StatsParams,
-} from "./types";
+import { AreaStats, FeatureProperties, MapState, ParentArea, SelectedArea } from "./types";
 
 const useMapURLState = () => {
   const router = useRouter();
 
-  const getURLState = useCallback((statsParams: StatsParams) => {
+  const getURLState = useCallback((filters: { [key: string]: any }) => {
     const urlParams = new URLSearchParams(window.location.search);
     return {
       currentLevel: urlParams.get("level"),
       currentAreaCode: urlParams.get("code"),
       departmentView: urlParams.get("view"),
-      ...Object.entries(statsParams).reduce(
+      ...Object.entries(filters).reduce(
         (acc, [key, param]) => {
-          acc[key] = urlParams.get(param.urlParam) as string;
+          if (key === "service_ids" && urlParams.get(key)) {
+            acc[key] = urlParams.get(key)?.split(",").map(Number) || null;
+          } else {
+            acc[key] = urlParams.get(key) as string;
+          }
           return acc;
         },
-        {} as { [key: string]: string },
+        {} as { [key: string]: any },
       ),
     };
   }, []);
@@ -43,7 +40,7 @@ const useMapURLState = () => {
       currentLevel: string,
       currentAreaCode: string,
       departmentView: string,
-      statsParams: StatsParams,
+      filters: { [key: string]: any },
     ) => {
       const params = new URLSearchParams();
       if (currentLevel !== "country") {
@@ -55,9 +52,14 @@ const useMapURLState = () => {
       if (departmentView && currentLevel === "department") {
         params.set("view", departmentView);
       }
-      Object.values(statsParams).forEach((param) => {
-        if (param.value) {
-          params.set(param.urlParam, param.value);
+      Object.entries(filters).forEach(([key, param]) => {
+        if (param) {
+          if (key === "service_ids" && Array.isArray(param)) {
+            // Handle service_ids as array
+            params.set(key, param.join(","));
+          } else {
+            params.set(key, param as string);
+          }
         }
       });
       const newURL = params.toString() ? `?${params.toString()}` : window.location.pathname;
@@ -75,10 +77,10 @@ const MapWrapper = ({
   gradientDomain,
   showGradientLegend = true,
   computeAreaStats,
-  statsParams = {},
   mapState,
   setMapState,
   displayCircleValue = false,
+  customLayers,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   SidePanelContent: React.ComponentType<any>;
@@ -90,12 +92,21 @@ const MapWrapper = ({
     insee_geo: string,
     siret: string,
     department: SelectedArea,
-    statsParams?: StatsParams,
   ) => AreaStats | null;
   mapState: MapState;
   setMapState: (mapState: MapState) => void;
-  statsParams?: StatsParams;
   displayCircleValue?: boolean;
+  customLayers?: Array<{
+    id: string;
+    source?: {
+      id: string;
+      type: "geojson";
+      data: GeoJSON.FeatureCollection;
+    };
+    layers?: any[];
+    component?: React.ComponentType<any>;
+    props?: any;
+  }>;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [panelState, setPanelState] = useState<"closed" | "open" | "partial">("open");
@@ -293,6 +304,7 @@ const MapWrapper = ({
       code: string,
       source = "areaClick",
       departmentView: "city" | "epci" | null = null,
+      updatedFilters?: any,
     ) => {
       console.log("selectLevel", level, code, source);
 
@@ -346,6 +358,8 @@ const MapWrapper = ({
         }
       }
 
+      console.log("mapState", mapState);
+
       const newMapState: Partial<MapState> = {
         currentLevel: level,
         selectedAreas: newSelectedAreas,
@@ -357,7 +371,11 @@ const MapWrapper = ({
         newMapState.departmentView = "city";
       }
 
-      setMapState({ ...mapState, ...newMapState } as MapState);
+      const finalMapState = { ...mapState, ...newMapState } as MapState;
+      if (updatedFilters) {
+        finalMapState.filters = updatedFilters;
+      }
+      setMapState(finalMapState);
     },
     [computeSelectedArea, mapState, setMapState],
   );
@@ -383,6 +401,7 @@ const MapWrapper = ({
   }, []);
 
   const currentGeoJSON = useMemo(() => {
+    console.log("currentgeojson");
     const getEPCIGeoJSON = (geoJSON: GeoJSON.FeatureCollection | null) => {
       if (!geoJSON) return null;
       return {
@@ -435,13 +454,14 @@ const MapWrapper = ({
           feature.properties?.INSEE_GEO || "",
           feature.properties?.SIRET || "",
           mapState.selectedAreas.department as SelectedArea,
-          statsParams,
         );
         feature.properties!.VALUE = stats?.n_cities;
         feature.properties!.SCORE = stats?.score;
-        feature.properties!.color = getColor(stats?.score);
-        feature.properties!.color_dark = darkenColor(feature.properties!.color, 0.6);
-        feature.properties!.color_darker = darkenColor(feature.properties!.color, 3);
+        feature.properties!.color = stats?.score === null ? "transparent" : getColor(stats?.score);
+        feature.properties!.color_dark =
+          stats?.score === null ? "#000091" : darkenColor(feature.properties!.color, 0.6);
+        feature.properties!.color_darker =
+          stats?.score === null ? "#000091" : darkenColor(feature.properties!.color, 3);
       });
       displayedGeoJSON = {
         ...(displayedGeoJSON as GeoJSON.FeatureCollection),
@@ -454,10 +474,10 @@ const MapWrapper = ({
     mapState.currentLevel,
     mapState.selectedAreas,
     mapState.departmentView,
+    mapState.filters,
     computeAreaStats,
     getColor,
     darkenColor,
-    statsParams,
   ]);
 
   useEffect(() => {
@@ -466,13 +486,13 @@ const MapWrapper = ({
         mapState.currentLevel === "city"
           ? (mapState.selectedAreas["city"] as Commune)?.siret
           : (mapState.selectedAreas[mapState.currentLevel] as SelectedArea)?.insee_geo || "";
-      updateURLState(mapState.currentLevel, areaCode, mapState.departmentView, statsParams);
+      updateURLState(mapState.currentLevel, areaCode, mapState.departmentView, mapState.filters);
     }
   }, [
     mapState.currentLevel,
     mapState.selectedAreas,
     mapState.departmentView,
-    statsParams,
+    mapState.filters,
     updateURLState,
   ]);
 
@@ -486,11 +506,12 @@ const MapWrapper = ({
   }, []);
 
   useEffect(() => {
-    const urlState = getURLState(statsParams);
-    Object.entries(statsParams).forEach(([key, param]) => {
-      const setValue = param.setValue;
-      setValue(urlState[key as keyof typeof urlState] as string);
+    const urlState = getURLState(mapState.filters);
+    const updatedFilters = { ...mapState.filters } as any;
+    Object.keys(mapState.filters).forEach((key) => {
+      updatedFilters[key] = urlState[key as keyof typeof urlState] as string;
     });
+
     if (
       urlState.currentLevel &&
       urlState.currentAreaCode &&
@@ -501,9 +522,10 @@ const MapWrapper = ({
         urlState.currentAreaCode,
         "quickNav",
         urlState.departmentView as "city" | "epci" | null,
+        updatedFilters,
       );
     } else {
-      selectLevel("country", "00", "quickNav", null);
+      selectLevel("country", "00", "quickNav", null, updatedFilters);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -532,7 +554,6 @@ const MapWrapper = ({
           container={containerRef.current}
           isMobile={isMobile}
           computeAreaStats={computeAreaStats}
-          statsParams={statsParams}
         />
       </SidePanel>
       <MapContainer
@@ -548,6 +569,7 @@ const MapWrapper = ({
         panelState={panelState}
         showGradientLegend={showGradientLegend}
         displayCircleValue={displayCircleValue}
+        customLayers={customLayers}
       />
     </div>
   );

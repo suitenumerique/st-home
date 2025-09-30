@@ -10,9 +10,7 @@ import { Button } from "@codegouvfr/react-dsfr/Button";
 import Link from "next/link";
 import { ReferentielConformite } from "@/pages/conformite/referentiel";
 
-const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats, statsParams }) => {
-  const selectedRef = statsParams['selectedRef'].value;
-  const setSelectedRef = statsParams['selectedRef'].setValue;
+const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats }) => {
 
   const [showCriteriaSelector, setShowCriteriaSelector] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -61,7 +59,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     if (mapState.selectedAreas.city || !mapState.selectedAreas[mapState.currentLevel]) {
       return null;
     }
-    const chartSeries = selectedRef ? [
+    const chartSeries = mapState.filters.rcpnt_ref ? [
       ["2", "Conforme"],
       ["0", "Non conforme"],
     ] : [
@@ -75,7 +73,6 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
       mapState.selectedAreas[mapState.currentLevel]?.insee_geo || "",
       null,
       mapState.selectedAreas.department,
-      statsParams,
     );
 
     if (!conformityStats) {
@@ -107,7 +104,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
       details: statsDetails,
     }
 
-  }, [mapState.selectedAreas, mapState.currentLevel, mapState.selectedRef, computeAreaStats, statsParams['selectedRef'].value]);
+  }, [mapState.selectedAreas, mapState.currentLevel, mapState.filters.rcpnt_ref, computeAreaStats]);
 
   const introduction = () => {
     return (
@@ -240,7 +237,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
           )))
         }
         {
-          selectedRef && (
+          mapState.filters.rcpnt_ref && (
             <p
               onClick={() => setShowCriteriaSelector(true)}
               style={{
@@ -261,7 +258,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
               cursor: "pointer",
               }}
             >
-              Critère {selectedRef}
+              Critère {mapState.filters.rcpnt_ref}
             </p>
           )
         }
@@ -373,8 +370,8 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
               {
                 label: 'Tous les critères',
                 nativeInputProps: {
-                  checked: selectedRef === null,
-                  onChange: () => setSelectedRef(null)
+                  checked: mapState.filters.rcpnt_ref === null,
+                  onChange: () => setMapState({ ...mapState, filters: { ...mapState.filters, rcpnt_ref: null } })
                 },
               }
             ]}
@@ -401,8 +398,8 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
                     {
                       label: 'Tous les critères',
                       nativeInputProps: {
-                        checked: selectedRef === `${String(index + 1)}.a`,
-                        onChange: () => setSelectedRef(`${String(index + 1)}.a`)
+                        checked: mapState.filters.rcpnt_ref === `${String(index + 1)}.a`,
+                        onChange: () => setMapState({ ...mapState, filters: { ...mapState.filters, rcpnt_ref: `${String(index + 1)}.a` } })
                       },
                     }
                   ]}
@@ -444,8 +441,8 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
                       <span style={{ fontSize: "var(--text-sm)" }}>{criterion.shortTitle}</span>
                     </div>,
                     nativeInputProps: {
-                      checked: selectedRef === criterion.num,
-                      onChange: () => setSelectedRef(criterion.num)
+                      checked: mapState.filters.rcpnt_ref === criterion.num,
+                      onChange: () => setMapState({ ...mapState, filters: { ...mapState.filters, rcpnt_ref: criterion.num } })
                     },
                   }))}
                 />
@@ -496,7 +493,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
           )}
           {panelState === 'open' && (
             <div style={{ marginTop: "1rem" }}>
-              {((mapState.currentLevel === "department" && !mapState.selectedAreas.city) || mapState.selectedRef) && (
+              {((mapState.currentLevel === "department" && !mapState.selectedAreas.city) || mapState.filters.rcpnt_ref) && (
                 selections()
               )}
               {!mapState.selectedAreas.city && mapState.selectedAreas[mapState.currentLevel] && (
@@ -525,7 +522,6 @@ SidePanelContent.propTypes = {
   panelState: PropTypes.string.isRequired,
   setPanelState: PropTypes.func.isRequired,
   computeAreaStats: PropTypes.func.isRequired,
-  statsParams: PropTypes.object,
 };
 
 export default SidePanelContent;
