@@ -10,9 +10,8 @@ import { Button } from "@codegouvfr/react-dsfr/Button";
 import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
 import styles from "../../../styles/cartographie-deploiement.module.css";
 
-const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, setPanelState,  computeAreaStats, statsParams }) => {
+const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, setPanelState,  computeAreaStats }) => {
 
-  const [showCriteriaSelector, setShowCriteriaSelector] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [services, setServices] = useState([]);
   const [scopedStats, setScopedStats] = useState([]);
@@ -66,7 +65,6 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
       mapState.currentLevel,
       mapState.selectedAreas[mapState.currentLevel]?.insee_geo || "",
       mapState.selectedAreas.department,
-      statsParams,
     );
 
     const servicesStats = services.map((service) => {
@@ -193,22 +191,41 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
           Produits
         </h3>
         {levelStatsDisplay && levelStatsDisplay.services && levelStatsDisplay.services.map(({ id, name, logo_url, maturity, value }) => {
-          const isSelected = mapState.filters.service_id === id;
-          const isDimmed = mapState.filters.service_id !== null && mapState.filters.service_id !== id;
+          const isSelected = mapState.filters.service_ids && mapState.filters.service_ids.includes(id);
+          const isDimmed = mapState.filters.service_ids && mapState.filters.service_ids.length > 0 && !mapState.filters.service_ids.includes(id);
           
           return (
             <div
               key={id}
               className={`${styles.productItem} ${isSelected ? styles.selected : ''} ${isDimmed ? styles.dimmed : ''}`}
               onClick={() => {
-                if (mapState.filters.service_id === id) {
-                  setMapState({ ...mapState, filters: { ...mapState.filters, service_id: null } });
+                const currentServiceIds = mapState.filters.service_ids || [];
+                let newServiceIds;
+                
+                if (currentServiceIds.includes(id)) {
+                  newServiceIds = currentServiceIds.filter(serviceId => serviceId !== id);
                 } else {
-                  setMapState({ ...mapState, filters: { ...mapState.filters, service_id: id } });
+                  newServiceIds = [...currentServiceIds, id];
                 }
+                const finalServiceIds = newServiceIds.length > 0 ? newServiceIds : null;
+                
+                setMapState({ 
+                  ...mapState, 
+                  filters: { 
+                    ...mapState.filters, 
+                    service_ids: finalServiceIds 
+                  } 
+                });
               }}
             >
             <div style={{ display: "flex", alignItems: "center" }}>
+              <input
+                type="checkbox"
+                value={id}
+                checked={isSelected}
+                onChange={() => {}} // Handled by parent div onClick
+                style={{ marginRight: "0.5rem", cursor: "pointer" }}
+              />
               <img src={logo_url} alt={name} style={{ width: "18px", height: "18px", marginRight: "0.4rem" }} />
               <span style={{ fontSize: "0.875rem"}}>{name}&nbsp;</span>
               {

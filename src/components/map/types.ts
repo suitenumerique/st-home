@@ -48,6 +48,8 @@ export interface MapState {
   departmentView: "city" | "epci";
   filters: {
     service_id: number | null;
+    service_ids: number[] | null;
+    rcpnt_ref: string | null;
   };
 }
 
@@ -63,8 +65,4 @@ export interface FeatureProperties {
 
 export interface MapViewHandlerProps {
   bounds: L.LatLngBounds | null;
-}
-
-export interface StatsParams {
-  [key: string]: { value: string | null; urlParam: string; setValue: (value: string) => void };
 }

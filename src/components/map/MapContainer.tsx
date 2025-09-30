@@ -10,9 +10,13 @@ import PropTypes from "prop-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Map, { Layer, LayerProps, MapRef, Popup, ScaleControl, Source } from "react-map-gl/maplibre";
 import CommuneSearch from "../CommuneSearch";
-import mapStyle from "./map_style.json";
+// import mapStyle from "./map_style.json";
 import MapButton from "./MapButton";
 import { FeatureProperties, MapState } from "./types";
+
+import { mapStyles } from "carte-facile";
+import "carte-facile/carte-facile.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 const MapContainer = ({
   currentGeoJSON,
@@ -27,6 +31,7 @@ const MapContainer = ({
   goBack,
   handleQuickNav,
   displayCircleValue,
+  customLayers,
 }: {
   currentGeoJSON: GeoJSON.FeatureCollection & { id: string };
   mapState: MapState;
@@ -51,6 +56,17 @@ const MapContainer = ({
     population: number;
   }) => void;
   displayCircleValue: boolean;
+  customLayers?: Array<{
+    id: string;
+    source?: {
+      id: string;
+      type: "geojson";
+      data: GeoJSON.FeatureCollection;
+    };
+    layers?: LayerProps[];
+    component?: React.ComponentType<any>;
+    props?: any;
+  }>;
 }) => {
   const mapRef = useRef<MapRef>(null);
   const [popupInfo, setPopupInfo] = useState<{
@@ -485,13 +501,13 @@ const MapContainer = ({
       <Map
         ref={mapRef}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        mapStyle={mapStyle as any}
+        mapStyle={mapStyles.desaturated as any}
+        projection="mercator"
         interactiveLayerIds={["polygon-fill"]}
         onClick={handleMapClick}
         onMouseLeave={onMouseLeave}
         onMouseMove={onMouseMove}
         cursor="pointer"
-        attributionControl={false}
         onResize={() => {
           if (!mapRef.current || !currentGeoJSON) return;
 
@@ -506,7 +522,41 @@ const MapContainer = ({
           }
         }}
       >
+        {popupInfo && mapTooltip(popupInfo)}
         <ScaleControl position="bottom-left" />
+
+        {customLayers?.map((customLayer) => {
+          if ("component" in customLayer && customLayer.component) {
+            const Component = customLayer.component;
+            return <Component key={customLayer.id} {...customLayer.props} />;
+          }
+          if (
+            "source" in customLayer &&
+            customLayer.source &&
+            "layers" in customLayer &&
+            customLayer.layers
+          ) {
+            return (
+              <Source
+                key={customLayer.id}
+                id={customLayer.source.id}
+                type={customLayer.source.type}
+                data={customLayer.source.data}
+                generateId={true}
+              >
+                {customLayer.layers.map((layer, index) => (
+                  <Layer
+                    key={`${customLayer.id}-${index}`}
+                    {...layer}
+                    beforeId="toponyme localite importance 6et7 - Special DOM"
+                  />
+                ))}
+              </Source>
+            );
+          }
+          return null;
+        })}
+
         <Source
           id="interactive-polygons"
           type="geojson"
@@ -514,23 +564,33 @@ const MapContainer = ({
           generateId={true}
         >
           {hoveredFeature && (
-            <Layer {...(hoveredFillLayerStyle as LayerProps)} beforeId="Water point/Sea or ocean" />
+            <Layer
+              {...(hoveredFillLayerStyle as LayerProps)}
+              beforeId="toponyme localite importance 6et7 - Special DOM"
+            />
           )}
           {hoveredFeature && (
             <Layer
               {...(hoveredStrokeLayerStyle as LayerProps)}
-              beforeId="Water point/Sea or ocean"
+              beforeId="toponyme localite importance 6et7 - Special DOM"
             />
           )}
-          <Layer {...(fillLayerStyle as LayerProps)} beforeId="Water point/Sea or ocean" />
-          <Layer {...(strokeLayerStyle as LayerProps)} beforeId="Water point/Sea or ocean" />
+          <Layer
+            {...(fillLayerStyle as LayerProps)}
+            beforeId="toponyme localite importance 6et7 - Special DOM"
+          />
+          <Layer
+            {...(strokeLayerStyle as LayerProps)}
+            beforeId="toponyme localite importance 6et7 - Special DOM"
+          />
           {mapState.selectedAreas.city && (
             <Layer
               {...(selectedCityLayerStyle as LayerProps)}
-              beforeId="Water point/Sea or ocean"
+              beforeId="toponyme localite importance 6et7 - Special DOM"
             />
           )}
         </Source>
+
         {pointFeatures && displayCircleValue && (
           <Source
             id="feature-points"
@@ -542,7 +602,6 @@ const MapContainer = ({
             <Layer {...(textLayerStyle as LayerProps)} />
           </Source>
         )}
-        {popupInfo && mapTooltip(popupInfo)}
       </Map>
 
       {isMobile && mapMobileButtons()}
@@ -569,6 +628,7 @@ MapContainer.propTypes = {
   panelState: PropTypes.string.isRequired,
   goBack: PropTypes.func.isRequired,
   handleQuickNav: PropTypes.func.isRequired,
+  customLayers: PropTypes.array,
 };
 
 export default MapContainer;
