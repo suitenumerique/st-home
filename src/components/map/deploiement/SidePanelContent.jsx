@@ -9,6 +9,8 @@ import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
 import styles from "../../../styles/cartographie-deploiement.module.css";
+import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox";
+
 
 const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, setPanelState,  computeAreaStats }) => {
 
@@ -191,7 +193,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
           Produits
         </h3>
         {levelStatsDisplay && levelStatsDisplay.services && levelStatsDisplay.services.map(({ id, name, logo_url, maturity, value }) => {
-          const isSelected = mapState.filters.service_ids && mapState.filters.service_ids.includes(id);
+          const isSelected = mapState.filters.service_ids && mapState.filters.service_ids.includes(id) || false;
           const isDimmed = mapState.filters.service_ids && mapState.filters.service_ids.length > 0 && !mapState.filters.service_ids.includes(id);
           
           return (
@@ -218,13 +220,20 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
                 });
               }}
             >
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <input
-                type="checkbox"
-                value={id}
-                checked={isSelected}
-                onChange={() => {}} // Handled by parent div onClick
-                style={{ marginRight: "0.5rem", cursor: "pointer" }}
+            <div style={{ display: "flex", alignItems: "flex-start", marginBottom: "7px" }}>
+              <Checkbox
+                state="default"
+                options={[
+                  {
+                    label: null,
+                    nativeInputProps: {
+                      value: id,
+                      checked: isSelected,
+                      onChange: () => {},
+                      style: { marginRight: "0.5rem", cursor: "pointer" },
+                    }
+                  }
+                ]}
               />
               <img src={logo_url} alt={name} style={{ width: "18px", height: "18px", marginRight: "0.4rem" }} />
               <span style={{ fontSize: "0.875rem"}}>{name}&nbsp;</span>

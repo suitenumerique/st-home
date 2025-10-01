@@ -35,7 +35,7 @@ const CartographieDeploiement = () => {
   //     filteredStats = filteredStats.filter((stat: StatRecord) => stat.dep === mapState.selectedAreas.department.insee_geo);
   //   }
   //   if (mapState.filters.service_ids && mapState.filters.service_ids.length > 0) {
-  //     filteredStats = filteredStats.filter((stat: StatRecord) => mapState.filters.service_ids.every((serviceId: number) => stat.all_services && stat.all_services.includes(serviceId.toString())));
+  //     filteredStats = filteredStats.filter((stat: StatRecord) => mapState.filters.service_ids.some((serviceId: number) => stat.all_services && stat.all_services.includes(serviceId.toString())));
   //   }
   //   return filteredStats;
   // }, [stats, mapState.filters.service_ids])
@@ -79,7 +79,7 @@ const CartographieDeploiement = () => {
         }
         if (mapState.filters.service_ids && mapState.filters.service_ids.length > 0) {
           filteredStats = filteredStats.filter((stat: StatRecord) =>
-            mapState.filters.service_ids.every(
+            mapState.filters.service_ids.some(
               (serviceId: number) =>
                 stat.all_services && stat.all_services.includes(serviceId.toString()),
             ),
@@ -233,7 +233,7 @@ const CartographieDeploiement = () => {
     }
     if (mapState.filters.service_ids && mapState.filters.service_ids.length > 0) {
       filteredStats = filteredStats.filter((stat: StatRecord) =>
-        mapState.filters.service_ids.every(
+        mapState.filters.service_ids.some(
           (serviceId: number) =>
             stat.all_services && stat.all_services.includes(serviceId.toString()),
         ),
