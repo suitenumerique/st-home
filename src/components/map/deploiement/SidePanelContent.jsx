@@ -2,7 +2,7 @@ import { fr } from "@codegouvfr/react-dsfr";
 import PropTypes from "prop-types";
 import { useMemo, useState, useEffect } from "react";
 import CommuneSearch from "../../CommuneSearch";
-import CommuneInfo from "../../onboarding/CommuneInfo";
+// import CommuneInfo from "../../onboarding/CommuneInfo";
 import Breadcrumb from "../Breadcrumb";
 import MapButton from "../MapButton";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
@@ -10,7 +10,6 @@ import { Button } from "@codegouvfr/react-dsfr/Button";
 import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
 import styles from "../../../styles/cartographie-deploiement.module.css";
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox";
-
 
 const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, setPanelState,  computeAreaStats }) => {
 
@@ -80,8 +79,8 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
     
     return {
       n_cities: usageStats?.n_cities,
+      n_total_cities: usageStats?.n_total_cities,
       services: servicesStats,
-      max: Math.max(...servicesStats.map((service) => service.value)),
     }
 
   }, [mapState.selectedAreas, mapState.currentLevel, computeAreaStats, services, scopedStats]);
@@ -249,7 +248,8 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
                     left: "0",
                     top: "0",
                     zIndex: "1",
-                    width: `${value / levelStatsDisplay.max * 100}%`,
+                    opacity: levelStatsDisplay && (value / levelStatsDisplay.n_total_cities * 100 > 100) ? 0 : 1,
+                    width: `${levelStatsDisplay ? value / levelStatsDisplay.n_total_cities * 100 : 0}%`,
                     height: "12px",
                     backgroundColor: "#2A3C84",
                     borderRadius: "4px",
@@ -269,6 +269,38 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
     )
   }
 
+  const communeInfo = () => {
+    return (
+      <div>
+        <h3 style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "0.75rem" }}>
+          Produits
+        </h3>
+        {mapState.selectedAreas?.city?.additionalCityStats?.all_services && (
+          services
+          .map((service) => {
+            if (!mapState.selectedAreas.city.additionalCityStats.all_services.includes(String(service.id))) {
+              return null;
+            } else {
+              return (
+                <div
+                key={service.id}
+                className={`${styles.productItemNoHover}`}
+              >
+                <div style={{ display: "flex", alignItems: "center", marginBottom: "7px" }}>
+                  <img src={service.logo_url} alt={service.name} style={{ width: "18px", height: "18px", marginRight: "0.4rem" }} />
+                  <span style={{ fontSize: "0.875rem"}}>{service.name}&nbsp;</span>
+                  {
+                    service.maturity !== 'stable' && <span className={fr.cx("fr-badge fr-badge--sm fr-badge--info fr-badge--no-icon")}>{service.maturity.toUpperCase()}</span>
+                  }
+                </div>
+              </div>
+              )
+            }
+          })
+        )}
+      </div>
+    )
+  }
   return (
     <div>
       {
@@ -304,6 +336,9 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
           <div style={{ marginTop: "1rem" }}>
             {!mapState.selectedAreas.city && mapState.selectedAreas[mapState.currentLevel] && (
               levelStats()
+            )}
+            {mapState.selectedAreas.city && (
+              communeInfo()
             )}
           </div>
         )}

@@ -180,7 +180,7 @@ const MapWrapper = ({
     [],
   );
 
-  const fetchSelectedCity = async (siret: string) => {
+  const fetchSelectedCity = useCallback(async (siret: string) => {
     try {
       const response = await fetch(`/api/communes/${siret}`);
       if (response.ok) {
@@ -194,7 +194,7 @@ const MapWrapper = ({
     } catch {
       return null;
     }
-  };
+  }, []);
 
   // PROCESSING
   const processGeoJSONEPCI = useCallback((geoJSON: GeoJSON.FeatureCollection) => {
@@ -382,7 +382,7 @@ const MapWrapper = ({
       }
       setMapState(finalMapState);
     },
-    [computeSelectedArea, mapState, setMapState],
+    [computeSelectedArea, mapState, setMapState, fetchSelectedCity],
   );
 
   const handleFullscreen = () => {
@@ -445,14 +445,23 @@ const MapWrapper = ({
     }
     if (displayedGeoJSON) {
       const features = (displayedGeoJSON as GeoJSON.FeatureCollection).features;
+      const scoreLevel = {
+        country: "region",
+        region: "department",
+        department: mapState.departmentView === "city" ? "city" : "epci",
+        epci: "city",
+        city: "city",
+      }[mapState.currentLevel];
+
+      // Create a cache key based on current context
+      const cacheKey = `${mapState.currentLevel}-${mapState.departmentView}-${mapState.selectedAreas.department?.insee_geo || "none"}`;
+
       features.forEach((feature) => {
-        const scoreLevel = {
-          country: "region",
-          region: "department",
-          department: mapState.departmentView === "city" ? "city" : "epci",
-          epci: "city",
-          city: "city",
-        }[mapState.currentLevel];
+        // Skip if already processed for this specific context
+        if (feature.properties?._processedFor === cacheKey) {
+          return;
+        }
+
         const stats = computeAreaStats(
           scoreLevel as "region" | "department" | "city",
           feature.properties?.INSEE_GEO || "",
@@ -466,6 +475,9 @@ const MapWrapper = ({
           stats?.score === null ? "#000091" : darkenColor(feature.properties!.color, 0.6);
         feature.properties!.color_darker =
           stats?.score === null ? "#000091" : darkenColor(feature.properties!.color, 3);
+
+        // Mark as processed for this context
+        feature.properties!._processedFor = cacheKey;
       });
       displayedGeoJSON = {
         ...(displayedGeoJSON as GeoJSON.FeatureCollection),
