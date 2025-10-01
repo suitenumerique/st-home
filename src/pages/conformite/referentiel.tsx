@@ -32,8 +32,8 @@ type ReferentielSection = {
 };
 
 const DILA_LINK = (
-  <Link href="https://www.service-public.fr" target="_blank">
-    Service-Public.fr
+  <Link href="https://www.service-public.gouv.fr" target="_blank">
+    Service-Public.gouv.fr
   </Link>
 );
 
@@ -75,8 +75,8 @@ export const ReferentielConformite: ReferentielSection[] = [
     items: [
       {
         num: "1.1",
-        title: <>Un site internet doit être déclaré auprès de Service-Public.fr</>,
-        shortTitle: "Déclaré sur Service-Public.fr",
+        title: <>Un site internet doit être déclaré auprès de Service-Public.gouv.fr</>,
+        shortTitle: "Déclaré sur Service-Public.gouv.fr",
         whyItsImportant: (
           <>
             <p>
@@ -327,7 +327,7 @@ export const ReferentielConformite: ReferentielSection[] = [
       },
       {
         num: "1.6",
-        title: <>Le site déclaré sur Service-Public.fr ne doit pas rediriger ailleurs</>,
+        title: <>Le site déclaré sur Service-Public.gouv.fr ne doit pas rediriger ailleurs</>,
         shortTitle: "Déclaration et redirection identiques",
         whyItsImportant: (
           <>
@@ -412,8 +412,8 @@ export const ReferentielConformite: ReferentielSection[] = [
       },
       {
         num: "1.8",
-        title: <>L&rsquo;adresse du site déclarée sur Service-Public.fr doit être en HTTPS</>,
-        shortTitle: "Déclaré en HTTPS sur Service-Public.fr",
+        title: <>L&rsquo;adresse du site déclarée sur Service-Public.gouv.fr doit être en HTTPS</>,
+        shortTitle: "Déclaré en HTTPS sur Service-Public.gouv.fr",
         whyItsImportant: (
           <>
             <p>
@@ -456,8 +456,8 @@ export const ReferentielConformite: ReferentielSection[] = [
     items: [
       {
         num: "2.1",
-        title: <>Une adresse de messagerie doit être déclarée sur Service-Public.fr</>,
-        shortTitle: "Déclaré sur Service-Public.fr",
+        title: <>Une adresse de messagerie doit être déclarée sur Service-Public.gouv.fr</>,
+        shortTitle: "Déclaré sur Service-Public.gouv.fr",
         whyItsImportant: (
           <>
             <p>

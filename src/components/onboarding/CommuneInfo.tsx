@@ -110,7 +110,7 @@ export default function CommuneInfo({
       target="_blank"
       rel="noopener"
     >
-      Service-Public.fr
+      Service-Public.gouv.fr
     </Link>
   );
 
@@ -208,7 +208,7 @@ export default function CommuneInfo({
           {!rcpnt.includes("1.6") && (
             <MessageLine severity="error" rcpnt="1.6">
               L&rsquo;adresse <strong>{commune.website_url}</strong> redirige vers un autre domaine
-              non déclaré sur Service-Public.fr.
+              non déclaré sur Service-Public.gouv.fr.
             </MessageLine>
           )}
 
@@ -256,7 +256,7 @@ export default function CommuneInfo({
               <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
                 {websiteDomain}
               </Link>{" "}
-              est déclaré en HTTP (et non HTTPS) sur Service-Public.fr.
+              est déclaré en HTTP (et non HTTPS) sur Service-Public.gouv.fr.
             </MessageLine>
           )}
 
