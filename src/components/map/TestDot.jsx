@@ -105,7 +105,7 @@ const FranceDotMap = () => {
         }
         
         // Fetch all data in one call
-        const response = await fetch('http://localhost:8950/api/deployment/stats?scope=list-commune&service_id=1');
+        const response = await fetch('/api/deployment/stats?scope=list-commune&service_id=1');
         
         if (!response.ok) {
           throw new Error(`API request failed: ${response.status}`);

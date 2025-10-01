@@ -48,7 +48,7 @@ const CartographieDeploiement = () => {
 
   const loadStats = useCallback(async (): Promise<void> => {
     try {
-      const response = await fetch("http://localhost:8950/api/deployment/stats?scope=list-commune");
+      const response = await fetch("/api/deployment/stats?scope=list-commune");
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status}`);
       }

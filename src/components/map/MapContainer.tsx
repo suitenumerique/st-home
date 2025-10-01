@@ -547,11 +547,7 @@ const MapContainer = ({
                 generateId={true}
               >
                 {customLayer.layers.map((layer, index) => (
-                  <Layer
-                    key={`${customLayer.id}-${index}`}
-                    {...layer}
-                    beforeId="toponyme localite importance 6et7 - Special DOM"
-                  />
+                  <Layer key={`${customLayer.id}-${index}`} {...layer} />
                 ))}
               </Source>
             );
