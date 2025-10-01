@@ -15,6 +15,7 @@ import { AreaStats, FeatureProperties, MapState, ParentArea, SelectedArea } from
 const useMapURLState = () => {
   const router = useRouter();
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getURLState = useCallback((filters: { [key: string]: any }) => {
     const urlParams = new URLSearchParams(window.location.search);
     return {
@@ -22,7 +23,7 @@ const useMapURLState = () => {
       currentAreaCode: urlParams.get("code"),
       departmentView: urlParams.get("view"),
       ...Object.entries(filters).reduce(
-        (acc, [key, param]) => {
+        (acc, [key]) => {
           if (key === "service_ids" && urlParams.get(key)) {
             acc[key] = urlParams.get(key)?.split(",").map(Number) || null;
           } else {
@@ -30,6 +31,7 @@ const useMapURLState = () => {
           }
           return acc;
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         {} as { [key: string]: any },
       ),
     };
@@ -40,6 +42,7 @@ const useMapURLState = () => {
       currentLevel: string,
       currentAreaCode: string,
       departmentView: string,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       filters: { [key: string]: any },
     ) => {
       const params = new URLSearchParams();
@@ -103,8 +106,11 @@ const MapWrapper = ({
       type: "geojson";
       data: GeoJSON.FeatureCollection;
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     layers?: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     component?: React.ComponentType<any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     props?: any;
   }>;
 }) => {
@@ -304,6 +310,7 @@ const MapWrapper = ({
       code: string,
       source = "areaClick",
       departmentView: "city" | "epci" | null = null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       updatedFilters?: any,
     ) => {
       console.log("selectLevel", level, code, source);
@@ -358,8 +365,6 @@ const MapWrapper = ({
         }
       }
 
-      console.log("mapState", mapState);
-
       const newMapState: Partial<MapState> = {
         currentLevel: level,
         selectedAreas: newSelectedAreas,
@@ -401,7 +406,6 @@ const MapWrapper = ({
   }, []);
 
   const currentGeoJSON = useMemo(() => {
-    console.log("currentgeojson");
     const getEPCIGeoJSON = (geoJSON: GeoJSON.FeatureCollection | null) => {
       if (!geoJSON) return null;
       return {
@@ -474,7 +478,6 @@ const MapWrapper = ({
     mapState.currentLevel,
     mapState.selectedAreas,
     mapState.departmentView,
-    mapState.filters,
     computeAreaStats,
     getColor,
     darkenColor,
@@ -507,6 +510,7 @@ const MapWrapper = ({
 
   useEffect(() => {
     const urlState = getURLState(mapState.filters);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updatedFilters = { ...mapState.filters } as any;
     Object.keys(mapState.filters).forEach((key) => {
       updatedFilters[key] = urlState[key as keyof typeof urlState] as string;

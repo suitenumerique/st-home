@@ -64,7 +64,9 @@ const MapContainer = ({
       data: GeoJSON.FeatureCollection;
     };
     layers?: LayerProps[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     component?: React.ComponentType<any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     props?: any;
   }>;
 }) => {

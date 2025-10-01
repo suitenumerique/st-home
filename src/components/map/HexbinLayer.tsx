@@ -1,6 +1,9 @@
 import React from "react";
 import { Layer, Source } from "react-map-gl/maplibre";
 
+// disable eslint on this file
+/* eslint-disable */
+
 interface HexbinLayerProps {
   data: GeoJSON.FeatureCollection;
   id?: string;

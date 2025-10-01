@@ -37,8 +37,6 @@ const FranceDotMap = () => {
       // Snap to grid
       const [gridLon, gridLat] = snapToGrid(coords.longitude, coords.latitude, gridSize);
       const cellKey = `${gridLon},${gridLat}`;
-
-      console.log(cellKey);
       
       // Aggregate in cell
       if (!gridCells.has(cellKey)) {
@@ -106,8 +104,6 @@ const FranceDotMap = () => {
           Object.assign(coordMap, sirenCoordinates);
         }
         
-        console.log(`Loaded ${Object.keys(coordMap).length} SIREN coordinates`);
-        
         // Fetch all data in one call
         const response = await fetch('http://localhost:8950/api/deployment/stats?scope=list-commune&service_id=1');
         
@@ -121,11 +117,8 @@ const FranceDotMap = () => {
           throw new Error('Invalid API response format');
         }
         
-        console.log(`Total entries: ${result.data.length}`);
-        
         // Process into grid
         const gridGeoJSON = processDataToGrid(result.data, coordMap, GRID_SIZE);
-        console.log(`Grid cells: ${gridGeoJSON.features.length}`);
         
         setGridData(gridGeoJSON);
         
