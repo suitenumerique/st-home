@@ -91,7 +91,6 @@ const CartographieConformite = () => {
       insee_geo: string,
       siret: string,
       department: SelectedArea,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): AreaStats | null => {
       try {
         const currentSelectedRef = mapState.filters.rcpnt_ref;

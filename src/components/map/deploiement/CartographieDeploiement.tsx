@@ -23,9 +23,6 @@ const CartographieDeploiement = () => {
     },
   });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [hexbinGeoJSON, setHexbinGeoJSON] = useState<GeoJSON.FeatureCollection | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [citiesByDepartment, setCitiesByDepartment] = useState<any>({});
   const [customLayers, setCustomLayers] = useState<any[]>([]);
 
   const HEXBIN_SIZE = 0.15; // ~15km hexagon size in degrees
@@ -72,8 +69,24 @@ const CartographieDeploiement = () => {
       siret: string,
     ): AreaStats | null => {
       try {
+        let filteredStats = stats;
+        if (level === "region") {
+          filteredStats = filteredStats.filter(
+            (stat: StatRecord) => stat.reg === insee_geo.replace("r", ""),
+          );
+        } else if (level === "department") {
+          filteredStats = filteredStats.filter((stat: StatRecord) => stat.dep === insee_geo);
+        }
+        if (mapState.filters.service_ids && mapState.filters.service_ids.length > 0) {
+          filteredStats = filteredStats.filter((stat: StatRecord) =>
+            mapState.filters.service_ids.every(
+              (serviceId: number) =>
+                stat.all_services && stat.all_services.includes(serviceId.toString()),
+            ),
+          );
+        }
         if (level === "city") {
-          const city = stats.find((city: { id: string }) => city.id === siret);
+          const city = filteredStats.find((city: { id: string }) => city.id === siret);
           return {
             n_cities: 1,
             score: city ? 1 : 0,
@@ -86,23 +99,6 @@ const CartographieDeploiement = () => {
           //   score: city ? 1 : 0,
           // };
         } else {
-          let filteredStats = stats;
-          if (level === "region") {
-            filteredStats = filteredStats.filter(
-              (stat: StatRecord) => stat.reg === insee_geo.replace("r", ""),
-            );
-          } else if (level === "department") {
-            filteredStats = filteredStats.filter((stat: StatRecord) => stat.dep === insee_geo);
-          }
-          if (mapState.filters.service_ids && mapState.filters.service_ids.length > 0) {
-            filteredStats = filteredStats.filter((stat: StatRecord) =>
-              mapState.filters.service_ids.every(
-                (serviceId: number) =>
-                  stat.all_services && stat.all_services.includes(serviceId.toString()),
-              ),
-            );
-          }
-
           return {
             n_cities: filteredStats.length,
             score: null,
@@ -117,15 +113,14 @@ const CartographieDeploiement = () => {
           //   score: nTotalCities > 0 ? nActiveCities / nTotalCities : 0,
           // };
         }
-      } catch (e) {
-        console.log(e);
+      } catch {
         return {
           n_cities: 0,
           score: null,
         };
       }
     },
-    [stats, citiesByDepartment, mapState.filters],
+    [stats, mapState.filters],
   );
 
   const createHexagon = (centerLat: number, centerLon: number, size: number): number[][] => {
@@ -223,7 +218,6 @@ const CartographieDeploiement = () => {
 
     if (["department", "epci", "city"].includes(mapState.currentLevel)) {
       setCustomLayers([]);
-      setHexbinGeoJSON(null);
       return;
     }
 
@@ -247,7 +241,6 @@ const CartographieDeploiement = () => {
     }
 
     const hexbinData = processDataToHexbin(filteredStats, coordMap);
-    setHexbinGeoJSON(hexbinData);
 
     setCustomLayers([
       {
@@ -280,7 +273,7 @@ const CartographieDeploiement = () => {
   return (
     <MapWrapper
       SidePanelContent={SidePanelContent}
-      gradientColors={["#FFFFFF", "#2A3C84"]}
+      gradientColors={["#EEEEEE", "#2A3C84"]}
       gradientDomain={[0, 1]}
       showGradientLegend={false}
       computeAreaStats={computeAreaStats}

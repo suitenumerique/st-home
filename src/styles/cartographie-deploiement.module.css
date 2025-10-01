@@ -16,6 +16,7 @@
   padding: 0.3rem 0;
   cursor: pointer;
   position: relative;
+  margin-top: 1px;
 }
 
 .productItem:hover::after {

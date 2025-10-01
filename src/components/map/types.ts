@@ -20,8 +20,8 @@ export interface ParentArea {
 }
 
 export interface AreaStats {
-  score: number;
-  n_cities?: number;
+  score?: number | null;
+  n_cities?: number | null;
   details?: {
     "0": number;
     "1"?: number;
