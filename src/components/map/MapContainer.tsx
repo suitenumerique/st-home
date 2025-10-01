@@ -567,26 +567,13 @@ const MapContainer = ({
               beforeId="toponyme localite importance 6et7 - Special DOM"
             />
           )}
-          {hoveredFeature && (
-            <Layer
-              {...(hoveredStrokeLayerStyle as LayerProps)}
-              beforeId="toponyme localite importance 6et7 - Special DOM"
-            />
-          )}
+          {hoveredFeature && <Layer {...(hoveredStrokeLayerStyle as LayerProps)} />}
           <Layer
             {...(fillLayerStyle as LayerProps)}
             beforeId="toponyme localite importance 6et7 - Special DOM"
           />
-          <Layer
-            {...(strokeLayerStyle as LayerProps)}
-            beforeId="toponyme localite importance 6et7 - Special DOM"
-          />
-          {mapState.selectedAreas.city && (
-            <Layer
-              {...(selectedCityLayerStyle as LayerProps)}
-              beforeId="toponyme localite importance 6et7 - Special DOM"
-            />
-          )}
+          <Layer {...(strokeLayerStyle as LayerProps)} />
+          {mapState.selectedAreas.city && <Layer {...(selectedCityLayerStyle as LayerProps)} />}
         </Source>
 
         {pointFeatures && displayCircleValue && (
