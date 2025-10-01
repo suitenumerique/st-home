@@ -5,6 +5,7 @@ import HexbinLayer from "../HexbinLayer";
 import MapWrapper from "../MapWrapper";
 import SidePanelContent from "./SidePanelContent";
 
+import parentAreas from "../../../../public/parent_areas.json";
 import { AreaStats } from "../types";
 import { StatRecord } from "./types";
 
@@ -25,7 +26,7 @@ const CartographieDeploiement = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [customLayers, setCustomLayers] = useState<any[]>([]);
 
-  const HEXBIN_SIZE = 0.15; // ~15km hexagon size in degrees
+  const HEXBIN_SIZE = 0.1; // ~15km hexagon size in degrees
 
   // const filteredStats = useMemo(() => {
   //   let filteredStats = stats;
@@ -99,8 +100,18 @@ const CartographieDeploiement = () => {
           //   score: city ? 1 : 0,
           // };
         } else {
+          let nTotalCities;
+          if (level === "country") {
+            nTotalCities = parentAreas
+              .filter((area) => area.type === "region")
+              .map((area) => area.n_cities)
+              .reduce((a, b) => a + b, 0);
+          } else {
+            nTotalCities = parentAreas.find((area) => area.insee_geo === insee_geo)?.n_cities || 0;
+          }
           return {
             n_cities: filteredStats.length,
+            n_total_cities: nTotalCities,
             score: null,
           };
           // const levelStats = stats[level as keyof AllStats];
@@ -270,7 +281,32 @@ const CartographieDeploiement = () => {
     loadData();
   }, [loadSirenCoordinatesMapping, loadStats]);
 
-  return (
+  useEffect(() => {
+    if (
+      stats.length > 0 &&
+      mapState.selectedAreas.city &&
+      !mapState.selectedAreas.city.additionalCityStats
+    ) {
+      const cityStats = stats.find(
+        (stat: StatRecord) => stat.id === mapState.selectedAreas.city.siret,
+      );
+      if (cityStats) {
+        // @ts-expect-error not typed
+        setMapState((prevState) => ({
+          ...prevState,
+          selectedAreas: {
+            ...prevState.selectedAreas,
+            city: {
+              ...prevState.selectedAreas.city,
+              additionalCityStats: cityStats,
+            },
+          },
+        }));
+      }
+    }
+  }, [stats, mapState.selectedAreas.city, setMapState]);
+
+  return stats ? (
     <MapWrapper
       SidePanelContent={SidePanelContent}
       gradientColors={["#EEEEEE", "#2A3C84"]}
@@ -282,6 +318,8 @@ const CartographieDeploiement = () => {
       displayCircleValue={false}
       customLayers={customLayers}
     />
+  ) : (
+    <div>Chargement...</div>
   );
 };
 
