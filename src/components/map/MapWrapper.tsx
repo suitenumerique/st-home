@@ -454,7 +454,7 @@ const MapWrapper = ({
       }[mapState.currentLevel];
 
       // Create a cache key based on current context
-      const cacheKey = `${mapState.currentLevel}-${mapState.departmentView}-${mapState.selectedAreas.department?.insee_geo || "none"}`;
+      const cacheKey = `${mapState.currentLevel}-${mapState.departmentView}-${mapState.selectedAreas.department?.insee_geo || "none"}-${JSON.stringify(mapState.filters)}`;
 
       features.forEach((feature) => {
         // Skip if already processed for this specific context
@@ -490,6 +490,7 @@ const MapWrapper = ({
     mapState.currentLevel,
     mapState.selectedAreas,
     mapState.departmentView,
+    mapState.filters,
     computeAreaStats,
     getColor,
     darkenColor,

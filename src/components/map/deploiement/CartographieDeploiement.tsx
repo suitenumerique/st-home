@@ -270,7 +270,7 @@ const CartographieDeploiement = () => {
     processDataToHexbin,
     mapState.currentLevel,
     mapState.selectedAreas,
-    mapState.filters.service_ids,
+    mapState.filters,
   ]);
 
   useEffect(() => {
