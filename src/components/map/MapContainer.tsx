@@ -561,18 +561,26 @@ const MapContainer = ({
           data={currentGeoJSON as GeoJSON.FeatureCollection & { id: string }}
           generateId={true}
         >
+          <Layer
+            {...(fillLayerStyle as LayerProps)}
+            beforeId="toponyme localite importance 6et7 - Special DOM"
+          />
+          <Layer
+            {...(strokeLayerStyle as LayerProps)}
+            beforeId="toponyme localite importance 6et7 - Special DOM"
+          />
           {hoveredFeature && (
             <Layer
               {...(hoveredFillLayerStyle as LayerProps)}
               beforeId="toponyme localite importance 6et7 - Special DOM"
             />
           )}
-          {hoveredFeature && <Layer {...(hoveredStrokeLayerStyle as LayerProps)} />}
-          <Layer
-            {...(fillLayerStyle as LayerProps)}
-            beforeId="toponyme localite importance 6et7 - Special DOM"
-          />
-          <Layer {...(strokeLayerStyle as LayerProps)} />
+          {hoveredFeature && (
+            <Layer
+              {...(hoveredStrokeLayerStyle as LayerProps)}
+              beforeId="toponyme localite importance 6et7 - Special DOM"
+            />
+          )}
           {mapState.selectedAreas.city && <Layer {...(selectedCityLayerStyle as LayerProps)} />}
         </Source>
 
