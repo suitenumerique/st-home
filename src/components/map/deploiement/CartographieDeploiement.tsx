@@ -106,7 +106,7 @@ const CartographieDeploiement = () => {
             nTotalCities = parentAreas.find((area) => area.insee_geo === insee_geo)?.n_cities || 0;
           }
           return {
-            n_cities: filteredStats.filter.length,
+            n_cities: filteredStats.length,
             n_total_cities: nTotalCities,
             score: null,
           };
