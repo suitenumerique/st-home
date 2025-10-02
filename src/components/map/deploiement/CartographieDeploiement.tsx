@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import HexbinLayer from "../HexbinLayer";
 import MapWrapper from "../MapWrapper";
 import SidePanelContent from "./SidePanelContent";
@@ -14,6 +14,7 @@ const CartographieDeploiement = () => {
   const [coordMap, setCoordMap] = useState<Record<string, { longitude: number; latitude: number }>>(
     {},
   );
+  const [services, setServices] = useState([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [mapState, setMapState] = useState<any>({
     currentLevel: "country",
@@ -26,20 +27,12 @@ const CartographieDeploiement = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [customLayers, setCustomLayers] = useState<any[]>([]);
 
-  const HEXBIN_SIZE = 0.1; // ~15km hexagon size in degrees
+  const HEXBIN_SIZE_COUNTRY = 0.1; // ~15km hexagon size in degrees
+  const HEXBIN_SIZE_REGION = 0.1; // ~10km hexagon size in degrees
 
-  // const filteredStats = useMemo(() => {
-  //   let filteredStats = stats;
-  //   if (mapState.currentLevel === 'region') {
-  //     filteredStats = filteredStats.filter((stat: StatRecord) => stat.reg === mapState.selectedAreas.region.insee_geo.replace("r", ""));
-  //   } else if (mapState.currentLevel === 'department') {
-  //     filteredStats = filteredStats.filter((stat: StatRecord) => stat.dep === mapState.selectedAreas.department.insee_geo);
-  //   }
-  //   if (mapState.filters.service_ids && mapState.filters.service_ids.length > 0) {
-  //     filteredStats = filteredStats.filter((stat: StatRecord) => mapState.filters.service_ids.some((serviceId: number) => stat.all_services && stat.all_services.includes(serviceId.toString())));
-  //   }
-  //   return filteredStats;
-  // }, [stats, mapState.filters.service_ids])
+  const hexbinSize = useMemo(() => {
+    return mapState.currentLevel === "country" ? HEXBIN_SIZE_COUNTRY : HEXBIN_SIZE_REGION;
+  }, [mapState.currentLevel]);
 
   const loadSirenCoordinatesMapping = useCallback(async (): Promise<void> => {
     const response = await fetch("/siren_coordinates.json");
@@ -85,6 +78,9 @@ const CartographieDeploiement = () => {
                 stat.all_services && stat.all_services.includes(serviceId.toString()),
             ),
           );
+        } else {
+          // @ts-expect-error not typed
+          filteredStats = filteredStats.filter((stat: StatRecord) => stat.all_services.length > 0);
         }
         if (level === "city") {
           const city = filteredStats.find((city: { id: string }) => city.id === siret);
@@ -110,7 +106,7 @@ const CartographieDeploiement = () => {
             nTotalCities = parentAreas.find((area) => area.insee_geo === insee_geo)?.n_cities || 0;
           }
           return {
-            n_cities: filteredStats.length,
+            n_cities: filteredStats.filter.length,
             n_total_cities: nTotalCities,
             score: null,
           };
@@ -159,6 +155,10 @@ const CartographieDeploiement = () => {
     ): GeoJSON.FeatureCollection => {
       const hexCells = new Map();
 
+      const filteredServices = mapState.filters.service_ids?.length
+        ? mapState.filters.service_ids
+        : services.map((service: { id: number }) => service.id);
+
       apiData.forEach((entry) => {
         const coords = coordinatesMap[entry.id.slice(0, 9)];
 
@@ -166,8 +166,7 @@ const CartographieDeploiement = () => {
           return;
         }
 
-        // Create interlocking hexagonal grid
-        const gridSize = HEXBIN_SIZE;
+        const gridSize = hexbinSize;
         const hexHeight = gridSize * 0.6; // Closer vertical spacing
 
         // Calculate which row and column this point belongs to
@@ -186,26 +185,39 @@ const CartographieDeploiement = () => {
           hexCells.set(hexKey, {
             lon: gridLon,
             lat: gridLat,
-            count: 0,
-            entries: [],
+            services_used: 0,
+            total_cities: 0,
           });
         }
 
         const cell = hexCells.get(hexKey);
-        cell.count++;
-        cell.entries.push(entry);
+        cell.total_cities++;
+
+        if (
+          // @ts-expect-error not typed
+          entry.all_services.some((service: string) => filteredServices.includes(Number(service)))
+        ) {
+          // @ts-expect-error not typed
+          cell.services_used += entry.all_services.filter((service: string) =>
+            filteredServices.includes(Number(service)),
+          ).length;
+        }
       });
 
       // Convert to GeoJSON with hexagon polygons
       const features: GeoJSON.Feature<GeoJSON.Polygon>[] = [];
       hexCells.forEach((cell) => {
-        const hexagonCoords = createHexagon(cell.lat, cell.lon, HEXBIN_SIZE);
+        if (cell.total_cities === 0 || cell.services_used === 0) {
+          return;
+        }
+
+        const hexagonCoords = createHexagon(cell.lat, cell.lon, hexbinSize);
+        const score = cell.services_used / (cell.total_cities * filteredServices.length);
 
         features.push({
           type: "Feature",
           properties: {
-            count: cell.count,
-            density: Math.min(cell.count, 100),
+            score: score,
             centerLon: cell.lon,
             centerLat: cell.lat,
           },
@@ -221,7 +233,7 @@ const CartographieDeploiement = () => {
         features: features,
       };
     },
-    [HEXBIN_SIZE],
+    [hexbinSize, mapState.filters.service_ids, services],
   );
 
   useEffect(() => {
@@ -240,14 +252,6 @@ const CartographieDeploiement = () => {
     } else if (mapState.currentLevel === "department") {
       filteredStats = filteredStats.filter(
         (stat: StatRecord) => stat.dep === mapState.selectedAreas.department.insee_geo,
-      );
-    }
-    if (mapState.filters.service_ids && mapState.filters.service_ids.length > 0) {
-      filteredStats = filteredStats.filter((stat: StatRecord) =>
-        mapState.filters.service_ids.some(
-          (serviceId: number) =>
-            stat.all_services && stat.all_services.includes(serviceId.toString()),
-        ),
       );
     }
 
@@ -305,6 +309,15 @@ const CartographieDeploiement = () => {
       }
     }
   }, [stats, mapState.selectedAreas.city, setMapState]);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      const response = await fetch("/api/deployment/services");
+      const data = await response.json();
+      setServices(data);
+    };
+    fetchServices();
+  }, []);
 
   return stats ? (
     <MapWrapper

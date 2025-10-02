@@ -60,21 +60,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         GROUP BY ${organizations.epci_siren}, ${organizations.epci_name}, ${organizations.insee_dep}, ${organizations.insee_reg}
       `;
     } else if (scope === "list-commune") {
-      // Group by commune
+      // Group by commune - include communes with and without services
       query = sql`
         SELECT 
           ${organizations.siret} as id,
           ${organizations.insee_dep} as dep,
           ${organizations.insee_reg} as reg,
-          ARRAY_AGG(DISTINCT ${organizationsToServices.serviceId}) as all_services,
-          ARRAY_AGG(DISTINCT CASE WHEN ${organizationsToServices.active} = true THEN ${organizationsToServices.serviceId} END) FILTER (WHERE ${organizationsToServices.active} = true) as active_services
+          COALESCE(ARRAY_AGG(DISTINCT ${organizationsToServices.serviceId}) FILTER (WHERE ${organizationsToServices.serviceId} IS NOT NULL), ARRAY[]::text[]) as all_services,
+          COALESCE(ARRAY_AGG(DISTINCT CASE WHEN ${organizationsToServices.active} = true THEN ${organizationsToServices.serviceId} END) FILTER (WHERE ${organizationsToServices.active} = true), ARRAY[]::text[]) as active_services
         FROM ${organizations}
-        INNER JOIN ${organizationsToServices} ON ${organizations.siret} = ${organizationsToServices.organizationSiret}
-        ${service_id ? sql`INNER JOIN ${services} ON ${organizationsToServices.serviceId} = ${services.id}` : sql``}
+        LEFT JOIN ${organizationsToServices} ON ${organizations.siret} = ${organizationsToServices.organizationSiret}
+        ${service_id ? sql`LEFT JOIN ${services} ON ${organizationsToServices.serviceId} = ${services.id}` : sql``}
         WHERE ${organizations.type} = 'commune'
-        ${service_id ? sql`AND ${services.id} = ${service_id as string}` : sql``}
+        ${service_id ? sql`AND (${services.id} = ${service_id as string} OR ${organizationsToServices.serviceId} IS NULL)` : sql``}
         ${dep ? sql`AND ${organizations.insee_dep} = ${dep as string}` : sql``}
-        GROUP BY ${organizations.siret}
+        GROUP BY ${organizations.siret}, ${organizations.insee_dep}, ${organizations.insee_reg}
       `;
     } else if (scope === "list-service") {
       // Group by service - show number of communes using each service

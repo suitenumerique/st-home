@@ -254,9 +254,6 @@ const CartographieDeploiementBis = () => {
       };
 
       setAllCitiesGeoJSON(combinedGeoJSON);
-      console.log(
-        `Loaded ${allFeatures.length} cities, ${processedFeatures.filter((f) => f.properties?.hasStats).length} with stats`,
-      );
     } catch (error) {
       console.error("Error loading all cities:", error);
     }
