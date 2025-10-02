@@ -185,7 +185,7 @@ const CartographieDeploiement = () => {
           hexCells.set(hexKey, {
             lon: gridLon,
             lat: gridLat,
-            services_used: 0,
+            using_cities: 0,
             total_cities: 0,
           });
         }
@@ -197,22 +197,19 @@ const CartographieDeploiement = () => {
           // @ts-expect-error not typed
           entry.all_services.some((service: string) => filteredServices.includes(Number(service)))
         ) {
-          // @ts-expect-error not typed
-          cell.services_used += entry.all_services.filter((service: string) =>
-            filteredServices.includes(Number(service)),
-          ).length;
+          cell.using_cities += 1;
         }
       });
 
       // Convert to GeoJSON with hexagon polygons
       const features: GeoJSON.Feature<GeoJSON.Polygon>[] = [];
       hexCells.forEach((cell) => {
-        if (cell.total_cities === 0 || cell.services_used === 0) {
+        if (cell.total_cities === 0 || cell.using_cities === 0) {
           return;
         }
 
         const hexagonCoords = createHexagon(cell.lat, cell.lon, hexbinSize);
-        const score = cell.services_used / (cell.total_cities * filteredServices.length);
+        const score = cell.using_cities / cell.total_cities;
 
         features.push({
           type: "Feature",
