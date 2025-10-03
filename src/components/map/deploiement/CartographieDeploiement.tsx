@@ -27,8 +27,8 @@ const CartographieDeploiement = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [customLayers, setCustomLayers] = useState<any[]>([]);
 
-  const HEXBIN_SIZE_COUNTRY = 0.1; // ~15km hexagon size in degrees
-  const HEXBIN_SIZE_REGION = 0.1; // ~10km hexagon size in degrees
+  const HEXBIN_SIZE_COUNTRY = 0.12; // ~15km hexagon size in degrees
+  const HEXBIN_SIZE_REGION = 0.12; // ~10km hexagon size in degrees
 
   const hexbinSize = useMemo(() => {
     return mapState.currentLevel === "country" ? HEXBIN_SIZE_COUNTRY : HEXBIN_SIZE_REGION;
@@ -185,7 +185,7 @@ const CartographieDeploiement = () => {
           hexCells.set(hexKey, {
             lon: gridLon,
             lat: gridLat,
-            using_cities: 0,
+            used_products: 0,
             total_cities: 0,
           });
         }
@@ -197,19 +197,22 @@ const CartographieDeploiement = () => {
           // @ts-expect-error not typed
           entry.all_services.some((service: string) => filteredServices.includes(Number(service)))
         ) {
-          cell.using_cities += 1;
+          // @ts-expect-error not typed
+          cell.used_products += entry.all_services.filter((service: string) =>
+            filteredServices.includes(Number(service)),
+          ).length;
         }
       });
 
       // Convert to GeoJSON with hexagon polygons
       const features: GeoJSON.Feature<GeoJSON.Polygon>[] = [];
       hexCells.forEach((cell) => {
-        if (cell.total_cities === 0 || cell.using_cities === 0) {
+        if (cell.total_cities === 0 || cell.used_products === 0) {
           return;
         }
 
         const hexagonCoords = createHexagon(cell.lat, cell.lon, hexbinSize);
-        const score = cell.using_cities / cell.total_cities;
+        const score = Math.sqrt(cell.used_products / (cell.total_cities * filteredServices.length));
 
         features.push({
           type: "Feature",
