@@ -46,7 +46,7 @@ export default function OPSNZeroView({ commune }: Props) {
         )}
         <Button
           linkProps={{
-            href: `mailto:lasuiteterritoriale@anct.gouv.fr`,
+            href: `mailto:contact@suite.anct.gouv.fr`,
           }}
           priority="primary"
         >

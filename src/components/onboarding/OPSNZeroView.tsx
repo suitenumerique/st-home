@@ -33,7 +33,7 @@ export default function OPSNZeroView({ commune }: Props) {
       <p>
         Vous souhaitez devenir une structure de mutualisation partenaire de la
         Suite territoriale ?{" "}
-        <Link href="mailto:lasuiteterritoriale@anct.gouv.fr">Contactez-nous.</Link>
+        <Link href="mailto:contact@suite.anct.gouv.fr">Contactez-nous.</Link>
       </p>
       */}
     </>
