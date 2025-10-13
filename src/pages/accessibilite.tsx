@@ -78,9 +78,7 @@ const Accessibilite: NextPage = () => {
         <ul>
           <li>
             E-mail&nbsp;:{" "}
-            <Link href="mailto:contact@suite.anct.gouv.fr">
-              contact@suite.anct.gouv.fr
-            </Link>
+            <Link href="mailto:contact@suite.anct.gouv.fr">contact@suite.anct.gouv.fr</Link>
           </li>
         </ul>
         <p>

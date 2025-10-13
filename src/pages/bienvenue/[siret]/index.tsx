@@ -1,8 +1,10 @@
 import { findOrganizationsWithStructures } from "@/lib/db";
+import { getOrganizationTypeDisplay, type Organization } from "@/lib/string";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
 import { GetServerSideProps } from "next";
 import { NextSeo } from "next-seo";
+
 // Import view components
 import ActiveInRegieView from "@/components/onboarding/ActiveInRegieView";
 import CommuneInfo from "@/components/onboarding/CommuneInfo";
@@ -66,24 +68,20 @@ export default function Bienvenue(props: PageProps) {
             className={fr.cx("fr-text--regular", "fr-text--xl")}
             style={{ color: "var(--text-title-blue-france)" }}
           >
-            {commune.type === "commune" ? commune.zipcode : "EPCI"}
+            {getOrganizationTypeDisplay(commune as Organization)}
           </span>
         </div>
         <h1 className={fr.cx("fr-h1")} style={{ color: "var(--text-title-blue-france)" }}>
           {commune.name}
         </h1>
-        {commune.type === "commune" && (
-          <>
-            <p>
-              Voici la situation de la commune par rapport au{" "}
-              <Link href="/conformite/referentiel">
-                Référentiel de la Présence Numérique des Territoires
-              </Link>{" "}
-              :
-            </p>
-            <CommuneInfo commune={commune} />
-          </>
-        )}
+        <p>
+          Voici la situation de la collectivité par rapport au{" "}
+          <Link href="/conformite/referentiel">
+            Référentiel de la Présence Numérique des Territoires
+          </Link>{" "}
+          :
+        </p>
+        <CommuneInfo commune={commune} />
 
         {getCommuneContent(commune)}
       </div>
@@ -92,7 +90,7 @@ export default function Bienvenue(props: PageProps) {
 
   const currentPageLabel = !commune?.name
     ? "Éligibilité"
-    : `Éligibilité de ${commune.name} (${commune.type === "commune" ? commune.zipcode : "EPCI"})`;
+    : `Éligibilité de ${commune.name} (${getOrganizationTypeDisplay(commune as Organization)})`;
 
   return (
     <div className={fr.cx("fr-container") + " st-bienvenue-page"}>
@@ -127,7 +125,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
 
   if (!siret || typeof siret !== "string") {
     return {
-      props: determineOnboardingCase(null, {}, "Identifiant de commune invalide"),
+      props: determineOnboardingCase(null, {}, "Identifiant de collectivité invalide"),
     };
   }
 
@@ -139,7 +137,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
       props: determineOnboardingCase(
         null,
         {},
-        `La Suite territoriale n'est disponible que pour les communes françaises. Le SIRET ${siret} ne correspond à aucune d'entre elles.`,
+        `La Suite territoriale n'est disponible que pour les collectivités françaises. Le SIRET ${siret} ne correspond à aucune d'entre elles.`,
       ),
     };
   }

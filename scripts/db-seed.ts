@@ -3,21 +3,9 @@ import path from "path";
 import { pool } from "../src/lib/db";
 import { unaccent } from "../src/lib/string";
 
-interface BaseOrganization {
-  name: string;
-  slug: string;
-  siren: string;
-  siret: string;
-  population: number;
-  insee_dep: string | null;
-  insee_reg: string | null;
-  st_eligible: boolean;
-  st_active: boolean;
-}
-
-interface Commune extends BaseOrganization {
-  type: "commune";
-  insee_geo: string;
+interface Organization {
+  type: string;
+  insee_com: string;
   zipcode: string;
   email_official: string;
   structures: number[];
@@ -37,10 +25,15 @@ interface Commune extends BaseOrganization {
   epci_population: number;
   service_public_url: string;
   service_public_id: string;
-}
-
-interface EPCI extends BaseOrganization {
-  type: "epci";
+  name: string;
+  slug: string;
+  siren: string;
+  siret: string;
+  population: number;
+  insee_dep: string | null;
+  insee_reg: string | null;
+  st_eligible: boolean;
+  st_active: boolean;
 }
 
 interface Structure {
@@ -75,12 +68,11 @@ async function importOrganizations(dumpsDir: string) {
       process.exit(1);
     }
 
-    const communesPath = path.join(dumpsDir, "communes.json");
-    const epcisPath = path.join(dumpsDir, "epcis.json");
+    const communesPath = path.join(dumpsDir, "organizations.json");
     const structuresPath = path.join(dumpsDir, "structures.json");
 
     // Verify all required files exist
-    for (const filePath of [communesPath, epcisPath, structuresPath]) {
+    for (const filePath of [communesPath, structuresPath]) {
       if (!fs.existsSync(filePath)) {
         console.error(`Required file not found: ${filePath}`);
         process.exit(1);
@@ -89,13 +81,9 @@ async function importOrganizations(dumpsDir: string) {
 
     console.log(`Reading communes data from ${communesPath}...`);
     const communesData = fs.readFileSync(communesPath, "utf8");
-    const communes: Commune[] = JSON.parse(communesData);
+    const communes: Organization[] = JSON.parse(communesData);
 
-    console.log(`Reading EPCIs data from ${epcisPath}...`);
-    const epcisData = fs.readFileSync(epcisPath, "utf8");
-    const epcis: EPCI[] = JSON.parse(epcisData);
-
-    console.log(`Found ${communes.length} communes and ${epcis.length} EPCIs to import.`);
+    console.log(`Found ${communes.length} organizations to import.`);
 
     console.log(`Reading structures from ${structuresPath}...`);
     const structuresData = fs.readFileSync(structuresPath, "utf8");
@@ -124,11 +112,10 @@ async function importOrganizations(dumpsDir: string) {
     // Keep track of valid organizations and structures
     const validStructureIds = new Set(mutualizationStructures.map((s) => String(s.id)));
 
-    // Transform communes
-    const communeValues = communes
+    const organizationValues = communes
       .filter((commune) => {
         if (!commune.siret) {
-          console.log(`Skipping commune without SIRET: ${commune.name}`);
+          console.log(`Skipping org without SIRET: ${commune.name}`);
           return false;
         }
         return true;
@@ -136,11 +123,11 @@ async function importOrganizations(dumpsDir: string) {
       .map((commune) => ({
         siret: commune.siret,
         siren: commune.siren,
-        type: "commune" as const,
+        type: commune.type,
         name: commune.name,
         name_unaccent: unaccent(commune.name),
         slug: commune.slug,
-        insee_geo: commune.insee_geo,
+        insee_geo: commune.insee_com,
         insee_dep: commune.insee_dep || null,
         insee_reg: commune.insee_reg || null,
         zipcode: commune.zipcode,
@@ -168,60 +155,12 @@ async function importOrganizations(dumpsDir: string) {
         service_public_id: commune.service_public_id || null,
       }));
 
-    // Transform EPCIs, keeping track of duplicates
-    const seenSirets = new Set<string>();
-    const epciValues = epcis
-      .filter((epci) => {
-        if (!epci.siret) {
-          console.log(`Skipping EPCI without SIRET: ${epci.name}`);
-          return false;
-        }
-        if (seenSirets.has(epci.siret)) {
-          console.log(`Skipping duplicate SIRET in EPCIs: ${epci.siret} (${epci.name})`);
-          return false;
-        }
-        seenSirets.add(epci.siret);
-        return true;
-      })
-      .map((epci) => ({
-        siret: epci.siret,
-        siren: epci.siren,
-        type: "epci" as const,
-        name: epci.name,
-        name_unaccent: unaccent(epci.name),
-        slug: `epci-${epci.siren}`,
-        insee_geo: "",
-        insee_dep: epci.insee_dep || null,
-        insee_reg: epci.insee_reg || null,
-        zipcode: "",
-        population: epci.population,
-        website_url: null,
-        website_domain: null,
-        website_tld: null,
-        issues: [],
-        issues_last_checked: null,
-        rcpnt: [],
-        email_official: null,
-        email_domain: null,
-        email_tld: null,
-        epci_name: null,
-        epci_siren: null,
-        epci_population: null,
-        st_eligible: epci.st_eligible || false,
-        st_active: false,
-        service_public_url: null,
-        service_public_id: null,
-      }));
-
-    // Combine all organizations
-    const organizationValues = [...communeValues, ...epciValues];
-
     // Fill structure relations for communes only
     const structureRelations: {
       organization_siret: string;
       structure_id: string;
     }[] = [];
-    communeValues.forEach((commune) => {
+    organizationValues.forEach((commune) => {
       const originalCommune = communes.find((c) => c.siret === commune.siret);
       if (originalCommune?.structures && originalCommune.structures.length > 0) {
         originalCommune.structures.forEach((structureId) => {
@@ -272,7 +211,7 @@ async function importOrganizations(dumpsDir: string) {
     await client.query("COMMIT");
 
     console.log(
-      `Successfully imported ${communeValues.length} communes, ${epciValues.length} EPCIs and ${structureValues.length} structures.`,
+      `Successfully imported ${organizationValues.length} organizations and ${structureValues.length} structures.`,
     );
   } catch (error) {
     console.error("Error importing organizations:", error);
