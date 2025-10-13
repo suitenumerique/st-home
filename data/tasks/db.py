@@ -285,7 +285,7 @@ def update_rcpnt_stats(orgs: list):
     # Define scopes configuration
     scopes = [
         {"name": "global", "group_by": lambda c: None},
-        {"name": "epci", "group_by": lambda c: c["siren"]},
+        {"name": "epci", "group_by": lambda c: c.get("_st_epci", {}).get("siren") or None},
         {"name": "dep", "group_by": lambda c: c["insee_dep"]},
         {"name": "reg", "group_by": lambda c: c["insee_reg"]},
         {
@@ -318,7 +318,7 @@ def update_rcpnt_stats(orgs: list):
             # Process each scope
             for scope in scopes:
                 # Group communes by scope
-                if scope["name"] in ["global", "people"]:
+                if scope["name"] == "global":
                     groups = {None: communes}
                 else:
                     groups = defaultdict(list)
