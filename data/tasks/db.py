@@ -3,7 +3,7 @@ import json
 import os
 import random
 from collections import defaultdict
-from typing import Dict
+from typing import Dict, Optional
 
 from psycopg2 import connect as pg_connect
 from psycopg2.extras import DictCursor
@@ -138,11 +138,14 @@ def find_org_by_siret(siret: str):
             return cur.fetchone()
 
 
-def list_all_orgs():
+def list_all_orgs(type_filter: Optional[str] = None):
     """List all organizations."""
     with get_db() as db:
         with db.cursor() as cur:
-            cur.execute("SELECT * FROM st_organizations")
+            if type_filter:
+                cur.execute("SELECT * FROM st_organizations WHERE type = %s", (type_filter,))
+            else:
+                cur.execute("SELECT * FROM st_organizations")
             return cur.fetchall()
 
 
