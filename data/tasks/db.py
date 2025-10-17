@@ -271,6 +271,7 @@ def update_rcpnt_stats(orgs: list):
 
     # TODO: stats for EPCIs ?
     communes = [x for x in orgs if x["type"] == "commune"]
+    epcis = [x for x in orgs if x["type"] == "epci"]
 
     population_ranges = [200, 500, 1000, 2000, 3500, 5000, 10000, 20000, 50000, 100000]
 
@@ -285,6 +286,7 @@ def update_rcpnt_stats(orgs: list):
     # Define scopes configuration
     scopes = [
         {"name": "global", "group_by": lambda c: None},
+        {"name": "global-epci", "group_by": lambda c: None},
         {"name": "epci", "group_by": lambda c: c.get("_st_epci", {}).get("siren") or None},
         {"name": "dep", "group_by": lambda c: c["insee_dep"]},
         {"name": "reg", "group_by": lambda c: c["insee_reg"]},
@@ -317,9 +319,14 @@ def update_rcpnt_stats(orgs: list):
 
             # Process each scope
             for scope in scopes:
+                all_scope = communes
+
                 # Group communes by scope
                 if scope["name"] == "global":
                     groups = {None: communes}
+                elif scope["name"] == "global-epci":
+                    groups = {None: epcis}
+                    all_scope = epcis
                 else:
                     groups = defaultdict(list)
                     for commune in communes:
@@ -329,7 +336,7 @@ def update_rcpnt_stats(orgs: list):
 
                 # Calculate and insert stats for each group
                 for scope_id, scope_communes in groups.items():
-                    stats = calculate_stats_for_scope(communes, scope_communes)
+                    stats = calculate_stats_for_scope(all_scope, scope_communes)
                     for (
                         ref,
                         valid,
