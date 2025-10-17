@@ -119,7 +119,7 @@ export default function CommuneInfo({
       {issues.includes("WEBSITE_MISSING") && (
         <>
           <MessageLine severity="error" rcpnt="1.1">
-            La commune ne dispose pas encore d&rsquo;un site internet connu des services de
+            La collectivité ne dispose pas encore d&rsquo;un site internet connu des services de
             l&rsquo;État.
           </MessageLine>
 
@@ -141,8 +141,8 @@ export default function CommuneInfo({
 
       {issues.includes("WEBSITE_MALFORMED") && (
         <MessageLine severity="error" rcpnt="1.1">
-          Un site internet est déclaré pour la commune mais il n&rsquo;est pas formaté correctement.
-          Veuillez vérifier que votre site internet correspond au format{" "}
+          Un site internet est déclaré pour la collectivité mais il n&rsquo;est pas formaté
+          correctement. Veuillez vérifier que votre site internet correspond au format{" "}
           <strong>https://domaine.extension</strong> et qu&rsquo;il ne comporte pas d&rsquo;accents.
         </MessageLine>
       )}
@@ -178,7 +178,7 @@ export default function CommuneInfo({
 
           {!rcpnt.includes("1.3") && (
             <MessageLine severity="error" rcpnt="1.3">
-              Le site internet de la commune n&rsquo;est pas joignable.
+              Le site internet de la collectivité n&rsquo;est pas joignable.
             </MessageLine>
           )}
 
@@ -195,7 +195,7 @@ export default function CommuneInfo({
 
           {!rcpnt.includes("1.5") && (
             <MessageLine severity="error" rcpnt="1.5">
-              Le certificat SSL du site internet de la commune n&rsquo;est pas valide.
+              Le certificat SSL du site internet de la collectivité n&rsquo;est pas valide.
             </MessageLine>
           )}
 
@@ -224,7 +224,7 @@ export default function CommuneInfo({
                 https://
                 {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
               </strong>{" "}
-              (sans www.) ne redirigent pas vers le site internet de la commune.
+              (sans www.) ne redirigent pas vers le site internet de la collectivité.
             </MessageLine>
           )}
 
@@ -235,7 +235,7 @@ export default function CommuneInfo({
                 https://
                 {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
               </strong>{" "}
-              (sans www.) ne redirige pas vers le site internet de la commune.
+              (sans www.) ne redirige pas vers le site internet de la collectivité.
             </MessageLine>
           )}
 
@@ -246,7 +246,7 @@ export default function CommuneInfo({
                 http://
                 {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
               </strong>{" "}
-              (sans www.) ne redirige pas vers le site internet de la commune.
+              (sans www.) ne redirige pas vers le site internet de la collectivité.
             </MessageLine>
           )}
 
@@ -290,7 +290,7 @@ export default function CommuneInfo({
           {!emailInvalid && (
             <>
               <MessageLine severity="error" rcpnt="2.1">
-                La commune ne dispose pas encore d&rsquo;une adresse de messagerie connue des
+                La collectivité ne dispose pas encore d&rsquo;une adresse de messagerie connue des
                 services de l&rsquo;État.
               </MessageLine>
               <MessageLine severity="info">

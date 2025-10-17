@@ -27,8 +27,29 @@ def iter_insee_communes():
     with open("dumps/insee_communes.json") as f:
         data = json.load(f)
     for row in data:
-        if row["TYPECOM"] == "COM":
+        if row["TYPECOM"] in {"COM", "ARM"}:
             yield row
+
+
+def iter_insee_departements():
+    with open("dumps/insee_departements.json") as f:
+        data = json.load(f)
+    for row in data:
+        yield row
+
+
+def iter_insee_regions():
+    with open("dumps/insee_regions.json") as f:
+        data = json.load(f)
+    for row in data:
+        yield row
+
+
+def iter_insee_population():
+    with open("dumps/insee_population.json") as f:
+        data = json.load(f)
+    for row in data:
+        yield row
 
 
 def iter_dila(type_service_local):
@@ -67,7 +88,8 @@ def iter_perimetre_epci():
     with open("dumps/perimetre_epci.json") as f:
         data = json.load(f)
     for collectivite in data:
-        yield collectivite
+        if collectivite.get("siren"):
+            yield collectivite
 
 
 def iter_sirene():

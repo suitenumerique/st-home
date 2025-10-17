@@ -1,3 +1,4 @@
+import { getOrganizationTypeDisplay } from "@/lib/string";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { SearchBar } from "@codegouvfr/react-dsfr/SearchBar";
@@ -55,23 +56,6 @@ function CommuneSearchInput(
   const [loading, setLoading] = useState(false);
   const [parentAreas, setParentAreas] = useState<ParentArea[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
-
-  const getOptionType = (option: Commune) => {
-    switch (option.type) {
-      case "commune":
-        return option.zipcode;
-      case "epci":
-        return "EPCI";
-      case "department":
-        return ["971", "972", "973", "974", "976"].includes(option.insee_geo || "")
-          ? "DROM"
-          : "Département";
-      case "region":
-        return "Région";
-      default:
-        return "";
-    }
-  };
 
   // Load parent areas data when component mounts
   useEffect(() => {
@@ -201,7 +185,7 @@ function CommuneSearchInput(
       noOptionsText={
         inputValue.length < 1 ? "Saisissez au moins 1 caractère" : "Aucune commune trouvée"
       }
-      getOptionLabel={(option) => `${option.name} (${getOptionType(option)})`}
+      getOptionLabel={(option) => `${option.name} (${getOrganizationTypeDisplay(option)})`}
       filterOptions={(x) => x} // Disable client-side filtering
       onInputChange={(_, value) => {
         setInputValue(value);
@@ -226,7 +210,7 @@ function CommuneSearchInput(
                 className={fr.cx("fr-text--sm", "fr-ml-1w")}
                 style={{ color: "var(--text-mention-grey)" }}
               >
-                {getOptionType(option)}
+                {getOrganizationTypeDisplay(option)}
               </span>
             </div>
           </li>

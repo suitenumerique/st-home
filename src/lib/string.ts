@@ -8,6 +8,31 @@ export function unaccent(text: string) {
     .trim();
 }
 
+export interface Organization {
+  type: string;
+  zipcode?: string;
+  insee_dep?: string;
+  insee_geo?: string;
+}
+
+export const getOrganizationTypeDisplay = (org: Organization) => {
+  switch (org.type) {
+    case "commune":
+      return org.zipcode;
+    case "epci":
+      return "EPCI";
+    case "departement":
+    case "department":
+      return ["971", "972", "973", "974", "976"].includes(org.insee_dep || org.insee_geo || "")
+        ? "DROM"
+        : "Département";
+    case "region":
+      return "Région";
+    default:
+      return "";
+  }
+};
+
 export const ISO_3166_1_ALPHA_2_TO_NAME: Record<string, string> = {
   AD: "Andorre",
   AE: "Émirats Arabes Unis",

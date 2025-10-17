@@ -97,7 +97,7 @@ def update_repertoire_communes():
             (
                 commune_repertoire
                 for commune_repertoire in communes_repertoire
-                if commune_repertoire["Code_INSEE_geographique"] == uptodate_commune["insee_geo"]
+                if commune_repertoire["Code_INSEE_geographique"] == uptodate_commune["insee_com"]
             ),
             None,
         )
@@ -105,12 +105,12 @@ def update_repertoire_communes():
         if existing_commune is None:
             to_create.append(
                 {
-                    "Code_INSEE_geographique": uptodate_commune["insee_geo"],
+                    "Code_INSEE_geographique": uptodate_commune["insee_com"],
                     "Typologie": "Commune",
                     "Libelle": uptodate_commune["name"],
                     "Code_INSEE_region": f"r{uptodate_commune['insee_reg']}",
                     "Code_INSEE_departement": uptodate_commune["insee_dep"],
-                    "Code_INSEE_commune": uptodate_commune["insee_geo"],
+                    "Code_INSEE_commune": uptodate_commune["insee_com"],
                     "Numero_SIREN": uptodate_commune["siren"],
                     "Numero_SIREN_EPCI": uptodate_commune["epci_siren"],
                     "Code_postal": uptodate_commune["zipcode"],
@@ -126,12 +126,12 @@ def update_repertoire_communes():
             to_update.append(
                 {
                     "id": existing_commune["id"],
-                    "Code_INSEE_geographique": uptodate_commune["insee_geo"],
+                    "Code_INSEE_geographique": uptodate_commune["insee_com"],
                     "Typologie": "Commune",
                     "Libelle": uptodate_commune["name"],
                     "Code_INSEE_region": f"r{uptodate_commune['insee_reg']}",
                     "Code_INSEE_departement": uptodate_commune["insee_dep"],
-                    "Code_INSEE_commune": uptodate_commune["insee_geo"],
+                    "Code_INSEE_commune": uptodate_commune["insee_com"],
                     "Numero_SIREN": uptodate_commune["siren"],
                     "Numero_SIREN_EPCI": uptodate_commune["epci_siren"],
                     "Code_postal": uptodate_commune["zipcode"],

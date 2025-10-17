@@ -34,12 +34,12 @@ export default function OPSNZeroView({ commune }: Props) {
               </p>
             ) : (
               <p>
-                L&rsquo;EPCI n&rsquo;est pas directement éligible car sa population de{" "}
+                La collectivité n&rsquo;est pas directement éligible car sa population de{" "}
                 {commune.population.toLocaleString("fr-FR")} habitants dépasse le seuil fixé par
                 l&rsquo;ANCT (15 000 habitants).
                 <br />
                 <br />
-                Cependant, il peut bénéficier d&rsquo;un accompagnement spécifique.
+                Cependant, elle peut bénéficier d&rsquo;un accompagnement spécifique.
               </p>
             )}
           </>

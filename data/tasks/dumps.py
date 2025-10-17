@@ -6,6 +6,7 @@ import logging
 import os
 import subprocess
 import tarfile
+import zipfile
 from pathlib import Path
 
 import requests
@@ -79,6 +80,38 @@ def dump_insee_communes():
         json.dump(rows, f, ensure_ascii=False, indent=4)
 
 
+def dump_insee_departements():
+    # https://www.insee.fr/fr/information/8377162
+    if Path("dumps/insee_departements.json").exists():
+        return
+
+    url = "https://www.insee.fr/fr/statistiques/fichier/8377162/v_departement_2025.csv"
+    r = requests.get(url)
+    r.raise_for_status()
+    r.encoding = "utf-8"
+
+    rows = list(csv.DictReader(r.text.splitlines(), delimiter=",", quotechar='"'))
+    assert len(rows) > 90
+    with open("dumps/insee_departements.json", "w") as f:
+        json.dump(rows, f, ensure_ascii=False, indent=4)
+
+
+def dump_insee_regions():
+    # https://www.insee.fr/fr/information/8377162
+    if Path("dumps/insee_regions.json").exists():
+        return
+
+    url = "https://www.insee.fr/fr/statistiques/fichier/8377162/v_region_2025.csv"
+    r = requests.get(url)
+    r.raise_for_status()
+    r.encoding = "utf-8"
+
+    rows = list(csv.DictReader(r.text.splitlines(), delimiter=",", quotechar='"'))
+    assert len(rows) > 10
+    with open("dumps/insee_regions.json", "w") as f:
+        json.dump(rows, f, ensure_ascii=False, indent=4)
+
+
 def dump_perimetre_epci():
     if Path("dumps/perimetre_epci.json").exists():
         return
@@ -97,16 +130,40 @@ def dump_perimetre_epci():
         json.dump(rows, f, ensure_ascii=False, indent=4)
 
 
-def dump_filtered_sirene(communes):
+def dump_insee_population():
+    if Path("dumps/insee_population.json").exists():
+        return
+
+    url = "https://www.data.gouv.fr/api/1/datasets/r/f20dd619-0e85-4e8a-b548-18cdeb8c648f"
+    r = requests.get(
+        url,
+        headers={
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "accept-language": "fr-FR,fr;q=0.9",
+        },
+    )
+    r.raise_for_status()
+
+    # Read from zip file
+    with zipfile.ZipFile(io.BytesIO(r.content)) as thezip:
+        with thezip.open("DS_POPULATIONS_REFERENCE_data.csv", "r") as f:
+            data = f.read().decode("utf-8")
+            rows = list(csv.DictReader(data.splitlines(), delimiter=";", quotechar='"'))
+    with open("dumps/insee_population.json", "w") as f:
+        rows = [
+            row
+            for row in rows
+            if (row["POPREF_MEASURE"] == "PMUN" and row["TIME_PERIOD"] == "2022")
+        ]
+        json.dump(rows, f, ensure_ascii=False, indent=4)
+
+
+def dump_filtered_sirene(orgs):
     # https://www.data.gouv.fr/fr/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/
     if Path("dumps/sirene.json").exists():
         return
 
-    mairies_sirens = set()
-    for commune in communes:
-        if commune.get("_st_epci", {}).get("siren_membre"):
-            mairies_sirens.add(commune["_st_epci"]["siren_membre"])
-            mairies_sirens.add(commune["_st_epci"]["siren"])
+    orgs_sirens = {org["siren"] for org in orgs}
 
     url = "https://www.data.gouv.fr/fr/datasets/r/0651fb76-bcf3-4f6a-a38d-bc04fa708576"
 
@@ -125,12 +182,12 @@ def dump_filtered_sirene(communes):
     # Process each row
     for row in reader:
         if (
-            row["siren"] in mairies_sirens
+            row["siren"] in orgs_sirens
             and row.get("etatAdministratifEtablissement") == "A"
             and row.get("etablissementSiege") == "true"
         ):
             rows.append(row)
-            mairies_sirens.remove(row["siren"])
+            orgs_sirens.remove(row["siren"])
 
     with open("dumps/sirene.json", "w") as f:
         json.dump(rows, f, ensure_ascii=False, indent=4)

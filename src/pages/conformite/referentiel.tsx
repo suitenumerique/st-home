@@ -1215,7 +1215,7 @@ const ReferentielPage: NextPage = () => {
                 color: "var(--text-title-blue-france)",
               }}
             >
-              Ma commune est-elle conforme ?
+              Ma collectivité est-elle conforme ?
             </h2>
 
             <div className={fr.cx("fr-grid-row", "fr-grid-row--center", "fr-mb-4w")}>
@@ -1223,11 +1223,10 @@ const ReferentielPage: NextPage = () => {
                 <div className={fr.cx("fr-search-bar")} style={{ width: "100%" }}>
                   <CommuneSearch
                     onSelect={handleCommuneSelect}
-                    type="commune"
                     placeholder={
                       isSmallScreen
                         ? "Nom ou code postal"
-                        : "Renseignez le nom ou le code postal de votre commune"
+                        : "Renseignez le nom ou le code postal de votre collectivité"
                     }
                     style={{
                       backgroundColor: "white",
