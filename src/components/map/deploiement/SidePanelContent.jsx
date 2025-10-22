@@ -234,7 +234,9 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
                   }
                 ]}
               />
-              <img src={logo_url} alt={name} style={{ width: "18px", height: "18px", marginRight: "0.4rem" }} />
+              {logo_url && (
+                <img src={logo_url} alt={name} style={{ width: "18px", height: "18px", marginRight: "0.4rem" }} />
+              )}
               <span style={{ fontSize: "0.875rem"}}>{name}&nbsp;</span>
               {
                 maturity !== 'stable' && <span className={fr.cx("fr-badge fr-badge--sm fr-badge--info fr-badge--no-icon")}>{maturity.toUpperCase()}</span>
