@@ -2,9 +2,10 @@ import json
 import logging
 import re
 import sys
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import urljoin, urlparse, urlunparse
 
 import requests
+from bs4 import BeautifulSoup
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from celery_app import app
@@ -34,9 +35,9 @@ def run(siret):
         if "website" not in data_checks_doable(conformance_issues):
             return
 
-        issues = check_website(org["website_url"])
+        issues, metadata = check_website(org["website_url"])
         if issues is not None:
-            upsert_issues(siret, "website", issues, {})
+            upsert_issues(siret, "website", issues, metadata)
 
         return {str(x): issues[x] for x in issues.keys()}
 
@@ -50,7 +51,9 @@ def queue_all():
 def check_website(url, force_http_url=None):
     """
     Check website reachability and HTTPS redirect behavior
-    Returns a dict of Issues with explanations
+
+    Returns:
+        tuple: (dict of Issues with explanations, dict of metadata)
     """
     issues = {}
 
@@ -79,13 +82,14 @@ def check_website(url, force_http_url=None):
         "timeout": 5,
         "allow_redirects": True,
         "headers": {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.3"
+            # https://cdn.jsdelivr.net/gh/microlinkhq/top-user-agents@master/src/desktop.json
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
         },
         "verify": True,
     }
 
-    final_domain_http = check_http(url, urls_to_test, issues, request_kwargs)
-    final_domain_https = check_https(url, urls_to_test, issues, request_kwargs)
+    final_domain_http, http_response = check_http(url, urls_to_test, issues, request_kwargs)
+    final_domain_https, https_response = check_https(url, urls_to_test, issues, request_kwargs)
     check_non_www(
         final_domain_https or final_domain_http or base_domain,
         url,
@@ -94,10 +98,18 @@ def check_website(url, force_http_url=None):
         request_kwargs,
     )
 
-    return issues
+    # Test the contents of the declared domain & protocol
+    tested_response = http_response if parsed.scheme == "http" else https_response
+    metadata = {}
+    if tested_response:
+        metadata = check_content(tested_response, issues, base_url=urls_to_test["https"])
+
+    return issues, metadata
 
 
-def check_http(base_url, urls_to_test, issues, request_kwargs):
+def check_http(
+    base_url, urls_to_test, issues, request_kwargs
+) -> tuple[str | None, requests.Response | None]:
     """
     Check HTTP URL
     """
@@ -127,7 +139,7 @@ def check_http(base_url, urls_to_test, issues, request_kwargs):
                     f"HTTP Site redirects to different domain: {final_domain} vs. {expected_domain}"
                 )
 
-            return final_domain
+            return final_domain, http_response
 
     except requests.exceptions.SSLError as e:
         issues[Issues.WEBSITE_SSL] = f"SSL error: {str(e)}"
@@ -137,8 +149,12 @@ def check_http(base_url, urls_to_test, issues, request_kwargs):
         else:
             issues[Issues.WEBSITE_DOWN] = f"HTTP error: {str(e)}"
 
+    return None, None
 
-def check_https(base_url, urls_to_test, issues, request_kwargs):
+
+def check_https(
+    base_url, urls_to_test, issues, request_kwargs
+) -> tuple[str | None, requests.Response | None]:
     """
     Check HTTPS URL
     """
@@ -158,7 +174,7 @@ def check_https(base_url, urls_to_test, issues, request_kwargs):
                     f"HTTPS Site redirects to different domain: {final_domain} vs. {expected_domain}"
                 )
 
-            return final_domain
+            return final_domain, https_response
 
     except requests.exceptions.SSLError as e:
         issues[Issues.WEBSITE_SSL] = f"SSL error: {str(e)}"
@@ -166,6 +182,8 @@ def check_https(base_url, urls_to_test, issues, request_kwargs):
         issues[Issues.WEBSITE_DOWN] = f"HTTPS access failed: {str(e)}"
     except Exception as e:
         issues[Issues.WEBSITE_DOWN] = f"HTTPS error: {str(e)}"
+
+    return None, None
 
 
 def check_non_www(base_final_domain, base_url, urls_to_test, issues, request_kwargs):
@@ -224,11 +242,87 @@ def check_non_www(base_final_domain, base_url, urls_to_test, issues, request_kwa
                 issues[Issues.WEBSITE_HTTPS_NOWWW] = f"HTTPS error: {str(e)}"
 
 
+def check_content(response, issues, base_url):
+    """
+    Check the content of the website for accessibility declaration
+
+    Returns:
+        dict: Metadata containing a11y_url if found
+    """
+    metadata = {}
+
+    try:
+        html_content = response.text
+        soup = BeautifulSoup(html_content, "html.parser")
+
+        # Look for links containing accessibility-related terms
+        # Common French terms: "accessibilité", "déclaration", "déclaration d'accessibilité"
+        accessibility_keywords = [
+            "déclaration d'accessibilité",
+            "declaration d'accessibilite",
+            "accessibilité",
+            "accessibilite",
+            "accessibility statement",
+            "accessibility",
+        ]
+
+        # Search in all anchor tags
+        found_url = None
+        for link in soup.find_all("a", href=True):
+            href = link.get("href", "").strip()
+            link_text = link.get_text(strip=True).lower()
+
+            # Check if link text contains accessibility keywords
+            for keyword in accessibility_keywords:
+                if keyword.lower() in link_text:
+                    # Resolve relative URLs to absolute
+                    if href:
+                        found_url = urljoin(base_url, href)
+                        break
+
+            if found_url:
+                break
+
+        # Also check common URL patterns if no link text match found
+        if not found_url:
+            for link in soup.find_all("a", href=True):
+                href = link.get("href", "").strip().lower()
+                # Common URL patterns for accessibility pages
+                url_patterns = [
+                    "/accessibilite",
+                    "/accessibilite/",
+                    "/accessibility",
+                    "/declaration-accessibilite",
+                    "/declaration-accessibilite/",
+                    "/accessibility-statement",
+                ]
+
+                for pattern in url_patterns:
+                    if pattern in href:
+                        found_url = urljoin(base_url, link.get("href"))
+                        break
+
+                if found_url:
+                    break
+
+        if found_url:
+            metadata["a11y_url"] = found_url
+        else:
+            issues[Issues.WEBSITE_A11Y_MISSING] = f"Accessibility declaration not found on {response.url}"
+
+    except Exception as e:
+        logger.warning(f"Error checking website content for accessibility: {str(e)}")
+
+    return metadata
+
+
 if __name__ == "__main__":
     # Run with command line arguments
     siret = sys.argv[1]
     if "." in siret:
-        logger.info(check_website(siret))
+        issues, metadata = check_website(siret)
+        logger.info(f"Issues: {issues}")
+        logger.info(f"Metadata: {metadata}")
     else:
         issues = run(siret)
         logger.info(json.dumps(issues, indent=2))
