@@ -922,6 +922,259 @@ export const ReferentielConformite: ReferentielSection[] = [
       },
     ],
   },
+  {
+    id: "accessibilite",
+    title: "3. Accessibilité",
+    logo: "/images/rcpnt-accessibilite.svg",
+    items: [
+      {
+        num: "3.1",
+        title: <>Une déclaration d&rsquo;accessibilité est présente sur le site internet</>,
+        shortTitle: "Déclaration d&rsquo;accessibilité présente",
+        whyItsImportant: (
+          <>
+            <p>
+              La déclaration d&rsquo;accessibilité est une obligation légale pour les sites internet
+              des collectivités depuis la loi « handicap » du 11 février 2005. Elle permet :
+            </p>
+            <ul>
+              <li>
+                D'informer les utilisateurs sur le niveau d&rsquo;accessibilité du site&nbsp;;
+              </li>
+              <li>
+                De répondre à l&rsquo;obligation d&rsquo;accessibilité numérique pour les services
+                publics&nbsp;;
+              </li>
+              <li>
+                De démontrer l&rsquo;engagement de la collectivité en faveur de l&rsquo;inclusion
+                numérique&nbsp;;
+              </li>
+              <li>
+                Aux personnes en situation de handicap de connaître les moyens d&rsquo;accès aux
+                services.
+              </li>
+            </ul>
+          </>
+        ),
+        howToFix: (
+          <>
+            <p>Pour mettre en place une déclaration d&rsquo;accessibilité :</p>
+            <ol>
+              <li>
+                Ajoutez une page dédiée à l&rsquo;accessibilité sur votre site internet&nbsp;;
+              </li>
+              <li>
+                Utilisez le modèle de déclaration disponible sur{" "}
+                <Link
+                  href="https://betagouv.github.io/a11y-generateur-declaration/"
+                  target="_blank"
+                >
+                  le générateur de l&rsquo;État
+                </Link>{" "}
+                pour remplir son contenu&nbsp;;
+              </li>
+              <li>
+                Référencez-la depuis toutes les pages du site, par exemple via un lien de bas de
+                page.
+              </li>
+            </ol>
+          </>
+        ),
+        type: "declarative",
+        level: "mandatory",
+      },
+      {
+        num: "3.2",
+        title: <>La déclaration contient les mentions obligatoires</>,
+        shortTitle: "Déclaration avec mentions obligatoires",
+        whyItsImportant: (
+          <>
+            <p>
+              La déclaration d&rsquo;accessibilité doit contenir des informations obligatoires pour
+              être conforme au RGAA (Référentiel Général d&rsquo;Amélioration de
+              l&rsquo;Accessibilité)&nbsp;:
+            </p>
+            <ul>
+              <li>
+                L&rsquo;état de conformité du site (conforme, non conforme ou partiellement
+                conforme)&nbsp;;
+              </li>
+              <li>Les résultats de l&rsquo;audit d&rsquo;accessibilité&nbsp;;</li>
+              <li>Les coordonnées d&rsquo;un délégué à l&rsquo;accessibilité&nbsp;;</li>
+              <li>Les procédures de réclamation&nbsp;;</li>
+              <li>Les dérogations éventuelles.</li>
+            </ul>
+          </>
+        ),
+        howToFix: (
+          <>
+            <p>Pour compléter votre déclaration d&rsquo;accessibilité :</p>
+            <ol>
+              <li>
+                Utilisez{" "}
+                <Link
+                  href="https://betagouv.github.io/a11y-generateur-declaration/"
+                  target="_blank"
+                >
+                  le générateur officiel
+                </Link>{" "}
+                qui guide l&rsquo;ensemble des mentions obligatoires&nbsp;;
+              </li>
+              <li>Désignez un délégué à l&rsquo;accessibilité dans votre collectivité&nbsp;;</li>
+              <li>
+                Renseignez les coordonnées pour permettre aux utilisateurs de signaler des
+                problèmes&nbsp;;
+              </li>
+              <li>Conduisez ou mandatez un audit d&rsquo;accessibilité selon le RGAA.</li>
+            </ol>
+          </>
+        ),
+        type: "declarative",
+        level: "mandatory",
+      },
+      {
+        num: "3.3",
+        title: <>La déclaration fait état d&rsquo;une conformité partielle</>,
+        shortTitle: "Déclaration avec conformité partielle",
+        whyItsImportant: (
+          <>
+            <p>
+              Une conformité partielle signifie que des efforts ont été faits pour améliorer
+              l&rsquo;accessibilité du site, même si certains éléments ne sont pas encore
+              conformes&nbsp;:
+            </p>
+            <ul>
+              <li>Cela démontre un engagement réel de la collectivité&nbsp;;</li>
+              <li>Les utilisateurs sont informés des limitations actuelles&nbsp;;</li>
+              <li>
+                Un plan d&rsquo;action doit être présent pour tendre vers une conformité
+                totale&nbsp;;
+              </li>
+              <li>Les efforts en cours sont valorisés et reconnus.</li>
+            </ul>
+          </>
+        ),
+        howToFix: (
+          <>
+            <p>Pour atteindre une conformité partielle :</p>
+            <ol>
+              <li>Conduisez un audit d&rsquo;accessibilité selon le RGAA&nbsp;;</li>
+              <li>Identifiez les éléments conformes et les éléments non conformes&nbsp;;</li>
+              <li>Rédigez un plan d&rsquo;action pour corriger les non-conformités&nbsp;;</li>
+              <li>
+                Mettez à jour votre déclaration d&rsquo;accessibilité avec l&rsquo;état
+                détaillé&nbsp;;
+              </li>
+              <li>Renseignez les dérogations éventuelles et justifiez-les si nécessaire.</li>
+            </ol>
+          </>
+        ),
+        type: "declarative",
+        level: "mandatory",
+      },
+      {
+        num: "3.4",
+        title: <>La déclaration fait état d&rsquo;une conformité totale</>,
+        shortTitle: "Déclaration avec conformité totale",
+        whyItsImportant: (
+          <>
+            <p>
+              Une conformité totale au RGAA signifie que le site internet est entièrement accessible
+              à tous les utilisateurs, y compris ceux en situation de handicap&nbsp;:
+            </p>
+            <ul>
+              <li>Cela garantit une accessibilité maximale pour tous les usagers&nbsp;;</li>
+              <li>
+                Le site respecte l&rsquo;intégralité des critères d&rsquo;accessibilité&nbsp;;
+              </li>
+              <li>Une expérience utilisateur optimale pour tous est assurée&nbsp;;</li>
+              <li>Cela démontre l&rsquo;excellence numérique de la collectivité.</li>
+            </ul>
+          </>
+        ),
+        howToFix: (
+          <>
+            <p>Pour atteindre une conformité totale :</p>
+            <ol>
+              <li>Conduisez un audit d&rsquo;accessibilité complet selon le RGAA à jour&nbsp;;</li>
+              <li>
+                Corrigez tous les problèmes d&rsquo;accessibilité identifiés pendant
+                l&rsquo;audit&nbsp;;
+              </li>
+              <li>Testez régulièrement avec des utilisateurs en situation de handicap&nbsp;;</li>
+              <li>
+                Mettez en place un processus de contrôle continu pour maintenir la conformité&nbsp;;
+              </li>
+              <li>
+                Mettez à jour régulièrement votre déclaration avec les résultats de vos contrôles.
+              </li>
+            </ol>
+          </>
+        ),
+        type: "declarative",
+        level: "mandatory",
+      },
+      {
+        num: "3.5",
+        title: <>Nos tests automatisés valident le niveau de conformité déclaré</>,
+        shortTitle: "Tests automatisés conformes",
+        whyItsImportant: (
+          <>
+            <p>
+              Les tests automatisés d&rsquo;accessibilité permettent de vérifier une partie
+              importante des critères d&rsquo;accessibilité de manière systématique&nbsp;:
+            </p>
+            <ul>
+              <li>
+                Ils permettent d&rsquo;identifier rapidement les problèmes d&rsquo;accessibilité les
+                plus courants&nbsp;;
+              </li>
+              <li>
+                Ils garantissent la cohérence entre la déclaration et l&rsquo;état réel du
+                site&nbsp;;
+              </li>
+              <li>
+                Ils facilitent la détection de régressions après des mises à jour du site&nbsp;;
+              </li>
+              <li>Ils assurent une amélioration continue de l&rsquo;accessibilité.</li>
+            </ul>
+          </>
+        ),
+        howToFix: (
+          <>
+            <p>Pour mettre en place des tests automatisés d&rsquo;accessibilité :</p>
+            <ol>
+              <li>
+                Utilisez des outils d&rsquo;audit automatisés comme{" "}
+                <Link href="https://wave.webaim.org/" target="_blank">
+                  WAVE
+                </Link>{" "}
+                ou{" "}
+                <Link href="https://www.deque.com/axe/" target="_blank">
+                  axe DevTools
+                </Link>
+                &nbsp;;
+              </li>
+              <li>Intégrez ces tests dans votre processus de développement&nbsp;;</li>
+              <li>
+                Vérifiez régulièrement que les résultats correspondent au niveau de conformité
+                déclaré&nbsp;;
+              </li>
+              <li>
+                Corrigez les problèmes détectés automatiquement avant de publier des mises à
+                jour&nbsp;;
+              </li>
+              <li>
+                Complétez ces tests automatisés par des audits manuels et des tests utilisateurs.
+              </li>
+            </ol>
+          </>
+        ),
+        type: "tested",
+        level: "mandatory",
+      },
+    ],
+  },
 ];
 
 const FAQS = [

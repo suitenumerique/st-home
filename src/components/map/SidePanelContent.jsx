@@ -367,7 +367,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
             ]}
           />
 
-          {['1. Site internet', '2. Messagerie'].map((section, index) => (
+          {rcpntRefs.map((section, index) => (
             <div key={index}>
               <div style={{
                 fontSize: "var(--text-sm)",
@@ -379,7 +379,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
                 cursor: "pointer",
                 backgroundColor: 'var(--background-action-low-blue-france)',
                 width: "fit-content",
-              }}>{section}</div>
+              }}>{section.title}</div>
               <div style={{ display: "flex", alignItems: "center", marginBottom: "0.75rem" }}>
                 <RadioButtons
                   className={fr.cx("fr-mb-0")}
@@ -413,7 +413,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
               </div>
               <div style={{ paddingLeft: "1.5rem" }}>
                 <RadioButtons
-                  name={`${section.all_key}-criteria`}
+                  name={`${String(index + 1)}.a-criteria`}
                   options={rcpntRefs[index].items.map((criterion) => ({
                     key: criterion.num,
                     label: <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>

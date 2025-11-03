@@ -47,16 +47,21 @@ bootstrap: ## Prepare the project for local development
 
 update:  ## Update the project dependencies
 update: \
-	create-env-files
+	create-env-files \
+	front-install-deps
 .PHONY: update
 
 create-env-files:  ## Create the environment configuration files
 	touch .env.local
 .PHONY: create-env-files
 
-start:  ## Start the development environment
-	$(COMPOSE) up -d --build frontend-dev
+start:  ## Start the development environment with task monitoring
+	$(COMPOSE) up -d --build frontend-dev flower
 .PHONY: start
+
+start-minimal:  ## Start the development environment without Flower
+	$(COMPOSE) up -d --build frontend-dev
+.PHONY: start-minimal
 
 start-built:  ## Start the production-like environment
 	$(COMPOSE) up -d --build frontend-built

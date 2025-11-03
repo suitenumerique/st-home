@@ -27,6 +27,8 @@ class Issues(Enum):
     WEBSITE_HTTPS_NOWWW = "WEBSITE_HTTPS_NOWWW"  # HTTPS URL without "www" doesn't work/redirect
     WEBSITE_HTTP_NOWWW = "WEBSITE_HTTP_NOWWW"  # HTTP URL without "www" does not work or redirect
 
+    WEBSITE_A11Y_MISSING = "WEBSITE_A11Y_MISSING"  # Accessibility declaration missing
+
     # Issues that are tested in check_dns
     DNS_DOWN = "DNS_DOWN"  # DNS lookup failed on the email domain
     DNS_MX_MISSING = "DNS_MX_MISSING"  # MX record missing on the email domain
@@ -56,10 +58,16 @@ RcpntRefs = {
     "2.6",
     "2.7",
     "2.8",
+    "3.1",
+    "3.2",
+    "3.3",
+    "3.4",
+    "3.5",
     "1.a",
     "1.aa",
     "2.a",
     "2.aa",
+    "3.a",
     "a",
     "aa",
 }
@@ -159,6 +167,8 @@ def get_rcpnt_conformance(issue_list):
     groups = {
         "1.a": {"1.1", "1.2", "1.3", "1.4", "1.5", "1.6"},
         "1.aa": {"1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8"},
+        "3.a": {"3.1", "3.2", "3.3", "3.4", "3.5"},
+        "3.aa": {"3.1", "3.2", "3.3", "3.4", "3.5"},
         "a": {"1.1", "1.2", "1.3", "1.4", "1.5", "2.1", "2.2", "2.3", "2.4", "2.5", "2.8"},
         "aa": {
             "1.1",
@@ -215,6 +225,11 @@ def get_rcpnt_conformance(issue_list):
             "1.7",
             "1.8",
             "2.3",
+            "3.1",
+            "3.2",
+            "3.3",
+            "3.4",
+            "3.5",
         },
         str(Issues.WEBSITE_MALFORMED): {
             "1.1",
@@ -226,7 +241,13 @@ def get_rcpnt_conformance(issue_list):
             "1.7",
             "1.8",
             "2.3",
+            "3.1",
+            "3.2",
+            "3.3",
+            "3.4",
+            "3.5",
         },
+        str(Issues.WEBSITE_A11Y_MISSING): {"3.1", "3.2", "3.3", "3.4", "3.5"},
         str(Issues.WEBSITE_DECLARED_HTTP): {"1.8"},
         str(Issues.EMAIL_DOMAIN_MISMATCH): {"2.3"},
         str(Issues.EMAIL_DOMAIN_GENERIC): {"2.2", "2.3"},
