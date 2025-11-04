@@ -90,6 +90,7 @@ const ConformityMap = () => {
       "a",
       "1.a",
       "2.a",
+      "3.a",
       ...ReferentielConformite.flatMap((section) => section.items).map((item) => item.num),
     ];
   }, []);
@@ -243,7 +244,7 @@ const ConformityMap = () => {
             };
           } else {
             return {
-              score: ["1.a", "2.a"].reduce((acc, ref) => {
+              score: ["1.a", "2.a", "3.a"].reduce((acc, ref) => {
                 return acc + (cityRecord.rcpnt!.indexOf(ref) > -1 ? 1 : 0);
               }, 0),
             };
@@ -267,10 +268,17 @@ const ConformityMap = () => {
           const stat_a = stat.find((s) => s.ref === "a") || { valid: 0, total: 0 };
           const stat_1a = stat.find((s) => s.ref === "1.a") || { valid: 0, total: 0 };
           const stat_2a = stat.find((s) => s.ref === "2.a") || { valid: 0, total: 0 };
+          const stat_3a = stat.find((s) => s.ref === "3.a") || { valid: 0, total: 0 };
           const n_cities = stat["2"].total;
           const n_score_2 = stat_a.valid;
-          const n_score_1 = stat_1a.valid - stat_a.valid + stat_2a.valid - stat_a.valid;
-          const score = (n_score_2 * 2 + n_score_1 * 1) / stat_a.total;
+          const n_score_1 =
+            stat_1a.valid -
+            stat_a.valid +
+            stat_2a.valid -
+            stat_a.valid +
+            stat_3a.valid -
+            stat_a.valid;
+          const score = (n_score_2 * 3 + n_score_1 * 1) / stat_a.total;
           return {
             n_cities: n_cities,
             score: score,

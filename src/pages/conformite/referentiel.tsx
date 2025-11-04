@@ -61,8 +61,9 @@ const REF_INTRO = (
       <em>open data</em>.
     </p>
     <p>
-      Le Référentiel est structuré en deux parties qui correspondent aux principaux usages d’un nom
-      de domaine : le site internet et l’adresse de messagerie de la collectivité.
+      Les deux premières sections du Référentiel correspondent aux principaux usages d’un nom de
+      domaine : le site internet et l’adresse de messagerie de la collectivité. La troisième section
+      est consacrée à l’accessibilité.
     </p>
   </>
 );
@@ -1224,6 +1225,9 @@ const FAQS = [
         <p>Voici son historique :</p>
         <ul>
           <li>
+            <strong>Version 0.3</strong> (En cours) : Ajout de la section 3. Accessibilité
+          </li>
+          <li>
             <strong>Version 0.2</strong> (16 Août 2025) : Ajout du critère 2.8
           </li>
           <li>
@@ -1300,12 +1304,18 @@ const FAQS = [
     answer: (
       <>
         <p>
-          Non, le référentiel n&rsquo;est pour l&rsquo;instant adossé à aucune loi et ne constitue
-          par conséquent pas une obligation réglementaire. Il synthétise toutefois les
-          recommandations et retours d&rsquo;expérience de plusieurs administrations d&rsquo;État
-          (ANCT, ANSSI, DILA), de partenaires (associations d&rsquo;élus, opérateurs publics de
-          services numériques) et des collectivités territoriales qui entendent répondre au besoin
-          d&rsquo;élever le niveau de sécurité numérique des collectivités.
+          Non, les deux premières sections du référentiel ne sont pour l&rsquo;instant adossées à
+          aucune loi et ne constituent par conséquent pas une obligation réglementaire. Elles
+          correspondent cependant aux recommandations et retours d&rsquo;expérience de plusieurs
+          administrations d&rsquo;État (ANCT, ANSSI, DILA), de partenaires (associations
+          d&rsquo;élus, opérateurs publics de services numériques) et des collectivités
+          territoriales qui entendent répondre au besoin d&rsquo;élever le niveau de sécurité
+          numérique des collectivités.
+        </p>
+        <p>
+          La troisième section du référentiel est adossée à la loi « handicap » du 11 février 2005
+          qui rend notamment obligatoire la présence d'une déclaration d'accessibilité sur le site
+          internet de la collectivité.
         </p>
       </>
     ),
@@ -1515,7 +1525,7 @@ const ReferentielPage: NextPage = () => {
                   }
                 }}
               >
-                RPNT v0.2, publié le 16 Août 2025
+                RPNT v0.3 (beta), publié le 3 Novembre 2025
               </div>
 
               <div className={fr.cx("fr-text--lg", "fr-mb-5w")}>{REF_INTRO}</div>
@@ -1527,7 +1537,7 @@ const ReferentielPage: NextPage = () => {
                   key={section.id}
                   id={section.id}
                   className={"rcpnt-section " + fr.cx("fr-p-2w", "fr-mb-4w")}
-                  style={{ border: "1px solid var(--border-default-blue-france)" }}
+                  style={{ border: "1px solid #2845C1", borderRadius: "8px" }}
                 >
                   <div
                     className={fr.cx("fr-px-2w", "fr-py-1w")}

@@ -308,7 +308,9 @@ def check_content(response, issues, base_url):
         if found_url:
             metadata["a11y_url"] = found_url
         else:
-            issues[Issues.WEBSITE_A11Y_MISSING] = f"Accessibility declaration not found on {response.url}"
+            issues[Issues.WEBSITE_A11Y_MISSING] = (
+                f"Accessibility declaration not found on {response.url}"
+            )
 
     except Exception as e:
         logger.warning(f"Error checking website content for accessibility: {str(e)}")

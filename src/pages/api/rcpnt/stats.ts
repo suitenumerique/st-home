@@ -115,7 +115,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const {
       scope = "global",
-      refs = "1.a,2.a",
+      refs = "1.a,2.a,3.a",
       with_sample = "0",
       format = "json",
       dep,
