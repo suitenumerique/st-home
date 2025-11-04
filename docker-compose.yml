@@ -108,6 +108,7 @@ services:
       - "8950:8950"
     volumes:
       - ./:/app
+      - ./webcomponents:/app/public/webcomponents
     env_file:
       - .env.defaults
       - .env.local

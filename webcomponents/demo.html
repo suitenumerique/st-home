@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Démo – st-collectivite-search</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gouvfr/dsfr@latest/dist/dsfr.min.css">
+  <link rel="stylesheet" href="/webcomponents/dist/st-collectivite-search.css">
+  <style>
+    body { margin: 2rem; }
+    .container { max-width: 720px; margin: 0 auto; }
+    .log { margin-top: 1rem; background: #f6f6f6; padding: 1rem; border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    h2 { margin-top: 3rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="fr-h3">Démo du webcomponent `st-collectivite-search`</h1>
+    <p class="fr-text--sm">Assurez-vous que l’API Next est accessible sous le même domaine pour <code>/api/communes/search</code>. Sinon, la recherche ne fonctionnera pas.</p>
+
+    <h2>Exemple avec API localhost</h2>
+    <st-collectivite-search
+      placeholder="Rechercher une commune"
+      type="all"
+      small-button="false"
+    ></st-collectivite-search>
+
+    <h2>Exemple avec API en ligne</h2>
+    <st-collectivite-search
+      placeholder="Rechercher une commune"
+      type="all"
+      small-button="false"
+      api-host="https://suiteterritoriale.anct.gouv.fr"
+    ></st-collectivite-search>
+
+    <div class="log" id="log">Sélection: aucune</div>
+  </div>
+
+  <script src="/webcomponents/dist/st-collectivite-search.js"></script>
+  <script>
+    const el = document.querySelector('st-collectivite-search');
+    const log = document.getElementById('log');
+    el.addEventListener('select', (e) => {
+      log.textContent = 'Sélection: ' + JSON.stringify(e.detail, null, 2);
+    });
+  </script>
+</body>
+<!-- Remarque : sur une page HTML, utilisez &rsquo; pour les apostrophes françaises -->
+</html>
+
+

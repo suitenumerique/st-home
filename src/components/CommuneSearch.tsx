@@ -17,65 +17,64 @@ interface Commune {
   population: number;
 }
 
-interface ParentArea {
-  insee_geo: string;
-  type: "department" | "region";
-  name: string;
-  insee_reg: string;
-  insee_dep: string | null;
-}
-
 interface CommuneSearchProps {
   onSelect?: (commune: Commune) => void;
   placeholder?: string;
-  type?: "commune" | "epci" | "all";
+  type?: "commune" | "epci" | "department" | "region" | "all";
   smallButton?: boolean;
   style?: React.CSSProperties;
   container?: HTMLElement | null;
-  includeRegionsAndDepartments?: boolean;
+  apiBaseUrl?: string; // Optional base URL to prefix API requests
 }
 
 interface SearchInputProps {
   id: string;
   placeholder?: string;
   style?: React.CSSProperties;
-  type: "commune" | "epci" | "all";
+  type: "commune" | "epci" | "department" | "region" | "all";
   container?: HTMLElement | null;
-  includeRegionsAndDepartments?: boolean;
+  apiBaseUrl?: string;
 }
 
 function CommuneSearchInput(
   props: SearchInputProps & {
     onOptionSelect: (commune: Commune) => void;
+    apiBaseUrl?: string;
   },
 ) {
-  const { id, placeholder, onOptionSelect, style, container, includeRegionsAndDepartments } = props;
+  const { id, placeholder, onOptionSelect, style, container } = props;
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [communes, setCommunes] = useState<Commune[]>([]);
   const [loading, setLoading] = useState(false);
-  const [parentAreas, setParentAreas] = useState<ParentArea[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  const buildUrl = (base: string | undefined, path: string) => {
+    if (!base) return path;
+    const trimmedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+    const trimmedPath = path.startsWith("/") ? path : `/${path}`;
+    return `${trimmedBase}${trimmedPath}`;
+  };
+
   // Load parent areas data when component mounts
-  useEffect(() => {
-    if (includeRegionsAndDepartments) {
-      fetch("/parent_areas.json")
-        .then((response) => response.json())
-        .then((data) => {
-          const areas = data.filter(
-            (area: ParentArea) =>
-              area.type === "department" ||
-              (area.type === "region" &&
-                !["r01", "r02", "r03", "r04", "r06", "r11"].includes(area.insee_geo)),
-          );
-          setParentAreas(areas);
-        })
-        .catch((error) => {
-          console.error("Error loading parent areas:", error);
-        });
-    }
-  }, [includeRegionsAndDepartments]);
+  // useEffect(() => {
+  //   if (includeRegionsAndDepartments) {
+  //     fetch("/parent_areas.json")
+  //       .then((response) => response.json())
+  //       .then((data) => {
+  //         const areas = data.filter(
+  //           (area: ParentArea) =>
+  //             area.type === "department" ||
+  //             (area.type === "region" &&
+  //               !["r01", "r02", "r03", "r04", "r06", "r11"].includes(area.insee_geo)),
+  //         );
+  //         setParentAreas(areas);
+  //       })
+  //       .catch((error) => {
+  //         console.error("Error loading parent areas:", error);
+  //       });
+  //   }
+  // }, [includeRegionsAndDepartments]);
 
   const handleInputChange = async (value: string) => {
     if (value.length === 0) {
@@ -84,7 +83,7 @@ function CommuneSearchInput(
     }
 
     // Check cache first
-    const cacheKey = `${props.type}/${value}/${includeRegionsAndDepartments ? "with-areas" : "without-areas"}`;
+    const cacheKey = `${props.type}/${value}`;
     if (searchCache.has(cacheKey)) {
       setCommunes(searchCache.get(cacheKey) || []);
       return;
@@ -100,7 +99,7 @@ function CommuneSearchInput(
 
     try {
       setLoading(true);
-      const response = await fetch(`/api/communes/search`, {
+      const response = await fetch(buildUrl(props.apiBaseUrl, `/api/communes/search`), {
         method: "POST",
         body: JSON.stringify({
           q: value,
@@ -117,43 +116,6 @@ function CommuneSearchInput(
 
       // wait 1 second
       // await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      if (includeRegionsAndDepartments && parentAreas.length > 0) {
-        const searchQuery = value.toLowerCase().trim();
-
-        const matchingAreas = parentAreas.filter((area) =>
-          area.name.toLowerCase().includes(searchQuery),
-        );
-
-        const areasAsCommunes: Commune[] = matchingAreas.map((area) => ({
-          siret: area.insee_geo,
-          name: area.name,
-          insee_geo: area.insee_geo,
-          zipcode: undefined,
-          type: area.type,
-          population: 0,
-        }));
-
-        allResults = [...data, ...areasAsCommunes];
-
-        const typePriority: Record<string, number> = {
-          commune: 4,
-          epci: 3,
-          department: 2,
-          region: 1,
-        };
-        allResults.sort((a, b) => {
-          const priorityA = typePriority[a.type] || 5;
-          const priorityB = typePriority[b.type] || 5;
-          if (priorityA !== priorityB) {
-            return priorityA - priorityB;
-          }
-          if (a.type === "commune" || a.type === "epci") {
-            return (b.population || 0) - (a.population || 0);
-          }
-          return a.name.localeCompare(b.name);
-        });
-      }
 
       // Cache the results
       searchCache.set(cacheKey, allResults);
@@ -300,7 +262,7 @@ export default function CommuneSearch({
   style = {},
   smallButton = false,
   container,
-  includeRegionsAndDepartments = false,
+  apiBaseUrl,
 }: CommuneSearchProps) {
   return (
     <>
@@ -316,7 +278,7 @@ export default function CommuneSearch({
             style={style}
             onOptionSelect={onSelect || (() => {})}
             container={container}
-            includeRegionsAndDepartments={includeRegionsAndDepartments}
+            apiBaseUrl={apiBaseUrl}
           />
         )}
       />
