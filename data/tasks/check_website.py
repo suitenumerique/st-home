@@ -267,43 +267,26 @@ def check_content(response, issues, base_url):
         ]
 
         # Search in all anchor tags
-        found_url = None
+        all_links = []
         for link in soup.find_all("a", href=True):
             href = link.get("href", "").strip()
+            if href:
+                href = urljoin(base_url, href)
+                if href.startswith("http://") or href.startswith("https://"):
+                    all_links.append((link, href))
+
+        found_url = None
+        for link, href in all_links:
             link_text = link.get_text(strip=True).lower()
 
             # Check if link text contains accessibility keywords
             for keyword in accessibility_keywords:
                 if keyword.lower() in link_text:
-                    # Resolve relative URLs to absolute
-                    if href:
-                        found_url = urljoin(base_url, href)
-                        break
+                    found_url = href
+                    break
 
             if found_url:
                 break
-
-        # Also check common URL patterns if no link text match found
-        if not found_url:
-            for link in soup.find_all("a", href=True):
-                href = link.get("href", "").strip().lower()
-                # Common URL patterns for accessibility pages
-                url_patterns = [
-                    "/accessibilite",
-                    "/accessibilite/",
-                    "/accessibility",
-                    "/declaration-accessibilite",
-                    "/declaration-accessibilite/",
-                    "/accessibility-statement",
-                ]
-
-                for pattern in url_patterns:
-                    if pattern in href:
-                        found_url = urljoin(base_url, link.get("href"))
-                        break
-
-                if found_url:
-                    break
 
         if found_url:
             metadata["a11y_url"] = found_url
