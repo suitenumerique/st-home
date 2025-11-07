@@ -1,6 +1,7 @@
 "use client";
 
 import { type Commune } from "@/lib/onboarding";
+import { Commune as SearchCommuneType } from "../CommuneSearch";
 import * as turf from "@turf/turf";
 import * as d3 from "d3";
 import { MapLayerMouseEvent } from "maplibre-gl";
@@ -293,15 +294,21 @@ const MapWrapper = ({
     }
   };
 
-  const handleQuickNav = async (community: { type: string; siret: string }) => {
-    const level = community.type === "commune" ? "city" : community.type;
+  const handleQuickNav = async (community: SearchCommuneType) => {
+    let level = community.type;
     let code;
-    if (community.type === "epci") {
+    if (community.type === "region") {
+      code = "r" + community.insee_reg;
+    } else if (community.type === "departement") {
+      code = community.insee_dep;
+      level = "department";
+    } else if (community.type === "epci") {
       code = community["siret"].slice(0, 9);
-    } else {
+    } else if (community.type === "commune") {
       code = community["siret"] || "";
+      level = "city";
     }
-    await selectLevel(level as "epci" | "city", code, "quickNav");
+    await selectLevel(level, code, "quickNav");
   };
 
   const selectLevel = useCallback(

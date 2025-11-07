@@ -12,6 +12,8 @@ interface Commune {
   siret: string;
   name: string;
   insee_geo?: string;
+  insee_reg?: string;
+  insee_dep?: string;
   zipcode?: string;
   type: "commune" | "epci" | "department" | "region";
   population: number;
@@ -55,26 +57,6 @@ function CommuneSearchInput(
     const trimmedPath = path.startsWith("/") ? path : `/${path}`;
     return `${trimmedBase}${trimmedPath}`;
   };
-
-  // Load parent areas data when component mounts
-  // useEffect(() => {
-  //   if (includeRegionsAndDepartments) {
-  //     fetch("/parent_areas.json")
-  //       .then((response) => response.json())
-  //       .then((data) => {
-  //         const areas = data.filter(
-  //           (area: ParentArea) =>
-  //             area.type === "department" ||
-  //             (area.type === "region" &&
-  //               !["r01", "r02", "r03", "r04", "r06", "r11"].includes(area.insee_geo)),
-  //         );
-  //         setParentAreas(areas);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error loading parent areas:", error);
-  //       });
-  //   }
-  // }, [includeRegionsAndDepartments]);
 
   const handleInputChange = async (value: string) => {
     if (value.length === 0) {

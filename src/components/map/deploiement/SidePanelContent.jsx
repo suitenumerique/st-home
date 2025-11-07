@@ -5,13 +5,10 @@ import CommuneSearch from "../../CommuneSearch";
 // import CommuneInfo from "../../onboarding/CommuneInfo";
 import Breadcrumb from "../Breadcrumb";
 import MapButton from "../MapButton";
-import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
-import { Button } from "@codegouvfr/react-dsfr/Button";
-import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
 import styles from "../../../styles/cartographie-deploiement.module.css";
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox";
 
-const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, setPanelState,  computeAreaStats }) => {
+const SidePanelContent = ({ container, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, setPanelState,  computeAreaStats }) => {
 
   const [linkCopied, setLinkCopied] = useState(false);
   const [services, setServices] = useState([]);
@@ -320,9 +317,8 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
             <CommuneSearch
               container={container}
               onSelect={handleQuickNav}
-              placeholder="Rechercher une commune ou un EPCI"
+              placeholder="Rechercher une collectivité"
               smallButton={true}
-              includeRegionsAndDepartments={true}
             />
           </div>
         )
@@ -351,10 +347,8 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
 
 SidePanelContent.propTypes = {
   container: PropTypes.object,
-  rcpntRefs: PropTypes.array.isRequired,
   mapState: PropTypes.object.isRequired,
   selectLevel: PropTypes.func.isRequired,
-  getColor: PropTypes.func.isRequired,
   setMapState: PropTypes.func.isRequired,
   goBack: PropTypes.func.isRequired,
   handleQuickNav: PropTypes.func.isRequired,

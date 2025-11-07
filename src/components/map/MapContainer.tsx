@@ -446,9 +446,8 @@ const MapContainer = ({
         {searchOpen ? (
           <CommuneSearch
             onSelect={handleQuickNav}
-            placeholder="Rechercher une commune ou un EPCI"
+            placeholder="Rechercher une collectivité"
             smallButton={true}
-            includeRegionsAndDepartments={true}
             style={{
               backgroundColor: "white",
               fontSize: "14px",

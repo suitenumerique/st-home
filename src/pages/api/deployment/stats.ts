@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         INNER JOIN ${organizationsToServices} ON ${organizations.siret} = ${organizationsToServices.organizationSiret}
         ${service_id ? sql`INNER JOIN ${services} ON ${organizationsToServices.serviceId} = ${services.id}` : sql``}
         WHERE ${organizations.type} = 'commune'
-        ${service_id ? sql`AND ${services.id} = ${service_id as string}` : sql``}
+        ${service_id ? sql`AND ${services.id} = ${parseInt(service_id as string, 10)}` : sql``}
         GROUP BY ${organizations.insee_reg}
       `;
     } else if (scope === "list-dep") {
@@ -38,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         INNER JOIN ${organizationsToServices} ON ${organizations.siret} = ${organizationsToServices.organizationSiret}
         ${service_id ? sql`INNER JOIN ${services} ON ${organizationsToServices.serviceId} = ${services.id}` : sql``}
         WHERE ${organizations.type} = 'commune'
-        ${service_id ? sql`AND ${services.id} = ${service_id as string}` : sql``}
+        ${service_id ? sql`AND ${services.id} = ${parseInt(service_id as string, 10)}` : sql``}
         GROUP BY ${organizations.insee_dep}
       `;
     } else if (scope === "list-epci") {
@@ -55,7 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ${service_id ? sql`INNER JOIN ${services} ON ${organizationsToServices.serviceId} = ${services.id}` : sql``}
         WHERE ${organizations.type} = 'commune'
         AND ${organizations.epci_siren} IS NOT NULL
-        ${service_id ? sql`AND ${services.id} = ${service_id as string}` : sql``}
+        ${service_id ? sql`AND ${services.id} = ${parseInt(service_id as string, 10)}` : sql``}
         ${dep ? sql`AND ${organizations.insee_dep} = ${dep as string}` : sql``}
         GROUP BY ${organizations.epci_siren}, ${organizations.epci_name}, ${organizations.insee_dep}, ${organizations.insee_reg}
       `;
@@ -66,13 +66,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ${organizations.siret} as id,
           ${organizations.insee_dep} as dep,
           ${organizations.insee_reg} as reg,
-          COALESCE(ARRAY_AGG(DISTINCT ${organizationsToServices.serviceId}) FILTER (WHERE ${organizationsToServices.serviceId} IS NOT NULL), ARRAY[]::text[]) as all_services,
-          COALESCE(ARRAY_AGG(DISTINCT CASE WHEN ${organizationsToServices.active} = true THEN ${organizationsToServices.serviceId} END) FILTER (WHERE ${organizationsToServices.active} = true), ARRAY[]::text[]) as active_services
+          COALESCE(ARRAY_AGG(DISTINCT ${organizationsToServices.serviceId}) FILTER (WHERE ${organizationsToServices.serviceId} IS NOT NULL), ARRAY[]::integer[]) as all_services,
+          COALESCE(ARRAY_AGG(DISTINCT CASE WHEN ${organizationsToServices.active} = true THEN ${organizationsToServices.serviceId} END) FILTER (WHERE ${organizationsToServices.active} = true), ARRAY[]::integer[]) as active_services
         FROM ${organizations}
         LEFT JOIN ${organizationsToServices} ON ${organizations.siret} = ${organizationsToServices.organizationSiret}
         ${service_id ? sql`LEFT JOIN ${services} ON ${organizationsToServices.serviceId} = ${services.id}` : sql``}
         WHERE ${organizations.type} = 'commune'
-        ${service_id ? sql`AND (${services.id} = ${service_id as string} OR ${organizationsToServices.serviceId} IS NULL)` : sql``}
+        ${service_id ? sql`AND (${services.id} = ${parseInt(service_id as string, 10)} OR ${organizationsToServices.serviceId} IS NULL)` : sql``}
         ${dep ? sql`AND ${organizations.insee_dep} = ${dep as string}` : sql``}
         GROUP BY ${organizations.siret}, ${organizations.insee_dep}, ${organizations.insee_reg}
       `;
