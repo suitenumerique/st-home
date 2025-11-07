@@ -40,6 +40,8 @@
     "src/**/*.mjs",
     "src/**/*.ts",
     "src/**/*.tsx",
+    "webcomponents/**/*.ts",
+    "webcomponents/**/*.tsx",
     ".next/types/**/*.ts",
     "tests-vitest/**/*.ts",
     "tests-vitest/**/*.tsx"

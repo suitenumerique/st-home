@@ -7,6 +7,7 @@
     "insee_geo": "01001",
     "insee_dep": "01",
     "insee_reg": "84",
+    "type": "commune",
     "rcpnt": [
         "2.1"
     ],
@@ -44,6 +45,7 @@
     "insee_geo": "01002",
     "insee_dep": "01",
     "insee_reg": "84",
+    "type": "commune",
     "rcpnt": [
         "2.a",
         "1.1",
@@ -94,6 +96,7 @@
     "insee_geo": "01004",
     "insee_dep": "01",
     "insee_reg": "84",
+    "type": "commune",
     "rcpnt": [
         "1.1",
         "1.7",
@@ -142,6 +145,7 @@
     "insee_geo": "01005",
     "insee_dep": "01",
     "insee_reg": "84",
+    "type": "commune",
     "rcpnt": [
         "2.a",
         "1.1",

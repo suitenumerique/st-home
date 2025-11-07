@@ -67,6 +67,11 @@ stop:  ## Stop the development environment
 	$(COMPOSE) stop
 .PHONY: stop
 
+restart:  ## Restart the development environment
+	$(MAKE) stop
+	$(MAKE) start
+.PHONY: restart
+
 # ==============================================================================
 # LINTING AND TESTING
 
@@ -257,3 +262,27 @@ help:
 	@echo "Please use 'make $(BOLD)target$(RESET)' where $(BOLD)target$(RESET) is one of:"
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(firstword $(MAKEFILE_LIST)) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "$(GREEN)%-30s$(RESET) %s\n", $$1, $$2}'
 .PHONY: help
+
+# ==============================================================================
+# WEB COMPONENTS
+
+webcomponents-build:  ## Bundle CommuneSearch as a web component inside Docker (webcomponents/dist/st-collectivite-search.js)
+	$(COMPOSE_RUN) frontend-base sh -c \
+	  "mkdir -p webcomponents/dist && \
+	   NODE_ENV=production npx --yes esbuild webcomponents/st-collectivite-search.tsx \
+	     --bundle \
+	     --jsx=automatic \
+	     --jsx-import-source=react \
+	     --format=iife \
+	     --target=es2020 \
+	     --minify \
+	     --sourcemap \
+	     --alias:@=src \
+	     --outfile=webcomponents/dist/st-collectivite-search.js"
+	@echo "$(GREEN)Webcomponents built successfully!$(RESET)"
+	@echo "$(BOLD)Next steps:$(RESET)"
+	@echo "  • Run 'make start' to start the development environment"
+	@echo "  • Visit http://localhost:8950/webcomponents/demo.html to see the demo"
+	@echo "  • Run 'make help' to see all available commands"
+	@echo ""
+.PHONY: webcomponents-build

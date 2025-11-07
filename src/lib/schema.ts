@@ -143,7 +143,7 @@ export const organizationsToServices = pgTable(
     organizationSiret: text("organization_siret")
       .notNull()
       .references(() => organizations.siret, { onDelete: "cascade" }),
-    serviceId: text("service_id")
+    serviceId: integer("service_id")
       .notNull()
       .references(() => services.id, { onDelete: "cascade" }),
     active: boolean("active").notNull().default(false),

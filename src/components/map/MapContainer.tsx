@@ -9,7 +9,7 @@ import Image from "next/image";
 import PropTypes from "prop-types";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Map, { Layer, LayerProps, MapRef, Popup, ScaleControl, Source } from "react-map-gl/maplibre";
-import CommuneSearch from "../CommuneSearch";
+import CommuneSearch, { Commune as SearchCommuneType } from "../CommuneSearch";
 // import mapStyle from "./map_style.json";
 import MapButton from "./MapButton";
 import { FeatureProperties, MapState } from "./types";
@@ -47,14 +47,7 @@ const MapContainer = ({
     source?: string,
   ) => void;
   goBack: () => void;
-  handleQuickNav: (commune: {
-    siret: string;
-    name: string;
-    insee_geo?: string;
-    zipcode?: string;
-    type: "commune" | "epci" | "department" | "region";
-    population: number;
-  }) => void;
+  handleQuickNav: (commune: SearchCommuneType) => void;
   displayCircleValue: boolean;
   customLayers?: Array<{
     id: string;
@@ -446,9 +439,8 @@ const MapContainer = ({
         {searchOpen ? (
           <CommuneSearch
             onSelect={handleQuickNav}
-            placeholder="Rechercher une commune ou un EPCI"
+            placeholder="Rechercher une collectivité"
             smallButton={true}
-            includeRegionsAndDepartments={true}
             style={{
               backgroundColor: "white",
               fontSize: "14px",
