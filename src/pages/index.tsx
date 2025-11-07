@@ -432,6 +432,7 @@ export default function Home() {
                     objectFit: "contain",
                     maxWidth: "50%",
                     margin: "30px auto 0 auto",
+                    aspectRatio: "2",
                   },
                 }}
                 imageAlt=""
@@ -471,7 +472,7 @@ export default function Home() {
                 justifyContent: "center",
               }}
             >
-              <Image src="/images/carto.svg" alt="" width={178} height={158} />
+              <Image src="/images/carto.png" alt="" width={178} height={158} />
             </div>
             <div className={fr.cx("fr-col-12", "fr-col-md-10", "fr-pl-3w", "fr-py-4w")}>
               <h3 className={fr.cx("fr-h4", "fr-mb-2w")}>

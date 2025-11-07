@@ -8,6 +8,11 @@
 /* MuiAutocomplete styles - imported from communesearch.css */
 @import "./communesearch.css";
 
+.fr-header__operator {
+  min-width:155px;
+}
+
+
 @media (min-width: 768px) {
   .fr-footer__logo {
     max-width: 210px !important;
