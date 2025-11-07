@@ -129,7 +129,7 @@ async function importOrganizations(dumpsDir: string) {
     // Keep track of valid organizations and structures
     const validStructureIds = new Set(mutualizationStructures.map((s) => String(s.id)));
     const organizationSirets = new Set();
-    
+
     const organizationValues = communes
       .filter((commune) => {
         if (!commune.siret) {
@@ -219,7 +219,7 @@ async function importOrganizations(dumpsDir: string) {
       .filter(
         (serviceUsage) =>
           serviceUsage.organization_siret &&
-          (organizationSirets.has(serviceUsage.organization_siret)),
+          organizationSirets.has(serviceUsage.organization_siret),
       );
 
     console.log(`Found ${serviceUsage.length} service usages to import.`);
