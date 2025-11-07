@@ -1,17 +1,21 @@
 "use client";
 
 import { type Commune } from "@/lib/onboarding";
-import { Commune as SearchCommuneType } from "../CommuneSearch";
 import * as turf from "@turf/turf";
 import * as d3 from "d3";
 import { MapLayerMouseEvent } from "maplibre-gl";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import parentAreas from "../../../public/parent_areas.json";
+import { Commune as SearchCommuneType } from "../CommuneSearch";
 import MapContainer from "./MapContainer";
 import SidePanel from "./SidePanel";
 
 import { AreaStats, FeatureProperties, MapState, ParentArea, SelectedArea } from "./types";
+
+// Specific levels for the map
+type CollectiviteLevel = "country" | "region" | "department" | "epci" | "city";
+type ParentLevel = "country" | "region" | "department" | "epci";
 
 const useMapURLState = () => {
   const router = useRouter();
@@ -92,7 +96,7 @@ const MapWrapper = ({
   gradientDomain: number[];
   showGradientLegend: boolean;
   computeAreaStats: (
-    level: "country" | "region" | "department" | "epci" | "city",
+    level: CollectiviteLevel,
     insee_geo: string,
     siret: string,
     department: SelectedArea,
@@ -117,6 +121,8 @@ const MapWrapper = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [panelState, setPanelState] = useState<"closed" | "open" | "partial">("open");
+  const computeAreaStatsVersionRef = useRef(0);
+  const previousComputeAreaStatsRef = useRef(computeAreaStats);
 
   const { getURLState, updateURLState } = useMapURLState();
 
@@ -227,10 +233,7 @@ const MapWrapper = ({
   }, []);
 
   const computeSelectedArea = useCallback(
-    async (
-      level: "country" | "region" | "department" | "epci",
-      code: string,
-    ): Promise<SelectedArea | null> => {
+    async (level: ParentLevel, code: string): Promise<SelectedArea | null> => {
       try {
         let selectedArea: SelectedArea;
         if (level === "country") {
@@ -295,33 +298,33 @@ const MapWrapper = ({
   };
 
   const handleQuickNav = async (community: SearchCommuneType) => {
-    let level = community.type;
+    let level: string = community.type;
     let code;
     if (community.type === "region") {
       code = "r" + community.insee_reg;
     } else if (community.type === "departement") {
-      code = community.insee_dep;
+      code = community.insee_dep!;
       level = "department";
     } else if (community.type === "epci") {
       code = community["siret"].slice(0, 9);
     } else if (community.type === "commune") {
       code = community["siret"] || "";
       level = "city";
+    } else {
+      throw new Error(`Invalid community type: ${community.type}`);
     }
-    await selectLevel(level, code, "quickNav");
+    await selectLevel(level as CollectiviteLevel, code, "quickNav");
   };
 
   const selectLevel = useCallback(
     async (
-      level: "country" | "region" | "department" | "epci" | "city",
+      level: CollectiviteLevel,
       code: string,
       source = "areaClick",
       departmentView: "city" | "epci" | null = null,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       updatedFilters?: any,
     ) => {
-      console.log("selectLevel", level, code, source);
-
       const allLevels = ["city", "epci", "department", "region", "country"];
       const parentLevels = allLevels.slice(allLevels.indexOf(level) + 1);
 
@@ -366,7 +369,7 @@ const MapWrapper = ({
             parentCode = "00";
           }
           newSelectedAreas[parentLevel] = await computeSelectedArea(
-            parentLevel as "country" | "region" | "department" | "epci",
+            parentLevel as ParentLevel,
             parentCode as string,
           );
         }
@@ -411,6 +414,12 @@ const MapWrapper = ({
   const darkenColor = useCallback((color: string, amount: number) => {
     return d3.color(color)?.darker(amount).formatHex8();
   }, []);
+
+  // Track when computeAreaStats changes to invalidate cache
+  if (previousComputeAreaStatsRef.current !== computeAreaStats) {
+    computeAreaStatsVersionRef.current += 1;
+    previousComputeAreaStatsRef.current = computeAreaStats;
+  }
 
   const currentGeoJSON = useMemo(() => {
     const getEPCIGeoJSON = (geoJSON: GeoJSON.FeatureCollection | null) => {
@@ -460,15 +469,15 @@ const MapWrapper = ({
         city: "city",
       }[mapState.currentLevel];
 
-      // Create a cache key based on current context
-      const cacheKey = `${mapState.currentLevel}-${mapState.departmentView}-${mapState.selectedAreas.department?.insee_geo || "none"}-${JSON.stringify(mapState.filters)}`;
+      // Create a cache key based on current context, including computeAreaStats version
+      // This ensures cache is invalidated when stats load and computeAreaStats changes
+      const cacheKey = `${mapState.currentLevel}-${mapState.departmentView}-${mapState.selectedAreas.department?.insee_geo || "none"}-${JSON.stringify(mapState.filters)}-v${computeAreaStatsVersionRef.current}`;
 
       features.forEach((feature) => {
         // Skip if already processed for this specific context
         if (feature.properties?._processedFor === cacheKey) {
           return;
         }
-
         const stats = computeAreaStats(
           scoreLevel as "region" | "department" | "city",
           feature.properties?.INSEE_GEO || "",
@@ -542,7 +551,7 @@ const MapWrapper = ({
       (urlState.currentLevel !== "country" || urlState.currentAreaCode !== "00")
     ) {
       selectLevel(
-        urlState.currentLevel as "country" | "region" | "department" | "epci" | "city",
+        urlState.currentLevel as CollectiviteLevel,
         urlState.currentAreaCode,
         "quickNav",
         urlState.departmentView as "city" | "epci" | null,
@@ -577,7 +586,6 @@ const MapWrapper = ({
           handleQuickNav={handleQuickNav}
           container={containerRef.current}
           isMobile={isMobile}
-          computeAreaStats={computeAreaStats}
         />
       </SidePanel>
       <MapContainer

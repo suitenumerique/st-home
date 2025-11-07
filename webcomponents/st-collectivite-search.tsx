@@ -1,8 +1,8 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
 import CommuneSearch from "../src/components/CommuneSearch";
+import "../src/styles/communesearch.css";
 
-type CommuneType = "commune" | "epci" | "department" | "region" | "all";
+type CommuneType = "commune" | "epci" | "departement" | "region" | "all";
 
 type Props = {
   placeholder?: string;
@@ -17,12 +17,7 @@ class STCommuneSearchElement extends HTMLElement {
   private root: DomRoot | null = null;
 
   static get observedAttributes() {
-    return [
-      "placeholder",
-      "type",
-      "small-button",
-      "api-host",
-    ];
+    return ["placeholder", "type", "small-button", "api-host"];
   }
 
   connectedCallback() {
@@ -94,5 +89,3 @@ class STCommuneSearchElement extends HTMLElement {
 if (!customElements.get("st-collectivite-search")) {
   customElements.define("st-collectivite-search", STCommuneSearchElement);
 }
-
-

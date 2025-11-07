@@ -1,7 +1,7 @@
 import { Commune, determineOnboardingCase } from "@/lib/onboarding";
 import { OnboardingCase } from "@/types/onboarding";
 import { describe, expect, it } from "vitest";
-import testCommunes from "../data/dumps-sample/communes.json";
+import testCommunes from "../data/dumps-sample/organizations.json";
 import testStructures from "../data/dumps-sample/structures.json";
 
 // Helper function to prepare test data

@@ -3,26 +3,26 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { Input } from "@codegouvfr/react-dsfr/Input";
 import { SearchBar } from "@codegouvfr/react-dsfr/SearchBar";
 import Autocomplete from "@mui/material/Autocomplete";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 // Cache for storing search results
 const searchCache = new Map<string, Commune[]>();
 
-interface Commune {
+export interface Commune {
   siret: string;
   name: string;
   insee_geo?: string;
   insee_reg?: string;
   insee_dep?: string;
   zipcode?: string;
-  type: "commune" | "epci" | "department" | "region";
+  type: "commune" | "epci" | "departement" | "region";
   population: number;
 }
 
 interface CommuneSearchProps {
   onSelect?: (commune: Commune) => void;
   placeholder?: string;
-  type?: "commune" | "epci" | "department" | "region" | "all";
+  type?: "commune" | "epci" | "departement" | "region" | "all";
   smallButton?: boolean;
   style?: React.CSSProperties;
   container?: HTMLElement | null;
@@ -33,7 +33,7 @@ interface SearchInputProps {
   id: string;
   placeholder?: string;
   style?: React.CSSProperties;
-  type: "commune" | "epci" | "department" | "region" | "all";
+  type: "commune" | "epci" | "departement" | "region" | "all";
   container?: HTMLElement | null;
   apiBaseUrl?: string;
 }
@@ -92,9 +92,7 @@ function CommuneSearchInput(
         next: { revalidate: 3600 },
       });
 
-      const data = await response.json();
-
-      let allResults = [...data];
+      const allResults = await response.json();
 
       // wait 1 second
       // await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -250,7 +248,7 @@ export default function CommuneSearch({
     <>
       <SearchBar
         style={{ width: "100%" }}
-        label="Rechercher une commune"
+        label="Rechercher une collectivité"
         big={!smallButton}
         renderInput={({ id }) => (
           <CommuneSearchInput

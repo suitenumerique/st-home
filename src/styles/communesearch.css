@@ -1,0 +1,12 @@
+/* MuiAutocomplete styles for CommuneSearch component */
+.MuiAutocomplete-inputRoot {
+  padding-right: 0px !important;
+}
+
+.MuiAutocomplete-paper {
+  font-family: Marianne, arial, sans-serif !important;
+}
+
+.MuiAutocomplete-option.Mui-focused {
+  background-color: var(--background-alt-blue-france-active) !important;
+}
