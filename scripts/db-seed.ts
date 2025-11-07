@@ -46,6 +46,21 @@ interface Structure {
   Site_web: string;
 }
 
+interface Service {
+  id: string;
+  nom: string;
+  url: string;
+  logo_url: string;
+  maturite: string;
+  date_lancement: string;
+}
+
+interface ServiceUsage {
+  organization_siret: string;
+  service_id: string;
+  active: boolean;
+}
+
 async function testConnection() {
   try {
     const client = await pool.connect();
@@ -70,6 +85,8 @@ async function importOrganizations(dumpsDir: string) {
 
     const communesPath = path.join(dumpsDir, "organizations.json");
     const structuresPath = path.join(dumpsDir, "structures.json");
+    const servicesPath = path.join(dumpsDir, "services.json");
+    const serviceUsagesPath = path.join(dumpsDir, "service_usages.json");
 
     // Verify all required files exist
     for (const filePath of [communesPath, structuresPath]) {
@@ -111,6 +128,7 @@ async function importOrganizations(dumpsDir: string) {
 
     // Keep track of valid organizations and structures
     const validStructureIds = new Set(mutualizationStructures.map((s) => String(s.id)));
+    const organizationSirets = new Set();
 
     const organizationValues = communes
       .filter((commune) => {
@@ -118,6 +136,7 @@ async function importOrganizations(dumpsDir: string) {
           console.log(`Skipping org without SIRET: ${commune.name}`);
           return false;
         }
+        organizationSirets.add(commune.siret);
         return true;
       })
       .map((commune) => ({
@@ -174,6 +193,39 @@ async function importOrganizations(dumpsDir: string) {
       }
     });
 
+    console.log(`Reading services from ${servicesPath}...`);
+    const servicesData = fs.readFileSync(servicesPath, "utf8");
+
+    // Prepare services
+    const services: Service[] = JSON.parse(servicesData).map((service) => ({
+      id: parseInt(service.id, 10),
+      name: service.nom,
+      url: service.url,
+      logo_url: service.logo_url || null,
+      maturity: service.maturite,
+      launch_date: service.date_lancement ? new Date(service.date_lancement) : null,
+    }));
+
+    console.log(`Reading service usages from ${serviceUsagesPath}...`);
+    const serviceUsagesData = fs.readFileSync(serviceUsagesPath, "utf8");
+
+    // Prepare service usages
+    const serviceUsage: ServiceUsage[] = JSON.parse(serviceUsagesData)
+      .map((row) => ({
+        organization_siret: row.siret,
+        service_id: parseInt(row.service, 10),
+        active: row.active === "1",
+      }))
+      .filter(
+        (serviceUsage) =>
+          serviceUsage.organization_siret &&
+          organizationSirets.has(serviceUsage.organization_siret),
+      );
+
+    console.log(`Found ${serviceUsage.length} service usages to import.`);
+
+    console.log(`Starting DB transaction...`);
+
     // Start transaction and replace all data
     await client.query("BEGIN");
 
@@ -181,6 +233,8 @@ async function importOrganizations(dumpsDir: string) {
     await client.query("TRUNCATE TABLE st_organizations_to_structures");
     await client.query("TRUNCATE TABLE st_organizations CASCADE");
     await client.query("TRUNCATE TABLE st_mutualization_structures CASCADE");
+    await client.query("TRUNCATE TABLE st_services CASCADE");
+    await client.query("TRUNCATE TABLE st_organizations_to_services CASCADE");
 
     // Bulk insert structures
     console.log(`Bulk inserting ${structureValues.length} structures...`);
@@ -207,6 +261,22 @@ async function importOrganizations(dumpsDir: string) {
       `;
       await client.query(relationsQuery, [JSON.stringify(structureRelations)]);
     }
+
+    // Bulk insert services
+    console.log(`Bulk inserting ${services.length} services...`);
+    const servicesQuery = `
+      INSERT INTO st_services
+      SELECT * FROM json_populate_recordset(null::st_services, $1)
+    `;
+    await client.query(servicesQuery, [JSON.stringify(services)]);
+
+    // Bulk insert service usage
+    console.log(`Bulk inserting ${serviceUsage.length} service usage...`);
+    const serviceUsageQuery = `
+      INSERT INTO st_organizations_to_services
+      SELECT * FROM json_populate_recordset(null::st_organizations_to_services, $1)
+    `;
+    await client.query(serviceUsageQuery, [JSON.stringify(serviceUsage)]);
 
     await client.query("COMMIT");
 

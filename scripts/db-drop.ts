@@ -10,6 +10,8 @@ async function dropAllTables() {
       DROP TABLE IF EXISTS st_organizations_to_structures CASCADE;
       DROP TABLE IF EXISTS st_mutualization_structures CASCADE;
       DROP TABLE IF EXISTS st_organizations CASCADE;
+      DROP TABLE IF EXISTS st_services CASCADE;
+      DROP TABLE IF EXISTS st_organizations_to_services CASCADE;
     `);
 
     console.log("All tables dropped successfully.");

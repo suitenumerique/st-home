@@ -1,10 +1,10 @@
-import CartographieConformite from "@/components/map/conformite/CartographieConformite";
+import CartographieDeploiement from "@/components/map/deploiement/CartographieDeploiement";
 import { NextSeo } from "next-seo";
 import { useEffect } from "react";
-import styles from "../../styles/cartographie-conformite.module.css";
+import styles from "../styles/cartographie-deploiement.module.css";
 
-export default function CartographiePage() {
-  // Hide the footer and prevent body overflow on this page
+export default function CartographieDeploiementPage() {
+  // Hide the footer & header and prevent body overflow on this page
   useEffect(() => {
     const footer = document.querySelector<HTMLElement>(".fr-footer");
     if (footer) {
@@ -24,12 +24,9 @@ export default function CartographiePage() {
 
   return (
     <>
-      <NextSeo
-        title="Cartographie de conformité"
-        description="Cartographie de conformité des collectivités"
-      />
+      <NextSeo title="Cartographie de déploiement" description="Cartographie de déploiement" />
       <div className={styles.mapContainer}>
-        <CartographieConformite />
+        <CartographieDeploiement />
       </div>
     </>
   );

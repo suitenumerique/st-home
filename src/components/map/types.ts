@@ -1,19 +1,6 @@
 import { Commune } from "@/lib/onboarding";
 import L from "leaflet";
 
-export interface StatRecord {
-  ref: string;
-  valid: number;
-  total: number;
-}
-
-export interface AllStats {
-  region: Record<string, StatRecord[]>;
-  department: Record<string, StatRecord[]>;
-  epci: Record<string, StatRecord[]>;
-  country: Record<string, StatRecord[]>;
-}
-
 export interface SearchCommune {
   siret: string;
   name: string;
@@ -32,9 +19,10 @@ export interface ParentArea {
   epci_siren?: string;
 }
 
-export interface ConformityStats {
-  score: number;
-  n_cities?: number;
+export interface AreaStats {
+  score?: number | null;
+  n_cities?: number | null;
+  n_total_cities?: number | null;
   details?: {
     "0": number;
     "1"?: number;
@@ -48,7 +36,6 @@ export interface SelectedArea {
   type?: string;
   insee_reg?: string;
   insee_dep?: string;
-  conformityStats?: ConformityStats;
   cities?: Commune[];
   geoJSON?: GeoJSON.FeatureCollection;
   geoJSONEPCI?: GeoJSON.Feature[];
@@ -60,7 +47,11 @@ export interface MapState {
     [key: string]: SelectedArea | Commune | null;
   };
   departmentView: "city" | "epci";
-  selectedRef: string | null;
+  filters: {
+    service_id: number | null;
+    service_ids: number[] | null;
+    rcpnt_ref: string | null;
+  };
 }
 
 export interface FeatureProperties {
@@ -75,14 +66,4 @@ export interface FeatureProperties {
 
 export interface MapViewHandlerProps {
   bounds: L.LatLngBounds | null;
-}
-
-export interface ConformityStats {
-  score: number;
-  n_cities?: number;
-  details?: {
-    "0": number;
-    "1"?: number;
-    "2"?: number;
-  };
 }

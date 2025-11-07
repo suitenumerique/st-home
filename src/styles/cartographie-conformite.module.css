@@ -1,0 +1,16 @@
+.mapContainer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 174px;
+  height: calc(100% - 174px);
+  z-index: 200;
+}
+
+@media (max-width: 992px) {
+  .mapContainer {
+    top: 94px;
+    height: calc(100% - 94px);
+  }
+}

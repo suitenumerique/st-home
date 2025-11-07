@@ -1,0 +1,18 @@
+[
+    {
+        "id": "1",
+        "nom": "Bases Adresses Locales",
+        "url": "https://adresse.data.gouv.fr/programme-bal",
+        "maturite": "stable",
+        "date_lancement": "2024-01-01",
+        "logo_url": "https://operateurs.suite.anct.gouv.fr/api/v1.0/servicelogo/1/"
+    },
+    {
+        "id": "2",
+        "nom": "Messages",
+        "url": "https://messages.suite.anct.gouv.fr/",
+        "maturite": "alpha",
+        "date_lancement": "",
+        "logo_url": "https://operateurs.suite.anct.gouv.fr/api/v1.0/servicelogo/2/"
+    }
+]

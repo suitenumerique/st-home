@@ -1,6 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import {
   boolean,
+  date,
   index,
   integer,
   jsonb,
@@ -120,3 +121,48 @@ export const organizationsToStructuresRelations = relations(
     }),
   }),
 );
+
+// Services table
+export const services = pgTable(
+  "st_services",
+  {
+    id: integer("id").primaryKey(),
+    name: text("name").notNull(),
+    url: text("url").notNull(),
+    logo_url: text("logo_url"),
+    maturity: text("maturity").notNull(),
+    launch_date: date("launch_date"),
+  },
+  (table) => [index("st_services_url_index").using("btree", table.url)],
+);
+
+// ServiceUsage
+export const organizationsToServices = pgTable(
+  "st_organizations_to_services",
+  {
+    organizationSiret: text("organization_siret")
+      .notNull()
+      .references(() => organizations.siret, { onDelete: "cascade" }),
+    serviceId: text("service_id")
+      .notNull()
+      .references(() => services.id, { onDelete: "cascade" }),
+    active: boolean("active").notNull().default(false),
+  },
+  (table) => {
+    return {
+      pk: primaryKey({ columns: [table.organizationSiret, table.serviceId] }),
+    };
+  },
+);
+
+// ServiceUsage relations
+export const organizationsToServicesRelations = relations(organizationsToServices, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [organizationsToServices.organizationSiret],
+    references: [organizations.siret],
+  }),
+  service: one(services, {
+    fields: [organizationsToServices.serviceId],
+    references: [services.id],
+  }),
+}));

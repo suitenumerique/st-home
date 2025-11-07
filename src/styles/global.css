@@ -88,17 +88,7 @@ path.leaflet-interactive:focus {
   }
 }
 
-/* Map styling */
-
-.map-container {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  top: 174px;
-  height: calc(100% - 174px);
-  z-index: 200;
-}
+/* Cartographie */
 
 .map-side-panel {
   width: 460px;
@@ -145,10 +135,6 @@ path.leaflet-interactive:focus {
   font-size: 18px;
 }
 
-.map-side-panel-breadcrumbs {
-  display: block;
-}
-
 .map-drom-selector {
   position: absolute;
   right: 20px;
@@ -158,12 +144,29 @@ path.leaflet-interactive:focus {
 
 .map-action-buttons {
   position: absolute;
-  bottom: 20px;
+  bottom: 50px;
   right: 20px;
   z-index: 10;
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.maplibregl-popup-content {
+  pointer-events: none !important;
+  padding: 0 !important;
+}
+
+.map-tooltip-content {
+  background: white;
+  padding: 0.7rem;
+}
+
+.map-tooltip-title {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #1e293b;
+  margin-bottom: 0;
 }
 
 .map-gradient {
@@ -199,29 +202,7 @@ path.leaflet-interactive:focus {
   margin: 0;
 }
 
-.maplibregl-popup-content {
-  pointer-events: none !important;
-  padding: 0 !important;
-}
-
-.map-tooltip-content {
-  background: white;
-  padding: 0.7rem;
-}
-
-.map-tooltip-title {
-  font-weight: bold;
-  font-size: 1rem;
-  color: #1e293b;
-  margin-bottom: 0;
-}
-
 @media (max-width: 992px) {
-  .map-container {
-    top: 94px;
-    height: calc(100% - 94px);
-  }
-
   .map-side-panel {
     width: 100%;
     min-width: 100%;
@@ -229,10 +210,6 @@ path.leaflet-interactive:focus {
     max-height: calc(50% - 47px);
     min-height: 15px;
     height: auto;
-    /* position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0; */
     border-top: 1px solid #e5e7eb;
   }
 
@@ -262,13 +239,21 @@ path.leaflet-interactive:focus {
 
   .map-drom-selector {
     right: 10px;
-    bottom: 98px;
+    bottom: 148px;
     top: auto;
   }
 
   .map-action-buttons {
-    bottom: 10px;
+    bottom: 50px;
     right: 10px;
+  }
+
+  .map-tooltip-content {
+    padding: 0.5rem;
+  }
+
+  .map-tooltip-title {
+    font-size: 0.9rem;
   }
 
   .map-gradient {
@@ -285,13 +270,5 @@ path.leaflet-interactive:focus {
 
   .map-gradient-label {
     text-align: center;
-  }
-
-  .map-tooltip-content {
-    padding: 0.5rem;
-  }
-
-  .map-tooltip-title {
-    font-size: 0.9rem;
   }
 }

@@ -47,7 +47,8 @@ bootstrap: ## Prepare the project for local development
 
 update:  ## Update the project dependencies
 update: \
-	create-env-files
+	create-env-files \
+	front-install-deps
 .PHONY: update
 
 create-env-files:  ## Create the environment configuration files
@@ -176,13 +177,17 @@ db-drop:  ## Drop the local database
 	$(COMPOSE_RUN) frontend-dev npm run db:drop
 .PHONY: db-drop
 
-db-migrate:  ## Run database migrations
+db-migrate:  ## Run manual database migrations (non-Drizzle managed tables, see scripts/db-migrate.ts)
 	$(COMPOSE_RUN) frontend-dev npm run db:migrate
 .PHONY: db-migrate
 
-db-push:  ## Push the local database schema to the remote database
+db-push:  ## Run database migrations (Drizzle managed tables: st_*)
 	$(COMPOSE_RUN) frontend-dev npm run db:push
 .PHONY: db-push
+
+db-generate:  ## Run manual database migrations (non-Drizzle managed tables, see scripts/db-migrate.ts)
+	$(COMPOSE_RUN) frontend-dev npm run db:generate
+.PHONY: db-generate
 
 db-reset:  ## Reset the local database
 db-reset: \
@@ -226,6 +231,7 @@ front-freeze-deps-amd64:  ## Freeze the frontend dependencies
 
 front-update-deps-check:  ## Check the frontend dependencies for updates
 	$(COMPOSE_RUN) frontend-base npx npm-check-updates
+	$(COMPOSE_RUN) frontend-base npm audit
 .PHONY: front-update-deps-check
 
 front-update-deps-minor:  ## Update the frontend dependencies to the minor version

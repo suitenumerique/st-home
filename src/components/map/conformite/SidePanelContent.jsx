@@ -1,15 +1,16 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import PropTypes from "prop-types";
-import { useMemo, useState } from "react";
-import CommuneSearch from "../CommuneSearch";
-import CommuneInfo from "../onboarding/CommuneInfo";
-import Breadcrumb from "./Breadcrumb";
-import MapButton from "./MapButton";
+import { useMemo, useState, memo, useEffect } from "react";
+import CommuneSearch from "../../CommuneSearch";
+import CommuneInfo from "../../onboarding/CommuneInfo";
+import Breadcrumb from "../Breadcrumb";
+import MapButton from "../MapButton";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import Link from "next/link";
+import { ReferentielConformite } from "@/pages/conformite/referentiel";
 
-const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, setPanelState, computeAreaStats }) => {
+const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats }) => {
 
   const [showCriteriaSelector, setShowCriteriaSelector] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -58,7 +59,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
     if (mapState.selectedAreas.city || !mapState.selectedAreas[mapState.currentLevel]) {
       return null;
     }
-    const chartSeries = mapState.selectedRef ? [
+    const chartSeries = mapState.filters.rcpnt_ref ? [
       ["2", "Conforme"],
       ["0", "Non conforme"],
     ] : [
@@ -67,7 +68,16 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
       ["0", "Non conforme"],
     ];
 
-    const conformityStats = computeAreaStats(mapState.currentLevel, mapState.selectedAreas[mapState.currentLevel].insee_geo);
+    const conformityStats = computeAreaStats(
+      mapState.currentLevel,
+      mapState.selectedAreas[mapState.currentLevel]?.insee_geo || "",
+      null,
+      mapState.selectedAreas.department,
+    );
+
+    if (!conformityStats) {
+      return null;
+    }
 
     const statsDetails = chartSeries.map(([scoreKey, label]) => {
       if (!mapState.selectedAreas[mapState.currentLevel]) {
@@ -94,7 +104,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
       details: statsDetails,
     }
 
-  }, [mapState.selectedAreas, mapState.currentLevel, mapState.selectedRef, computeAreaStats]);
+  }, [mapState.selectedAreas, mapState.currentLevel, mapState.filters.rcpnt_ref, computeAreaStats]);
 
   const introduction = () => {
     return (
@@ -135,7 +145,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
 
   const breadcrumbs = () => {
     return (
-      <div className="map-side-panel-breadcrumbs">
+      <div>
         <Breadcrumb
           segments={breadcrumbSegments}
           currentPageLabel={
@@ -154,7 +164,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
           <h3 className={fr.cx("fr-mb-0")} style={{ color: "var(--text-title-blue-france)" }}>
             {currentPageLabel}
           </h3>
-          {!mapState.selectedAreas.city && (
+          {!mapState.selectedAreas.city && levelStatsDisplay && (
             <p className={fr.cx("fr-text--lg fr-mb-0")} style={{ color: "var(--text-title-blue-france)" }}>
               {[
                 currentLevelLabel,
@@ -227,7 +237,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
           )))
         }
         {
-          mapState.selectedRef && (
+          mapState.filters.rcpnt_ref && (
             <p
               onClick={() => setShowCriteriaSelector(true)}
               style={{
@@ -248,7 +258,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
               cursor: "pointer",
               }}
             >
-              Critère {mapState.selectedRef}
+              Critère {mapState.filters.rcpnt_ref}
             </p>
           )
         }
@@ -360,8 +370,8 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
               {
                 label: 'Tous les critères',
                 nativeInputProps: {
-                  checked: mapState.selectedRef === null,
-                  onChange: () => setMapState({ ...mapState, selectedRef: null })
+                  checked: mapState.filters.rcpnt_ref === null,
+                  onChange: () => setMapState({ ...mapState, filters: { ...mapState.filters, rcpnt_ref: null } })
                 },
               }
             ]}
@@ -388,8 +398,8 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
                     {
                       label: 'Tous les critères',
                       nativeInputProps: {
-                        checked: mapState.selectedRef === `${String(index + 1)}.a`,
-                        onChange: () => setMapState({ ...mapState, selectedRef: `${String(index + 1)}.a` })
+                        checked: mapState.filters.rcpnt_ref === `${String(index + 1)}.a`,
+                        onChange: () => setMapState({ ...mapState, filters: { ...mapState.filters, rcpnt_ref: `${String(index + 1)}.a` } })
                       },
                     }
                   ]}
@@ -414,7 +424,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
               <div style={{ paddingLeft: "1.5rem" }}>
                 <RadioButtons
                   name={`${section.all_key}-criteria`}
-                  options={rcpntRefs[index].items.map((criterion) => ({
+                  options={ReferentielConformite[index].items.map((criterion) => ({
                     key: criterion.num,
                     label: <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
                       <span
@@ -431,17 +441,15 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
                       <span style={{ fontSize: "var(--text-sm)" }}>{criterion.shortTitle}</span>
                     </div>,
                     nativeInputProps: {
-                      checked: mapState.selectedRef === criterion.num,
-                      onChange: () => setMapState({ ...mapState, selectedRef: criterion.num })
+                      checked: mapState.filters.rcpnt_ref === criterion.num,
+                      onChange: () => setMapState({ ...mapState, filters: { ...mapState.filters, rcpnt_ref: criterion.num } })
                     },
                   }))}
                 />
               </div>
             </div>
           ))}
-
         </form>
-
       </div>
     )
   }
@@ -485,7 +493,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
           )}
           {panelState === 'open' && (
             <div style={{ marginTop: "1rem" }}>
-              {((mapState.currentLevel === "department" && !mapState.selectedAreas.city) || mapState.selectedRef) && (
+              {((mapState.currentLevel === "department" && !mapState.selectedAreas.city) || mapState.filters.rcpnt_ref) && (
                 selections()
               )}
               {!mapState.selectedAreas.city && mapState.selectedAreas[mapState.currentLevel] && (
@@ -504,7 +512,6 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
 
 SidePanelContent.propTypes = {
   container: PropTypes.object,
-  rcpntRefs: PropTypes.array.isRequired,
   mapState: PropTypes.object.isRequired,
   selectLevel: PropTypes.func.isRequired,
   getColor: PropTypes.func.isRequired,

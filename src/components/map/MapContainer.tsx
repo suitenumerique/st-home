@@ -7,30 +7,37 @@ import { MapLayerMouseEvent } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import Image from "next/image";
 import PropTypes from "prop-types";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Map, { Layer, LayerProps, MapRef, Popup, ScaleControl, Source } from "react-map-gl/maplibre";
 import CommuneSearch from "../CommuneSearch";
-import mapStyle from "./map_style.json";
+// import mapStyle from "./map_style.json";
 import MapButton from "./MapButton";
 import { FeatureProperties, MapState } from "./types";
+
+import { mapStyles } from "carte-facile";
+import "carte-facile/carte-facile.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 const MapContainer = ({
   currentGeoJSON,
   mapState,
-  selectedGradient,
+  gradientColors,
   isMobile,
+  showGradientLegend,
   panelState,
   handleAreaClick,
   handleFullscreen,
   selectLevel,
-  setSelectedGradient,
   goBack,
   handleQuickNav,
+  displayCircleValue,
+  customLayers,
 }: {
   currentGeoJSON: GeoJSON.FeatureCollection & { id: string };
   mapState: MapState;
-  selectedGradient: string[];
+  gradientColors: string[];
   isMobile: boolean;
+  showGradientLegend: boolean;
   panelState: "closed" | "open" | "partial";
   handleAreaClick: (event: MapLayerMouseEvent) => void;
   handleFullscreen: () => void;
@@ -39,7 +46,6 @@ const MapContainer = ({
     code: string,
     source?: string,
   ) => void;
-  setSelectedGradient: (gradient: string[]) => void;
   goBack: () => void;
   handleQuickNav: (commune: {
     siret: string;
@@ -49,6 +55,20 @@ const MapContainer = ({
     type: "commune" | "epci" | "department" | "region";
     population: number;
   }) => void;
+  displayCircleValue: boolean;
+  customLayers?: Array<{
+    id: string;
+    source?: {
+      id: string;
+      type: "geojson";
+      data: GeoJSON.FeatureCollection;
+    };
+    layers?: LayerProps[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    component?: React.ComponentType<any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    props?: any;
+  }>;
 }) => {
   const mapRef = useRef<MapRef>(null);
   const [popupInfo, setPopupInfo] = useState<{
@@ -57,28 +77,8 @@ const MapContainer = ({
     properties: FeatureProperties;
   } | null>(null);
   const [hoveredFeature, setHoveredFeature] = useState<{ id: string; score: number } | null>(null);
-  const [showGradientSelector, setShowGradientSelector] = useState(false);
-  const [customGradient, setCustomGradient] = useState<string[]>(selectedGradient);
   const [isMapUpdating, setIsMapUpdating] = useState(false);
   const [searchOpen, setSearchOpen] = useState(true);
-
-  const gradientPresets = [
-    {
-      colors: ["#D3ADFE", "#669BBD", "#009081"],
-    },
-    {
-      colors: ["#FCC73B", "#E0812E", "#C03220"],
-    },
-    {
-      colors: ["#FF6565", "#807A73", "#009081"],
-    },
-    {
-      colors: ["#FCC73B", "#7EAB5E", "#009081"],
-    },
-    {
-      colors: ["#FF6868", "#FFC579", "#009081"],
-    },
-  ];
 
   // Layer styles
   const fillLayerStyle = {
@@ -130,6 +130,56 @@ const MapContainer = ({
       "line-width": 2.5,
     },
   };
+
+  const circleLayerStyle = {
+    id: "feature-circles",
+    type: "circle",
+    paint: {
+      "circle-radius": 20,
+      "circle-color": "#ffffff",
+      "circle-stroke-color": "#000000",
+      "circle-stroke-width": 2,
+      "circle-opacity": 0.9,
+    },
+  };
+
+  const textLayerStyle = {
+    id: "feature-labels",
+    type: "symbol",
+    layout: {
+      "text-field": ["get", "circleValue"],
+      "text-font": ["Arial Unicode MS Regular"],
+      "text-size": 14,
+      "text-anchor": "center",
+      "text-allow-overlap": true,
+    },
+    paint: {
+      "text-color": "#000000",
+      "text-halo-color": "#ffffff",
+      "text-halo-width": 1,
+    },
+  };
+
+  const pointFeatures = useMemo(() => {
+    if (!currentGeoJSON || ["department", "epci", "city"].includes(mapState.currentLevel))
+      return null;
+    const features = (currentGeoJSON as GeoJSON.FeatureCollection).features.map((feature) => {
+      const centroid = turf.centroid(feature);
+      return {
+        type: "Feature" as const,
+        geometry: centroid.geometry,
+        properties: {
+          ...feature.properties,
+          circleValue: feature.properties?.VALUE,
+        },
+      };
+    });
+    return {
+      type: "FeatureCollection" as const,
+      features,
+      id: `point-features-${Math.random().toString(36).substring(2, 15)}`,
+    };
+  }, [currentGeoJSON, mapState.currentLevel]);
 
   const onMouseLeave = useCallback(() => {
     if (hoveredFeature !== null && mapRef.current) {
@@ -201,13 +251,6 @@ const MapContainer = ({
     );
   }, [currentGeoJSON, isMobile]);
 
-  const handleGradientClick = (event: React.MouseEvent) => {
-    if (event.altKey) {
-      event.preventDefault();
-      setShowGradientSelector(true);
-    }
-  };
-
   const mapTooltip = (popupInfo: {
     longitude: number;
     latitude: number;
@@ -235,129 +278,6 @@ const MapContainer = ({
     );
   };
 
-  const gradientSelector = () => {
-    return (
-      <div
-        style={{
-          position: "absolute",
-          bottom: "100%",
-          left: "50%",
-          transform: "translateX(-50%)",
-          marginBottom: "8px",
-          background: "white",
-          border: "1px solid #ccc",
-          borderRadius: "4px",
-          padding: "12px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          zIndex: 20,
-          minWidth: "280px",
-        }}
-      >
-        <h4 style={{ margin: "0 0 12px 0", fontSize: "14px" }}>Sélecteur de gradient</h4>
-
-        <div style={{ marginBottom: "12px" }}>
-          <label style={{ fontSize: "12px", display: "block", marginBottom: "6px" }}>
-            Préréglages:
-          </label>
-          <div style={{ display: "flex", gap: "6px" }}>
-            {gradientPresets.map((preset, index) => (
-              <div
-                key={index}
-                style={{
-                  width: "50px",
-                  height: "20px",
-                  background: `linear-gradient(90deg, ${preset.colors[0]} 0%, ${preset.colors[1]} 50%, ${preset.colors[2]} 100%)`,
-                  borderRadius: "2px",
-                  cursor: "pointer",
-                  border: "2px solid #000091",
-                }}
-                title={`Préréglage ${index + 1}`}
-                onClick={() => setSelectedGradient(preset.colors)}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div style={{ marginBottom: "12px" }}>
-          <label style={{ fontSize: "12px", display: "block", marginBottom: "6px" }}>
-            Sélecteur à trois couleurs:
-          </label>
-          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-            <input
-              type="color"
-              value={customGradient[0]}
-              style={{
-                width: "60px",
-                height: "30px",
-                border: "1px solid #ccc",
-                borderRadius: "2px",
-              }}
-              onChange={(e) =>
-                setCustomGradient([e.target.value, customGradient[1], customGradient[2]])
-              }
-            />
-            <input
-              type="color"
-              value={customGradient[1]}
-              style={{
-                width: "60px",
-                height: "30px",
-                border: "1px solid #ccc",
-                borderRadius: "2px",
-              }}
-              onChange={(e) =>
-                setCustomGradient([customGradient[0], e.target.value, customGradient[2]])
-              }
-            />
-            <input
-              type="color"
-              value={customGradient[2]}
-              style={{
-                width: "60px",
-                height: "30px",
-                border: "1px solid #ccc",
-                borderRadius: "2px",
-              }}
-              onChange={(e) =>
-                setCustomGradient([customGradient[0], customGradient[1], e.target.value])
-              }
-            />
-          </div>
-        </div>
-
-        <div style={{ display: "flex", gap: "8px" }}>
-          <button
-            onClick={() => setShowGradientSelector(false)}
-            style={{
-              padding: "4px 8px",
-              fontSize: "12px",
-              border: "1px solid #ccc",
-              borderRadius: "2px",
-              background: "#f5f5f5",
-              cursor: "pointer",
-            }}
-          >
-            Fermer
-          </button>
-          <button
-            onClick={() => setSelectedGradient(customGradient)}
-            style={{
-              padding: "4px 8px",
-              fontSize: "12px",
-              border: "1px solid #000091",
-              borderRadius: "2px",
-              background: "#000091",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
-            Appliquer
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   const mapGradient = () => {
     return (
       <div className="map-gradient">
@@ -367,13 +287,12 @@ const MapContainer = ({
           style={{
             background: isMobile
               ? `
-                linear-gradient(180deg, ${selectedGradient[2]} 0%, ${selectedGradient[1]} 50%, ${selectedGradient[0]} 100%)
+                linear-gradient(180deg, ${gradientColors[2]} 0%, ${gradientColors[1]} 50%, ${gradientColors[0]} 100%)
               `
               : `
-                linear-gradient(90deg, ${selectedGradient[0]} 0%, ${selectedGradient[1]} 50%, ${selectedGradient[2]} 100%)
+                linear-gradient(90deg, ${gradientColors[0]} 0%, ${gradientColors[1]} 50%, ${gradientColors[2]} 100%)
               `,
           }}
-          onClick={handleGradientClick}
         >
           <div
             style={{
@@ -406,7 +325,6 @@ const MapContainer = ({
             <p className="map-gradient-label">Conforme</p>
           </div>
         )}
-        {showGradientSelector && gradientSelector()}
       </div>
     );
   };
@@ -505,6 +423,55 @@ const MapContainer = ({
     );
   };
 
+  const mapMobileButtons = () => {
+    return (
+      <div
+        style={{
+          position: "absolute",
+          width: "100%",
+          padding: "10px",
+          top: "0",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: mapState.currentLevel === "country" ? "flex-end" : "space-between",
+          gap: "1rem",
+          zIndex: 10,
+        }}
+      >
+        {mapState.currentLevel !== "country" && (
+          <MapButton onClick={() => goBack()} aria-label="Retour" tooltip="Retour">
+            <span aria-hidden="true" className={fr.cx("fr-icon-arrow-go-back-line")}></span>
+          </MapButton>
+        )}
+        {searchOpen ? (
+          <CommuneSearch
+            onSelect={handleQuickNav}
+            placeholder="Rechercher une commune ou un EPCI"
+            smallButton={true}
+            includeRegionsAndDepartments={true}
+            style={{
+              backgroundColor: "white",
+              fontSize: "14px",
+            }}
+          />
+        ) : (
+          <MapButton
+            onClick={() => setSearchOpen(true)}
+            aria-label="Rechercher..."
+            tooltip="Rechercher..."
+            customStyle={{ backgroundColor: "var(--background-action-high-blue-france)" }}
+          >
+            <span
+              aria-hidden="true"
+              style={{ color: "#fff" }}
+              className={fr.cx("fr-icon-search-line")}
+            ></span>
+          </MapButton>
+        )}
+      </div>
+    );
+  };
+
   useEffect(() => {
     if (!currentGeoJSON) return;
     if (!mapRef.current) return;
@@ -536,13 +503,13 @@ const MapContainer = ({
       <Map
         ref={mapRef}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        mapStyle={mapStyle as any}
+        mapStyle={mapStyles.desaturated as any}
+        projection="mercator"
         interactiveLayerIds={["polygon-fill"]}
         onClick={handleMapClick}
         onMouseLeave={onMouseLeave}
         onMouseMove={onMouseMove}
         cursor="pointer"
-        attributionControl={false}
         onResize={() => {
           if (!mapRef.current || !currentGeoJSON) return;
 
@@ -557,83 +524,83 @@ const MapContainer = ({
           }
         }}
       >
+        {popupInfo && mapTooltip(popupInfo)}
         <ScaleControl position="bottom-left" />
+
+        {customLayers?.map((customLayer) => {
+          if ("component" in customLayer && customLayer.component) {
+            const Component = customLayer.component;
+            return <Component key={customLayer.id} {...customLayer.props} />;
+          }
+          if (
+            "source" in customLayer &&
+            customLayer.source &&
+            "layers" in customLayer &&
+            customLayer.layers
+          ) {
+            return (
+              <Source
+                key={customLayer.id}
+                id={customLayer.source.id}
+                type={customLayer.source.type}
+                data={customLayer.source.data}
+                generateId={true}
+              >
+                {customLayer.layers.map((layer, index) => (
+                  <Layer key={`${customLayer.id}-${index}`} {...layer} />
+                ))}
+              </Source>
+            );
+          }
+          return null;
+        })}
+
         <Source
           id="interactive-polygons"
           type="geojson"
           data={currentGeoJSON as GeoJSON.FeatureCollection & { id: string }}
           generateId={true}
         >
+          <Layer
+            {...(fillLayerStyle as LayerProps)}
+            beforeId="toponyme localite importance 6et7 - Special DOM"
+          />
+          <Layer
+            {...(strokeLayerStyle as LayerProps)}
+            beforeId="toponyme localite importance 6et7 - Special DOM"
+          />
           {hoveredFeature && (
-            <Layer {...(hoveredFillLayerStyle as LayerProps)} beforeId="Water point/Sea or ocean" />
+            <Layer
+              {...(hoveredFillLayerStyle as LayerProps)}
+              beforeId="toponyme localite importance 6et7 - Special DOM"
+            />
           )}
           {hoveredFeature && (
             <Layer
               {...(hoveredStrokeLayerStyle as LayerProps)}
-              beforeId="Water point/Sea or ocean"
+              beforeId="toponyme localite importance 6et7 - Special DOM"
             />
           )}
-          <Layer {...(fillLayerStyle as LayerProps)} beforeId="Water point/Sea or ocean" />
-          <Layer {...(strokeLayerStyle as LayerProps)} beforeId="Water point/Sea or ocean" />
-          {mapState.selectedAreas.city && (
-            <Layer
-              {...(selectedCityLayerStyle as LayerProps)}
-              beforeId="Water point/Sea or ocean"
-            />
-          )}
+          {mapState.selectedAreas.city && <Layer {...(selectedCityLayerStyle as LayerProps)} />}
         </Source>
-        {popupInfo && mapTooltip(popupInfo)}
+
+        {pointFeatures && displayCircleValue && (
+          <Source
+            id="feature-points"
+            type="geojson"
+            data={pointFeatures as GeoJSON.FeatureCollection & { id: string }}
+            generateId={true}
+          >
+            <Layer {...(circleLayerStyle as LayerProps)} />
+            <Layer {...(textLayerStyle as LayerProps)} />
+          </Source>
+        )}
       </Map>
 
-      {isMobile && (
-        <div
-          style={{
-            position: "absolute",
-            width: "100%",
-            padding: "10px",
-            top: "0",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: mapState.currentLevel === "country" ? "flex-end" : "space-between",
-            gap: "1rem",
-            zIndex: 10,
-          }}
-        >
-          {mapState.currentLevel !== "country" && (
-            <MapButton onClick={() => goBack()} aria-label="Retour" tooltip="Retour">
-              <span aria-hidden="true" className={fr.cx("fr-icon-arrow-go-back-line")}></span>
-            </MapButton>
-          )}
-          {searchOpen ? (
-            <CommuneSearch
-              onSelect={handleQuickNav}
-              placeholder="Rechercher une commune ou un EPCI"
-              smallButton={true}
-              includeRegionsAndDepartments={true}
-              style={{
-                backgroundColor: "white",
-                fontSize: "14px",
-              }}
-            />
-          ) : (
-            <MapButton
-              onClick={() => setSearchOpen(true)}
-              aria-label="Rechercher..."
-              tooltip="Rechercher..."
-              customStyle={{ backgroundColor: "var(--background-action-high-blue-france)" }}
-            >
-              <span
-                aria-hidden="true"
-                style={{ color: "#fff" }}
-                className={fr.cx("fr-icon-search-line")}
-              ></span>
-            </MapButton>
-          )}
-        </div>
-      )}
+      {isMobile && mapMobileButtons()}
       {(panelState === "closed" || !isMobile) && (
         <>
-          {mapGradient()}
+          {showGradientLegend && mapGradient()}
           {mapDromSelector()}
           {mapActionButtons()}
         </>
@@ -648,12 +615,13 @@ MapContainer.propTypes = {
   handleFullscreen: PropTypes.func.isRequired,
   mapState: PropTypes.object.isRequired,
   selectLevel: PropTypes.func.isRequired,
-  selectedGradient: PropTypes.array.isRequired,
-  setSelectedGradient: PropTypes.func.isRequired,
+  gradientColors: PropTypes.array.isRequired,
   isMobile: PropTypes.bool.isRequired,
+  showGradientLegend: PropTypes.bool.isRequired,
   panelState: PropTypes.string.isRequired,
   goBack: PropTypes.func.isRequired,
   handleQuickNav: PropTypes.func.isRequired,
+  customLayers: PropTypes.array,
 };
 
 export default MapContainer;

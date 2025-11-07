@@ -30,6 +30,7 @@
     "db:drop": "node -r @swc-node/register scripts/db-drop.ts",
     "db:browse": "drizzle-kit studio --host=0.0.0.0 --port=8954",
     "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
     "db:seed:sample": "node -r @swc-node/register scripts/db-seed.ts ./data/dumps-sample",
     "db:seed": "node -r @swc-node/register scripts/db-seed.ts ./data/dumps",
     "db:migrate": "node -r @swc-node/register scripts/db-migrate.ts"
@@ -50,9 +51,11 @@
     "@swc-node/register": "^1.10.10",
     "@turf/turf": "^7.2.0",
     "@vis.gl/react-maplibre": "^8.0.4",
+    "carte-facile": "^0.8.1",
     "csv-stringify": "^6.6.0",
     "d3": "^7.9.0",
     "debounce": "^2.2.0",
+    "drizzle-kit": "^0.31.4",
     "drizzle-orm": "^0.44.4",
     "grist-api": "^0.1.7",
     "html-to-text": "^9.0.5",
@@ -91,7 +94,6 @@
     "@types/react": "19.1.9",
     "@vitejs/plugin-react": "^5.0.0",
     "cheerio": "^1.1.2",
-    "drizzle-kit": "^0.31.4",
     "eslint": "9.32.0",
     "eslint-config-next": "15.4.6",
     "eslint-plugin-jsx-a11y": "6.10.2",
@@ -105,13 +107,13 @@
     "vitest": "^3.2.4"
   },
   "optionalDependencies": {
-    "@rollup/rollup-linux-x64-musl": "4.46.2",
-    "@rollup/rollup-linux-x64-gnu": "4.46.2",
-    "@swc/core-linux-x64-gnu": "1.13.5",
-    "@swc/core-linux-x64-musl": "1.13.5",
-    "@swc/core-linux-arm64-gnu": "1.13.5",
+    "@img/sharp-linux-arm64": "0.34.3",
     "@img/sharp-linux-x64": "0.34.3",
     "@img/sharp-linuxmusl-x64": "0.34.3",
-    "@img/sharp-linux-arm64": "0.34.3"
+    "@rollup/rollup-linux-x64-gnu": "4.46.2",
+    "@rollup/rollup-linux-x64-musl": "4.46.2",
+    "@swc/core-linux-arm64-gnu": "1.13.5",
+    "@swc/core-linux-x64-gnu": "1.13.5",
+    "@swc/core-linux-x64-musl": "1.13.5"
   }
 }
