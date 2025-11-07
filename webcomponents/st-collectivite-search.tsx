@@ -17,7 +17,7 @@ class STCommuneSearchElement extends HTMLElement {
   private root: DomRoot | null = null;
 
   static get observedAttributes() {
-    return ["placeholder", "type", "small-button", "api-host"];
+    return ["placeholder", "type", "small-button", "api-url"];
   }
 
   connectedCallback() {
@@ -46,7 +46,7 @@ class STCommuneSearchElement extends HTMLElement {
     const smallButton = this.hasAttribute("small-button")
       ? this.getAttribute("small-button") !== "false"
       : false;
-    const apiBaseUrl = this.getAttribute("api-host") ?? undefined;
+    const apiBaseUrl = this.getAttribute("api-url") ?? undefined;
 
     return {
       placeholder,

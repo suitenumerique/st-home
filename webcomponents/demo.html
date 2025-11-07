@@ -29,7 +29,7 @@
       placeholder="Rechercher une commune"
       type="all"
       small-button="false"
-      api-host="https://suiteterritoriale.anct.gouv.fr"
+      api-url="https://suiteterritoriale.anct.gouv.fr/api/communes/search"
     ></st-collectivite-search>
 
     <div class="log" id="log">Sélection: aucune</div>
@@ -37,10 +37,12 @@
 
   <script src="/webcomponents/dist/st-collectivite-search.js"></script>
   <script>
-    const el = document.querySelector('st-collectivite-search');
+    const els = document.querySelectorAll('st-collectivite-search');
     const log = document.getElementById('log');
-    el.addEventListener('select', (e) => {
-      log.textContent = 'Sélection: ' + JSON.stringify(e.detail, null, 2);
+    els.forEach((el) => {
+        el.addEventListener('select', (e) => {
+            log.textContent = 'Sélection: ' + JSON.stringify(e.detail, null, 2);
+        });
     });
   </script>
 </body>

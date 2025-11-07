@@ -51,13 +51,6 @@ function CommuneSearchInput(
   const [loading, setLoading] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const buildUrl = (base: string | undefined, path: string) => {
-    if (!base) return path;
-    const trimmedBase = base.endsWith("/") ? base.slice(0, -1) : base;
-    const trimmedPath = path.startsWith("/") ? path : `/${path}`;
-    return `${trimmedBase}${trimmedPath}`;
-  };
-
   const handleInputChange = async (value: string) => {
     if (value.length === 0) {
       setCommunes([]);
@@ -81,7 +74,7 @@ function CommuneSearchInput(
 
     try {
       setLoading(true);
-      const response = await fetch(buildUrl(props.apiBaseUrl, `/api/communes/search`), {
+      const response = await fetch(props.apiBaseUrl || `/api/communes/search`, {
         method: "POST",
         body: JSON.stringify({
           q: value,
