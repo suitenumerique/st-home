@@ -29,10 +29,12 @@ const useMapURLState = () => {
       departmentView: urlParams.get("view"),
       ...Object.entries(filters).reduce(
         (acc, [key]) => {
-          if (key === "service_ids" && urlParams.get(key)) {
-            acc[key] = urlParams.get(key)?.split(",").map(Number) || null;
+          // Handle "ref" URL parameter mapping to "rcpnt_ref" filter
+          const urlParamName = key === "rcpnt_ref" ? "ref" : key;
+          if (key === "service_ids" && urlParams.get(urlParamName)) {
+            acc[key] = urlParams.get(urlParamName)?.split(",").map(Number) || null;
           } else {
-            acc[key] = urlParams.get(key) as string;
+            acc[key] = urlParams.get(urlParamName) as string;
           }
           return acc;
         },
@@ -62,11 +64,13 @@ const useMapURLState = () => {
       }
       Object.entries(filters).forEach(([key, param]) => {
         if (param) {
+          // Map "rcpnt_ref" filter to "ref" URL parameter
+          const urlParamName = key === "rcpnt_ref" ? "ref" : key;
           if (key === "service_ids" && Array.isArray(param)) {
             // Handle service_ids as array
-            params.set(key, param.join(","));
+            params.set(urlParamName, param.join(","));
           } else {
-            params.set(key, param as string);
+            params.set(urlParamName, param as string);
           }
         }
       });

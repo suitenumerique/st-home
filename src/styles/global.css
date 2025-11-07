@@ -9,9 +9,8 @@
 @import "./communesearch.css";
 
 .fr-header__operator {
-  min-width:155px;
+  min-width: 155px;
 }
-
 
 @media (min-width: 768px) {
   .fr-footer__logo {
