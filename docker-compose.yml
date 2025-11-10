@@ -148,3 +148,18 @@ services:
     env_file:
       - .env.defaults
       - .env.local
+
+  frontend-production:
+    profiles:
+      - frontend_production
+    volumes:
+      - ./:/app
+    build:
+      context: .
+      target: runtime-dev
+    pull_policy: build
+    env_file:
+      - .env.defaults
+      - .env.production
+    ports:
+      - "8950:8950"

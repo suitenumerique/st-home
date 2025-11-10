@@ -33,7 +33,8 @@
     "db:generate": "drizzle-kit generate",
     "db:seed:sample": "node -r @swc-node/register scripts/db-seed.ts ./data/dumps-sample",
     "db:seed": "node -r @swc-node/register scripts/db-seed.ts ./data/dumps",
-    "db:migrate": "node -r @swc-node/register scripts/db-migrate.ts"
+    "db:migrate": "node -r @swc-node/register scripts/db-migrate.ts",
+    "db:check": "node -r @swc-node/register scripts/db-check.ts"
   },
   "prettier": {
     "plugins": [

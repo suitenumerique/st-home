@@ -220,6 +220,10 @@ front-shell:  ## Open a shell in the frontend container
 	$(COMPOSE_RUN) frontend-dev bash
 .PHONY: front-shell
 
+front-shell-production:  ## Open a shell in the frontend container with production DB
+	$(COMPOSE_RUN) frontend-production bash
+.PHONY: front-shell-production
+
 front-install-deps:  ## Install the frontend dependencies with the lockfile
 	$(COMPOSE_RUN) frontend-base npm ci
 .PHONY: front-install-deps
