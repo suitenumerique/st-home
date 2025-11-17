@@ -67,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ${organizations.insee_dep} as dep,
           ${organizations.insee_reg} as reg,
           COALESCE(ARRAY_AGG(DISTINCT ${organizationsToServices.serviceId}) FILTER (WHERE ${organizationsToServices.serviceId} IS NOT NULL), ARRAY[]::integer[]) as all_services,
-          COALESCE(ARRAY_AGG(DISTINCT CASE WHEN ${organizationsToServices.active} = true THEN ${organizationsToServices.serviceId} END) FILTER (WHERE ${organizationsToServices.active} = true), ARRAY[]::integer[]) as active_services
+          COALESCE(ARRAY_AGG(DISTINCT ${organizationsToServices.serviceId}) FILTER (WHERE ${organizationsToServices.active} = true AND ${organizationsToServices.serviceId} IS NOT NULL), ARRAY[]::integer[]) as active_services
         FROM ${organizations}
         LEFT JOIN ${organizationsToServices} ON ${organizations.siret} = ${organizationsToServices.organizationSiret}
         ${service_id ? sql`LEFT JOIN ${services} ON ${organizationsToServices.serviceId} = ${services.id}` : sql``}
