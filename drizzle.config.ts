@@ -7,7 +7,13 @@ export default {
   dbCredentials: {
     url: process.env.DATABASE_URL || "",
   },
-  tablesFilter: ["st_organizations", "st_services", "st_organizations_to_structures", "st_organizations_to_services", "st_mutualization_structures"],
+  tablesFilter: [
+    "st_organizations",
+    "st_services",
+    "st_organizations_to_structures",
+    "st_organizations_to_services",
+    "st_mutualization_structures",
+  ],
   verbose: true,
   strict: true,
 } satisfies Config;

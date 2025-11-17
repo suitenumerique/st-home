@@ -7,7 +7,7 @@ async function checkDatabase() {
 
     // Simple query to test the connection
     const result = await db.execute(sql`SELECT 1 as test`);
-    
+
     if (result.rows && result.rows.length > 0) {
       console.log("✓ Database connection successful.");
       process.exit(0);
@@ -22,4 +22,3 @@ async function checkDatabase() {
 }
 
 checkDatabase();
-
