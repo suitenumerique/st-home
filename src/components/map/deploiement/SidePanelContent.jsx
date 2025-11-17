@@ -5,14 +5,18 @@ import CommuneSearch from "../../CommuneSearch";
 // import CommuneInfo from "../../onboarding/CommuneInfo";
 import Breadcrumb from "../Breadcrumb";
 import MapButton from "../MapButton";
+import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
+import { Button } from "@codegouvfr/react-dsfr/Button";
+import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
 import styles from "../../../styles/cartographie-deploiement.module.css";
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox";
 
-const SidePanelContent = ({ container, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, setPanelState,  computeAreaStats }) => {
+const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, setPanelState,  computeAreaStats }) => {
 
   const [linkCopied, setLinkCopied] = useState(false);
   const [services, setServices] = useState([]);
   const [scopedStats, setScopedStats] = useState([]);
+  const [hoveredServiceId, setHoveredServiceId] = useState(null);
 
   const formatNumber = (value) => {
     return new Intl.NumberFormat("fr-FR").format(value);
@@ -188,82 +192,84 @@ const SidePanelContent = ({ container, mapState, selectLevel, setMapState, goBac
         <h3 style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "0.75rem" }}>
           Produits
         </h3>
-        {levelStatsDisplay && levelStatsDisplay.services && levelStatsDisplay.services.map(({ id, name, logo_url, maturity, value }) => {
-          const isSelected = mapState.filters.service_ids && mapState.filters.service_ids.includes(id) || false;
-          const isDimmed = mapState.filters.service_ids && mapState.filters.service_ids.length > 0 && !mapState.filters.service_ids.includes(id);
-          
-          return (
-            <div
-              key={id}
-              className={`${styles.productItem} ${isSelected ? styles.selected : ''} ${isDimmed ? styles.dimmed : ''}`}
-              onClick={() => {
-                const currentServiceIds = mapState.filters.service_ids || [];
-                let newServiceIds;
-                
-                if (currentServiceIds.includes(id)) {
-                  newServiceIds = currentServiceIds.filter(serviceId => serviceId !== id);
-                } else {
-                  newServiceIds = [...currentServiceIds, id];
-                }
-                const finalServiceIds = newServiceIds.length > 0 ? newServiceIds : null;
-                
-                setMapState({ 
-                  ...mapState, 
-                  filters: { 
-                    ...mapState.filters, 
-                    service_ids: finalServiceIds 
-                  } 
-                });
-              }}
-            >
-            <div style={{ display: "flex", alignItems: "flex-start", marginBottom: "7px" }}>
-              <Checkbox
-                state="default"
-                options={[
-                  {
-                    label: null,
-                    nativeInputProps: {
-                      value: id,
-                      checked: isSelected,
-                      onChange: () => {},
-                      style: { marginRight: "0.5rem", cursor: "pointer" },
-                    }
+        <div className={styles.productItemsContainer}>
+          {levelStatsDisplay && levelStatsDisplay.services && levelStatsDisplay.services.map(({ id, name, logo_url, maturity, value }) => {
+            const isSelected = mapState.filters.service_ids && mapState.filters.service_ids.includes(id) || false;
+            const isDimmed = mapState.filters.service_ids && mapState.filters.service_ids.length > 0 && !mapState.filters.service_ids.includes(id);
+            
+            return (
+              <div
+                key={id}
+                className={`${styles.productItem} ${isSelected ? styles.selected : ''} ${isDimmed ? styles.dimmed : ''}`}
+                onClick={() => {
+                  const currentServiceIds = mapState.filters.service_ids || [];
+                  let newServiceIds;
+                  
+                  if (currentServiceIds.includes(id)) {
+                    newServiceIds = currentServiceIds.filter(serviceId => serviceId !== id);
+                  } else {
+                    newServiceIds = [...currentServiceIds, id];
                   }
-                ]}
-              />
-              {logo_url && (
-                <img src={logo_url} alt={name} style={{ width: "18px", height: "18px", marginRight: "0.4rem" }} />
-              )}
-              <span style={{ fontSize: "0.875rem"}}>{name}&nbsp;</span>
-              {
-                maturity !== 'stable' && <span className={fr.cx("fr-badge fr-badge--sm fr-badge--info fr-badge--no-icon")}>{maturity.toUpperCase()}</span>
-              }
-            </div>
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <div style={{ display: "flex", alignItems: "center", width: 'calc(100% - 50px)', position: "relative" }}>
-                <div
-                  style={{
-                    position: "absolute",
-                    left: "0",
-                    top: "0",
-                    zIndex: "1",
-                    opacity: levelStatsDisplay && (value / levelStatsDisplay.n_total_cities * 100 > 100) ? 0 : 1,
-                    width: `${levelStatsDisplay ? value / levelStatsDisplay.n_total_cities * 100 : 0}%`,
-                    height: "12px",
-                    backgroundColor: "#2A3C84",
-                    borderRadius: "4px",
-                    border: "1px solid rgba(255, 255, 255, 0.2)",
-                    boxSizing: "border-box",
-                    marginRight: "0.5rem",
-                  }}
-                ></div>
-                <div style={{ width: "100%", height: "12px", backgroundColor: "var(--background-alt-blue-france)", borderRadius: "4px" }}></div>
+                  const finalServiceIds = newServiceIds.length > 0 ? newServiceIds : null;
+                  
+                  setMapState({ 
+                    ...mapState, 
+                    filters: { 
+                      ...mapState.filters, 
+                      service_ids: finalServiceIds 
+                    } 
+                  });
+                }}
+                onMouseEnter={() => {
+                  setHoveredServiceId(id);
+                }}
+                onMouseLeave={() => {
+                  setHoveredServiceId(null);
+                }}
+              >
+                <div className={styles.productCheckbox}>
+                  {hoveredServiceId === id || isSelected ? (
+                    <span className={fr.cx("fr-icon-check-line")}></span>
+                  ) : (
+                    logo_url && (
+                      <img className={styles.productCheckboxImage} src={logo_url} alt={name} />
+                    )
+                  )}
+                </div>
+                <div className={styles.productItemContent}>
+                  <p className={styles.productItemName}>
+                    {name}  
+                    {
+                      maturity !== 'stable' && <span className={fr.cx("fr-badge fr-badge--sm fr-badge--info fr-badge--no-icon")} style={{ marginLeft: "0.4rem" }}>{maturity.toUpperCase()}</span>
+                    }
+                  </p>
+                  <div className={styles.productItemProgressBar}>
+                    <div style={{ width: 'calc(100% - 50px)', position: "relative" }}>
+                      <div
+                        style={{
+                          position: "absolute",
+                          left: "0",
+                          top: "0",
+                          zIndex: "1",
+                          opacity: levelStatsDisplay && (value / levelStatsDisplay.n_total_cities * 100 > 100) ? 0 : 1,
+                          width: `${levelStatsDisplay ? value / levelStatsDisplay.n_total_cities * 100 : 0}%`,
+                          height: "12px",
+                          backgroundColor: "#2A3C84",
+                          borderRadius: "4px",
+                          border: "1px solid rgba(255, 255, 255, 0.2)",
+                          boxSizing: "border-box",
+                          marginRight: "0.5rem",
+                        }}
+                      ></div>
+                      <div style={{ width: "100%", height: "12px", backgroundColor: "var(--background-alt-blue-france)", borderRadius: "4px" }}></div>
+                    </div>
+                    <span style={{ fontSize: "0.875rem", fontWeight: "bold", width: "50px", textAlign: "right", marginRight: "4px" }}>{formatNumber(value)}</span>
+                  </div>
+                </div>
               </div>
-              <span style={{ fontSize: "0.875rem", fontWeight: "bold", width: "50px", textAlign: "right", marginRight: "4px" }}>{formatNumber(value)}</span>
-            </div>
-          </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     )
   }
@@ -317,8 +323,9 @@ const SidePanelContent = ({ container, mapState, selectLevel, setMapState, goBac
             <CommuneSearch
               container={container}
               onSelect={handleQuickNav}
-              placeholder="Rechercher une collectivité"
+              placeholder="Rechercher une commune ou un EPCI"
               smallButton={true}
+              includeRegionsAndDepartments={true}
             />
           </div>
         )
@@ -347,8 +354,10 @@ const SidePanelContent = ({ container, mapState, selectLevel, setMapState, goBac
 
 SidePanelContent.propTypes = {
   container: PropTypes.object,
+  rcpntRefs: PropTypes.array.isRequired,
   mapState: PropTypes.object.isRequired,
   selectLevel: PropTypes.func.isRequired,
+  getColor: PropTypes.func.isRequired,
   setMapState: PropTypes.func.isRequired,
   goBack: PropTypes.func.isRequired,
   handleQuickNav: PropTypes.func.isRequired,
