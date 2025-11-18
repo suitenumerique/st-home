@@ -170,6 +170,10 @@ db-browse:  ## Browse the local database with drizzle-kit
 	$(COMPOSE_RUN) -p "8954:8954" frontend-dev npm run db:browse | sed 's/0\.0\.0\.0/localhost/g'
 .PHONY: db-browse
 
+db-browse-production:  ## Browse the production database with drizzle-kit
+	$(COMPOSE_RUN) -p "8954:8954" frontend-production npm run db:browse | sed 's/0\.0\.0\.0/localhost/g'
+.PHONY: db-browse-production
+
 db-seed:  ## Seed the local database with data from the worker dumps
 	$(COMPOSE_RUN) frontend-dev npm run db:seed
 .PHONY: db-seed

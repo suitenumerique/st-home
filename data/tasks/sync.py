@@ -67,7 +67,10 @@ logging.basicConfig(level=logging.INFO)
 def run():
     """Main data sync workflow"""
 
-    logger.info("Starting data sync workflow")
+    logger.info(
+        "Starting data sync workflow for %s",
+        "production" if os.getenv("PRODUCTION") == "1" else "dev",
+    )
 
     # Create the "dumps/" directory if it doesn't exist
     os.makedirs("dumps", exist_ok=True)
@@ -706,6 +709,9 @@ def create_new_dumps(orgs: list):
 
     logger.info("Dumping %d orgs", len(final_data))
 
+    if os.getenv("PRODUCTION") == "1" and len(final_data) < 30000:
+        raise Exception("Not enough orgs to dump for production: %d" % len(final_data))
+
     with open("dumps/organizations.json", "w") as f:
         json.dump(final_data, f, ensure_ascii=False, indent=4)
 
@@ -736,6 +742,14 @@ def create_new_dumps(orgs: list):
     with open("dumps/dpnt-quotidien.json", "w") as f:
         json.dump(full_dpnt, f, separators=(",", ":"))
     os.system("rm -rf dumps/dpnt-quotidien.json.gz && gzip -9 -f dumps/dpnt-quotidien.json")
+
+    # Make sure file is at least 2MB
+    if (
+        os.getenv("PRODUCTION") == "1"
+        and os.path.getsize("dumps/dpnt-quotidien.json.gz") < 2 * 1024 * 1024
+    ):
+        raise Exception("File is too small")
+
     upload_file_to_data_gouv(
         "fd73a12f-572c-4b04-89e9-91cc8c6ebcb3", "dumps/dpnt-quotidien.json.gz"
     )
@@ -748,6 +762,14 @@ def create_new_dumps(orgs: list):
             row["rpnt"] = ",".join(row["rpnt"]) if row.get("rpnt") else ""
             writer.writerow(row)
     os.system("rm -rf dumps/dpnt-quotidien.csv.gz && cd dumps && gzip -9 -f dpnt-quotidien.csv")
+
+    # Make sure file is at least 2MB
+    if (
+        os.getenv("PRODUCTION") == "1"
+        and os.path.getsize("dumps/dpnt-quotidien.csv.gz") < 2 * 1024 * 1024
+    ):
+        raise Exception("File is too small")
+
     upload_file_to_data_gouv("551a41a5-4ac7-40df-99cb-930aedb3c3ac", "dumps/dpnt-quotidien.csv.gz")
 
 
