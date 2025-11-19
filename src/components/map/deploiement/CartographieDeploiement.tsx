@@ -226,7 +226,7 @@ const CartographieDeploiement = () => {
 
         const hexagonCoords = createHexagon(cell.x, cell.y, hexbinSize);
         const score =
-          Math.sqrt(cell.used_products) / (Math.sqrt(filteredServices.length * cell.total_cities));
+          cell.used_products / (filteredServices.length * cell.total_cities);
 
         features.push({
           type: "Feature",

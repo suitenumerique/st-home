@@ -96,7 +96,7 @@ const HexbinLayer: React.FC<HexbinLayerProps> = ({
     id: `${id}-stroke`,
     type: "line" as const,
     paint: {
-      "line-color": "#F6F6F6" as any,
+      "line-color": "rgba(255,255,255,0.5)" as any,
       "line-width": ["interpolate", ["linear"], ["zoom"],
         0, 0,
         4, 0,
