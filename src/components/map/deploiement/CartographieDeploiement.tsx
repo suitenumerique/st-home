@@ -73,12 +73,9 @@ const CartographieDeploiement = () => {
           filteredStats = filteredStats.filter((stat: StatRecord) => stat.dep === insee_geo);
         }
         if (mapState.filters.service_ids && mapState.filters.service_ids.length > 0) {
-          filteredStats = filteredStats.filter((stat: StatRecord) =>
-            mapState.filters.service_ids.some(
-              (serviceId: number) =>
-                stat.all_services && stat.all_services.includes(serviceId.toString()),
-            ),
-          );
+          filteredStats = filteredStats.filter((stat: StatRecord) => {
+            return stat.all_services?.some((service: string) => mapState.filters.service_ids.includes(Number(service)));
+          });
         } else {
           // @ts-expect-error not typed
           filteredStats = filteredStats.filter((stat: StatRecord) => stat.all_services.length > 0);
@@ -173,7 +170,7 @@ const CartographieDeploiement = () => {
         ? mapState.filters.service_ids
         : services.map((service: { id: number }) => service.id);
 
-      apiData.forEach((entry) => {
+      apiData.forEach((entry) => {        
         const coords = coordinatesMap[entry.id.slice(0, 9)];
 
         if (!coords || !coords.longitude || !coords.latitude) {
@@ -229,7 +226,7 @@ const CartographieDeploiement = () => {
 
         const hexagonCoords = createHexagon(cell.x, cell.y, hexbinSize);
         const score =
-          Math.sqrt(cell.used_products) / (Math.sqrt(filteredServices.length) * cell.total_cities);
+          Math.sqrt(cell.used_products) / (Math.sqrt(filteredServices.length * cell.total_cities));
 
         features.push({
           type: "Feature",

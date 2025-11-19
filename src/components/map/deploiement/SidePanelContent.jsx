@@ -147,7 +147,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
             <p className={fr.cx("fr-text--lg fr-mb-0")} style={{ color: "var(--text-title-blue-france)" }}>
               {[
                 currentLevelLabel,
-                `${formatNumber(levelStatsDisplay.n_cities)} collectivités inscrites`,
+                `${formatNumber(levelStatsDisplay.n_total_cities)} collectivités`,
               ]
                 .filter(Boolean)
                 .join(" - ")}
@@ -283,7 +283,7 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
         {mapState.selectedAreas?.city?.additionalCityStats?.all_services && (
           services
           .map((service) => {
-            if (!mapState.selectedAreas.city.additionalCityStats.all_services.includes(String(service.id))) {
+            if (!mapState.selectedAreas.city.additionalCityStats.all_services.includes(service.id)) {
               return null;
             } else {
               return (
