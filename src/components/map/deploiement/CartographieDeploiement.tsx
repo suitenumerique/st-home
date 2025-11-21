@@ -27,8 +27,9 @@ const CartographieDeploiement = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [customLayers, setCustomLayers] = useState<any[]>([]);
 
-  const HEXBIN_SIZE_COUNTRY = 0.12; // ~15km hexagon size in degrees
-  const HEXBIN_SIZE_REGION = 0.12; // ~10km hexagon size in degrees
+  // Hex size in meters (Web Mercator). Use same size at all latitudes to avoid distortion
+  const HEXBIN_SIZE_COUNTRY = 15000; // ~15 km across-flats
+  const HEXBIN_SIZE_REGION = 12000; // ~12 km across-flats
 
   const hexbinSize = useMemo(() => {
     return mapState.currentLevel === "country" ? HEXBIN_SIZE_COUNTRY : HEXBIN_SIZE_REGION;
@@ -72,12 +73,9 @@ const CartographieDeploiement = () => {
           filteredStats = filteredStats.filter((stat: StatRecord) => stat.dep === insee_geo);
         }
         if (mapState.filters.service_ids && mapState.filters.service_ids.length > 0) {
-          filteredStats = filteredStats.filter((stat: StatRecord) =>
-            mapState.filters.service_ids.some(
-              (serviceId: number) =>
-                stat.all_services && stat.all_services.includes(serviceId.toString()),
-            ),
-          );
+          filteredStats = filteredStats.filter((stat: StatRecord) => {
+            return stat.all_services?.some((service: string) => mapState.filters.service_ids.includes(Number(service)));
+          });
         } else {
           // @ts-expect-error not typed
           filteredStats = filteredStats.filter((stat: StatRecord) => stat.all_services.length > 0);
@@ -130,21 +128,34 @@ const CartographieDeploiement = () => {
     [stats, mapState.filters],
   );
 
-  const createHexagon = (centerLat: number, centerLon: number, size: number): number[][] => {
-    const coordinates = [];
-    const radius = size * 0.35; // Make hexagon radius smaller to avoid overlap
+  // Web Mercator helpers (meters)
+  const EARTH_RADIUS = 6378137;
+  const toMercator = (lat: number, lon: number): { x: number; y: number } => {
+    const lambda = (lon * Math.PI) / 180;
+    const phi = (lat * Math.PI) / 180;
+    const x = EARTH_RADIUS * lambda;
+    const y = EARTH_RADIUS * Math.log(Math.tan(Math.PI / 4 + phi / 2));
+    return { x, y };
+  };
+  const fromMercator = (x: number, y: number): { lat: number; lon: number } => {
+    const lon = (x / EARTH_RADIUS) * (180 / Math.PI);
+    const lat = (2 * Math.atan(Math.exp(y / EARTH_RADIUS)) - Math.PI / 2) * (180 / Math.PI);
+    return { lat, lon };
+  };
 
+  // Build a hex polygon around a Mercator center using a radius in meters, return lon/lat ring
+  const createHexagon = (centerX: number, centerY: number, acrossFlats: number): number[][] => {
+    const coordinates: number[][] = [];
+    // Convert across-flats to circumradius (center to vertex) for a regular hexagon
+    const radius = acrossFlats / Math.sqrt(3);
     for (let i = 0; i < 6; i++) {
-      const angle = (i * 60 * Math.PI) / 180;
-      // Account for latitude when calculating longitude offset
-      const latOffset = radius * Math.cos(angle);
-      const lonOffset = (radius * Math.sin(angle)) / Math.cos((centerLat * Math.PI) / 180);
-
-      const lat = centerLat + latOffset;
-      const lon = centerLon + lonOffset;
+      const angle = (Math.PI / 180) * (60 * i + 30); // flat-topped hex
+      const vx = centerX + radius * Math.cos(angle);
+      const vy = centerY + radius * Math.sin(angle);
+      const { lat, lon } = fromMercator(vx, vy);
       coordinates.push([lon, lat]);
     }
-    coordinates.push(coordinates[0]); // Close the polygon
+    coordinates.push(coordinates[0]);
     return coordinates;
   };
 
@@ -159,32 +170,34 @@ const CartographieDeploiement = () => {
         ? mapState.filters.service_ids
         : services.map((service: { id: number }) => service.id);
 
-      apiData.forEach((entry) => {
+      apiData.forEach((entry) => {        
         const coords = coordinatesMap[entry.id.slice(0, 9)];
 
         if (!coords || !coords.longitude || !coords.latitude) {
           return;
         }
 
-        const gridSize = hexbinSize;
-        const hexHeight = gridSize * 0.6; // Closer vertical spacing
+        // Project to Web Mercator meters
+        const { x, y } = toMercator(coords.latitude, coords.longitude);
 
-        // Calculate which row and column this point belongs to
-        const row = Math.round(coords.latitude / hexHeight);
-        const col = Math.round(coords.longitude / gridSize);
+        // Hex grid dimensions (flat-topped)
+        const hexWidth = hexbinSize; // across flats (meters)
+        const hexHeight = Math.sqrt(3) * (hexWidth / 2); // vertical spacing between rows
 
-        // Offset every other row by half a grid size for interlocking
-        const offsetLon = row % 2 === 0 ? 0 : gridSize / 2;
-        const gridLon = col * gridSize + offsetLon;
-        const gridLat = row * hexHeight;
+        // Compute row/col indices for an offset grid (odd-r horizontal layout)
+        const row = Math.round(y / hexHeight);
+        const col = Math.round((x - (row % 2 ? hexWidth / 2 : 0)) / hexWidth);
 
-        const hexKey = `${gridLon},${gridLat}`;
+        const gridX = col * hexWidth + (row % 2 ? hexWidth / 2 : 0);
+        const gridY = row * hexHeight;
+
+        const hexKey = `${gridX},${gridY}`;
 
         // Aggregate in hex cell
         if (!hexCells.has(hexKey)) {
           hexCells.set(hexKey, {
-            lon: gridLon,
-            lat: gridLat,
+            x: gridX,
+            y: gridY,
             used_products: 0,
             total_cities: 0,
           });
@@ -211,16 +224,17 @@ const CartographieDeploiement = () => {
           return;
         }
 
-        const hexagonCoords = createHexagon(cell.lat, cell.lon, hexbinSize);
+        const hexagonCoords = createHexagon(cell.x, cell.y, hexbinSize);
         const score =
-          Math.sqrt(cell.used_products) / (Math.sqrt(filteredServices.length) * cell.total_cities);
+          cell.used_products / (filteredServices.length * cell.total_cities);
 
         features.push({
           type: "Feature",
           properties: {
             score: score,
-            centerLon: cell.lon,
-            centerLat: cell.lat,
+            // Keep center for potential debugging (lon/lat)
+            centerLon: fromMercator(cell.x, cell.y).lon,
+            centerLat: fromMercator(cell.x, cell.y).lat,
           },
           geometry: {
             type: "Polygon",
