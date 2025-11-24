@@ -118,7 +118,7 @@ export function PageLayout({ children }: LayoutProps) {
     {
       iconId: "fr-icon-question-line" as const,
       linkProps: {
-        href: "https://docs.numerique.gouv.fr/docs/043871cb-be2b-4b36-a221-3e97936ee0ef/",
+        href: "https://docs.suite.anct.gouv.fr/docs/281bc1f0-5911-4442-b4b7-af78d77f0e1e/",
       },
       text: <>Centre d&rsquo;aide</>,
     },
