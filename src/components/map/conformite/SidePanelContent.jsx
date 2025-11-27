@@ -64,8 +64,8 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
       ["0", "Non conforme"],
     ] : [
       ["2", "Conforme"],
-      ["1", "Semi-conforme"],
-      ["0", "Non conforme"],
+      ["1", "À renforcer"],
+      ["0", "À risque"],
     ];
 
     const conformityStats = computeAreaStats(
