@@ -73,7 +73,7 @@ def check_dns(email_domain):
 
     # Check MX records
     try:
-        mx_records = dns.resolver.resolve(email_domain, "MX", raise_on_no_answer=False, lifetime=5)
+        mx_records = dns.resolver.resolve(email_domain, "MX", raise_on_no_answer=False, lifetime=10)
         non_empty_mx_records = [
             record for record in sorted(mx_records, key=lambda x: x.preference) if record.exchange
         ]
@@ -120,7 +120,7 @@ def check_spf(email_domain, issues):
     """
     try:
         spf_records = dns.resolver.resolve(
-            email_domain, "TXT", raise_on_no_answer=False, lifetime=5
+            email_domain, "TXT", raise_on_no_answer=False, lifetime=10
         )
         spf_found = False
         for record in spf_records:
@@ -145,7 +145,7 @@ def check_dmarc(email_domain, issues):
     dmarc_domain = f"_dmarc.{email_domain}"
     try:
         dmarc_records = dns.resolver.resolve(
-            dmarc_domain, "TXT", raise_on_no_answer=False, lifetime=5
+            dmarc_domain, "TXT", raise_on_no_answer=False, lifetime=10
         )
 
         dmarc_found = False

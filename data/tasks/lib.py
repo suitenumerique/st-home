@@ -120,7 +120,7 @@ def resolve_hostname(hostname):
     return socket.gethostbyname(hostname)
 
 
-def resolve_with_timeout(hostname, timeout=5):
+def resolve_with_timeout(hostname, timeout=10):
     with ThreadPoolExecutor(max_workers=1) as executor:
         future = executor.submit(resolve_hostname, hostname)
         try:
