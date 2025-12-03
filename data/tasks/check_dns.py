@@ -13,7 +13,7 @@ from celery_app import app
 from .conformance import Issues, data_checks_doable, validate_conformance
 from .db import find_org_by_siret, list_all_orgs, upsert_issues
 from .defs import EU_COUNTRIES
-from .lib import geoip_country_by_hostname
+from .lib import geoip_countries_by_hostname
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -73,7 +73,9 @@ def check_dns(email_domain):
 
     # Check MX records
     try:
-        mx_records = dns.resolver.resolve(email_domain, "MX", raise_on_no_answer=False, lifetime=10)
+        mx_records = dns.resolver.resolve(
+            email_domain, "MX", raise_on_no_answer=False, lifetime=10
+        )
         non_empty_mx_records = [
             record for record in sorted(mx_records, key=lambda x: x.preference) if record.exchange
         ]
@@ -82,31 +84,32 @@ def check_dns(email_domain):
 
     if not non_empty_mx_records:
         issues[Issues.DNS_MX_MISSING] = f"No MX records found for domain {email_domain}"
-    elif type(non_empty_mx_records[0].exchange.to_text()) == str:
-        # Get the IP of the first MX record
-        countries = [
-            geoip_country_by_hostname(record.exchange.to_text()) for record in non_empty_mx_records
-        ]
-        non_empty_countries = [c for c in countries if c]
-        hostnames = [record.exchange.to_text() for record in non_empty_mx_records]
-        tlds = [
-            str(tldextract.extract(hostname).top_domain_under_public_suffix).lower()
-            for hostname in hostnames
-        ]
+    else:
+        for record in non_empty_mx_records:
+            if type(record.exchange.to_text()) != str:
+                continue
+            ips, countries = geoip_countries_by_hostname(record.exchange.to_text())
+            if ips is None or countries is None:
+                continue
+            non_empty_countries = {c for c in countries if c}
+            ips = set(ips)
+            if len(non_empty_countries) == 0:
+                continue
+            metadata["mx_countries"] = list(non_empty_countries)
+            metadata["mx_tld"] = str(
+                tldextract.extract(record.exchange.to_text()).top_domain_under_public_suffix
+            ).lower()
+            metadata["mx_ips"] = list(ips)
 
-        if len(set(non_empty_countries)) > 1:
-            logger.info(
-                f"MX records for {email_domain} {hostnames} have different countries: {countries}"
-            )
-
-        # Seems reasonable to only keep the first MX record, they should all point to the same provider
-        metadata["mx_country"] = non_empty_countries[0] if non_empty_countries else None
-        metadata["mx_tld"] = tlds[0]
-
-        if metadata["mx_country"] and metadata["mx_country"] not in EU_COUNTRIES:
-            issues[Issues.DNS_MX_OUTSIDE_EU] = (
-                f"MX record for {email_domain} is in {metadata['mx_country']}, outside of the EU"
-            )
+            outside_eu = [
+                country for country in metadata["mx_countries"] if country not in EU_COUNTRIES
+            ]
+            if len(outside_eu) > 0:
+                metadata["mx_countries_outside_eu"] = outside_eu
+                issues[Issues.DNS_MX_OUTSIDE_EU] = (
+                    f"MX record for {email_domain} has an IP in {outside_eu[0]}, outside of the EU"
+                )
+            break
 
     check_spf(email_domain, issues)
     check_dmarc(email_domain, issues)
@@ -194,5 +197,8 @@ def check_dmarc(email_domain, issues):
 if __name__ == "__main__":
     # Run with command line arguments
     siret = sys.argv[1]
-    issues = run(siret)
-    logger.info(json.dumps(issues, indent=2))
+    if "." in siret:
+        logger.info(check_dns(siret))
+    else:
+        issues = run(siret)
+        logger.info(json.dumps(issues, indent=2))

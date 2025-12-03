@@ -182,7 +182,7 @@ export default function CommuneInfo({
             </MessageLine>
           )}
 
-          {issues.includes("WEBSITE_HTTP_REDIRECT") && (
+          {rcpnt.includes("1.3") && issues.includes("WEBSITE_HTTP_REDIRECT") && (
             <MessageLine severity="error" rcpnt="1.4">
               L&rsquo;adresse en HTTP{" "}
               <strong>
@@ -193,62 +193,68 @@ export default function CommuneInfo({
             </MessageLine>
           )}
 
-          {!rcpnt.includes("1.5") && (
+          {rcpnt.includes("1.3") && !rcpnt.includes("1.5") && (
             <MessageLine severity="error" rcpnt="1.5">
               Le certificat SSL du site internet de la collectivité n&rsquo;est pas valide.
             </MessageLine>
           )}
 
-          {rcpnt.includes("1.4") && rcpnt.includes("1.5") && (
+          {rcpnt.includes("1.3") && rcpnt.includes("1.4") && rcpnt.includes("1.5") && (
             <MessageLine severity="success" rcpnt="1.4">
               Le site internet utilise bien HTTPS avec un certificat valide.
             </MessageLine>
           )}
 
-          {!rcpnt.includes("1.6") && (
+          {rcpnt.includes("1.3") && !rcpnt.includes("1.6") && (
             <MessageLine severity="error" rcpnt="1.6">
               L&rsquo;adresse <strong>{commune.website_url}</strong> redirige vers un autre domaine
               non déclaré sur Service-Public.gouv.fr.
             </MessageLine>
           )}
 
-          {issues.includes("WEBSITE_HTTPS_NOWWW") && issues.includes("WEBSITE_HTTP_NOWWW") && (
-            <MessageLine severity="warning" rcpnt="1.7">
-              Les adresses{" "}
-              <strong>
-                http://
-                {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
-              </strong>{" "}
-              et{" "}
-              <strong>
-                https://
-                {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
-              </strong>{" "}
-              (sans www.) ne redirigent pas vers le site internet de la collectivité.
-            </MessageLine>
-          )}
+          {rcpnt.includes("1.3") &&
+            issues.includes("WEBSITE_HTTPS_NOWWW") &&
+            issues.includes("WEBSITE_HTTP_NOWWW") && (
+              <MessageLine severity="warning" rcpnt="1.7">
+                Les adresses{" "}
+                <strong>
+                  http://
+                  {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
+                </strong>{" "}
+                et{" "}
+                <strong>
+                  https://
+                  {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
+                </strong>{" "}
+                (sans www.) ne redirigent pas vers le site internet de la collectivité.
+              </MessageLine>
+            )}
 
-          {issues.includes("WEBSITE_HTTPS_NOWWW") && !issues.includes("WEBSITE_HTTP_NOWWW") && (
-            <MessageLine severity="warning" rcpnt="1.7">
-              L&rsquo;adresse{" "}
-              <strong>
-                https://
-                {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
-              </strong>{" "}
-              (sans www.) ne redirige pas vers le site internet de la collectivité.
-            </MessageLine>
-          )}
+          {rcpnt.includes("1.3") &&
+            issues.includes("WEBSITE_HTTPS_NOWWW") &&
+            !issues.includes("WEBSITE_HTTP_NOWWW") && (
+              <MessageLine severity="warning" rcpnt="1.7">
+                L&rsquo;adresse{" "}
+                <strong>
+                  https://
+                  {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
+                </strong>{" "}
+                (sans www.) ne redirige pas vers le site internet de la collectivité.
+              </MessageLine>
+            )}
 
-          {issues.includes("WEBSITE_HTTP_NOWWW") && !issues.includes("WEBSITE_HTTPS_NOWWW") && (
-            <MessageLine severity="warning" rcpnt="1.7">
-              L&rsquo;adresse{" "}
-              <strong>
-                http://
-                {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
-              </strong>{" "}
-              (sans www.) ne redirige pas vers le site internet de la collectivité.
-            </MessageLine>
-          )}
+          {rcpnt.includes("1.3") &&
+            issues.includes("WEBSITE_HTTP_NOWWW") &&
+            !issues.includes("WEBSITE_HTTPS_NOWWW") && (
+              <MessageLine severity="warning" rcpnt="1.7">
+                L&rsquo;adresse{" "}
+                <strong>
+                  http://
+                  {(commune.website_url || "").replace(/^https?:\/\/www\./, "")}
+                </strong>{" "}
+                (sans www.) ne redirige pas vers le site internet de la collectivité.
+              </MessageLine>
+            )}
 
           {!rcpnt.includes("1.8") && (
             <MessageLine severity="warning" rcpnt="1.8">
@@ -412,22 +418,24 @@ export default function CommuneInfo({
                 </>
               )}{" "}
               situé en dehors de l&rsquo;Union européenne
-              {commune.email_metadata?.mx_country && (
-                <>
-                  {" "}
-                  (
-                  <strong>
-                    {ISO_3166_1_ALPHA_2_TO_NAME[commune.email_metadata?.mx_country] ||
-                      commune.email_metadata?.mx_country}
-                  </strong>
-                  )
-                </>
-              )}
+              {commune.email_metadata?.mx_countries_outside_eu &&
+                commune.email_metadata?.mx_countries_outside_eu.length > 0 && (
+                  <>
+                    {" "}
+                    (
+                    <strong>
+                      {ISO_3166_1_ALPHA_2_TO_NAME[
+                        commune.email_metadata?.mx_countries_outside_eu[0]
+                      ] || commune.email_metadata?.mx_countries_outside_eu[0]}
+                    </strong>
+                    )
+                  </>
+                )}
               .
             </MessageLine>
           )}
 
-          {rcpnt.includes("2.1") && rcpnt.includes("2.8") && commune.email_metadata?.mx_country && (
+          {rcpnt.includes("2.1") && rcpnt.includes("2.8") && (
             <MessageLine severity="success" rcpnt="2.8">
               L&rsquo;enregistrement MX désigne un serveur{" "}
               {commune.email_metadata?.mx_tld && (
@@ -436,17 +444,18 @@ export default function CommuneInfo({
                 </>
               )}{" "}
               situé dans l&rsquo;Union européenne
-              {commune.email_metadata?.mx_country && (
-                <>
-                  {" "}
-                  (
-                  <strong>
-                    {ISO_3166_1_ALPHA_2_TO_NAME[commune.email_metadata?.mx_country] ||
-                      commune.email_metadata?.mx_country}
-                  </strong>
-                  )
-                </>
-              )}
+              {commune.email_metadata?.mx_countries &&
+                commune.email_metadata?.mx_countries.length > 0 && (
+                  <>
+                    {" "}
+                    (
+                    <strong>
+                      {ISO_3166_1_ALPHA_2_TO_NAME[commune.email_metadata?.mx_countries[0]] ||
+                        commune.email_metadata?.mx_countries[0]}
+                    </strong>
+                    )
+                  </>
+                )}
               .
             </MessageLine>
           )}
