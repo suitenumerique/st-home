@@ -41,7 +41,7 @@ class LocalhostHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
         elif self.path == "/timeout":
-            time.sleep(10)
+            time.sleep(15)
             self.send_response(200)
             self.end_headers()
 

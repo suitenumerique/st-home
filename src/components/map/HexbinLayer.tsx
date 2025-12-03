@@ -97,12 +97,7 @@ const HexbinLayer: React.FC<HexbinLayerProps> = ({
     type: "line" as const,
     paint: {
       "line-color": "rgba(255,255,255,0.5)" as any,
-      "line-width": ["interpolate", ["linear"], ["zoom"],
-        0, 0,
-        4, 0,
-        6, 0.5,
-        8, 2
-      ] as any,
+      "line-width": ["interpolate", ["linear"], ["zoom"], 0, 0, 4, 0, 6, 0.5, 8, 2] as any,
     },
     layout: {
       visibility: visible ? ("visible" as const) : ("none" as const),

@@ -147,7 +147,7 @@ data-lint-check:  ## Check data code linting without fixing
 	$(COMPOSE_RUN) -T data_tests sh -c 'ruff check . && ruff format --check .'
 .PHONY: data-lint-check
 
-data-geoip-download:  ## Download the GeoIP database
+data-geoip-download:  ## Download the GeoIP database from https://www.npmjs.com/package/@ip-location-db/dbip-geo-whois-asn-country-mmdb
 	mkdir -p data/dumps && curl -LSs -o data/dumps/geoip-country.mmdb 'https://cdn.jsdelivr.net/npm/@ip-location-db/dbip-geo-whois-asn-country-mmdb/dbip-geo-whois-asn-country-ipv4.mmdb'
 .PHONY: data-geoip-download
 

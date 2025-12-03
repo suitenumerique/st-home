@@ -108,19 +108,22 @@ geoip_cache = TTLCache(maxsize=1000, ttl=3600)
 
 
 @cached(geoip_cache)
-def geoip_country_by_hostname(hostname):
+def geoip_countries_by_hostname(hostname) -> tuple[list[str], list[str]]:
+    """Returns all the IPs and their countries for a hostname"""
     try:
-        ip = resolve_with_timeout(hostname, timeout=10)
-        return geoip_country_by_ip(ip)
+        ips = resolve_with_timeout(hostname, timeout=10)
+        return ips, [geoip_country_by_ip(ip) for ip in ips]
     except Exception:
-        return None
+        return None, None
 
 
-def resolve_hostname(hostname):
-    return socket.gethostbyname(hostname)
+def resolve_hostname(hostname) -> list[str]:
+    """Returns all the IPs for a hostname"""
+    return socket.gethostbyname_ex(hostname)[2]
 
 
-def resolve_with_timeout(hostname, timeout=10):
+def resolve_with_timeout(hostname, timeout=10) -> list[str]:
+    """Returns all the IPs for a hostname with a timeout"""
     with ThreadPoolExecutor(max_workers=1) as executor:
         future = executor.submit(resolve_hostname, hostname)
         try:
