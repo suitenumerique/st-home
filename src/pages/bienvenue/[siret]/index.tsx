@@ -1,5 +1,6 @@
 import {
   findAllServices,
+  findOrganizationBySiren,
   findOrganizationServicesBySiret,
   findOrganizationsWithStructures,
 } from "@/lib/db";
@@ -32,7 +33,7 @@ import { determineOnboardingCase, type Commune, type OnboardingProps } from "@/l
 import { OnboardingCase } from "@/types/onboarding";
 
 interface PageProps extends OnboardingProps {
-  commune?: Commune;
+  commune?: Commune & { epci_siret?: string };
   allServices: Service[];
   usedServicesIds: number[];
 }
@@ -172,7 +173,7 @@ export default function Bienvenue(props: PageProps) {
     currentPageBreadcrumbs.push({
       label: `${commune.epci_name} · ${commune.insee_dep}`,
       linkProps: {
-        href: `/bienvenue/${commune.epci_siren}`,
+        href: `/bienvenue/${commune.epci_siret}`,
       },
     });
   }
@@ -182,9 +183,8 @@ export default function Bienvenue(props: PageProps) {
   if (
     !commune?.type ||
     !commune.name ||
-    !commune.zipcode ||
-    !commune.epci_name ||
-    !commune.insee_dep
+    (commune.type === 'commune' && (!commune.zipcode || !commune.epci_name)) ||
+    (commune.type === 'epci' && !commune.insee_dep)
   ) {
     currentPageLabel = "Présence numérique des collectivités";
   } else {
@@ -242,7 +242,11 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   }
 
   // Fetch the commune with its structures
-  const commune = await findOrganizationsWithStructures(siret);
+  const commune = await findOrganizationsWithStructures(siret) as Commune & { epci_siret?: string };
+  if (commune?.type === 'commune' && commune?.epci_siren) {
+    const epci = await findOrganizationBySiren(commune?.epci_siren);
+    commune.epci_siret = epci?.siret;
+  }
   const allServices = await findAllServices();
   const organizationServices = await findOrganizationServicesBySiret(siret);
 

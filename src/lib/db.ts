@@ -73,6 +73,16 @@ export async function findOrganizationBySiret(siret: string) {
   return organization;
 }
 
+export async function findOrganizationBySiren(siren: string) {
+  const [organization] = await db
+    .select()
+    .from(organizations)
+    .where(eq(organizations.siren, siren))
+    .limit(1);
+
+  return organization;
+}
+
 export async function findOrganizationsWithStructures(siret: string) {
   const [organization] = await db
     .select()
