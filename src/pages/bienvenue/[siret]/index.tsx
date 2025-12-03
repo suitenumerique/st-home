@@ -62,15 +62,6 @@ export default function Bienvenue(props: PageProps) {
     .map((name) => allServices.find((s) => s.name === name))
     .filter((s) => s && !usedServices.find((us) => us.id === s.id));
 
-  const otherServices = [
-    "Accompagnement numérique sur mesure",
-    "Administration +",
-    "Mon espace collectivité",
-    "Aides territoires",
-  ]
-    .map((name) => allServices.find((s) => s.name === name))
-    .filter((s) => s && !usedServices.find((us) => us.id === s.id));
-
   // const getCommuneContent = (_commune: Commune) => {
   //   switch (onboardingCase) {
   //     case OnboardingCase.ACTIVE_IN_REGIE:
@@ -145,7 +136,6 @@ export default function Bienvenue(props: PageProps) {
         <div className={fr.cx("fr-mb-11w")}>
           <OtherServicesView
             organisation={commune as Commune}
-            services={otherServices as Service[]}
           />
         </div>
 
@@ -190,7 +180,7 @@ export default function Bienvenue(props: PageProps) {
   } else {
     currentPageLabel = {
       commune: `${commune.name} · ${commune.zipcode}`,
-      epci: `${commune.epci_name} · ${commune.insee_dep}`,
+      epci: `${commune.name} · ${commune.insee_dep}`,
     }[commune?.type];
   }
 
