@@ -1,6 +1,5 @@
 import type { Commune } from "@/lib/onboarding";
-import { fr } from "@codegouvfr/react-dsfr";
-import { Accordion } from "@codegouvfr/react-dsfr/Accordion";
+import Link from "next/link";
 import { useState } from "react";
 import CommuneInfo from "./CommuneInfo";
 
@@ -15,12 +14,20 @@ export default function OrganisationPresenceView({ organisation }: OrganisationP
   const [expanded, setExpanded] = useState(false);
   return (
     <>
-      <Accordion
+      <p>
+        Voici la situation de la collectivité par rapport au{" "}
+        <Link href="/conformite/referentiel">
+          Référentiel de la Présence Numérique des Territoires
+        </Link>{" "}
+        :
+      </p>
+      <CommuneInfo commune={organisation} />
+      {/* <Accordion
         className="presence-accordion"
         onExpandedChange={(value) => setExpanded(value)}
         label={
           <div className="accordion-label">
-            <h3 style={{ flex: 1 }}>Parcourez la présence numérique de la collectivité</h3>
+            <h5 style={{ flex: 1, color: "var(--light-decisions-text-text-default-grey, #3A3A3A)" }}>Parcourez la présence numérique de la collectivité</h5>
             <i
               className={
                 fr.cx("fr-icon--md", "fr-icon-arrow-down-s-line") + (expanded ? " rotate-180" : "")
@@ -33,7 +40,7 @@ export default function OrganisationPresenceView({ organisation }: OrganisationP
         <ul>
           <CommuneInfo commune={organisation} />
         </ul>
-      </Accordion>
+      </Accordion> */}
     </>
   );
 }

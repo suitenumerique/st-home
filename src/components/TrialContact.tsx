@@ -12,7 +12,7 @@ export default function TrialContact() {
             href: "/conformite/cartographie",
           }}
         >
-          Tester la version d'essai
+          Obtenir un compte démo
         </Button>
         <Button
           priority="secondary"

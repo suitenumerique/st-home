@@ -37,7 +37,7 @@ export default function SuiteServicesView({ services }: SuiteServicesViewProps) 
               services :
             </p>
             <p>
-              <Link className="fr-link" href="" target="_blank">
+              <Link className="fr-link" href="">
                 {selectedService?.name}
               </Link>{" "}
               pour fournir un nom de domaine institutionnel, à toutes les collectivités qui en ont

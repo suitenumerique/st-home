@@ -24,7 +24,11 @@ export default function OtherServicesView({ organisation, services }: OtherServi
                 <div className="other-service">
                   <div className="content">
                     <div className="title">
-                      <h3>L'accompagnement numérique sur mesure</h3>
+                      <h5
+                        style={{ color: "var(--light-decisions-text-text-default-grey, #3A3A3A)" }}
+                      >
+                        L'accompagnement numérique sur mesure
+                      </h5>
                     </div>
                     <p className="description">
                       Une démarche personnalisée pour identifier vos besoins, définir des
@@ -51,7 +55,11 @@ export default function OtherServicesView({ organisation, services }: OtherServi
                   <div className="content">
                     <div className="title">
                       <img src={service.logo_url ?? undefined} alt={service.name} />
-                      <h5>{service.name}</h5>
+                      <h5
+                        style={{ color: "var(--light-decisions-text-text-default-grey, #3A3A3A)" }}
+                      >
+                        {service.name}
+                      </h5>
                     </div>
                     <p className="description">
                       Aide à la résolution des blocages administratifs de vos citoyens.

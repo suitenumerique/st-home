@@ -1,4 +1,4 @@
-import type { Service } from "@/lib/onboarding";
+import type { Commune, Service } from "@/lib/onboarding";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import Link from "next/link";
@@ -6,12 +6,13 @@ import { useState } from "react";
 
 type OPSNServicesViewProps = {
   services: Service[];
+  commune: Commune;
 };
 
 /**
  * View for displaying the OPSN services
  */
-export default function OPSNServicesView({ services }: OPSNServicesViewProps) {
+export default function OPSNServicesView({ services, commune }: OPSNServicesViewProps) {
   const [selectedService, setSelectedService] = useState<Service | undefined>(
     services.find((s) => s.name === "Messages"),
   );
@@ -30,7 +31,7 @@ export default function OPSNServicesView({ services }: OPSNServicesViewProps) {
             </p>
             {selectedService && (
               <p>
-                <Link className="fr-link" href={selectedService.url} target="_blank">
+                <Link className="fr-link" href={selectedService.url}>
                   {selectedService.name}
                 </Link>{" "}
                 pour stocker et partager simplement vos documents.

@@ -12,7 +12,6 @@ import { NextSeo } from "next-seo";
 
 // Import view components
 import Newsletter from "@/components/Newsletter";
-import DepartmentPresenceView from "@/components/onboarding/DepartmentPresenceView";
 import ErrorView from "@/components/onboarding/ErrorView";
 import MutualisationView from "@/components/onboarding/MutualisationView";
 import OPSNServicesView from "@/components/onboarding/OPSNServicesView";
@@ -103,7 +102,7 @@ export default function Bienvenue(props: PageProps) {
     return (
       <div className={fr.cx("fr-mb-4w")}>
         <h1
-          className={fr.cx("fr-h1", "fr-mb-8w")}
+          className={fr.cx("fr-h1", "fr-mb-4w")}
           style={{ color: "var(--text-title-blue-france)" }}
         >
           {commune.name}
@@ -113,37 +112,43 @@ export default function Bienvenue(props: PageProps) {
           </span>
         </h1>
 
-        <div className={fr.cx("fr-mb-8w")}>
+        <div className={fr.cx("fr-mb-11w")}>
           <OrganisationPresenceView organisation={commune as Commune} />
         </div>
 
-        <div className={fr.cx("fr-mb-10w")}>
-          <UsedServicesView services={usedServices} />
-        </div>
+        {usedServices.length > 0 && (
+          <div className={fr.cx("fr-mb-11w")}>
+            <UsedServicesView services={usedServices} />
+          </div>
+        )}
 
-        <div className={fr.cx("fr-mb-8w")}>
-          <OPSNServicesView services={opsnServices as Service[]} />
-        </div>
+        {commune.st_eligible && commune.structures && commune.structures.length > 0 && (
+          <div className={fr.cx("fr-mb-11w")}>
+            <OPSNServicesView services={opsnServices as Service[]} commune={commune as Commune} />
+          </div>
+        )}
 
-        <div className={fr.cx("fr-mb-8w")}>
+        <div className={fr.cx("fr-mb-11w")}>
           <SuiteServicesView services={suiteServices as Service[]} />
         </div>
 
-        <div className={fr.cx("fr-mb-8w")}>
-          <MutualisationView
-            services={allServices as Service[]}
-            organisation={commune as Commune}
-          />
-        </div>
+        {!commune.st_eligible && (
+          <div className={fr.cx("fr-mb-11w")}>
+            <MutualisationView
+              services={allServices as Service[]}
+              organisation={commune as Commune}
+            />
+          </div>
+        )}
 
-        <div className={fr.cx("fr-mb-8w")}>
+        <div className={fr.cx("fr-mb-11w")}>
           <OtherServicesView
             organisation={commune as Commune}
             services={otherServices as Service[]}
           />
         </div>
 
-        <DepartmentPresenceView organisation={commune as Commune} />
+        {/* <DepartmentPresenceView organisation={commune as Commune} /> */}
       </div>
     );
   };

@@ -32,7 +32,7 @@ export default function MutualisationView({ services }: MutualisationViewProps) 
               collectivités de moins de 3500 habitants l’un ou les services suivants :
             </p>
             <p>
-              <Link className="fr-link" href="" target="_blank">
+              <Link className="fr-link" href="">
                 {selectedService?.name}
               </Link>{" "}
               pour envoyer et recevoir vos courriels professionnels.
