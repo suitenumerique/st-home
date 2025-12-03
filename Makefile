@@ -265,6 +265,10 @@ front-lint-check:  ## Check the frontend code linting without fixing
 	$(COMPOSE_RUN) frontend-base npm run lint:check
 .PHONY: front-lint-check
 
+front-links-check:  ## Check the frontend links
+	$(COMPOSE_RUN) frontend-dev npm run test:links
+.PHONY: front-links-check
+
 help:
 	@echo "$(BOLD)Makefile help$(RESET)"
 	@echo "Please use 'make $(BOLD)target$(RESET)' where $(BOLD)target$(RESET) is one of:"

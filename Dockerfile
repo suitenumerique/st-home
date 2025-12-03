@@ -1,5 +1,9 @@
 FROM node:22-slim AS runtime-dev
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    procps \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 CMD ["npm", "run", "dev"]

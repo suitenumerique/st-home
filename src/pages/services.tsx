@@ -143,6 +143,9 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const forceRefresh = query?.refresh === "1";
 
   try {
+    if (!parentId) {
+      throw new Error("DOCS_SERVICES_PARENTID is not set");
+    }
     const { getDocumentChildren } = await import("@/lib/docs2dsfr/server");
     const sections = await getDocumentChildren(parentId, forceRefresh);
 
@@ -159,7 +162,7 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
     console.error("Error fetching articles:", error);
     return {
       props: {
-        posts: [],
+        sections: [],
       },
     };
   }

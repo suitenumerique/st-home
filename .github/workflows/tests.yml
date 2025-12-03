@@ -46,3 +46,5 @@ jobs:
         run: make front-install-deps
       - name: Run linting checks
         run: make front-lint-check
+      - name: Run links checks
+        run: make front-links-check
