@@ -2,7 +2,13 @@ import { and, desc, eq, like, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "./schema";
-import { mutualizationStructures, organizations, organizationsToStructures } from "./schema";
+import {
+  mutualizationStructures,
+  organizations,
+  organizationsToServices,
+  organizationsToStructures,
+  services,
+} from "./schema";
 import { unaccent } from "./string";
 
 function getConnectionString() {
@@ -97,6 +103,17 @@ export async function findOrganizationsWithStructures(siret: string) {
   };
 }
 
+export async function findOrganizationServicesBySiret(siret: string) {
+  const services = await db
+    .select({
+      id: organizationsToServices.serviceId,
+    })
+    .from(organizationsToServices)
+    .where(eq(organizationsToServices.organizationSiret, siret));
+
+  return services;
+}
+
 export async function searchOrganizations(query: string, type: string, limit = 10) {
   const searchQuery = query.trim();
 
@@ -138,6 +155,11 @@ export async function searchOrganizations(query: string, type: string, limit = 1
     (result, index, self) => index === self.findIndex((t) => t.siret === result.siret),
   );
   return uniqueResults;
+}
+
+export async function findAllServices() {
+  const allServices = await db.select().from(services).orderBy(desc(services.name));
+  return allServices;
 }
 
 export const searchCommunes = searchOrganizations;

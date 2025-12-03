@@ -1,4 +1,4 @@
-import { mutualizationStructures, organizations } from "@/lib/schema";
+import { mutualizationStructures, organizations, services } from "@/lib/schema";
 import { OnboardingCase } from "@/types/onboarding";
 import { type InferSelectModel } from "drizzle-orm";
 
@@ -10,6 +10,8 @@ export type Structure = InferSelectModel<typeof mutualizationStructures>;
 export type Commune = Organization & {
   structures?: Structure[];
 };
+
+export type Service = InferSelectModel<typeof services>;
 
 export interface OnboardingProps {
   onboardingCase: OnboardingCase;

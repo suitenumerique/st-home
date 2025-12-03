@@ -471,7 +471,7 @@ export default function CommuneInfo({
   );
 
   return (
-    <div className={fr.cx("fr-mb-4w")}>
+    <div className={fr.cx("fr-mb-4w")} style={{ backgroundColor: "#FFFFFF" }}>
       <div>
         {/* Website */}
         <Accordion

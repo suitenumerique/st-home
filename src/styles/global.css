@@ -65,6 +65,228 @@ body {
   margin: 1rem 0 2rem 0;
 }
 
+/* Organisation presence */
+.presence-accordion {
+  border-radius: 8px;
+  border: 1px solid var(--light-decisions-border-border-default-grey, #ddd);
+  overflow: hidden;
+
+  > .fr-accordion__title .fr-accordion__btn {
+    padding: 0;
+
+    .accordion-label {
+      padding: 2rem;
+      background-color: #ffffff;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      i {
+        transition: transform 0.3s ease;
+        color: var(--text-title-blue-france);
+        &.rotate-180 {
+          transform: rotate(180deg);
+        }
+      }
+    }
+    &::after {
+      display: none;
+    }
+  }
+
+  .fr-collapse {
+    background-color: #ffffff;
+    margin: 0 !important;
+
+    > ul > div {
+      margin-bottom: 0 !important;
+    }
+  }
+
+  &::before {
+    box-shadow: none !important;
+  }
+}
+
+/* Bienvenue page */
+.st-bienvenue-page {
+  padding-top: 0 !important;
+
+  .service-tile {
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--light-decisions-border-border-default-grey, #ddd);
+    flex-shrink: 0;
+    cursor: pointer;
+
+    .content {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem;
+
+      .title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-title-blue-france);
+      }
+
+      img {
+        height: 30px;
+      }
+    }
+
+    &:hover {
+      background-color: var(--light-decisions-background-default-grey, #f5f5f5);
+    }
+  }
+
+  .opsn-services-section,
+  .suite-services-section {
+    @media (min-width: 1024px) {
+      max-width: 486px;
+    }
+  }
+
+  .service-app-buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    flex-wrap: wrap;
+    cursor: pointer;
+
+    .service-app-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      border-radius: 4px;
+      width: 95px;
+      height: 95px;
+
+      img {
+        width: 38px;
+      }
+
+      .title {
+        font-weight: 700;
+        font-size: 12px;
+        color: var(--text-title-blue-france);
+        text-align: center;
+        line-height: 16px;
+      }
+
+      &:hover,
+      &.selected {
+        background-color: var(--light-decisions-background-default-grey, #f5f5f5);
+      }
+    }
+  }
+
+  .other-service {
+    padding: 2rem;
+    border-radius: var(--xs, 8px);
+    background: var(--light-decisions-background-background-default-grey-hover, #f6f6f6);
+    box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    position: relative;
+    overflow: hidden;
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+
+      .title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.25rem;
+
+        img {
+          width: 30px;
+          box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        h3,
+        h5 {
+          margin-bottom: 0rem;
+        }
+      }
+
+      .description {
+        margin-bottom: 0.5rem;
+        color: var(--light-decisions-text-default-grey, #666);
+      }
+    }
+
+    img {
+      max-width: 280px;
+      border-radius: 20px;
+    }
+  }
+
+  .departement-section {
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background-color: #f5f5fe;
+
+    .section-name {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--light-text-mention-grey, #666);
+    }
+
+    .section-description {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 24px;
+      color: var(--light-text-default-grey);
+    }
+
+    .card-indicator {
+      .card-value {
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 36px;
+        color: var(--light-text-title-grey, #161616);
+        margin-bottom: 0.4rem;
+      }
+
+      .card-title {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 24px;
+        color: var(--light-text-default-grey);
+        height: 48px;
+      }
+    }
+  }
+}
+
+/* Trial contact */
+.trial-contact {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+
+  .buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+  }
+}
+
 /* Leaflet */
 
 path.leaflet-interactive:focus {
