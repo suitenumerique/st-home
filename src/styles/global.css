@@ -169,6 +169,7 @@ body {
 
       img {
         width: 38px;
+        height: auto;
       }
 
       .title {

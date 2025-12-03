@@ -1,4 +1,5 @@
 import { withSentryConfig } from "@sentry/nextjs";
+import webpack from "webpack";
 import ContentSecurityPolicy from "./csp.config.mjs";
 
 // const withBundleAnalyzer = bundleAnalyzer({
@@ -29,6 +30,11 @@ const moduleExports = {
       test: /\.(woff2|webmanifest)$/,
       type: "asset/resource",
     });
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /\.d\.ts$/,
+      }),
+    );
     return config;
   },
   env: {
