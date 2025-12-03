@@ -1,4 +1,3 @@
-import type { Service } from "@/lib/onboarding";
 import { Commune } from "@/lib/onboarding";
 import { fr } from "@codegouvfr/react-dsfr";
 import Link from "next/link";
@@ -11,11 +10,11 @@ type OtherServicesViewProps = {
  * View for displaying the other services accessible to the organisation
  */
 export default function OtherServicesView({ organisation }: OtherServicesViewProps) {
-
   const services = [
     {
       name: "Accompagnement numérique sur mesure",
-      description: "Une démarche personnalisée pour identifier vos besoins, définir des priorités et vous guider dans vos projets numériques.",
+      description:
+        "Une démarche personnalisée pour identifier vos besoins, définir des priorités et vous guider dans vos projets numériques.",
       url: "https://anct.gouv.fr/programmes-dispositifs/incubateur-des-territoires/accompagnement-numerique-sur-mesure",
       linkText: "Candidater dès maintenant",
     },
@@ -60,9 +59,7 @@ export default function OtherServicesView({ organisation }: OtherServicesViewPro
                         {services[0].name}
                       </h5>
                     </div>
-                    <p className="description">
-                      {services[0].description}
-                    </p>
+                    <p className="description">{services[0].description}</p>
                     <p>
                       <Link
                         className="fr-link"
@@ -78,8 +75,8 @@ export default function OtherServicesView({ organisation }: OtherServicesViewPro
               </div>
             )}
 
-            {services.slice(1).map((service) => (
-              <div key={service.id} className={fr.cx("fr-col-12", "fr-col-md-4")}>
+            {services.slice(1).map((service, index) => (
+              <div key={index} className={fr.cx("fr-col-12", "fr-col-md-4")}>
                 <div className="other-service" style={{ paddingBottom: "170px" }}>
                   <div className="content">
                     <div className="title">
@@ -90,9 +87,7 @@ export default function OtherServicesView({ organisation }: OtherServicesViewPro
                         {service.name}
                       </h5>
                     </div>
-                    <p className="description">
-                      {service.description}
-                    </p>
+                    <p className="description">{service.description}</p>
                     <p>
                       <Link className="fr-link" href={service.url} target="_blank">
                         {service.linkText}

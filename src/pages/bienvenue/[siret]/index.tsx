@@ -134,9 +134,7 @@ export default function Bienvenue(props: PageProps) {
         )}
 
         <div className={fr.cx("fr-mb-11w")}>
-          <OtherServicesView
-            organisation={commune as Commune}
-          />
+          <OtherServicesView organisation={commune as Commune} />
         </div>
 
         {/* <DepartmentPresenceView organisation={commune as Commune} /> */}
@@ -173,8 +171,8 @@ export default function Bienvenue(props: PageProps) {
   if (
     !commune?.type ||
     !commune.name ||
-    (commune.type === 'commune' && (!commune.zipcode || !commune.epci_name)) ||
-    (commune.type === 'epci' && !commune.insee_dep)
+    (commune.type === "commune" && (!commune.zipcode || !commune.epci_name)) ||
+    (commune.type === "epci" && !commune.insee_dep)
   ) {
     currentPageLabel = "Présence numérique des collectivités";
   } else {
@@ -232,8 +230,10 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   }
 
   // Fetch the commune with its structures
-  const commune = await findOrganizationsWithStructures(siret) as Commune & { epci_siret?: string };
-  if (commune?.type === 'commune' && commune?.epci_siren) {
+  const commune = (await findOrganizationsWithStructures(siret)) as Commune & {
+    epci_siret?: string;
+  };
+  if (commune?.type === "commune" && commune?.epci_siren) {
     const epci = await findOrganizationBySiren(commune?.epci_siren);
     commune.epci_siret = epci?.siret;
   }
