@@ -47,7 +47,7 @@ export const MessageLine = ({ children, severity, rcpnt }: MessageLineProps): Re
         <span
           className={fr.cx("fr-icon-error-line", "fr-label--error", "fr-mr-1w")}
           role="img"
-          aria-label="Non conforme"
+          aria-label="A risque"
         />
       )}
       {severity === "warning" && (
@@ -471,7 +471,7 @@ export default function CommuneInfo({
   );
 
   return (
-    <div className={fr.cx("fr-mb-4w")}>
+    <div>
       <div style={{ backgroundColor: "#FFFFFF" }}>
         {/* Website */}
         <Accordion
@@ -479,9 +479,9 @@ export default function CommuneInfo({
           onExpandedChange={(value) => setWebsiteExpanded(value)}
           label={
             <div className={fr.cx("fr-grid-row", "fr-grid-row--middle")}>
-              <span className={fr.cx("fr-icon-earth-line", "fr-mr-1w")} aria-hidden="true" />
+              <span className={fr.cx("fr-icon-global-line", "fr-mr-1w")} aria-hidden="true" />
               Site internet :&nbsp;
-              <span className={fr.cx("fr-text--bold")}>{commune.website_domain || ""}</span>
+              <span style={{ textDecoration: "underline" }}>{commune.website_domain || ""}</span>
               &nbsp;
               <div className={fr.cx("fr-ml-2w", "fr-badges-group", "fr-badges-group--sm")}>
                 {websiteInvalid
@@ -490,7 +490,7 @@ export default function CommuneInfo({
                     ? getBadge("error", "Manquant")
                     : websiteCompliant
                       ? getBadge("success", "Conforme")
-                      : getBadge("error", "Non conforme")}
+                      : getBadge("error", "A risque")}
                 {!inProgress && hasWebsiteRecommendations && getBadge("warning", "Recommandations")}
                 {inProgress && !websiteMissing && getBadge("warning", "Vérifications en cours")}
               </div>
@@ -508,7 +508,7 @@ export default function CommuneInfo({
             <div className={fr.cx("fr-grid-row", "fr-grid-row--middle")}>
               <span className={fr.cx("fr-icon-mail-line", "fr-mr-1w")} aria-hidden="true" />
               Adresse de messagerie :&nbsp;
-              <span className={fr.cx("fr-text--bold")}>
+              <span style={{ textDecoration: "underline" }}>
                 {emailMissing ? "" : commune.email_official || ""}
               </span>
               <div className={fr.cx("fr-ml-2w", "fr-badges-group", "fr-badges-group--sm")}>
@@ -518,7 +518,7 @@ export default function CommuneInfo({
                     ? getBadge("error", "Manquante")
                     : emailCompliant
                       ? getBadge("success", "Conforme")
-                      : getBadge("error", "Non conforme")}
+                      : getBadge("error", "A risque")}
                 {!inProgress && hasEmailRecommendations && getBadge("warning", "Recommandations")}
                 {inProgress && !emailMissing && getBadge("warning", "Vérifications en cours")}
               </div>
@@ -532,7 +532,7 @@ export default function CommuneInfo({
       {commune.service_public_url &&
         (!servicePublicUrlOnExpand || websiteExpanded || emailExpanded) && (
           <p
-            className={fr.cx("fr-mt-2w", "fr-text--xs", "fr-label--disabled")}
+            className={fr.cx("fr-mt-2w", "fr-mb-0", "fr-text--xs", "fr-label--disabled")}
             style={{ textAlign: "right" }}
           >
             {commune.issues_last_checked && (

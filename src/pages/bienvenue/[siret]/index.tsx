@@ -38,6 +38,12 @@ interface PageProps extends OnboardingProps {
   usedServicesIds: number[];
 }
 
+type Structure = {
+  id: string;
+  name: string;
+  shortname: string | null;
+};
+
 export default function Bienvenue(props: PageProps) {
   const { commune, onboardingCase, error, allServices = [], usedServicesIds = [] } = props;
 
@@ -116,7 +122,10 @@ export default function Bienvenue(props: PageProps) {
 
         {commune.st_eligible && commune.structures && commune.structures.length > 0 && (
           <div className={fr.cx("fr-mb-11w")}>
-            <OPSNServicesView services={opsnServices as Service[]} commune={commune as Commune} />
+            <OPSNServicesView
+              services={opsnServices as Service[]}
+              commune={commune as Commune & { structures: Structure[] }}
+            />
           </div>
         )}
 

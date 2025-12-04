@@ -1,4 +1,5 @@
 import type { Commune } from "@/lib/onboarding";
+import { fr } from "@codegouvfr/react-dsfr";
 import Link from "next/link";
 import { useState } from "react";
 import CommuneInfo from "./CommuneInfo";
@@ -13,9 +14,22 @@ type OrganisationPresenceViewProps = {
 export default function OrganisationPresenceView({ organisation }: OrganisationPresenceViewProps) {
   const [expanded, setExpanded] = useState(false);
   return (
-    <>
-      <p>
-        Voici la situation de la collectivité par rapport au{" "}
+    <div
+      style={{
+        backgroundColor: "#FFFFFF",
+        padding: "40px 40px 32px 40px",
+        borderRadius: "8px",
+        border: "1px solid var(--light-border-default-grey, #DDD)",
+      }}
+    >
+      <h3
+        className={fr.cx("fr-h3", "fr-mb-1w")}
+        style={{ color: "var(--light-text-default-grey, #3A3A3A)" }}
+      >
+        La présence numérique de la collectivité
+      </h3>
+      <p className="fr-mb-3w">
+        Parcourez la situation de la collectivité selon le{" "}
         <Link href="/conformite/referentiel">
           Référentiel de la Présence Numérique des Territoires
         </Link>{" "}
@@ -41,6 +55,6 @@ export default function OrganisationPresenceView({ organisation }: OrganisationP
           <CommuneInfo commune={organisation} />
         </ul>
       </Accordion> */}
-    </>
+    </div>
   );
 }
