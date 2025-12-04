@@ -73,7 +73,9 @@ def check_dns(email_domain):
 
     # Check MX records
     try:
-        mx_records = dns.resolver.resolve(email_domain, "MX", raise_on_no_answer=False, lifetime=10)
+        mx_records = dns.resolver.resolve(
+            email_domain, "MX", raise_on_no_answer=False, lifetime=10
+        )
         non_empty_mx_records = [
             record for record in sorted(mx_records, key=lambda x: x.preference) if record.exchange
         ]
