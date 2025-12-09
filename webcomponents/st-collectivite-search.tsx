@@ -9,6 +9,7 @@ type Props = {
   type?: CommuneType;
   smallButton?: boolean;
   apiBaseUrl?: string;
+  backgroundColor?: string;
 };
 
 type DomRoot = ReturnType<typeof ReactDOM.createRoot>;
@@ -17,7 +18,7 @@ class STCommuneSearchElement extends HTMLElement {
   private root: DomRoot | null = null;
 
   static get observedAttributes() {
-    return ["placeholder", "type", "small-button", "api-url"];
+    return ["placeholder", "type", "small-button", "api-url", "background-color"];
   }
 
   connectedCallback() {
@@ -47,12 +48,14 @@ class STCommuneSearchElement extends HTMLElement {
       ? this.getAttribute("small-button") !== "false"
       : false;
     const apiBaseUrl = this.getAttribute("api-url") ?? undefined;
+    const backgroundColor = this.getAttribute("background-color") ?? undefined;
 
     return {
       placeholder,
       type: typeAttr,
       smallButton,
       apiBaseUrl,
+      backgroundColor,
     };
   }
 
@@ -79,7 +82,7 @@ class STCommuneSearchElement extends HTMLElement {
           type={props.type}
           smallButton={props.smallButton}
           apiBaseUrl={props.apiBaseUrl}
-          style={{ width: "100%" }}
+          style={{ width: "100%", backgroundColor: props.backgroundColor ?? undefined }}
         />
       </>,
     );
