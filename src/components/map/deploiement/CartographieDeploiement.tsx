@@ -74,7 +74,9 @@ const CartographieDeploiement = () => {
         }
         if (mapState.filters.service_ids && mapState.filters.service_ids.length > 0) {
           filteredStats = filteredStats.filter((stat: StatRecord) => {
-            return stat.all_services?.some((service: string) => mapState.filters.service_ids.includes(Number(service)));
+            return stat.all_services?.some((service: string) =>
+              mapState.filters.service_ids.includes(Number(service)),
+            );
           });
         } else {
           // @ts-expect-error not typed
@@ -170,7 +172,7 @@ const CartographieDeploiement = () => {
         ? mapState.filters.service_ids
         : services.map((service: { id: number }) => service.id);
 
-      apiData.forEach((entry) => {        
+      apiData.forEach((entry) => {
         const coords = coordinatesMap[entry.id.slice(0, 9)];
 
         if (!coords || !coords.longitude || !coords.latitude) {
@@ -225,8 +227,7 @@ const CartographieDeploiement = () => {
         }
 
         const hexagonCoords = createHexagon(cell.x, cell.y, hexbinSize);
-        const score =
-          cell.used_products / (filteredServices.length * cell.total_cities);
+        const score = cell.used_products / (filteredServices.length * cell.total_cities);
 
         features.push({
           type: "Feature",
