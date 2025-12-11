@@ -62,7 +62,7 @@ export default function Bienvenue(props: PageProps) {
           "Deveco",
         ]
       : [
-          "Nom de domaine collectivite.fr",
+          "Domaine collectivite.fr",
           "Messages",
           "Rendez-vous",
           "Fichiers",
@@ -108,7 +108,7 @@ export default function Bienvenue(props: PageProps) {
           </div>
         )}
 
-        {commune.st_eligible && commune.structures && commune.structures.length > 0 && (
+        {commune.structures && commune.structures.length > 0 && (
           <div className={fr.cx("fr-mb-15w")}>
             <OPSNServicesView
               services={opsnServices as Service[]}
@@ -124,7 +124,16 @@ export default function Bienvenue(props: PageProps) {
         {!commune.st_eligible && (
           <div className={fr.cx("fr-mb-15w")}>
             <MutualisationView
-              services={allServices as Service[]}
+              services={
+                allServices.filter((s) => {
+                  return ![
+                    "Aides-territoires",
+                    "Mon Espace Collectivité",
+                    "Administration +",
+                    "Bases Adresses Locales",
+                  ].includes(s.name);
+                }) as Service[]
+              }
               organisation={commune as Commune}
             />
           </div>
@@ -251,6 +260,13 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
 
   // Convert the Drizzle result to the Commune type
   const communeData: Commune = JSON.parse(JSON.stringify(commune));
+
+  communeData.structures = communeData.structures?.map((structure) => {
+    if (structure.shortname === "Mégalis Bretagne") {
+      structure.shortname = "Mégalis";
+    }
+    return structure;
+  });
 
   // Determine the onboarding case with options
   return {

@@ -1,9 +1,5 @@
 import CustomAlert from "@/components/CustomAlert";
-import {
-  findAllServices,
-  findOrganizationBySiren,
-  findOrganizationsWithStructures,
-} from "@/lib/db";
+import { findOrganizationBySiren, findOrganizationsWithStructures } from "@/lib/db";
 import type { Commune, Service } from "@/lib/onboarding";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
@@ -23,8 +19,6 @@ interface PageProps {
 export default function ContactForm(props: PageProps) {
   const { commune, allServices } = props;
 
-  console.log(commune);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{
     success: boolean;
@@ -33,10 +27,40 @@ export default function ContactForm(props: PageProps) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [userEmail, setUserEmail] = useState("");
 
-  const opsnServices = ["Messages", "Fichiers", "Rendez-vous", "Projets"].map((name) =>
-    allServices.find((s) => s.name === name),
-  );
-  const anctServices = allServices.filter((s) => !opsnServices.find((os) => os?.id === s.id));
+  const opsnServicesNames =
+    commune?.type === "commune" ? ["Messages", "Rendez-vous"] : ["Messages"];
+  const opsnServices = opsnServicesNames.map((name) => allServices.find((s) => s.name === name));
+
+  const anctServicesNames =
+    commune?.type === "commune"
+      ? [
+          "Fichiers",
+          "Projets",
+          "Grist",
+          "Espace sur demande",
+          "Agents en intervention",
+          "Annuaire des collectivités",
+          "Adresses",
+          "Mon suivi social",
+          "Deveco",
+        ]
+      : [
+          "Domaine collectivite.fr",
+          "Messages",
+          "Rendez-vous",
+          "Fichiers",
+          "Projets",
+          "Grist",
+          "Espace sur demande",
+          "Agents en intervention",
+          "Annuaire des collectivités",
+          "Adresses",
+          "Mon suivi social",
+          "Deveco",
+        ];
+  const anctServices = anctServicesNames.map((name) => allServices.find((s) => s.name === name));
+
+  console.log(opsnServices, anctServices);
 
   let currentPageBreadcrumbs = [
     {
@@ -450,7 +474,7 @@ export default function ContactForm(props: PageProps) {
                         options={[
                           ...opsnServices.map((service) => ({
                             label: service?.name || "",
-                            hintText: "Description du service ...",
+                            hintText: service?.description || "",
                             nativeInputProps: {
                               name: "services",
                               value: service?.id || "",
@@ -489,7 +513,7 @@ export default function ContactForm(props: PageProps) {
                       options={[
                         ...anctServices.map((service) => ({
                           label: service?.name || "",
-                          hintText: "Description du service ...",
+                          hintText: service?.description || "",
                           nativeInputProps: {
                             name: "services",
                             value: service?.id || "",
@@ -650,7 +674,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   // Convert the Drizzle result to the Commune type
   const communeData: Commune = JSON.parse(JSON.stringify(commune));
 
-  const allServices = await findAllServices();
+  // const allServices = await findAllServices();
+  const allServices = (await import("./services.json")).default as Service[];
 
   // Determine the onboarding case with options
   return {

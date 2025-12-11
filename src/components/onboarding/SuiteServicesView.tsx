@@ -17,6 +17,8 @@ export default function SuiteServicesView({ services, commune }: SuiteServicesVi
     services.find((s) => s.name === "Domaine collectivite.fr"),
   );
 
+  const existingImgIds = [12, 99991];
+
   return (
     <div className={fr.cx("fr-container")}>
       <div className={fr.cx("fr-grid-row", "fr-mb-12w", "fr-grid-row--middle")}>
@@ -25,9 +27,13 @@ export default function SuiteServicesView({ services, commune }: SuiteServicesVi
           style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
         >
           <img
-            src="/images/temp-opsn.png"
+            src={
+              existingImgIds.includes(selectedService?.id ?? 0)
+                ? `/images/temp-st-illu-${selectedService?.id}.svg`
+                : "/images/temp-opsn.png"
+            }
             style={{ width: "100%", height: "auto" }}
-            alt="Temp OPSN"
+            alt={selectedService?.name ?? ""}
           />
         </div>
         <div className={fr.cx("fr-col-12", "fr-col-md-5", "fr-col-offset-md-1")}>
@@ -38,11 +44,10 @@ export default function SuiteServicesView({ services, commune }: SuiteServicesVi
               services :
             </p>
             <p>
-              <Link className="fr-link" href="">
+              <Link className="fr-link" href={selectedService?.url ?? ""}>
                 {selectedService?.name}
               </Link>{" "}
-              pour fournir un nom de domaine institutionnel, à toutes les collectivités qui en ont
-              besoin.
+              {selectedService?.description ?? ""}
             </p>
             <div className="service-app-buttons fr-mb-4w">
               {services.map((service) => (

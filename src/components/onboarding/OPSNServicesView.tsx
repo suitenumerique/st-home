@@ -20,19 +20,25 @@ type Structure = {
  * View for displaying the OPSN services
  */
 export default function OPSNServicesView({ services, commune }: OPSNServicesViewProps) {
+  const [selectedService, setSelectedService] = useState<Service | undefined>(
+    services.find((s) => s.name === "Messages"),
+  );
+
+  const existingImgIds = [12, 99991];
+
   function StructureCard({
     structure,
     services,
     displayStructureName = true,
+    selectedService,
+    setSelectedService,
   }: {
     structure: Structure;
     services: Service[];
     displayStructureName?: boolean;
+    selectedService: Service | undefined;
+    setSelectedService: (service: Service) => void;
   }) {
-    const [selectedService, setSelectedService] = useState<Service | undefined>(
-      services.find((s) => s.name === "Messages"),
-    );
-
     return (
       <>
         {displayStructureName && (
@@ -94,16 +100,25 @@ export default function OPSNServicesView({ services, commune }: OPSNServicesView
             </h2>
             <div style={{ width: "100%", textAlign: "center", marginBottom: "3rem" }}>
               <img
-                src="/images/temp-opsn.png"
+                src={
+                  existingImgIds.includes(selectedService?.id ?? 0)
+                    ? `/images/temp-st-illu-${selectedService?.id}.svg`
+                    : "/images/temp-opsn.png"
+                }
                 style={{ width: "100%", height: "auto", maxWidth: "670px" }}
-                alt="Temp OPSN"
+                alt={selectedService?.name ?? ""}
               />
             </div>
             <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters", "fr-mb-2w")}>
               {commune.structures.map((structure) => (
                 <div key={structure.id} className={fr.cx("fr-col-12", "fr-col-md-6")}>
                   <div className="opsn-services-section">
-                    <StructureCard structure={structure} services={services} />
+                    <StructureCard
+                      structure={structure}
+                      services={services}
+                      selectedService={selectedService}
+                      setSelectedService={setSelectedService}
+                    />
                   </div>
                 </div>
               ))}
@@ -122,14 +137,20 @@ export default function OPSNServicesView({ services, commune }: OPSNServicesView
                 displayStructureName={false}
                 structure={commune.structures[0]}
                 services={services}
+                selectedService={selectedService}
+                setSelectedService={setSelectedService}
               />
             </div>
           </div>
           <div className={fr.cx("fr-col-12", "fr-col-md-6", "fr-col-offset-md-1")}>
             <img
-              src="/images/temp-opsn.png"
+              src={
+                existingImgIds.includes(selectedService?.id ?? 0)
+                  ? `/images/temp-st-illu-${selectedService?.id}.svg`
+                  : "/images/temp-opsn.png"
+              }
               style={{ width: "100%", height: "auto" }}
-              alt="Temp OPSN"
+              alt={selectedService?.name ?? ""}
             />
           </div>
         </div>
