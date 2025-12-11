@@ -2,7 +2,7 @@
   {
     "id": 2,
     "name": "Messages",
-    "description": "pour envoyer et recevoir vos courriels professionnels, grâce à une adresse dédiée pour chaque agent et élu.",
+    "description": "pour envoyer et recevoir vos courriels, grâce à une adresse dédiée pour chaque agent et élu.",
     "logo_url": "https://media.anct.gouv.fr/incubateur/service-icons/logo-messagerie-alpha.svg",
     "url": "https://messages.suite.anct.gouv.fr/",
     "maturity": "beta"
@@ -42,7 +42,7 @@
   {
     "id": 13,
     "name": "Projets",
-    "description": "pour organiser la gestion de vos projets. ",
+    "description": "pour organiser la gestion de vos projets de manière collaborative. ",
     "logo_url": "https://media.anct.gouv.fr/incubateur/service-icons/logo-projets.svg",
     "url": "https://projets.suite.anct.gouv.fr/",
     "maturity": "beta"
@@ -58,7 +58,7 @@
   {
     "id": 4,
     "name": "Annuaire des collectivités",
-    "description": "pour vérifier et certifier vos horaires, composition du conseil municipal et autres informations.",
+    "description": "pour vérifier et certifier vos horaires et la composition du conseil municipal.",
     "logo_url": "https://media.anct.gouv.fr/incubateur/service-icons/logo-adc.svg",
     "url": "https://collectivite.fr/",
     "maturity": "stable"
