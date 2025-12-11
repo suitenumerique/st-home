@@ -258,6 +258,22 @@ def dump_service_usages():
         json.dump(rows, f, ensure_ascii=False, indent=4)
 
 
+def dump_operators():
+    if Path("dumps/operators.json").exists():
+        return
+
+    # https://www.data.gouv.fr/fr/datasets/68b0a2a1117b75b1b09edc6b/
+    url = "https://www.data.gouv.fr/fr/datasets/r/902bb360-0b60-46d2-8169-4207a01caed1"
+    r = requests.get(url)
+    r.raise_for_status()
+
+    # Convert CSV to JSON
+    rows = list(csv.DictReader(r.content.decode("utf-8").splitlines(), delimiter=";"))
+    assert len(rows) > 10
+    with open("dumps/operators.json", "w") as f:
+        json.dump(rows, f, ensure_ascii=False, indent=4)
+
+
 def upload_file_to_data_gouv(resource_id, file_path):
     """Upload public files to data.gouv.fr"""
 
