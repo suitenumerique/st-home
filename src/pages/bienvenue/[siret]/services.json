@@ -1,0 +1,98 @@
+[
+  {
+    "id": 2,
+    "name": "Messages",
+    "description": "pour envoyer et recevoir vos courriels professionnels.",
+    "logo_url": "https://media.anct.gouv.fr/incubateur/service-icons/logo-messagerie-alpha.svg",
+    "url": "https://messages.suite.anct.gouv.fr/",
+    "maturity": "beta"
+  },
+  {
+    "id": 12,
+    "name": "Fichiers",
+    "description": "pour stocker et partager simplement vos documents.",
+    "logo_url": "https://media.anct.gouv.fr/incubateur/service-icons/logo-files-beta.svg",
+    "url": "https://fichiers.suite.anct.gouv.fr/",
+    "maturity": "beta"
+  },
+  {
+    "id": 49,
+    "name": "Rendez-vous",
+    "description": "pour permettre et gérer la prise de rendez-vous.",
+    "logo_url": "https://media.anct.gouv.fr/incubateur/service-icons/logo-rendez-vous.svg",
+    "url": "https://rdv.anct.gouv.fr/",
+    "maturity": "stable"
+  },
+  {
+    "id": 8,
+    "name": "Agents en intervention",
+    "description": "pour faciliter la coordination, le suivi et la gestion des interventions techniques.",
+    "logo_url": "https://media.anct.gouv.fr/incubateur/service-icons/logo-aei.svg",
+    "url": "https://agentsenintervention.anct.gouv.fr/",
+    "maturity": "stable"
+  },
+  {
+    "id": 3,
+    "name": "Espace sur demande",
+    "description": "pour permettre et gérer la réservation de vos salles et espaces publics.",
+    "logo_url": "https://media.anct.gouv.fr/incubateur/service-icons/logo-esd.svg",
+    "url": "https://espacesurdemande.anct.gouv.fr/",
+    "maturity": "stable"
+  },
+  {
+    "id": 13,
+    "name": "Projets",
+    "description": "pour organiser la gestion de vos projets. ",
+    "logo_url": "https://media.anct.gouv.fr/incubateur/service-icons/logo-projets.svg",
+    "url": "https://projets.suite.anct.gouv.fr/",
+    "maturity": "beta"
+  },
+  {
+    "id": 9,
+    "name": "Grist",
+    "description": "pour créer vos base de données et feuilles de calcul.",
+    "logo_url": "https://media.anct.gouv.fr/incubateur/service-icons/logo-grist.svg",
+    "url": "https://grist.incubateur.anct.gouv.fr/",
+    "maturity": "stable"
+  },
+  {
+    "id": 4,
+    "name": "Annuaire des collectivités",
+    "description": "pour vérifier et certifier vos horaires, composition du conseil municipal et autres informations.",
+    "logo_url": "https://media.anct.gouv.fr/incubateur/service-icons/logo-adc.svg",
+    "url": "https://collectivite.fr/",
+    "maturity": "stable"
+  },
+  {
+    "id": 14,
+    "name": "Mon suivi social",
+    "description": "pour assurer l’accompagnement et le suivi dossiers des bénéficiaires d’aides sociales.",
+    "logo_url": "https://media.anct.gouv.fr/incubateur/service-icons/logo-mss.svg",
+    "url": "https://monsuivisocial.incubateur.anct.gouv.fr/",
+    "maturity": "stable"
+  },
+  {
+    "id": 9999,
+    "name": "Adresses",
+    "description": "pour vérifier et compléter vos adresses communales à partir d’une base d’adresse locale.",
+    "logo_url": "https://media.anct.gouv.fr/incubateur/service-icons/logo-adresses_1.svg",
+    "url": "https://mes-adresses.data.gouv.fr/",
+    "maturity": "stable"
+  },
+  {
+    "id": 99991,
+    "name": "collectivite.fr",
+    "description": "pour fournir un nom de domaine institutionnel.",
+    "logo_url": "https://media.anct.gouv.fr/incubateur/service-icons/logo-domaine-collectivite.svg",
+    "url": "https://collectivite.fr/",
+    "maturity": "stable"
+  },
+  {
+    "id": 7,
+    "name": "Deveco",
+    "description": "pour créer une base de données et suivre les entreprises de votre territoire. ",
+    "logo_url": "https://media.anct.gouv.fr/incubateur/service-icons/logo-deveco.svg",
+    "url": "https://deveco.incubateur.anct.gouv.fr/",
+    "maturity": "stable"
+  }
+]

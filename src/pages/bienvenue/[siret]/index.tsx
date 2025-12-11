@@ -1,5 +1,4 @@
 import {
-  findAllServices,
   findOrganizationBySiren,
   findOrganizationServicesBySiret,
   findOrganizationsWithStructures,
@@ -43,20 +42,40 @@ export default function Bienvenue(props: PageProps) {
     .map((id) => allServices.find((s) => s.id === id))
     .filter((s) => s !== undefined);
 
-  const opsnServices = ["Messages", "Fichiers", "Rendez-vous", "Projets"]
+  const opsnServicesNames =
+    commune?.type === "commune" ? ["Messages", "Rendez-vous"] : ["Messages"];
+  const opsnServices = opsnServicesNames
     .map((name) => allServices.find((s) => s.name === name))
     .filter((s) => s && !usedServices.find((us) => us.id === s.id));
 
-  const suiteServices = [
-    "Domaine collectivite.fr",
-    "Espace sur demande",
-    "Mon suivi social",
-    "Deveco",
-    "Annuaire des collectivités",
-    "Grist",
-    "Adresses",
-    "Agents en intervention",
-  ]
+  const suiteServicesNames =
+    commune?.type === "commune"
+      ? [
+          "Fichiers",
+          "Projets",
+          "Grist",
+          "Espace sur demande",
+          "Agents en intervention",
+          "Annuaire des collectivités",
+          "Adresses",
+          "Mon suivi social",
+          "Deveco",
+        ]
+      : [
+          "Nom de domaine collectivite.fr",
+          "Messages",
+          "Rendez-vous",
+          "Fichiers",
+          "Projets",
+          "Grist",
+          "Espace sur demande",
+          "Agents en intervention",
+          "Annuaire des collectivités",
+          "Adresses",
+          "Mon suivi social",
+          "Deveco",
+        ];
+  const suiteServices = suiteServicesNames
     .map((name) => allServices.find((s) => s.name === name))
     .filter((s) => s && !usedServices.find((us) => us.id === s.id));
 
@@ -79,18 +98,18 @@ export default function Bienvenue(props: PageProps) {
           </span>
         </h1>
 
-        <div className={fr.cx("fr-mb-11w")}>
+        <div className={fr.cx("fr-mb-15w")}>
           <OrganisationPresenceView organisation={commune as Commune} />
         </div>
 
         {usedServices.length > 0 && (
-          <div className={fr.cx("fr-mb-11w")}>
+          <div className={fr.cx("fr-mb-15w")}>
             <UsedServicesView services={usedServices} />
           </div>
         )}
 
         {commune.st_eligible && commune.structures && commune.structures.length > 0 && (
-          <div className={fr.cx("fr-mb-11w")}>
+          <div className={fr.cx("fr-mb-15w")}>
             <OPSNServicesView
               services={opsnServices as Service[]}
               commune={commune as Commune & { structures: Structure[] }}
@@ -98,12 +117,12 @@ export default function Bienvenue(props: PageProps) {
           </div>
         )}
 
-        <div className={fr.cx("fr-mb-11w")}>
+        <div className={fr.cx("fr-mb-15w")}>
           <SuiteServicesView commune={commune as Commune} services={suiteServices as Service[]} />
         </div>
 
         {!commune.st_eligible && (
-          <div className={fr.cx("fr-mb-11w")}>
+          <div className={fr.cx("fr-mb-15w")}>
             <MutualisationView
               services={allServices as Service[]}
               organisation={commune as Commune}
@@ -111,7 +130,7 @@ export default function Bienvenue(props: PageProps) {
           </div>
         )}
 
-        <div className={fr.cx("fr-mb-11w")}>
+        <div className={fr.cx("fr-mb-15w")}>
           <OtherServicesView organisation={commune as Commune} />
         </div>
 
@@ -179,7 +198,7 @@ export default function Bienvenue(props: PageProps) {
         </div>
         {GetMainContent()}
       </section>
-      <section className={fr.cx("fr-py-16w")}>
+      <section className={fr.cx("fr-py-15w", "fr-mb-15w")}>
         <TrialContact />
       </section>
       <section
@@ -215,7 +234,9 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
     const epci = await findOrganizationBySiren(commune?.epci_siren);
     commune.epci_siret = epci?.siret;
   }
-  const allServices = await findAllServices();
+  // const allServices = await findAllServices();
+  const allServices = (await import("./services.json")).default as Service[];
+
   const organizationServices = await findOrganizationServicesBySiret(siret);
 
   if (!commune) {

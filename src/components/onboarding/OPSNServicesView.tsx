@@ -13,6 +13,7 @@ type Structure = {
   id: string;
   name: string;
   shortname: string | null;
+  website: string | null;
 };
 
 /**
@@ -46,7 +47,7 @@ export default function OPSNServicesView({ services, commune }: OPSNServicesView
             <Link className="fr-link" href={selectedService.url}>
               {selectedService.name}
             </Link>{" "}
-            pour stocker et partager simplement vos documents.
+            {selectedService.description}
           </p>
         )}
         <div className="service-app-buttons fr-mb-4w">
@@ -73,7 +74,7 @@ export default function OPSNServicesView({ services, commune }: OPSNServicesView
           <Button
             priority="secondary"
             linkProps={{
-              href: `/bienvenue/${commune.siret}/contact`,
+              href: structure.website || "",
             }}
           >
             Voir l'offre de service

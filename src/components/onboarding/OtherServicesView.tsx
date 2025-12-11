@@ -47,8 +47,7 @@ export default function OtherServicesView({ organisation }: OtherServicesViewPro
         <h2 className={fr.cx("fr-h2")}>Les autres services accessibles à la collectivité</h2>
         <div className={fr.cx("fr-col-12")}>
           <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
-            {((organisation.type === "commune" && organisation.population < 3500) ||
-              (organisation.type === "epci" && organisation.population < 15000)) && (
+            {organisation.type === "commune" && organisation.population < 3500 && (
               <div className={fr.cx("fr-col-12")}>
                 <div className="other-service">
                   <div className="content">

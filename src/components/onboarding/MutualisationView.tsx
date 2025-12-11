@@ -56,7 +56,7 @@ export default function MutualisationView({ services }: MutualisationViewProps) 
               <Button
                 priority="primary"
                 linkProps={{
-                  href: "/conformite/cartographie",
+                  href: "mailto:contact@suite.anct.gouv.fr",
                 }}
               >
                 Contactez-nous

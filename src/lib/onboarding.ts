@@ -11,7 +11,9 @@ export type Commune = Organization & {
   structures?: Structure[];
 };
 
-export type Service = InferSelectModel<typeof services>;
+export type Service = InferSelectModel<typeof services> & {
+  description: string;
+};
 
 export interface OnboardingProps {
   onboardingCase: OnboardingCase;

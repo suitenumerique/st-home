@@ -106,7 +106,7 @@ export default function ContactForm(props: PageProps) {
       data[key] = value as string;
     });
 
-    data.hasNominalEmail = formData.get("hasNominalEmail") === "true" ? "true" : "false";
+    // data.hasNominalEmail = formData.get("hasNominalEmail") === "true" ? "true" : "false";
     data.structureNotSuitable = formData.get("structureNotSuitable") === "true" ? "true" : "false";
 
     data.siret = commune.siret;
@@ -198,7 +198,7 @@ export default function ContactForm(props: PageProps) {
                   <Link href="mailto:contact@suite.anct.gouv.fr">contact@suite.anct.gouv.fr</Link>
                 </p>
               </div>
-              <div className="form-section">
+              {/* <div className="form-section">
                 <label className="form-section-title">
                   <div>
                     <i className={fr.cx("fr-icon-arrow-right-line")} />
@@ -222,7 +222,7 @@ export default function ContactForm(props: PageProps) {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </section>
@@ -252,7 +252,7 @@ export default function ContactForm(props: PageProps) {
             priority="tertiary no outline"
             iconPosition="left"
             iconId="fr-icon-arrow-left-line"
-            linkProps={{ href: `/bienvenue/${commune.epci_siret}` }}
+            linkProps={{ href: `/bienvenue/${commune.siret}` }}
             className="fr-mb-4w"
           >
             Retour
@@ -282,7 +282,7 @@ export default function ContactForm(props: PageProps) {
             <div className="form-section">
               <label className="form-section-title">
                 <div>
-                  <i className={fr.cx("fr-icon-arrow-right-line")} />
+                  <img src="/icons/cityhall.svg" alt="Collectivité" width={18} />
                 </div>
                 <h6 className={fr.cx("fr-mb-0")}>La collectivité</h6>
               </label>
@@ -291,11 +291,13 @@ export default function ContactForm(props: PageProps) {
                   <p className={fr.cx("fr-mb-0", "fr-text--lg", "fr-text--bold")}>{commune.name}</p>
                   <div>
                     <i className={fr.cx("fr-icon-phone-line", "fr-icon--sm")} />
-                    <p className={fr.cx("fr-text--sm", "fr-mb-0")}>{commune.phone}</p>
+                    <p className={fr.cx("fr-text--sm", "fr-mb-0")}>{commune.phone || "Inconnu"}</p>
                   </div>
                   <div>
                     <i className={fr.cx("fr-icon-mail-line", "fr-icon--sm")} />
-                    <p className={fr.cx("fr-text--sm", "fr-mb-0")}>{commune.email_official}</p>
+                    <p className={fr.cx("fr-text--sm", "fr-mb-0")}>
+                      {commune.email_official || "Inconnu"}
+                    </p>
                   </div>
                   <p
                     className={fr.cx("fr-text--sm", "fr-mb-0")}
@@ -313,7 +315,7 @@ export default function ContactForm(props: PageProps) {
             <div className="form-section">
               <label className="form-section-title">
                 <div>
-                  <i className={fr.cx("fr-icon-arrow-right-line")} />
+                  <img src="/icons/person.svg" alt="Vos coordonnées" width={13} />
                 </div>
                 <h6 className={fr.cx("fr-mb-0")}>Vos coordonnées</h6>
               </label>
@@ -351,22 +353,7 @@ export default function ContactForm(props: PageProps) {
                     }}
                   />
                 </div>
-                <div className={fr.cx("fr-mb-3w")}>
-                  <Input
-                    label="Numéro de téléphone"
-                    hintText="Optionnel"
-                    nativeInputProps={{
-                      type: "text",
-                      name: "phone",
-                      required: true,
-                      autoComplete: "phone",
-                      style: {
-                        maxWidth: "240px",
-                      },
-                    }}
-                  />
-                </div>
-                <div className={fr.cx("fr-mb-3w")}>
+                <div>
                   <Input
                     label="Email *"
                     nativeInputProps={{
@@ -377,7 +364,7 @@ export default function ContactForm(props: PageProps) {
                     }}
                   />
                   <p
-                    className={fr.cx("fr-mt-2w", "fr-text--xs")}
+                    className={fr.cx("fr-mt-2w", "fr-text--xs", "fr-mb-0")}
                     style={{ color: "var(--text-default-info)" }}
                   >
                     <span
@@ -385,11 +372,11 @@ export default function ContactForm(props: PageProps) {
                       aria-hidden="true"
                     ></span>
                     <span>
-                      Une adresse nominative avec le nom de domaine de la collectivité sera requise
-                      pour l’identification ProConnect, exemple : prenom.nom@nomdecommune.fr.
+                      Si elle existe, veuillez utiliser une adresse nominative avec le nom de
+                      domaine de votre collectivité (exemple : p.nom@commune.fr)
                     </span>
                   </p>
-                  <Checkbox
+                  {/* <Checkbox
                     small
                     options={[
                       {
@@ -400,7 +387,7 @@ export default function ContactForm(props: PageProps) {
                         },
                       },
                     ]}
-                  />
+                  /> */}
                 </div>
               </div>
             </div>
@@ -410,35 +397,33 @@ export default function ContactForm(props: PageProps) {
             <div className="form-section">
               <label className="form-section-title">
                 <div>
-                  <i className={fr.cx("fr-icon-arrow-right-line")} />
+                  <img src="/icons/services.svg" alt="Les services" width={13} />
                 </div>
                 <h6 className={fr.cx("fr-mb-0")}>Les services</h6>
               </label>
               <div className="form-section-content" style={{ paddingBottom: "1rem" }}>
-                {commune?.structures && commune.structures.length > 1 && (
-                  <Button
-                    priority="secondary"
-                    className={fr.cx("fr-mb-2w")}
-                    style={{
-                      width: "100%",
-                      display: "flex",
-                      justifyContent: "center",
-                      boxShadow: "inset 0 0 0 1px var(--light-border-default-grey, #DDD)",
-                    }}
-                    iconId="fr-icon-check-line"
-                    iconPosition="left"
-                    type="button"
-                    onClick={() => {
-                      const checkboxes =
-                        document.querySelectorAll<HTMLInputElement>('input[name="services"]');
-                      checkboxes.forEach((checkbox) => {
-                        checkbox.checked = true;
-                      });
-                    }}
-                  >
-                    Tout sélectionner
-                  </Button>
-                )}
+                <Button
+                  priority="secondary"
+                  className={fr.cx("fr-mb-2w")}
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    boxShadow: "inset 0 0 0 1px var(--light-border-default-grey, #DDD)",
+                  }}
+                  iconId="fr-icon-check-line"
+                  iconPosition="left"
+                  type="button"
+                  onClick={() => {
+                    const checkboxes =
+                      document.querySelectorAll<HTMLInputElement>('input[name="services"]');
+                    checkboxes.forEach((checkbox) => {
+                      checkbox.checked = true;
+                    });
+                  }}
+                >
+                  Tout sélectionner
+                </Button>
                 {(commune?.structures || []).map((structure) => (
                   <div key={structure.id} className={fr.cx("fr-mb-4w")}>
                     <p className={fr.cx("fr-text--lg", "fr-text--bold", "fr-mb-1w")}>
@@ -446,7 +431,15 @@ export default function ContactForm(props: PageProps) {
                     </p>
                     <p className={fr.cx("fr-text--xs")}>
                       La structure vous contactera pour préciser les modalités d’adhésion selon
-                      votre sélection. N’hésitez pas à parcourir leur offre de service.
+                      votre sélection. N’hésitez pas à parcourir leur{" "}
+                      <Link
+                        href={structure.website || ""}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        offre de service
+                      </Link>
+                      .
                     </p>
                     <div className={fr.cx("fr-mb-4w")}>
                       {/* { commune?.structures && commune.structures.length > 1 ? (
@@ -467,23 +460,23 @@ export default function ContactForm(props: PageProps) {
                       />
                       {/* )} */}
                     </div>
+                    <div>
+                      <Checkbox
+                        small
+                        options={[
+                          {
+                            label:
+                              "Je suis intéressé par l’un de ces services,  mais la structure proposée ne me convient pas.",
+                            nativeInputProps: {
+                              name: "structureNotSuitable",
+                              value: "true",
+                            },
+                          },
+                        ]}
+                      />
+                    </div>
                   </div>
                 ))}
-                <div className={fr.cx("fr-mb-4w")}>
-                  <Checkbox
-                    small
-                    options={[
-                      {
-                        label:
-                          "Je suis intéressé par l’un de ces services,  mais la structure proposée ne me convient pas.",
-                        nativeInputProps: {
-                          name: "structureNotSuitable",
-                          value: "true",
-                        },
-                      },
-                    ]}
-                  />
-                </div>
                 <div>
                   <p className={fr.cx("fr-text--lg", "fr-text--bold", "fr-mb-1w")}>ANCT</p>
                   <p className={fr.cx("fr-text--xs")}>
@@ -509,7 +502,7 @@ export default function ContactForm(props: PageProps) {
               </div>
             </div>
 
-            <div className="form-section">
+            {/* <div className="form-section">
               <label className="form-section-title">
                 <div>
                   <i className={fr.cx("fr-icon-arrow-right-line")} />
@@ -533,7 +526,9 @@ export default function ContactForm(props: PageProps) {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
+
+            <div className="separator" />
 
             <div>
               <p className={fr.cx("fr-mb-2w", "fr-text--lg", "fr-text--bold")}>Précisions</p>
