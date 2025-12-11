@@ -43,7 +43,7 @@ export default function Bienvenue(props: PageProps) {
     .filter((s) => s !== undefined);
 
   const opsnServicesNames =
-    commune?.type === "commune" ? ["Messages", "Rendez-vous", "collectivite.fr"] : ["Messages", "Nom de domaine"];
+    commune?.type === "commune" ? ["Messages", "Rendez-vous", "Nom de domaine"] : ["Messages", "Nom de domaine"];
   const opsnServices = opsnServicesNames
     .map((name) => allServices.find((s) => s.name === name))
     .filter((s) => s && !usedServices.find((us) => us.id === s.id));
@@ -123,6 +123,7 @@ export default function Bienvenue(props: PageProps) {
                     "Mon Espace Collectivité",
                     "Administration +",
                     "Bases Adresses Locales",
+                    "Nom de domaine",
                   ].includes(s.name);
                 }) as Service[]
               }
@@ -254,7 +255,8 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   const communeData: Commune = JSON.parse(JSON.stringify(commune));
 
   communeData.structures = communeData.structures?.map((structure) => {
-    if (structure.shortname === "Mégalis Bretagne") {
+    if (structure.name === "Mégalis Bretagne") {
+      structure.name = "Mégalis";
       structure.shortname = "Mégalis";
     }
     return structure;
