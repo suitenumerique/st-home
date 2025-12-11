@@ -81,7 +81,15 @@
   },
   {
     "id": 99991,
-    "name": "Domaine collectivite.fr",
+    "name": "collectivite.fr",
+    "description": "pour fournir un nom de domaine institutionnel utilisable pour votre site internet et adresses de messagerie.",
+    "logo_url": "/images/logo-ndd.svg",
+    "url": "https://collectivite.fr/",
+    "maturity": "stable"
+  },
+  {
+    "id": 99992,
+    "name": "Nom de domaine",
     "description": "pour fournir un nom de domaine institutionnel utilisable pour votre site internet et adresses de messagerie.",
     "logo_url": "/images/logo-ndd.svg",
     "url": "https://collectivite.fr/",

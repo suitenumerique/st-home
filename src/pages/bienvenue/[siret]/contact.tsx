@@ -45,7 +45,7 @@ export default function ContactForm(props: PageProps) {
           "Deveco",
         ]
       : [
-          "Domaine collectivite.fr",
+          "collectivite.fr",
           "Messages",
           "Rendez-vous",
           "Fichiers",

@@ -24,7 +24,7 @@ export default function OPSNServicesView({ services, commune }: OPSNServicesView
     services.find((s) => s.name === "Messages"),
   );
 
-  const existingImgIds = [12, 99991];
+  const existingImgIds = [12, 99992];
 
   function StructureCard({
     structure,

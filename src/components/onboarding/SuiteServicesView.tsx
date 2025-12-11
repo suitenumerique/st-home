@@ -14,7 +14,7 @@ type SuiteServicesViewProps = {
  */
 export default function SuiteServicesView({ services, commune }: SuiteServicesViewProps) {
   const [selectedService, setSelectedService] = useState<Service | undefined>(
-    services.find((s) => s.name === "Domaine collectivite.fr"),
+    services.find((s) => s.name === "collectivite.fr"),
   );
 
   const existingImgIds = [12, 99991];
