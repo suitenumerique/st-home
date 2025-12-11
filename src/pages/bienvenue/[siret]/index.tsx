@@ -43,7 +43,7 @@ export default function Bienvenue(props: PageProps) {
     .filter((s) => s !== undefined);
 
   const opsnServicesNames =
-    commune?.type === "commune" ? ["Messages", "Rendez-vous"] : ["Messages"];
+    commune?.type === "commune" ? ["Messages", "Rendez-vous", "Domaine collectivite.fr"] : ["Messages", "Domaine collectivite.fr"];
   const opsnServices = opsnServicesNames
     .map((name) => allServices.find((s) => s.name === name))
     .filter((s) => s && !usedServices.find((us) => us.id === s.id));
@@ -62,18 +62,10 @@ export default function Bienvenue(props: PageProps) {
           "Deveco",
         ]
       : [
-          "Domaine collectivite.fr",
-          "Messages",
-          "Rendez-vous",
-          "Fichiers",
-          "Projets",
-          "Grist",
-          "Espace sur demande",
-          "Agents en intervention",
-          "Annuaire des collectivités",
-          "Adresses",
           "Mon suivi social",
           "Deveco",
+          "Annuaire des collectivités",
+          "Adresses",
         ];
   const suiteServices = suiteServicesNames
     .map((name) => allServices.find((s) => s.name === name))
