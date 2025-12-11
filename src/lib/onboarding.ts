@@ -69,6 +69,6 @@ export function determineOnboardingCase(
   // Show the choice view because the commune has structures
   return {
     onboardingCase: OnboardingCase.OPSN_CHOICE,
-    structureId: options.structureId,
+    structureId: options.structureId ?? null,
   };
 }

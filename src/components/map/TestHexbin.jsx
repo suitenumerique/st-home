@@ -16,7 +16,7 @@ const FranceHexbinMap = () => {
   const HEXBIN_SIZE = 0.15; // ~5km hexagon size in degrees
 
   // Create hexagon geometry with proper aspect ratio
-  const createHexagon = (centerLat, centerLon, size) => {
+  const createHexagon = useCallback((centerLat, centerLon, size) => {
     const coordinates = [];
     const radius = size * 0.35; // Make hexagon radius smaller to avoid overlap
     
@@ -32,7 +32,7 @@ const FranceHexbinMap = () => {
     }
     coordinates.push(coordinates[0]); // Close the polygon
     return coordinates;
-  };
+  }, []);
 
   // Process data and create hexbin with interlocking pattern
   const processDataToHexbin = (apiData, coordinatesMap) => {

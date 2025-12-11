@@ -1,4 +1,4 @@
-import type { Service } from "@/lib/onboarding";
+import type { Commune, Service } from "@/lib/onboarding";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import Link from "next/link";
@@ -6,12 +6,13 @@ import { useState } from "react";
 
 type SuiteServicesViewProps = {
   services: Service[];
+  commune: Commune;
 };
 
 /**
  * View for displaying the services available through the Suite territoriale
  */
-export default function SuiteServicesView({ services }: SuiteServicesViewProps) {
+export default function SuiteServicesView({ services, commune }: SuiteServicesViewProps) {
   const [selectedService, setSelectedService] = useState<Service | undefined>(
     services.find((s) => s.name === "Domaine collectivite.fr"),
   );
@@ -62,7 +63,7 @@ export default function SuiteServicesView({ services }: SuiteServicesViewProps) 
               <Button
                 priority="primary"
                 linkProps={{
-                  href: "/conformite/cartographie",
+                  href: `/bienvenue/${commune.siret}/contact`,
                 }}
               >
                 Commencez dès maintenant

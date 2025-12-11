@@ -1,7 +1,6 @@
 import type { Commune } from "@/lib/onboarding";
 import { fr } from "@codegouvfr/react-dsfr";
 import Link from "next/link";
-import { useState } from "react";
 import CommuneInfo from "./CommuneInfo";
 
 type OrganisationPresenceViewProps = {
@@ -12,7 +11,7 @@ type OrganisationPresenceViewProps = {
  * View for displaying the organisation presence
  */
 export default function OrganisationPresenceView({ organisation }: OrganisationPresenceViewProps) {
-  const [expanded, setExpanded] = useState(false);
+  // const [expanded, setExpanded] = useState(false);
   return (
     <div
       style={{

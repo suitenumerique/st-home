@@ -65,7 +65,7 @@ export default function OPSNServicesView({ services, commune }: OPSNServicesView
           <Button
             priority="primary"
             linkProps={{
-              href: "/conformite/cartographie",
+              href: `/bienvenue/${commune.siret}/contact`,
             }}
           >
             Contacter {structure.shortname || structure.name}
@@ -73,7 +73,7 @@ export default function OPSNServicesView({ services, commune }: OPSNServicesView
           <Button
             priority="secondary"
             linkProps={{
-              href: "/conformite/cartographie",
+              href: `/bienvenue/${commune.siret}/contact`,
             }}
           >
             Voir l'offre de service

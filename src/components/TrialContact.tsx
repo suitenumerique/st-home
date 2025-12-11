@@ -19,7 +19,7 @@ export default function TrialContact() {
           iconPosition="left"
           iconId="fr-icon-mail-fill"
           linkProps={{
-            href: "/conformite/cartographie",
+            href: "mailto:contact@suite.anct.gouv.fr",
           }}
         >
           Nous écrire

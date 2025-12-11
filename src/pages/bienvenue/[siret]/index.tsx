@@ -4,8 +4,6 @@ import {
   findOrganizationServicesBySiret,
   findOrganizationsWithStructures,
 } from "@/lib/db";
-// import { getOrganizationTypeDisplay, type Organization } from "@/lib/string";
-import type { Service } from "@/lib/onboarding";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
 import { GetServerSideProps } from "next";
@@ -21,19 +19,13 @@ import OtherServicesView from "@/components/onboarding/OtherServicesView";
 import SuiteServicesView from "@/components/onboarding/SuiteServicesView";
 import UsedServicesView from "@/components/onboarding/UsedServicesView";
 import TrialContact from "@/components/TrialContact";
-// import ActiveInRegieView from "@/components/onboarding/ActiveInRegieView";
-// import NotEligibleView from "@/components/onboarding/NotEligibleView";
-// import OPSNChoiceView from "@/components/onboarding/OPSNChoiceView";
-// import OPSNProConnectView from "@/components/onboarding/OPSNProConnectView";
-// import OPSNZeroView from "@/components/onboarding/OPSNZeroView";
-// import UniqueCodeRequestView from "@/components/onboarding/UniqueCodeRequestView";
 
 // Import types and functions
-import { determineOnboardingCase, type Commune, type OnboardingProps } from "@/lib/onboarding";
-import { OnboardingCase } from "@/types/onboarding";
+import { type Commune, type Service } from "@/lib/onboarding";
 
-interface PageProps extends OnboardingProps {
+interface PageProps {
   commune?: Commune & { epci_siret?: string };
+  error?: string;
   allServices: Service[];
   usedServicesIds: number[];
 }
@@ -45,7 +37,7 @@ type Structure = {
 };
 
 export default function Bienvenue(props: PageProps) {
-  const { commune, onboardingCase, error, allServices = [], usedServicesIds = [] } = props;
+  const { commune, error, allServices = [], usedServicesIds = [] } = props;
 
   const usedServices = usedServicesIds
     .map((id) => allServices.find((s) => s.id === id))
@@ -68,32 +60,9 @@ export default function Bienvenue(props: PageProps) {
     .map((name) => allServices.find((s) => s.name === name))
     .filter((s) => s && !usedServices.find((us) => us.id === s.id));
 
-  // const getCommuneContent = (_commune: Commune) => {
-  //   switch (onboardingCase) {
-  //     case OnboardingCase.ACTIVE_IN_REGIE:
-  //       return <ActiveInRegieView commune={_commune} />;
-  //     case OnboardingCase.OPSN_CHOICE:
-  //       if (!_commune.structures) {
-  //         return <ErrorView error="Configuration invalide" />;
-  //       }
-  //       return <OPSNChoiceView commune={{ ..._commune, structures: _commune.structures }} />;
-  //     case OnboardingCase.OPSN_PROCONNECT:
-  //       return <OPSNProConnectView commune={_commune} />;
-  //     case OnboardingCase.OPSN_ZERO:
-  //       return <OPSNZeroView commune={_commune} />;
-  //     case OnboardingCase.NOT_ELIGIBLE:
-  //       return <NotEligibleView commune={_commune} />;
-
-  //     case OnboardingCase.UNIQUE_CODE_REQUEST:
-  //       return <UniqueCodeRequestView commune={_commune} />;
-  //     default:
-  //       return <ErrorView error="Cas non géré" />;
-  //   }
-  // };
-
   // Get the main content based on the onboarding case
   const GetMainContent = () => {
-    if (!commune || onboardingCase === OnboardingCase.ERROR) {
+    if (!commune || error) {
       return <ErrorView error={error} />;
     }
 
@@ -130,7 +99,7 @@ export default function Bienvenue(props: PageProps) {
         )}
 
         <div className={fr.cx("fr-mb-11w")}>
-          <SuiteServicesView services={suiteServices as Service[]} />
+          <SuiteServicesView commune={commune as Commune} services={suiteServices as Service[]} />
         </div>
 
         {!commune.st_eligible && (
@@ -226,12 +195,12 @@ export default function Bienvenue(props: PageProps) {
 }
 
 export const getServerSideProps: GetServerSideProps<PageProps> = async (context) => {
-  const { siret, structureId } = context.query;
+  const { siret } = context.query;
 
   if (!siret || typeof siret !== "string") {
     return {
       props: {
-        ...determineOnboardingCase(null, {}, "Identifiant de collectivité invalide"),
+        error: "Identifiant de collectivité invalide",
         allServices: [],
         usedServicesIds: [],
       },
@@ -252,11 +221,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   if (!commune) {
     return {
       props: {
-        ...determineOnboardingCase(
-          null,
-          {},
-          `La Suite territoriale n'est disponible que pour les collectivités françaises. Le SIRET ${siret} ne correspond à aucune d'entre elles.`,
-        ),
+        error: `La Suite territoriale n'est disponible que pour les collectivités françaises. Le SIRET ${siret} ne correspond à aucune d'entre elles.`,
         allServices: [],
         usedServicesIds: [],
       },
@@ -272,9 +237,6 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
       commune: communeData,
       allServices,
       usedServicesIds: organizationServices.map((service) => service.id),
-      ...determineOnboardingCase(communeData, {
-        structureId: typeof structureId === "string" ? structureId : null,
-      }),
     },
   };
 };
