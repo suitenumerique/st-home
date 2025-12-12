@@ -28,7 +28,7 @@ export default function ContactForm(props: PageProps) {
   const [userEmail, setUserEmail] = useState("");
 
   const opsnServicesNames =
-    commune?.type === "commune" ? ["Messages", "Rendez-vous"] : ["Rendez-vous"];
+    commune?.type === "commune" ? ["Rendez-vous", "Messages"] : ["Rendez-vous"];
   if (commune?.st_eligible) {
     opsnServicesNames.push("Nom de domaine");
   }

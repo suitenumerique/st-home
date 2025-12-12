@@ -26,7 +26,7 @@ export default function OPSNServicesView({ services, commune }: OPSNServicesView
     setSelectedService(services[0]);
   }, [services]);
 
-  const existingImgIds = [12, 99992];
+  const existingImgIds = [12, 49, 99992];
 
   function StructureCard({
     structure,

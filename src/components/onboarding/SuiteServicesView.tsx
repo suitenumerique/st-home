@@ -19,7 +19,7 @@ export default function SuiteServicesView({ services, commune }: SuiteServicesVi
     setSelectedService(services[0]);
   }, [services]);
 
-  const existingImgIds = [12, 99991];
+  const existingImgIds = [3, 4, 8, 12, 49, 99991];
 
   return (
     <div className={fr.cx("fr-container")}>
@@ -30,7 +30,7 @@ export default function SuiteServicesView({ services, commune }: SuiteServicesVi
         >
           <img
             src={
-              existingImgIds.includes(selectedService?.id ?? 0)
+              existingImgIds.includes(selectedService?.id ?? -1)
                 ? `/images/temp-st-illu-${selectedService?.id}.svg`
                 : "/images/temp-opsn.png"
             }
