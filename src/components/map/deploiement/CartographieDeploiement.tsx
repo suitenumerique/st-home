@@ -9,6 +9,37 @@ import parentAreas from "../../../../public/parent_areas.json";
 import { AreaStats } from "../types";
 import { StatRecord } from "./types";
 
+// Web Mercator helpers (meters)
+const EARTH_RADIUS = 6378137;
+const toMercator = (lat: number, lon: number): { x: number; y: number } => {
+  const lambda = (lon * Math.PI) / 180;
+  const phi = (lat * Math.PI) / 180;
+  const x = EARTH_RADIUS * lambda;
+  const y = EARTH_RADIUS * Math.log(Math.tan(Math.PI / 4 + phi / 2));
+  return { x, y };
+};
+const fromMercator = (x: number, y: number): { lat: number; lon: number } => {
+  const lon = (x / EARTH_RADIUS) * (180 / Math.PI);
+  const lat = (2 * Math.atan(Math.exp(y / EARTH_RADIUS)) - Math.PI / 2) * (180 / Math.PI);
+  return { lat, lon };
+};
+
+// Build a hex polygon around a Mercator center using a radius in meters, return lon/lat ring
+const createHexagon = (centerX: number, centerY: number, acrossFlats: number): number[][] => {
+  const coordinates: number[][] = [];
+  // Convert across-flats to circumradius (center to vertex) for a regular hexagon
+  const radius = acrossFlats / Math.sqrt(3);
+  for (let i = 0; i < 6; i++) {
+    const angle = (Math.PI / 180) * (60 * i + 30); // flat-topped hex
+    const vx = centerX + radius * Math.cos(angle);
+    const vy = centerY + radius * Math.sin(angle);
+    const { lat, lon } = fromMercator(vx, vy);
+    coordinates.push([lon, lat]);
+  }
+  coordinates.push(coordinates[0]);
+  return coordinates;
+};
+
 const CartographieDeploiement = () => {
   const [stats, setStats] = useState<StatRecord[]>([]);
   const [coordMap, setCoordMap] = useState<Record<string, { longitude: number; latitude: number }>>(
@@ -129,37 +160,6 @@ const CartographieDeploiement = () => {
     },
     [stats, mapState.filters],
   );
-
-  // Web Mercator helpers (meters)
-  const EARTH_RADIUS = 6378137;
-  const toMercator = (lat: number, lon: number): { x: number; y: number } => {
-    const lambda = (lon * Math.PI) / 180;
-    const phi = (lat * Math.PI) / 180;
-    const x = EARTH_RADIUS * lambda;
-    const y = EARTH_RADIUS * Math.log(Math.tan(Math.PI / 4 + phi / 2));
-    return { x, y };
-  };
-  const fromMercator = (x: number, y: number): { lat: number; lon: number } => {
-    const lon = (x / EARTH_RADIUS) * (180 / Math.PI);
-    const lat = (2 * Math.atan(Math.exp(y / EARTH_RADIUS)) - Math.PI / 2) * (180 / Math.PI);
-    return { lat, lon };
-  };
-
-  // Build a hex polygon around a Mercator center using a radius in meters, return lon/lat ring
-  const createHexagon = (centerX: number, centerY: number, acrossFlats: number): number[][] => {
-    const coordinates: number[][] = [];
-    // Convert across-flats to circumradius (center to vertex) for a regular hexagon
-    const radius = acrossFlats / Math.sqrt(3);
-    for (let i = 0; i < 6; i++) {
-      const angle = (Math.PI / 180) * (60 * i + 30); // flat-topped hex
-      const vx = centerX + radius * Math.cos(angle);
-      const vy = centerY + radius * Math.sin(angle);
-      const { lat, lon } = fromMercator(vx, vy);
-      coordinates.push([lon, lat]);
-    }
-    coordinates.push(coordinates[0]);
-    return coordinates;
-  };
 
   const processDataToHexbin = useCallback(
     (

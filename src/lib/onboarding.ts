@@ -1,4 +1,4 @@
-import { mutualizationStructures, organizations } from "@/lib/schema";
+import { mutualizationStructures, organizations, services } from "@/lib/schema";
 import { OnboardingCase } from "@/types/onboarding";
 import { type InferSelectModel } from "drizzle-orm";
 
@@ -9,6 +9,10 @@ export type Structure = InferSelectModel<typeof mutualizationStructures>;
 // Define the commune type with optional structures
 export type Commune = Organization & {
   structures?: Structure[];
+};
+
+export type Service = InferSelectModel<typeof services> & {
+  description: string;
 };
 
 export interface OnboardingProps {
@@ -67,6 +71,6 @@ export function determineOnboardingCase(
   // Show the choice view because the commune has structures
   return {
     onboardingCase: OnboardingCase.OPSN_CHOICE,
-    structureId: options.structureId,
+    structureId: options.structureId ?? null,
   };
 }

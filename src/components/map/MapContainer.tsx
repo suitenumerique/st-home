@@ -314,7 +314,7 @@ const MapContainer = ({
               alignItems: "space-between",
             }}
           >
-            <p className="map-gradient-label">Non conforme</p>
+            <p className="map-gradient-label">A risque</p>
             <p className="map-gradient-label">Conforme</p>
           </div>
         )}
