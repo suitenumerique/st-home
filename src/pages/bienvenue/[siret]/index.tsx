@@ -43,7 +43,10 @@ export default function Bienvenue(props: PageProps) {
     .filter((s) => s !== undefined);
 
   const opsnServicesNames =
-    commune?.type === "commune" ? ["Messages", "Rendez-vous", "Nom de domaine"] : ["Messages", "Nom de domaine"];
+    commune?.type === "commune" ? ["Messages", "Rendez-vous"] : ["Rendez-vous"];
+  if (commune?.st_eligible) {
+    opsnServicesNames.push("Nom de domaine");
+  }
   const opsnServices = opsnServicesNames
     .map((name) => allServices.find((s) => s.name === name))
     .filter((s) => s && !usedServices.find((us) => us.id === s.id));

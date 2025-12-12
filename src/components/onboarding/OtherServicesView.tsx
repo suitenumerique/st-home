@@ -16,28 +16,32 @@ export default function OtherServicesView({ organisation }: OtherServicesViewPro
       description:
         "Une démarche personnalisée pour identifier vos besoins, définir des priorités et vous guider dans vos projets numériques.",
       url: "https://anct.gouv.fr/programmes-dispositifs/incubateur-des-territoires/accompagnement-numerique-sur-mesure",
-      linkText: "Candidater dès maintenant",
+      link_text: "Candidater dès maintenant",
+      picture_url: "/images/temp-st-illu-ansm.svg",
     },
     {
       name: "Administration +",
       description: "Aide à la résolution des blocages administratifs de vos citoyens.",
       logo_url: "https://operateurs.suite.anct.gouv.fr/api/v1.0/servicelogo/5/",
       url: "https://administration-plus.fr",
-      linkText: "Découvrir ce service",
+      link_text: "Découvrir ce service",
+      picture_url: null,
     },
     {
       name: "Mon espace collectivité",
       description: "Pour faciliter la coordination et suivre l’avancée de vos projets locaux.",
       logo_url: "https://operateurs.suite.anct.gouv.fr/api/v1.0/servicelogo/11/",
       url: "https://mon-espace-collectivite.fr",
-      linkText: "Découvrir ce service",
+      link_text: "Découvrir ce service",
+      picture_url: "/images/temp-st-illu-mec.svg",
     },
     {
       name: "Aides territoires",
       description: "Trouver les financements et les accompagnements à vos projets.",
       logo_url: "https://operateurs.suite.anct.gouv.fr/api/v1.0/servicelogo/6/",
       url: "https://aides-territoires.fr",
-      linkText: "Voir les aides disponibles",
+      link_text: "Voir les aides disponibles",
+      picture_url: "/images/temp-st-illu-at.svg",
     },
   ];
 
@@ -50,7 +54,7 @@ export default function OtherServicesView({ organisation }: OtherServicesViewPro
             {organisation.type === "commune" && organisation.population < 3500 && (
               <div className={fr.cx("fr-col-12")}>
                 <div className="other-service">
-                  <div className="content">
+                  <div className="content" style={{maxWidth: "600px"}}>
                     <div className="title">
                       <h5
                         style={{ color: "var(--light-decisions-text-text-default-grey, #3A3A3A)" }}
@@ -65,11 +69,20 @@ export default function OtherServicesView({ organisation }: OtherServicesViewPro
                         href="https://anct.gouv.fr/programmes-dispositifs/incubateur-des-territoires/accompagnement-numerique-sur-mesure"
                         target="_blank"
                       >
-                        {services[0].linkText}
+                        {services[0].link_text}
                       </Link>
                     </p>
                   </div>
-                  <img src="/images/temp-opsn.png" alt="Temp OPSN" />
+                  <img
+                    style={{
+                      position: "absolute",
+                      bottom: "-2px",
+                      right: "70px",
+                      borderRadius: "0px",
+                      width: "250px",
+                    }}
+                    src={services[0].picture_url ?? undefined} alt={services[0].name}
+                  />
                 </div>
               </div>
             )}
@@ -89,20 +102,22 @@ export default function OtherServicesView({ organisation }: OtherServicesViewPro
                     <p className="description">{service.description}</p>
                     <p>
                       <Link className="fr-link" href={service.url} target="_blank">
-                        {service.linkText}
+                        {service.link_text}
                       </Link>
                     </p>
                   </div>
-                  <img
-                    style={{
-                      position: "absolute",
-                      bottom: "-40px",
-                      right: "-10px",
-                      borderRadius: "0px",
-                    }}
-                    src="/images/temp-opsn.png"
-                    alt="Temp OPSN"
-                  />
+                  {service.picture_url && (
+                    <img
+                      style={{
+                        position: "absolute",
+                        bottom: "-30px",
+                        right: "-8px",
+                        borderRadius: "0px",
+                      }}
+                      src={service.picture_url}
+                      alt={service.name}
+                    />
+                  )}
                 </div>
               </div>
             ))}

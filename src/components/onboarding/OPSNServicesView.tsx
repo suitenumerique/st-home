@@ -2,7 +2,7 @@ import type { Commune, Service } from "@/lib/onboarding";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type OPSNServicesViewProps = {
   services: Service[];
@@ -20,9 +20,11 @@ type Structure = {
  * View for displaying the OPSN services
  */
 export default function OPSNServicesView({ services, commune }: OPSNServicesViewProps) {
-  const [selectedService, setSelectedService] = useState<Service | undefined>(
-    services.find((s) => s.name === "Messages"),
-  );
+  const [selectedService, setSelectedService] = useState<Service | undefined>(undefined);
+
+  useEffect(() => {
+    setSelectedService(services[0]);
+  }, [services]);
 
   const existingImgIds = [12, 99992];
 
@@ -50,9 +52,11 @@ export default function OPSNServicesView({ services, commune }: OPSNServicesView
         </p>
         {selectedService && (
           <p>
-            <Link className="fr-link" href={selectedService.url}>
-              {selectedService.name}
-            </Link>{" "}
+            { selectedService.name !== 'Nom de domaine' && (
+              <><Link className="fr-link" href={selectedService.url}>
+                {selectedService.name}
+              </Link>{' '}</>
+            )}
             {selectedService.description}
           </p>
         )}
