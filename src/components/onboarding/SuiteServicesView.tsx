@@ -40,7 +40,7 @@ export default function SuiteServicesView({ services, commune }: SuiteServicesVi
         </div>
         <div className={fr.cx("fr-col-12", "fr-col-md-5", "fr-col-offset-md-1")}>
           <div className="suite-services-section">
-            <h2 className={fr.cx("fr-h2")}>Utilisez tous les autres services de la Suite territoriale grâce à l'Incubateur des Territoires de l'ANCT</h2>
+            <h2 className={fr.cx("fr-h2")}>Utilisez les autres services de la Suite territoriale</h2>
             <p>
               Grâce à l’Incubateur des territoires, la collectivité peut également accéder à ces
               services :
