@@ -65,9 +65,9 @@ export default function Bienvenue(props: PageProps) {
           "Deveco",
         ]
       : [
+          "Annuaire des collectivités",
           "Mon suivi social",
           "Deveco",
-          "Annuaire des collectivités",
           "Adresses",
         ];
   const suiteServices = suiteServicesNames

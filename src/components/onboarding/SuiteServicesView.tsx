@@ -3,6 +3,7 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 type SuiteServicesViewProps = {
   services: Service[];
@@ -15,11 +16,15 @@ type SuiteServicesViewProps = {
 export default function SuiteServicesView({ services, commune }: SuiteServicesViewProps) {
   const [selectedService, setSelectedService] = useState<Service | undefined>(undefined);
 
+  const existingImgIds = [3, 4, 8, 12, 49, 99991];
+
   useEffect(() => {
     setSelectedService(services[0]);
+    existingImgIds.forEach((id) => {
+      const img = new window.Image();
+      img.src = `/images/temp-st-illu-${id}.svg`;
+    });
   }, [services]);
-
-  const existingImgIds = [3, 4, 8, 12, 49, 99991];
 
   return (
     <div className={fr.cx("fr-container")}>
@@ -28,12 +33,23 @@ export default function SuiteServicesView({ services, commune }: SuiteServicesVi
           className={fr.cx("fr-col-12", "fr-col-md-6")}
           style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
         >
-          <img
+          {/* <img
             src={
               existingImgIds.includes(selectedService?.id ?? -1)
                 ? `/images/temp-st-illu-${selectedService?.id}.svg`
                 : "/images/temp-opsn.png"
             }
+            style={{ width: "100%", height: "auto" }}
+            alt={selectedService?.name ?? ""}
+          /> */}
+          <Image
+            src={
+              existingImgIds.includes(selectedService?.id ?? -1)
+                ? `/images/temp-st-illu-${selectedService?.id}.svg`
+                : "/images/temp-opsn.png"
+            }
+            width={670}
+            height={400}
             style={{ width: "100%", height: "auto" }}
             alt={selectedService?.name ?? ""}
           />

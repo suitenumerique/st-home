@@ -22,11 +22,15 @@ type Structure = {
 export default function OPSNServicesView({ services, commune }: OPSNServicesViewProps) {
   const [selectedService, setSelectedService] = useState<Service | undefined>(undefined);
 
+  const existingImgIds = [12, 49, 99992];
+
   useEffect(() => {
     setSelectedService(services[0]);
+    existingImgIds.forEach((id) => {
+      const img = new Image();
+      img.src = `/images/temp-st-illu-${id}.svg`;
+    });
   }, [services]);
-
-  const existingImgIds = [12, 49, 99992];
 
   function StructureCard({
     structure,

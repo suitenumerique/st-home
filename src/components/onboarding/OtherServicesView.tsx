@@ -25,7 +25,7 @@ export default function OtherServicesView({ organisation }: OtherServicesViewPro
       logo_url: "https://operateurs.suite.anct.gouv.fr/api/v1.0/servicelogo/5/",
       url: "https://administration-plus.fr",
       link_text: "Découvrir ce service",
-      picture_url: null,
+      picture_url: "/images/temp-st-illu-aplus.jpeg",
     },
     {
       name: "Mon espace collectivité",
@@ -110,7 +110,7 @@ export default function OtherServicesView({ organisation }: OtherServicesViewPro
                     <img
                       style={{
                         position: "absolute",
-                        bottom: "-30px",
+                        bottom: "-35px",
                         right: "-8px",
                         borderRadius: "0px",
                       }}
