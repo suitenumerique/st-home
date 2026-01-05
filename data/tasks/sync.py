@@ -34,11 +34,11 @@ from .dumps import (
 )
 from .lib import (
     duplicates,
+    get_communes_population_by_insee,
     iter_dila,
     iter_groupements_memberships,
     iter_insee_communes,
     iter_insee_departements,
-    iter_insee_population,
     iter_insee_regions,
     iter_perimetre_epci,
     iter_repertoire_collectivites,
@@ -138,7 +138,7 @@ def run():
 def list_communes():
     """List all communes from INSEE"""
 
-    population_by_insee = {x["GEO"]: int(x["OBS_VALUE"]) for x in iter_insee_population()}
+    population_by_insee = get_communes_population_by_insee()
 
     return [
         {
@@ -158,7 +158,7 @@ def list_departements():
     """List all departements from INSEE"""
 
     communes_to_departments = {x["COM"]: x["DEP"] for x in iter_insee_communes()}
-    population_by_insee = {x["GEO"]: int(x["OBS_VALUE"]) for x in iter_insee_population()}
+    population_by_insee = get_communes_population_by_insee()
 
     # Some COM/TOM will be filtered here : https://www.insee.fr/fr/information/7929495
     dila_sirens = {
@@ -205,7 +205,7 @@ def list_epcis():
 def list_regions():
     """List all regions from INSEE"""
     communes_to_regions = {x["COM"]: x["REG"] for x in iter_insee_communes()}
-    population_by_insee = {x["GEO"]: int(x["OBS_VALUE"]) for x in iter_insee_population()}
+    population_by_insee = get_communes_population_by_insee()
 
     dila_sirens = {
         communes_to_regions[x["pivot"][0]["code_insee_commune"][0]]: x["siret"][0:9]
@@ -236,6 +236,10 @@ def filter_invalid_communes(communes: list):
         "Removed %d communes with zero population (from WW2)", len_communes - len(communes)
     )
     assert len_communes - len(communes) < 10
+
+    for commune in communes:
+        if not commune.get("siren"):
+            logger.warning(f"Commune {commune['name']} {commune['insee_com']} has no SIREN")
 
     len_communes = len(communes)
     communes = [x for x in communes if x.get("siren")]

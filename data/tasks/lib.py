@@ -45,11 +45,10 @@ def iter_insee_regions():
         yield row
 
 
-def iter_insee_population():
+def get_communes_population_by_insee():
     with open("dumps/insee_population.json") as f:
         data = json.load(f)
-    for row in data:
-        yield row
+    return data["communes"]
 
 
 def iter_dila(type_service_local):

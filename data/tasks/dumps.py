@@ -135,28 +135,26 @@ def dump_insee_population():
     if Path("dumps/insee_population.json").exists():
         return
 
-    url = "https://www.data.gouv.fr/api/1/datasets/r/f20dd619-0e85-4e8a-b548-18cdeb8c648f"
-    r = requests.get(
-        url,
-        headers={
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-            "accept-language": "fr-FR,fr;q=0.9",
-        },
-    )
-    r.raise_for_status()
-
+    # https://www.insee.fr/fr/statistiques/8680726?sommaire=8681011
+    url = "https://www.insee.fr/fr/statistiques/fichier/8680726/ensemble.zip"
+    r = requests.get(url)
+    data = {"communes": {}}
     # Read from zip file
     with zipfile.ZipFile(io.BytesIO(r.content)) as thezip:
-        with thezip.open("DS_POPULATIONS_REFERENCE_data.csv", "r") as f:
-            data = f.read().decode("utf-8")
-            rows = list(csv.DictReader(data.splitlines(), delimiter=";", quotechar='"'))
+        with thezip.open("donnees_communes.csv", "r") as f:
+            for row in csv.DictReader(
+                f.read().decode("utf-8").splitlines(), delimiter=";", quotechar='"'
+            ):
+                data["communes"][row["COM"]] = int(row["PMUN"])
+        # Saint-Pierre-et-Miquelon, Saint-Martin, Saint-Barthélemy
+        with thezip.open("donnees_collectivites.csv", "r") as f:
+            for row in csv.DictReader(
+                f.read().decode("utf-8").splitlines(), delimiter=";", quotechar='"'
+            ):
+                data["communes"][row["COM"]] = int(row["PMUN"])
+
     with open("dumps/insee_population.json", "w") as f:
-        rows = [
-            row
-            for row in rows
-            if (row["POPREF_MEASURE"] == "PMUN" and row["TIME_PERIOD"] == "2022")
-        ]
-        json.dump(rows, f, ensure_ascii=False, indent=4)
+        json.dump(data, f, ensure_ascii=False, indent=4)
 
 
 def dump_filtered_sirene(orgs):
