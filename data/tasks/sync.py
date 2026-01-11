@@ -26,6 +26,7 @@ from .dumps import (
     dump_insee_departements,
     dump_insee_population,
     dump_insee_regions,
+    dump_operators,
     dump_perimetre_epci,
     dump_service_usages,
     dump_services,
@@ -36,17 +37,14 @@ from .lib import (
     duplicates,
     get_communes_population_by_insee,
     iter_dila,
-    iter_groupements_memberships,
     iter_insee_communes,
     iter_insee_departements,
     iter_insee_regions,
+    iter_operators,
     iter_perimetre_epci,
-    iter_repertoire_collectivites,
-    iter_repertoire_structures,
     iter_sirene,
     normalize,
 )
-from .repertoire import dump_repertoire_collectivites, dump_repertoire_structures
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -82,12 +80,11 @@ def run():
     dump_insee_regions()
     dump_insee_population()
     dump_dila()
-    dump_repertoire_structures()
-    dump_repertoire_collectivites()
     dump_perimetre_epci()
     dump_groupements_memberships()
     dump_services()
     dump_service_usages()
+    dump_operators()
 
     communes = list_communes()
 
@@ -118,12 +115,7 @@ def run():
 
     associate_dila_to_organizations(orgs)
 
-    # Associate Repertoire data to communes
-    associate_repertoire_to_orgs(orgs)
-
     associate_structures_to_orgs(orgs)
-
-    associate_memberships_to_orgs(orgs)
 
     compute_slug_for_communes(orgs)
 
@@ -399,113 +391,23 @@ def associate_dila_to_organizations(orgs: list):
             org["_st_dila"] = dila_match
 
 
-def associate_repertoire_to_orgs(orgs: list):
-    """Associate Grist Repertoire data to orgs"""
-
-    communes_by_insee = {
-        x["Code_INSEE_geographique"]: x
-        for x in iter_repertoire_collectivites()
-        if x["Typologie"] == "Commune"
-    }
-
-    epcis_by_siren = {
-        x["Numero_SIREN"]: x
-        for x in iter_repertoire_collectivites()
-        if x["Typologie"] == "EPCI à fiscalité propre"
-    }
-
-    for org in orgs:
-        if org["type"] == "commune" and org["insee_com"] in communes_by_insee:
-            org["_st_repertoire"] = communes_by_insee[org["insee_com"]]
-        elif org["type"] == "epci" and org["siren"] in epcis_by_siren:
-            org["_st_repertoire"] = epcis_by_siren[org["siren"]]
-        elif org["type"] in {"departement", "region", "arrondissement"}:
-            pass
-        else:
-            logger.warning(
-                f"Missing commune INSEE or EPCI SIREN in Repertoire: {org['name']} {org.get('insee_com')} {org['siren']}"
-            )
-
-
 def associate_structures_to_orgs(orgs: list):
-    """Associate mutualization structures from Repertoire to orgs"""
+    """Associate mutualization structures from Operator to orgs"""
 
-    colls_by_repertoire_id = {x["id"]: x for x in iter_repertoire_collectivites()}
+    operators = {x["id"]: x for x in iter_operators()}
 
-    structure_mappings = defaultdict(list)
+    operators_by_departement = defaultdict(list)
 
-    # "Couverture" is a list of Grist IDs, that can be of any kind.
-    for structure in iter_repertoire_structures():
-        if not structure["Groupe_Pilote"]:
-            continue
-        if not structure["Typologie"] or len(structure["Typologie"]) < 2:
-            continue
-        if len(set(structure["Typologie"][1:]).intersection({"OPSN", "Centre de gestion"})) == 0:
-            continue
-        if structure["Couverture"] and len(structure["Couverture"]) > 1:
-            for couv in structure["Couverture"][1:]:
-                structure_mappings[couv].append(structure["id"])
+    for operator_id, operator in operators.items():
+        for dep in operator.get("departements", []):
+            operators_by_departement[dep].append(operator_id)
 
     for org in orgs:
         org["_st_structures"] = []
-        if not org.get("_st_repertoire"):
-            continue
 
-        # Add all structures scoped to this department, single commune and region
-        org["_st_structures"] = (
-            structure_mappings[org["_st_repertoire"]["Code_INSEE_departement"]]
-            + structure_mappings[org["_st_repertoire"]["Code_INSEE_commune"]]
-            + structure_mappings[org["_st_repertoire"]["Code_INSEE_region"]]
-        )
-
-        # Scope can also be an EPCI
-        # /!\ Numero_SIREN_EPCI is actually a Grist ID, not a SIREN
-        if org["_st_repertoire"]["Numero_SIREN_EPCI"]:
-            org["_st_structures"].extend(
-                structure_mappings[
-                    colls_by_repertoire_id[org["_st_repertoire"]["Numero_SIREN_EPCI"]]["id"]
-                ]
-            )
-
-        # Remove duplicates
-        org["_st_structures"] = list(set(org["_st_structures"]))
-
-
-def associate_memberships_to_orgs(orgs: list):
-    """Associate memberships to orgs"""
-    structures_with_banatic_name = [
-        x for x in iter_repertoire_structures() if x.get("Libelle_BANATIC")
-    ]
-    memberships = []
-    for structure in structures_with_banatic_name:
-        memberships.extend(
-            [
-                {**x, "structure_id": structure.get("id")}
-                for x in iter_groupements_memberships()
-                if x.get("Nom du groupement") == structure.get("Libelle_BANATIC")
-            ]
-        )
-
-    # group by siren membre
-    memberships_by_siren = defaultdict(list)
-    for membership in memberships:
-        memberships_by_siren[membership.get("Siren membre")].append(membership)
-
-    for org in orgs:
-        org["_st_memberships"] = []
-        # If the commune siren is in the memberships, add the memberships structure_id to the commune memberships
-        if org.get("siren") in memberships_by_siren:
-            org["_st_memberships"] = [
-                x.get("structure_id") for x in memberships_by_siren[org.get("siren")]
-            ]
-        elif org.get("_st_epci", {}).get("siren") in memberships_by_siren:
-            org["_st_memberships"] = [
-                x.get("structure_id")
-                for x in memberships_by_siren[org.get("_st_epci", {}).get("siren")]
-            ]
-
-        # Remove duplicates
-        org["_st_memberships"] = list(set(org["_st_memberships"]))
+        # Only communes and EPCIs are associated to operators for now
+        if org["type"] in {"commune", "epci"}:
+            org["_st_structures"] = operators_by_departement.get(org["insee_dep"], [])
 
 
 def compute_slug_for_communes(orgs: list):
@@ -707,7 +609,6 @@ def create_new_dumps(orgs: list):
                 "st_eligible": st_eligible,
                 "st_active": st_active,
                 "structures": org.get("_st_structures") or [],
-                "memberships": org.get("_st_memberships") or [],
             }
         )
 

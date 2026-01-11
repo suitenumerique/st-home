@@ -488,8 +488,8 @@ const MapWrapper = ({
           feature.properties?.SIRET || "",
           mapState.selectedAreas.department as SelectedArea,
         );
-        feature.properties!.VALUE = stats?.n_cities;
-        feature.properties!.SCORE = stats?.score;
+        feature.properties!.VALUE = stats?.n_cities || 1;
+        feature.properties!.SCORE = stats?.score || 0;
         feature.properties!.color = stats?.score === null ? "transparent" : getColor(stats?.score);
         feature.properties!.color_dark =
           stats?.score === null ? "#000091" : darkenColor(feature.properties!.color, 0.6);

@@ -8,7 +8,7 @@ interface Organization {
   insee_com: string;
   zipcode: string;
   email_official: string;
-  structures: number[];
+  structures: string[];
   website_url: string | null;
   phone: string | null;
   issues: string[];
@@ -37,13 +37,11 @@ interface Organization {
 }
 
 interface Structure {
-  id: number;
-  Nom: string;
-  Sigle: string;
-  Nom_sigle: string;
-  Typologie: string;
-  Statut_juridique: string;
-  Site_web: string;
+  id: string;
+  nom: string;
+  url: string;
+  services: string;
+  departements: string;
 }
 
 interface Service {
@@ -84,7 +82,7 @@ async function importOrganizations(dumpsDir: string) {
     }
 
     const communesPath = path.join(dumpsDir, "organizations.json");
-    const structuresPath = path.join(dumpsDir, "structures.json");
+    const structuresPath = path.join(dumpsDir, "operators.json");
     const servicesPath = path.join(dumpsDir, "services.json");
     const serviceUsagesPath = path.join(dumpsDir, "service_usages.json");
 
@@ -104,26 +102,18 @@ async function importOrganizations(dumpsDir: string) {
 
     console.log(`Reading structures from ${structuresPath}...`);
     const structuresData = fs.readFileSync(structuresPath, "utf8");
-    const structuresList: Structure[] = JSON.parse(structuresData);
-
-    // Filter out structures that are not mutualization structures
-    const mutualizationStructures = structuresList.filter(
-      (structure) =>
-        structure.Typologie &&
-        (structure.Typologie.indexOf("OPSN") !== -1 ||
-          structure.Typologie.indexOf("Centre de gestion") !== -1),
-    );
+    const mutualizationStructures: Structure[] = JSON.parse(structuresData);
 
     client = await pool.connect();
 
     // Prepare bulk insert data
     const structureValues = mutualizationStructures.map((structure) => ({
-      id: String(structure.id),
-      name: structure.Nom,
-      name_unaccent: unaccent(structure.Nom),
-      shortname: structure.Sigle,
-      type: structure.Typologie,
-      website: structure.Site_web || null,
+      id: structure.id,
+      name: structure.nom,
+      name_unaccent: unaccent(structure.nom),
+      shortname: structure.nom,
+      type: "operator", // All structures from operators.json are operators
+      website: structure.url,
     }));
 
     // Keep track of valid organizations and structures
@@ -197,7 +187,8 @@ async function importOrganizations(dumpsDir: string) {
     const servicesData = fs.readFileSync(servicesPath, "utf8");
 
     // Prepare services
-    const services: Service[] = JSON.parse(servicesData).map((service) => ({
+    // Note: Service interface has id as string (from JSON), but we parse it to number for DB
+    const services = JSON.parse(servicesData).map((service: Service) => ({
       id: parseInt(service.id, 10),
       name: service.nom,
       url: service.url,
@@ -224,6 +215,31 @@ async function importOrganizations(dumpsDir: string) {
 
     console.log(`Found ${serviceUsage.length} service usages to import.`);
 
+    // Prepare services to structures relations
+    const validServiceIds = new Set(services.map((s) => s.id));
+    const servicesToStructuresRelations: {
+      service_id: number;
+      structure_id: string;
+    }[] = [];
+    mutualizationStructures.forEach((structure) => {
+      if (structure.services && structure.services.trim()) {
+        const serviceIds = structure.services
+          .split(",")
+          .map((id) => parseInt(id.trim(), 10))
+          .filter((id) => !isNaN(id) && validServiceIds.has(id));
+        serviceIds.forEach((serviceId) => {
+          servicesToStructuresRelations.push({
+            service_id: serviceId,
+            structure_id: String(structure.id),
+          });
+        });
+      }
+    });
+
+    console.log(
+      `Found ${servicesToStructuresRelations.length} services to structures relations to import.`,
+    );
+
     console.log(`Starting DB transaction...`);
 
     // Start transaction and replace all data
@@ -235,6 +251,7 @@ async function importOrganizations(dumpsDir: string) {
     await client.query("TRUNCATE TABLE st_mutualization_structures CASCADE");
     await client.query("TRUNCATE TABLE st_services CASCADE");
     await client.query("TRUNCATE TABLE st_organizations_to_services CASCADE");
+    await client.query("TRUNCATE TABLE st_services_to_structures CASCADE");
 
     // Bulk insert structures
     console.log(`Bulk inserting ${structureValues.length} structures...`);
@@ -277,6 +294,20 @@ async function importOrganizations(dumpsDir: string) {
       SELECT * FROM json_populate_recordset(null::st_organizations_to_services, $1)
     `;
     await client.query(serviceUsageQuery, [JSON.stringify(serviceUsage)]);
+
+    // Bulk insert services to structures relations
+    if (servicesToStructuresRelations.length > 0) {
+      console.log(
+        `Bulk inserting ${servicesToStructuresRelations.length} services to structures relations...`,
+      );
+      const servicesToStructuresQuery = `
+        INSERT INTO st_services_to_structures (service_id, structure_id)
+        SELECT * FROM json_populate_recordset(null::st_services_to_structures, $1)
+      `;
+      await client.query(servicesToStructuresQuery, [
+        JSON.stringify(servicesToStructuresRelations),
+      ]);
+    }
 
     await client.query("COMMIT");
 

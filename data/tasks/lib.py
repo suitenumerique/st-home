@@ -62,11 +62,13 @@ def iter_dila(type_service_local):
             yield service
 
 
-def iter_repertoire_structures():
-    with open("dumps/structures.json") as f:
+def iter_operators():
+    with open("dumps/operators.json") as f:
         data = json.load(f)
-    for structure in data:
-        yield structure
+    for operator in data:
+        operator["services"] = [int(x) for x in operator["services"].split(",") if len(x) > 0]
+        operator["departements"] = [x for x in operator["departements"].split(",") if len(x) > 0]
+        yield operator
 
 
 def iter_groupements_memberships():
@@ -74,13 +76,6 @@ def iter_groupements_memberships():
         data = json.load(f)
     for membership in data:
         yield membership
-
-
-def iter_repertoire_collectivites():
-    with open("dumps/collectivites.json") as f:
-        data = json.load(f)
-    for collectivite in data:
-        yield collectivite
 
 
 def iter_perimetre_epci():

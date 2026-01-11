@@ -61,7 +61,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     }
     const chartSeries = mapState.filters.rcpnt_ref ? [
       ["2", "Conforme"],
-      ["0", "Non conforme"],
+      ["0", "A risque"],
     ] : [
       ["2", "Conforme"],
       ["1", "À renforcer"],
@@ -304,7 +304,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
           <a href="/conformite/referentiel">Référentiel de la Présence Numérique des Territoires</a> :
         </p>
         <CommuneInfo commune={mapState.selectedAreas.city} servicePublicUrlOnExpand={true} />
-        <div style={{ marginTop: "-0.5rem"}}>
+        <div className={fr.cx("fr-mt-2w")}>
           <Button
             priority="primary"
             linkProps={{

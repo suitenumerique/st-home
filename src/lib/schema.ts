@@ -97,31 +97,6 @@ export const organizationsToStructures = pgTable(
   },
 );
 
-// Organization relations
-export const organizationsRelations = relations(organizations, ({ many }) => ({
-  structures: many(organizationsToStructures),
-}));
-
-// MutualizationStructure relations
-export const mutualizationStructuresRelations = relations(mutualizationStructures, ({ many }) => ({
-  organizations: many(organizationsToStructures),
-}));
-
-// OrganizationsToStructures relations
-export const organizationsToStructuresRelations = relations(
-  organizationsToStructures,
-  ({ one }) => ({
-    organization: one(organizations, {
-      fields: [organizationsToStructures.organizationSiret],
-      references: [organizations.siret],
-    }),
-    structure: one(mutualizationStructures, {
-      fields: [organizationsToStructures.structureId],
-      references: [mutualizationStructures.id],
-    }),
-  }),
-);
-
 // Services table
 export const services = pgTable(
   "st_services",
@@ -134,6 +109,24 @@ export const services = pgTable(
     launch_date: date("launch_date"),
   },
   (table) => [index("st_services_url_index").using("btree", table.url)],
+);
+
+// Services to Structures many-to-many relation table
+export const servicesToStructures = pgTable(
+  "st_services_to_structures",
+  {
+    serviceId: integer("service_id")
+      .notNull()
+      .references(() => services.id, { onDelete: "cascade" }),
+    structureId: text("structure_id")
+      .notNull()
+      .references(() => mutualizationStructures.id, { onDelete: "cascade" }),
+  },
+  (table) => {
+    return {
+      pk: primaryKey({ columns: [table.serviceId, table.structureId] }),
+    };
+  },
 );
 
 // ServiceUsage
@@ -155,6 +148,32 @@ export const organizationsToServices = pgTable(
   },
 );
 
+// Organization relations
+export const organizationsRelations = relations(organizations, ({ many }) => ({
+  structures: many(organizationsToStructures),
+}));
+
+// MutualizationStructure relations
+export const mutualizationStructuresRelations = relations(mutualizationStructures, ({ many }) => ({
+  organizations: many(organizationsToStructures),
+  services: many(servicesToStructures),
+}));
+
+// OrganizationsToStructures relations
+export const organizationsToStructuresRelations = relations(
+  organizationsToStructures,
+  ({ one }) => ({
+    organization: one(organizations, {
+      fields: [organizationsToStructures.organizationSiret],
+      references: [organizations.siret],
+    }),
+    structure: one(mutualizationStructures, {
+      fields: [organizationsToStructures.structureId],
+      references: [mutualizationStructures.id],
+    }),
+  }),
+);
+
 // ServiceUsage relations
 export const organizationsToServicesRelations = relations(organizationsToServices, ({ one }) => ({
   organization: one(organizations, {
@@ -165,4 +184,21 @@ export const organizationsToServicesRelations = relations(organizationsToService
     fields: [organizationsToServices.serviceId],
     references: [services.id],
   }),
+}));
+
+// ServicesToStructures relations
+export const servicesToStructuresRelations = relations(servicesToStructures, ({ one }) => ({
+  service: one(services, {
+    fields: [servicesToStructures.serviceId],
+    references: [services.id],
+  }),
+  structure: one(mutualizationStructures, {
+    fields: [servicesToStructures.structureId],
+    references: [mutualizationStructures.id],
+  }),
+}));
+
+// Update existing relations to include servicesToStructures
+export const servicesRelations = relations(services, ({ many }) => ({
+  structures: many(servicesToStructures),
 }));

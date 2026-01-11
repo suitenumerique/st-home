@@ -13,6 +13,7 @@ export default {
     "st_organizations_to_structures",
     "st_organizations_to_services",
     "st_mutualization_structures",
+    "st_services_to_structures",
   ],
   verbose: true,
   strict: true,
