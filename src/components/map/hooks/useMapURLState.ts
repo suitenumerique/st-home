@@ -60,7 +60,7 @@ export const useMapURLState = () => {
       if (departmentView && currentLevel === "department") {
         params.set("view", departmentView);
       }
-      if (regionView && currentLevel === "region") {
+      if (currentLevel === "region" && regionView === "city") {
         params.set("view", regionView);
       }
       Object.entries(filters).forEach(([key, param]) => {

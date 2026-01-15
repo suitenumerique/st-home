@@ -16,7 +16,7 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
     currentLevel: "country",
     selectedAreas: {},
     departmentView: "epci", // Default view for departments
-    regionView: "city", // Default view for regions (hidden feature)
+    regionView: "department", // Default view for regions (hidden feature)
     filters: {
       service_id: null,
       service_ids: null,
@@ -416,19 +416,19 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
       const shouldReloadAtDepartment =
         mapState.currentLevel === "department" &&
         mapState.departmentView === "city" &&
-        mapState.selectedAreas.department;
+        mapState.selectedAreas.department?.insee_geo;
 
       const shouldReloadAtCity =
-        mapState.currentLevel === "city" && mapState.selectedAreas.department;
+        mapState.currentLevel === "city" && mapState.selectedAreas.department?.insee_geo;
 
       const shouldReloadAtEPCI =
-        mapState.currentLevel === "epci" && mapState.selectedAreas.department;
+        mapState.currentLevel === "epci" && mapState.selectedAreas.department?.insee_geo;
 
       // Reload if at region level with city view (hidden feature)
       const shouldReloadAtRegion =
         mapState.currentLevel === "region" &&
         mapState.regionView === "city" &&
-        mapState.selectedAreas.region;
+        mapState.selectedAreas.region?.insee_geo;
 
       if (shouldReloadAtDepartment || shouldReloadAtCity || shouldReloadAtEPCI) {
         const departmentCode = (mapState.selectedAreas.department as SelectedArea).insee_geo;
@@ -464,13 +464,12 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
     };
 
     reloadCities();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     mapState.filters.period,
     mapState.currentLevel,
     mapState.departmentView,
     mapState.regionView,
-    mapState.selectedAreas.department,
-    mapState.selectedAreas.region,
     mapState.selectedAreas.department?.insee_geo,
     mapState.selectedAreas.region?.insee_geo,
     loadDepartmentCities,

@@ -30,7 +30,6 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
       { label: "Octobre 2025", value: "2025-10" },
       { label: "Novembre 2025", value: "2025-11" },
       { label: "Décembre 2025", value: "2025-12" },
-      { label: "Test", value: "2026-01" },
       { label: "Dernière mise à jour", value: "current" },
     ];
   }, []);
