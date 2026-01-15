@@ -2,9 +2,9 @@
 
 import { MapProvider, useMapContext } from "@/components/map/context/MapContext";
 import { MapLayoutProvider } from "@/components/map/context/MapLayoutContext";
-import { useDisplayedGeoJSON } from "@/components/map/hooks/useDisplayedGeoJSON";
 import { InteractiveMap } from "@/components/map/core/InteractiveMap";
 import { MapLayout } from "@/components/map/core/MapLayout";
+import { useDisplayedGeoJSON } from "@/components/map/hooks/useDisplayedGeoJSON";
 import * as d3 from "d3";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import parentAreas from "../../../../../public/parent_areas.json";
@@ -15,7 +15,7 @@ import { StatRecord } from "./types";
 
 const DeploiementMap = () => {
   const { mapState, setMapState, selectLevel, goBack, handleQuickNav } = useMapContext();
-  
+
   const [stats, setStats] = useState<StatRecord[]>([]);
   const [coordMap, setCoordMap] = useState<Record<string, { longitude: number; latitude: number }>>(
     {},
@@ -24,8 +24,8 @@ const DeploiementMap = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [customLayers, setCustomLayers] = useState<any[]>([]);
 
-  const gradientColors = ["#EEEEEE", "#2A3C84"];
-  const gradientDomain = [0, 1];
+  const gradientColors = useMemo(() => ["#EEEEEE", "#2A3C84"], []);
+  const gradientDomain = useMemo(() => [0, 1], []);
 
   const colorsConfig = useMemo(() => {
     return {
@@ -33,7 +33,7 @@ const DeploiementMap = () => {
       range: gradientColors,
       defaultColor: "#e2e8f0",
     };
-  }, []);
+  }, [gradientColors, gradientDomain]);
 
   const getColor = useCallback(
     (score: number | null | undefined): string => {
@@ -141,27 +141,33 @@ const DeploiementMap = () => {
     const y = EARTH_RADIUS * Math.log(Math.tan(Math.PI / 4 + phi / 2));
     return { x, y };
   };
-  const fromMercator = (x: number, y: number): { lat: number; lon: number } => {
-    const lon = (x / EARTH_RADIUS) * (180 / Math.PI);
-    const lat = (2 * Math.atan(Math.exp(y / EARTH_RADIUS)) - Math.PI / 2) * (180 / Math.PI);
-    return { lat, lon };
-  };
+  const fromMercator = useCallback(
+    (x: number, y: number): { lat: number; lon: number } => {
+      const lon = (x / EARTH_RADIUS) * (180 / Math.PI);
+      const lat = (2 * Math.atan(Math.exp(y / EARTH_RADIUS)) - Math.PI / 2) * (180 / Math.PI);
+      return { lat, lon };
+    },
+    [EARTH_RADIUS],
+  );
 
   // Build a hex polygon around a Mercator center using a radius in meters, return lon/lat ring
-  const createHexagon = (centerX: number, centerY: number, acrossFlats: number): number[][] => {
-    const coordinates: number[][] = [];
-    // Convert across-flats to circumradius (center to vertex) for a regular hexagon
-    const radius = acrossFlats / Math.sqrt(3);
-    for (let i = 0; i < 6; i++) {
-      const angle = (Math.PI / 180) * (60 * i + 30); // flat-topped hex
-      const vx = centerX + radius * Math.cos(angle);
-      const vy = centerY + radius * Math.sin(angle);
-      const { lat, lon } = fromMercator(vx, vy);
-      coordinates.push([lon, lat]);
-    }
-    coordinates.push(coordinates[0]);
-    return coordinates;
-  };
+  const createHexagon = useCallback(
+    (centerX: number, centerY: number, acrossFlats: number): number[][] => {
+      const coordinates: number[][] = [];
+      // Convert across-flats to circumradius (center to vertex) for a regular hexagon
+      const radius = acrossFlats / Math.sqrt(3);
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 180) * (60 * i + 30); // flat-topped hex
+        const vx = centerX + radius * Math.cos(angle);
+        const vy = centerY + radius * Math.sin(angle);
+        const { lat, lon } = fromMercator(vx, vy);
+        coordinates.push([lon, lat]);
+      }
+      coordinates.push(coordinates[0]);
+      return coordinates;
+    },
+    [fromMercator],
+  );
 
   const processDataToHexbin = useCallback(
     (
@@ -251,7 +257,7 @@ const DeploiementMap = () => {
         features: features,
       };
     },
-    [hexbinSize, mapState.filters.service_ids, services],
+    [hexbinSize, mapState.filters.service_ids, services, createHexagon, fromMercator],
   );
 
   useEffect(() => {
@@ -265,11 +271,13 @@ const DeploiementMap = () => {
     let filteredStats = stats;
     if (mapState.currentLevel === "region") {
       filteredStats = filteredStats.filter(
-        (stat: StatRecord) => stat.reg === (mapState.selectedAreas.region as SelectedArea).insee_geo.replace("r", ""),
+        (stat: StatRecord) =>
+          stat.reg === (mapState.selectedAreas.region as SelectedArea).insee_geo.replace("r", ""),
       );
     } else if (mapState.currentLevel === "department") {
       filteredStats = filteredStats.filter(
-        (stat: StatRecord) => stat.dep === (mapState.selectedAreas.department as SelectedArea).insee_geo,
+        (stat: StatRecord) =>
+          stat.dep === (mapState.selectedAreas.department as SelectedArea).insee_geo,
       );
     }
 
@@ -307,9 +315,11 @@ const DeploiementMap = () => {
     if (
       stats.length > 0 &&
       mapState.selectedAreas.city &&
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       !(mapState.selectedAreas.city as any).additionalCityStats
     ) {
       const cityStats = stats.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (stat: StatRecord) => stat.id === (mapState.selectedAreas.city as any).siret,
       );
       if (cityStats) {
@@ -318,6 +328,7 @@ const DeploiementMap = () => {
           selectedAreas: {
             ...mapState.selectedAreas,
             city: {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               ...(mapState.selectedAreas.city as any),
               additionalCityStats: cityStats,
             },
@@ -337,56 +348,58 @@ const DeploiementMap = () => {
   }, []);
 
   const geoJSON = useDisplayedGeoJSON(mapState);
-  
+
   const mapData = useMemo(() => {
     if (!geoJSON || stats.length === 0) return {};
-    
+
     const data: Record<string, { value?: number; score?: number; color: string }> = {};
     const features = geoJSON.features;
-    
+
     const scoreLevel = {
-        country: "region",
-        region: "department",
-        department: mapState.departmentView === "city" ? "city" : "epci",
-        epci: "city",
-        city: "city",
+      country: "region",
+      region: "department",
+      department: mapState.departmentView === "city" ? "city" : "epci",
+      epci: "city",
+      city: "city",
     }[mapState.currentLevel] as "country" | "region" | "department" | "epci" | "city";
 
     features.forEach((feature) => {
-        const props = feature.properties as FeatureProperties;
-        const code = props.INSEE_GEO || props.EPCI_SIREN || (props as unknown as { SIRET: string }).SIRET;
-        
-        if (!code) return;
+      const props = feature.properties as FeatureProperties;
+      const code =
+        props.INSEE_GEO || props.EPCI_SIREN || (props as unknown as { SIRET: string }).SIRET;
 
-        const result = computeAreaStats(
-            scoreLevel,
-            props.INSEE_GEO || "",
-            (props as unknown as { SIRET: string }).SIRET || "",
-        );
-        
-        if (result) {
-            data[code] = {
-                value: result.n_cities ?? undefined,
-                score: result.score ?? undefined,
-                color: getColor(result.score),
-            };
-        }
+      if (!code) return;
+
+      const result = computeAreaStats(
+        scoreLevel,
+        props.INSEE_GEO || "",
+        (props as unknown as { SIRET: string }).SIRET || "",
+      );
+
+      if (result) {
+        data[code] = {
+          value: result.n_cities ?? undefined,
+          score: result.score ?? undefined,
+          color: getColor(result.score),
+        };
+      }
     });
-    
+
     return data;
   }, [geoJSON, stats, mapState.currentLevel, mapState.departmentView, computeAreaStats, getColor]);
 
   return stats ? (
     <MapLayout
       sidebar={
+        // @ts-expect-error to be checked not typed
         <SidePanelContent
-           getColor={getColor}
-           mapState={mapState}
-           selectLevel={selectLevel}
-           setMapState={setMapState}
-           computeAreaStats={computeAreaStats}
-           goBack={goBack}
-           handleQuickNav={handleQuickNav}
+          getColor={getColor}
+          mapState={mapState}
+          selectLevel={selectLevel}
+          setMapState={setMapState}
+          computeAreaStats={computeAreaStats}
+          goBack={goBack}
+          handleQuickNav={handleQuickNav}
         />
       }
       map={

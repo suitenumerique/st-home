@@ -1,6 +1,12 @@
 import { fr } from "@codegouvfr/react-dsfr";
 
-const Breadcrumb = ({ segments, currentPageLabel }) => {
+const Breadcrumb = ({
+  segments,
+  currentPageLabel,
+}: {
+  segments: { label: string; onClick: () => void }[];
+  currentPageLabel: string;
+}) => {
   return (
     <nav role="navigation" className={fr.cx("fr-breadcrumb")} style={{ marginBottom: "1rem" }}>
       <div className={fr.cx("fr-collapse")}>
@@ -8,7 +14,11 @@ const Breadcrumb = ({ segments, currentPageLabel }) => {
           <>
             {segments.map(({ label, onClick }, i) => (
               <li key={i}>
-                <span style={{ cursor: "pointer" }} className={fr.cx("fr-breadcrumb__link")} onClick={onClick}>
+                <span
+                  style={{ cursor: "pointer" }}
+                  className={fr.cx("fr-breadcrumb__link")}
+                  onClick={onClick}
+                >
                   {label}
                 </span>
               </li>

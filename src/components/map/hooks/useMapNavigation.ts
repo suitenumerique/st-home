@@ -22,7 +22,7 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
       service_ids: null,
       rcpnt_ref: null,
       period: null,
-      ...initialFilters
+      ...initialFilters,
     },
   });
 
@@ -32,13 +32,15 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
     if (mapState.currentLevel === "city") {
       return mapState.selectedAreas.epci ? "epci" : "department";
     }
-    return {
-      region: "country",
-      department: "region",
-      epci: "department",
-      country: null,
-      city: null
-    }[mapState.currentLevel] || null;
+    return (
+      {
+        region: "country",
+        department: "region",
+        epci: "department",
+        country: null,
+        city: null,
+      }[mapState.currentLevel] || null
+    );
   }, [mapState.currentLevel, mapState.selectedAreas]);
 
   const nextLevel = useMemo(() => {
@@ -57,35 +59,41 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
     return levelTransitions[mapState.currentLevel] || null;
   }, [mapState.currentLevel, mapState.departmentView, mapState.regionView]);
 
-  const loadDepartmentCities = useCallback(async (departmentCode: string, period?: string | null) => {
-    const queryParams = new URLSearchParams({
-      scope: "list-commune",
-      dep: departmentCode,
-    });
-    
-    if (period && period !== "current") {
-      queryParams.set("period", period);
-    }
-    
-    const response = await fetch(`/api/rcpnt/stats?${queryParams.toString()}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
-    const data = await response.json();
-    return data;
-  }, []);
+  const loadDepartmentCities = useCallback(
+    async (departmentCode: string, period?: string | null) => {
+      const queryParams = new URLSearchParams({
+        scope: "list-commune",
+        dep: departmentCode,
+      });
 
-  const loadRegionCities = useCallback(async (regionCode: string, period?: string | null) => {
-    const departmentsInRegion = (parentAreas as ParentArea[]).filter(
-      (area) => area.type === "department" && area.insee_reg === regionCode
-    );
-    
-    const allCities = await Promise.all(
-      departmentsInRegion.map((dept) => loadDepartmentCities(dept.insee_geo, period))
-    );
-    
-    return allCities.flat();
-  }, [loadDepartmentCities]);
+      if (period && period !== "current") {
+        queryParams.set("period", period);
+      }
+
+      const response = await fetch(`/api/rcpnt/stats?${queryParams.toString()}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await response.json();
+      return data;
+    },
+    [],
+  );
+
+  const loadRegionCities = useCallback(
+    async (regionCode: string, period?: string | null) => {
+      const departmentsInRegion = (parentAreas as ParentArea[]).filter(
+        (area) => area.type === "department" && area.insee_reg === regionCode,
+      );
+
+      const allCities = await Promise.all(
+        departmentsInRegion.map((dept) => loadDepartmentCities(dept.insee_geo, period)),
+      );
+
+      return allCities.flat();
+    },
+    [loadDepartmentCities],
+  );
 
   const fetchGeoJSON = useCallback(
     async (level: "country" | "region" | "department", code: string) => {
@@ -123,7 +131,10 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
   // PROCESSING
   const processGeoJSONEPCI = useCallback((geoJSON: GeoJSON.FeatureCollection) => {
     const features = geoJSON.features.map((f) => JSON.parse(JSON.stringify(f)));
-    const groupedFeatures = d3.group(features, (d) => (d.properties as FeatureProperties).EPCI_SIREN);
+    const groupedFeatures = d3.group(
+      features,
+      (d) => (d.properties as FeatureProperties).EPCI_SIREN,
+    );
     const processedGeoJSONFeatures = Array.from(groupedFeatures, ([epciSiren, features]) => {
       let merged;
       if (features.length === 1) {
@@ -150,7 +161,11 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
   }, []);
 
   const computeSelectedArea = useCallback(
-    async (level: ParentLevel, code: string, regionView?: "department" | "city"): Promise<SelectedArea | null> => {
+    async (
+      level: ParentLevel,
+      code: string,
+      regionView?: "department" | "city",
+    ): Promise<SelectedArea | null> => {
       try {
         let selectedArea: SelectedArea;
         if (level === "country") {
@@ -172,12 +187,12 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
             // Hidden feature: load all cities in the region
             const period = mapState.filters.period as string | null;
             selectedArea.cities = await loadRegionCities(code, period);
-            
+
             // Load and combine GeoJSON for all departments in the region
             const departmentsInRegion = (parentAreas as ParentArea[]).filter(
-              (area) => area.type === "department" && area.insee_reg === code
+              (area) => area.type === "department" && area.insee_reg === code,
             );
-            
+
             const allDeptGeoJSON = await Promise.all(
               departmentsInRegion.map(async (dept) => {
                 try {
@@ -186,15 +201,15 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
                   console.error(`Failed to fetch GeoJSON for department ${dept.insee_geo}:`, error);
                   return { type: "FeatureCollection", features: [] };
                 }
-              })
+              }),
             );
 
-            const combinedFeatures = allDeptGeoJSON.flatMap((geoJSON) => 
-              geoJSON?.features || []
-            );
-            
+            const combinedFeatures = allDeptGeoJSON.flatMap((geoJSON) => geoJSON?.features || []);
+
             if (combinedFeatures.length === 0) {
-              console.warn('No features found for region cities view, falling back to region GeoJSON');
+              console.warn(
+                "No features found for region cities view, falling back to region GeoJSON",
+              );
               selectedArea.geoJSON = geoJSON;
             } else {
               selectedArea.geoJSON = {
@@ -209,7 +224,13 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
         return null;
       }
     },
-    [fetchGeoJSON, loadDepartmentCities, loadRegionCities, processGeoJSONEPCI, mapState.filters.period],
+    [
+      fetchGeoJSON,
+      loadDepartmentCities,
+      loadRegionCities,
+      processGeoJSONEPCI,
+      mapState.filters.period,
+    ],
   );
 
   const selectLevel = useCallback(
@@ -246,7 +267,7 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
         newSelectedAreas[level] = await computeSelectedArea(
           level as ParentLevel,
           code,
-          level === "region" ? effectiveRegionView : undefined
+          level === "region" ? effectiveRegionView : undefined,
         );
       } else {
         newSelectedAreas[level] = await fetchSelectedCity(code);
@@ -281,7 +302,12 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
       }
 
       // When clicking on a city from region level (with city view), populate the department
-      if (source === "areaClick" && level === "city" && mapState.currentLevel === "region" && mapState.regionView === "city") {
+      if (
+        source === "areaClick" &&
+        level === "city" &&
+        mapState.currentLevel === "region" &&
+        mapState.regionView === "city"
+      ) {
         const city = newSelectedAreas["city"] as Commune;
         if (city?.insee_dep) {
           newSelectedAreas["department"] = await computeSelectedArea("department", city.insee_dep);
@@ -322,24 +348,27 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
     }
   }, [previousLevel, mapState.selectedAreas, selectLevel]);
 
-  const handleQuickNav = useCallback(async (community: SearchCommuneType) => {
-    let level: string = community.type;
-    let code;
-    if (community.type === "region") {
-      code = "r" + community.insee_reg;
-    } else if (community.type === "departement") {
-      code = community.insee_dep!;
-      level = "department";
-    } else if (community.type === "epci") {
-      code = community["siret"].slice(0, 9);
-    } else if (community.type === "commune") {
-      code = community["siret"] || "";
-      level = "city";
-    } else {
-      throw new Error(`Invalid community type: ${community.type}`);
-    }
-    await selectLevel(level as CollectiviteLevel, code, "quickNav");
-  }, [selectLevel]);
+  const handleQuickNav = useCallback(
+    async (community: SearchCommuneType) => {
+      let level: string = community.type;
+      let code;
+      if (community.type === "region") {
+        code = "r" + community.insee_reg;
+      } else if (community.type === "departement") {
+        code = community.insee_dep!;
+        level = "department";
+      } else if (community.type === "epci") {
+        code = community["siret"].slice(0, 9);
+      } else if (community.type === "commune") {
+        code = community["siret"] || "";
+        level = "city";
+      } else {
+        throw new Error(`Invalid community type: ${community.type}`);
+      }
+      await selectLevel(level as CollectiviteLevel, code, "quickNav");
+    },
+    [selectLevel],
+  );
 
   // Initial sync with URL
   useEffect(() => {
@@ -359,11 +388,11 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
       (urlState.currentLevel !== "country" || urlState.currentAreaCode !== "00")
     ) {
       // Update mapState with regionView before selectLevel
-      setMapState(prev => ({
+      setMapState((prev) => ({
         ...prev,
         regionView: initialRegionView as "department" | "city",
       }));
-      
+
       selectLevel(
         urlState.currentLevel as CollectiviteLevel,
         urlState.currentAreaCode,
@@ -374,7 +403,7 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
     } else {
       // Load initial country data if not navigating deep
       if (!mapState.selectedAreas.country) {
-          selectLevel("country", "00", "quickNav", null, updatedFilters);
+        selectLevel("country", "00", "quickNav", null, updatedFilters);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -384,30 +413,28 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
   useEffect(() => {
     const reloadCities = async () => {
       // Reload if at department level with city view
-      const shouldReloadAtDepartment = 
+      const shouldReloadAtDepartment =
         mapState.currentLevel === "department" &&
         mapState.departmentView === "city" &&
         mapState.selectedAreas.department;
 
-      const shouldReloadAtCity = 
-        mapState.currentLevel === "city" &&
-        mapState.selectedAreas.department;
-      
-      const shouldReloadAtEPCI = 
-        mapState.currentLevel === "epci" &&
-        mapState.selectedAreas.department;
-      
+      const shouldReloadAtCity =
+        mapState.currentLevel === "city" && mapState.selectedAreas.department;
+
+      const shouldReloadAtEPCI =
+        mapState.currentLevel === "epci" && mapState.selectedAreas.department;
+
       // Reload if at region level with city view (hidden feature)
-      const shouldReloadAtRegion = 
+      const shouldReloadAtRegion =
         mapState.currentLevel === "region" &&
         mapState.regionView === "city" &&
         mapState.selectedAreas.region;
-      
+
       if (shouldReloadAtDepartment || shouldReloadAtCity || shouldReloadAtEPCI) {
         const departmentCode = (mapState.selectedAreas.department as SelectedArea).insee_geo;
         const period = mapState.filters.period as string | null;
         const cities = await loadDepartmentCities(departmentCode, period);
-        
+
         setMapState((prev) => ({
           ...prev,
           selectedAreas: {
@@ -422,7 +449,7 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
         const regionCode = (mapState.selectedAreas.region as SelectedArea).insee_geo;
         const period = mapState.filters.period as string | null;
         const cities = await loadRegionCities(regionCode, period);
-        
+
         setMapState((prev) => ({
           ...prev,
           selectedAreas: {
@@ -435,13 +462,15 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
         }));
       }
     };
-    
+
     reloadCities();
   }, [
     mapState.filters.period,
     mapState.currentLevel,
     mapState.departmentView,
     mapState.regionView,
+    mapState.selectedAreas.department,
+    mapState.selectedAreas.region,
     mapState.selectedAreas.department?.insee_geo,
     mapState.selectedAreas.region?.insee_geo,
     loadDepartmentCities,
@@ -456,11 +485,11 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
           ? (mapState.selectedAreas["city"] as Commune)?.siret
           : (mapState.selectedAreas[mapState.currentLevel] as SelectedArea)?.insee_geo || "";
       updateURLState(
-        mapState.currentLevel, 
-        areaCode, 
-        mapState.departmentView, 
+        mapState.currentLevel,
+        areaCode,
+        mapState.departmentView,
         mapState.filters,
-        mapState.regionView
+        mapState.regionView,
       );
     }
   }, [

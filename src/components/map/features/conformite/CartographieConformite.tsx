@@ -5,33 +5,33 @@ import * as d3 from "d3";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MapProvider, useMapContext } from "../../context/MapContext";
 import { MapLayoutProvider, useMapLayoutContext } from "../../context/MapLayoutContext";
-import { useDisplayedGeoJSON } from "../../hooks/useDisplayedGeoJSON";
 import { InteractiveMap } from "../../core/InteractiveMap";
 import { MapLayout } from "../../core/MapLayout";
+import { useDisplayedGeoJSON } from "../../hooks/useDisplayedGeoJSON";
 import { FeatureProperties, SelectedArea } from "../../types";
 import SidePanelContent from "./SidePanelContent";
 import { AllStats, StatRecord } from "./types";
 
 const ConformiteMap = () => {
   const { mapState, setMapState, selectLevel, goBack, handleQuickNav } = useMapContext();
-  const { panelState, setPanelState, isMobile } = useMapLayoutContext();
-  
+  const { panelState, isMobile } = useMapLayoutContext();
+
   const [statsCache, setStatsCache] = useState<Record<string, Record<string, StatRecord[]>>>({});
   const [loadingScopes, setLoadingScopes] = useState<Set<string>>(new Set());
-  
+
   const currentSelectedRef = mapState.filters.rcpnt_ref as string | null;
   const currentPeriod = (mapState.filters.period as string) || "current";
 
-  const gradientColors = ["#FF6868", "#FFC579", "#009081"];
-  const gradientDomain = [0, 1, 2];
-  
+  const gradientColors = useMemo(() => ["#FF6868", "#FFC579", "#009081"], []);
+  const gradientDomain = useMemo(() => [0, 1, 2], []);
+
   const colorsConfig = useMemo(() => {
     return {
       domain: gradientDomain,
       range: gradientColors,
       defaultColor: "#e2e8f0",
     };
-  }, []);
+  }, [gradientColors, gradientDomain]);
 
   const getColor = useCallback(
     (score: number | null | undefined): string => {
@@ -55,11 +55,11 @@ const ConformiteMap = () => {
   const loadStats = useCallback(
     async (level: "region" | "department" | "epci", period: string) => {
       const cacheKey = `${level}:${period}`;
-      
+
       if (statsCache[cacheKey] || loadingScopes.has(cacheKey)) {
         return;
       }
-      
+
       setLoadingScopes((prev) => new Set(prev).add(cacheKey));
       try {
         const scope = {
@@ -67,25 +67,22 @@ const ConformiteMap = () => {
           department: "dep",
           epci: "epci",
         };
-        
+
         const queryParams = new URLSearchParams({
           scope: scope[level],
           refs: allRcpntRefs.join(","),
         });
-        
+
         if (period !== "current") {
           queryParams.set("period", period);
         }
 
-        const response = await fetch(
-          `/api/rcpnt/stats?${queryParams.toString()}`,
-          {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-          },
-        );
+        const response = await fetch(`/api/rcpnt/stats?${queryParams.toString()}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
         const data = await response.json();
-        
+
         setStatsCache((prev) => ({
           ...prev,
           [cacheKey]: data,
@@ -112,15 +109,15 @@ const ConformiteMap = () => {
 
   useEffect(() => {
     const requiredScopes: ("region" | "department" | "epci")[] = ["region"];
-    
+
     if (["region", "department", "city"].includes(mapState.currentLevel)) {
       requiredScopes.push("department");
     }
-    
+
     if (mapState.currentLevel === "department" && mapState.departmentView === "epci") {
       requiredScopes.push("epci");
     }
-    
+
     requiredScopes.forEach((scope) => {
       loadStats(scope, currentPeriod);
     });
@@ -129,7 +126,7 @@ const ConformiteMap = () => {
   useEffect(() => {
     const regionCacheKey = `region:${currentPeriod}`;
     const countryCacheKey = `country:${currentPeriod}`;
-    
+
     // Only compute if we have region data and don't have country data yet
     if (statsCache[regionCacheKey] && !statsCache[countryCacheKey]) {
       try {
@@ -149,7 +146,7 @@ const ConformiteMap = () => {
             };
           }),
         };
-        
+
         setStatsCache((prev) => ({
           ...prev,
           [countryCacheKey]: countryStats,
@@ -167,7 +164,6 @@ const ConformiteMap = () => {
     (
       level: "country" | "region" | "department" | "epci" | "city",
       insee_geo: string,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       siret: string,
       department: SelectedArea,
     ) => {
@@ -229,55 +225,69 @@ const ConformiteMap = () => {
   );
 
   const geoJSON = useDisplayedGeoJSON(mapState);
-  
+
   const mapData = useMemo(() => {
     if (!geoJSON || !stats.country) return {}; // Wait for stats to load
-    
-    const data: Record<string, { value?: number; score?: number; color: string; details?: unknown }> = {};
+
+    const data: Record<
+      string,
+      { value?: number; score?: number; color: string; details?: unknown }
+    > = {};
     const features = geoJSON.features;
-    
+
     // Determine score level as in MapWrapper
     let scoreLevel: "country" | "region" | "department" | "epci" | "city";
     if (mapState.currentLevel === "region" && mapState.regionView === "city") {
-        scoreLevel = "city";
+      scoreLevel = "city";
     } else {
-        scoreLevel = {
-            country: "region",
-            region: "department",
-            department: mapState.departmentView === "city" ? "city" : "epci",
-            epci: "city",
-            city: "city",
-        }[mapState.currentLevel] as "country" | "region" | "department" | "epci" | "city";
+      scoreLevel = {
+        country: "region",
+        region: "department",
+        department: mapState.departmentView === "city" ? "city" : "epci",
+        epci: "city",
+        city: "city",
+      }[mapState.currentLevel] as "country" | "region" | "department" | "epci" | "city";
     }
 
     features.forEach((feature) => {
-        const props = feature.properties as FeatureProperties;
-        const code = props.INSEE_GEO || props.EPCI_SIREN || (props as unknown as { SIRET: string }).SIRET; // Handle SIRET for cities
-        
-        if (!code) return;
+      const props = feature.properties as FeatureProperties;
+      const code =
+        props.INSEE_GEO || props.EPCI_SIREN || (props as unknown as { SIRET: string }).SIRET; // Handle SIRET for cities
 
-        const result = computeAreaStats(
-            scoreLevel,
-            props.INSEE_GEO || "",
-            (props as unknown as { SIRET: string }).SIRET || "",
+      if (!code) return;
 
-            (mapState.currentLevel === "region" && mapState.regionView === "city") 
-                ? mapState.selectedAreas.region as SelectedArea
-                : mapState.selectedAreas.department as SelectedArea
-        );
-        
-        if (result) {
-            data[code] = {
-                value: result.n_cities ?? undefined,
-                score: result.score ?? undefined,
-                color: getColor(result.score),
-                details: result.details
-            };
-        }
+      const result = computeAreaStats(
+        scoreLevel,
+        props.INSEE_GEO || "",
+        (props as unknown as { SIRET: string }).SIRET || "",
+
+        mapState.currentLevel === "region" && mapState.regionView === "city"
+          ? (mapState.selectedAreas.region as SelectedArea)
+          : (mapState.selectedAreas.department as SelectedArea),
+      );
+
+      if (result) {
+        data[code] = {
+          value: result.n_cities ?? undefined,
+          score: result.score ?? undefined,
+          color: getColor(result.score),
+          details: result.details,
+        };
+      }
     });
-    
+
     return data;
-  }, [geoJSON, stats, mapState.currentLevel, mapState.departmentView, mapState.regionView, mapState.selectedAreas.department, mapState.selectedAreas.region, computeAreaStats, getColor]);
+  }, [
+    geoJSON,
+    stats,
+    mapState.currentLevel,
+    mapState.departmentView,
+    mapState.regionView,
+    mapState.selectedAreas.department,
+    mapState.selectedAreas.region,
+    computeAreaStats,
+    getColor,
+  ]);
 
   return (
     <MapLayout

@@ -24,9 +24,7 @@ export const MapLayout = ({ sidebar, map }: MapLayoutProps) => {
       <SidePanel panelState={panelState} setPanelState={setPanelState} isMobile={isMobile}>
         {sidebar}
       </SidePanel>
-      <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
-        {map}
-      </div>
+      <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>{map}</div>
     </div>
   );
 };

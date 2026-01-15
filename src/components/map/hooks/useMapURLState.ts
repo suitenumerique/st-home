@@ -6,17 +6,19 @@ export const useMapURLState = () => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getURLState = useCallback((filters: { [key: string]: any }): { [key: string]: any } => {
+    if (typeof window === "undefined")
+      return {
+        currentLevel: null,
+        currentAreaCode: null,
+        departmentView: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as { [key: string]: any };
 
-    if (typeof window === "undefined") return {
-      currentLevel: null,
-      currentAreaCode: null,
-      departmentView: null,
-    } as { [key: string]: any };
-    
     const urlParams = new URLSearchParams(window.location.search);
     const level = urlParams.get("level");
     const view = urlParams.get("view");
-    
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const state: { [key: string]: any } = {
       currentLevel: level,
       currentAreaCode: urlParams.get("code"),

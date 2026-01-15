@@ -1,13 +1,13 @@
 import { Commune as SearchCommuneType } from "@/components/CommuneSearch";
 import { createContext, ReactNode, useContext } from "react";
 import { useMapNavigation } from "../hooks/useMapNavigation";
-import { CollectiviteLevel, MapState } from "../types";
+import { MapState } from "../types";
 
 interface MapContextType {
   mapState: MapState;
   setMapState: (state: MapState) => void;
   selectLevel: (
-    level: CollectiviteLevel,
+    level: string | "country" | "region" | "department" | "epci" | "city",
     code: string,
     source?: string,
     departmentView?: "city" | "epci" | null,
@@ -38,9 +38,6 @@ interface MapProviderProps {
 export const MapProvider = ({ children, initialFilters }: MapProviderProps) => {
   const mapNavigation = useMapNavigation(initialFilters);
 
-  return (
-    <MapContext.Provider value={mapNavigation}>
-      {children}
-    </MapContext.Provider>
-  );
+  // @ts-expect-error to be checked
+  return <MapContext.Provider value={mapNavigation}>{children}</MapContext.Provider>;
 };

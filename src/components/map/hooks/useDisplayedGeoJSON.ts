@@ -52,7 +52,7 @@ export const useDisplayedGeoJSON = (mapState: MapState) => {
         displayedGeoJSON = (mapState.selectedAreas["department"] as SelectedArea)?.geoJSON || null;
       }
     }
-    
+
     return displayedGeoJSON as GeoJSON.FeatureCollection | null;
   }, [mapState.currentLevel, mapState.selectedAreas, mapState.departmentView, mapState.regionView]);
 };
