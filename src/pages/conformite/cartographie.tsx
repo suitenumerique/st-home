@@ -1,4 +1,4 @@
-import CartographieConformite from "@/components/map/conformite/CartographieConformite";
+import CartographieConformite from "@/components/map/features/conformite/CartographieConformite";
 import { NextSeo } from "next-seo";
 import { useEffect } from "react";
 import styles from "../../styles/cartographie-conformite.module.css";

@@ -10,6 +10,7 @@ const getConformanceStatsInner = async (
   scope: string,
   refs: string,
   with_sample: string,
+  period: string,
   dep?: string,
 ) => {
   // Special case for commune scope - return raw organization data
@@ -18,6 +19,9 @@ const getConformanceStatsInner = async (
       throw new Error("Department parameter (dep) is required when scope=list-*");
     }
 
+    const orgType = scope === "list-commune" ? "commune" : "epci";
+
+    // Query from history table or current table based on period
     const { rows: communes } = await db.execute<{
       siret: string;
       name: string;
@@ -25,24 +29,41 @@ const getConformanceStatsInner = async (
       epci_siren: string;
       pop: number;
       rcpnt: string[];
-    }>(sql`
-      SELECT
-        siret,
-        name,
-        insee_geo,
-        epci_siren,
-        population as pop,
-        rcpnt
-      FROM ${organizations}
-      WHERE insee_dep = ${dep}
-      AND type = ${scope === "list-commune" ? "commune" : "epci"}
-      ORDER BY name
-    `);
+    }>(
+      period === "current"
+        ? sql`
+            SELECT
+              siret,
+              name,
+              insee_geo,
+              epci_siren,
+              population as pop,
+              rcpnt
+            FROM ${organizations}
+            WHERE insee_dep = ${dep}
+            AND type = ${orgType}
+            ORDER BY name
+          `
+        : sql`
+            SELECT
+              siret,
+              name,
+              insee_geo,
+              epci_siren,
+              population as pop,
+              rcpnt
+            FROM st_organizations_history
+            WHERE insee_dep = ${dep}
+            AND type = ${orgType}
+            AND history_month = ${period}
+            ORDER BY name
+          `,
+    );
 
     return communes;
   }
 
-  // Original code for other scopes using data_rcpnt_stats table
+  // Query from history table or current table based on period
   const { rows: stats } = await db.execute<{
     scope_id: string | null;
     ref: string;
@@ -53,22 +74,42 @@ const getConformanceStatsInner = async (
     sample_valid: string[];
     sample_invalid: string[];
     last_updated: Date;
-  }>(sql`
-    SELECT
-      scope_id,
-      ref,
-      valid,
-      total,
-      valid_pop,
-      total_pop,
-      sample_valid,
-      sample_invalid,
-      last_updated
-    FROM data_rcpnt_stats
-    WHERE scope = ${scope}
-    AND ref = ANY(string_to_array(${refs}, ','))
-    ORDER BY scope_id NULLS FIRST, ref
-  `);
+  }>(
+    period === "current"
+      ? sql`
+          SELECT
+            scope_id,
+            ref,
+            valid,
+            total,
+            valid_pop,
+            total_pop,
+            sample_valid,
+            sample_invalid,
+            last_updated
+          FROM data_rcpnt_stats
+          WHERE scope = ${scope}
+          AND ref = ANY(string_to_array(${refs}, ','))
+          ORDER BY scope_id NULLS FIRST, ref
+        `
+      : sql`
+          SELECT
+            scope_id,
+            ref,
+            valid,
+            total,
+            valid_pop,
+            total_pop,
+            sample_valid,
+            sample_invalid,
+            last_updated
+          FROM data_rcpnt_stats_history
+          WHERE scope = ${scope}
+          AND history_month = ${period}
+          AND ref = ANY(string_to_array(${refs}, ','))
+          ORDER BY scope_id NULLS FIRST, ref
+        `,
+  );
 
   if (!stats.length) return [];
 
@@ -104,8 +145,8 @@ const getConformanceStatsInner = async (
 const getConformanceStats =
   process.env.NODE_ENV === "production"
     ? unstable_cache(
-        (scope: string, refs: string, with_sample: string, dep?: string) =>
-          getConformanceStatsInner(scope, refs, with_sample, dep),
+        (scope: string, refs: string, with_sample: string, period: string, dep?: string) =>
+          getConformanceStatsInner(scope, refs, with_sample, period, dep),
         ["conformance-stats"],
         { revalidate: 3600 },
       )
@@ -118,6 +159,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       refs = "1.a,2.a",
       with_sample = "0",
       format = "json",
+      period = "current",
       dep,
     } = req.query;
 
@@ -138,6 +180,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       scope as string,
       refs as string,
       with_sample as string,
+      period as string,
       dep as string,
     );
     if (format === "json") {
