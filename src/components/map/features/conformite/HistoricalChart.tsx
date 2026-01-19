@@ -108,24 +108,36 @@ export const HistoricalChart = ({
       });
   }, [history, selectedRef]);
 
+  const hasData = chartData.length > 0;
+
   // Observe container size
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Set initial dimensions immediately
-    const initialWidth = containerRef.current.getBoundingClientRect().width;
-    if (initialWidth > 0) {
-      setDimensions({ width: Math.max(200, initialWidth), height: 200 });
-    }
-
     const observer = new ResizeObserver((entries) => {
       const { width } = entries[0].contentRect;
-      setDimensions({ width: Math.max(200, width), height: 200 });
+      if (width > 0) {
+        setDimensions((prev) => ({ ...prev, width: Math.max(200, width) }));
+      }
     });
 
     observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, []);
+
+    // Force an initial measurement after layout completes
+    const rafId = requestAnimationFrame(() => {
+      if (containerRef.current) {
+        const initialWidth = containerRef.current.getBoundingClientRect().width;
+        if (initialWidth > 0) {
+          setDimensions((prev) => ({ ...prev, width: Math.max(200, initialWidth) }));
+        }
+      }
+    });
+
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(rafId);
+    };
+  }, [hasData]);
 
   // Render chart
   useEffect(() => {

@@ -2,7 +2,7 @@
 
 import { ReferentielConformite } from "@/pages/conformite/referentiel";
 import * as d3 from "d3";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MapProvider, useMapContext } from "../../context/MapContext";
 import { MapLayoutProvider, useMapLayoutContext } from "../../context/MapLayoutContext";
 import { InteractiveMap } from "../../core/InteractiveMap";
@@ -19,7 +19,7 @@ const ConformiteMap = () => {
   const [statsCache, setStatsCache] = useState<Record<string, Record<string, StatRecord[]>>>({});
   const [loadingScopes, setLoadingScopes] = useState<Set<string>>(new Set());
   const [historyData, setHistoryData] = useState<HistoryData | null>(null);
-  const [loadingHistory, setLoadingHistory] = useState(false);
+  const loadingHistoryRef = useRef(false);
 
   const currentSelectedRef = mapState.filters.rcpnt_ref as string | null;
   const currentPeriod = (mapState.filters.period as string) || "current";
@@ -102,11 +102,11 @@ const ConformiteMap = () => {
 
   const loadHistory = useCallback(
     async (scope: "global" | "reg" | "dep" | "epci", scopeId: string | null) => {
-      if (loadingHistory) {
+      if (loadingHistoryRef.current) {
         return;
       }
 
-      setLoadingHistory(true);
+      loadingHistoryRef.current = true;
       try {
         const queryParams = new URLSearchParams({
           scope,
@@ -124,10 +124,10 @@ const ConformiteMap = () => {
 
         setHistoryData(data);
       } finally {
-        setLoadingHistory(false);
+        loadingHistoryRef.current = false;
       }
     },
-    [loadingHistory, allRcpntRefs],
+    [allRcpntRefs],
   );
 
   // Stats are used for map coloring only
