@@ -10,7 +10,7 @@ import { MapLayout } from "../../core/MapLayout";
 import { useDisplayedGeoJSON } from "../../hooks/useDisplayedGeoJSON";
 import { FeatureProperties, SelectedArea } from "../../types";
 import SidePanelContent from "./SidePanelContent";
-import { AllStats, StatRecord } from "./types";
+import { AllStats, HistoryData, StatRecord } from "./types";
 
 const ConformiteMap = () => {
   const { mapState, setMapState, selectLevel, goBack, handleQuickNav } = useMapContext();
@@ -18,6 +18,8 @@ const ConformiteMap = () => {
 
   const [statsCache, setStatsCache] = useState<Record<string, Record<string, StatRecord[]>>>({});
   const [loadingScopes, setLoadingScopes] = useState<Set<string>>(new Set());
+  const [historyData, setHistoryData] = useState<HistoryData | null>(null);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const currentSelectedRef = mapState.filters.rcpnt_ref as string | null;
   const currentPeriod = (mapState.filters.period as string) || "current";
@@ -98,12 +100,43 @@ const ConformiteMap = () => {
     [allRcpntRefs, statsCache, loadingScopes],
   );
 
+  const loadHistory = useCallback(
+    async (scope: "global" | "reg" | "dep" | "epci", scopeId: string | null) => {
+      if (loadingHistory) {
+        return;
+      }
+
+      setLoadingHistory(true);
+      try {
+        const queryParams = new URLSearchParams({
+          scope,
+          refs: allRcpntRefs.join(","),
+        });
+        if (scopeId) {
+          queryParams.set("scope_id", scopeId);
+        }
+
+        const response = await fetch(`/api/rcpnt/hist?${queryParams.toString()}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+        const data = await response.json();
+
+        setHistoryData(data);
+      } finally {
+        setLoadingHistory(false);
+      }
+    },
+    [loadingHistory, allRcpntRefs],
+  );
+
+  // Stats are used for map coloring only
+  // Side panel stats come from history data
   const stats = useMemo<AllStats>(() => {
     return {
       region: statsCache[`region:${currentPeriod}`] || {},
       department: statsCache[`department:${currentPeriod}`] || {},
       epci: statsCache[`epci:${currentPeriod}`] || {},
-      country: statsCache[`country:${currentPeriod}`] || {},
     };
   }, [statsCache, currentPeriod]);
 
@@ -124,45 +157,43 @@ const ConformiteMap = () => {
   }, [mapState.currentLevel, mapState.departmentView, currentPeriod, loadStats]);
 
   useEffect(() => {
-    const regionCacheKey = `region:${currentPeriod}`;
-    const countryCacheKey = `country:${currentPeriod}`;
+    const { currentLevel, selectedAreas } = mapState;
 
-    // Only compute if we have region data and don't have country data yet
-    if (statsCache[regionCacheKey] && !statsCache[countryCacheKey]) {
-      try {
-        const regionData = statsCache[regionCacheKey];
-        const countryStats = {
-          "00": allRcpntRefs.map((ref) => {
-            return {
-              ref: ref,
-              valid: Object.values(regionData).reduce(
-                (acc, stat) => acc + (stat.find((s) => s.ref === ref)?.valid || 0),
-                0,
-              ),
-              total: Object.values(regionData).reduce(
-                (acc, stat) => acc + (stat.find((s) => s.ref === ref)?.total || 0),
-                0,
-              ),
-            };
-          }),
-        };
+    if (currentLevel === "country") {
+      loadHistory("global", null);
+      return;
+    }
 
-        setStatsCache((prev) => ({
-          ...prev,
-          [countryCacheKey]: countryStats,
-        }));
-      } catch {
-        setStatsCache((prev) => ({
-          ...prev,
-          [countryCacheKey]: { "00": [] },
-        }));
+    if (currentLevel === "region") {
+      const region = selectedAreas.region as SelectedArea | null;
+      if (region?.insee_geo) {
+        loadHistory("reg", region.insee_geo.replace("r", ""));
+      }
+      return;
+    }
+
+    if (currentLevel === "department" || currentLevel === "city") {
+      const department = selectedAreas.department as SelectedArea | null;
+      if (department?.insee_geo) {
+        loadHistory("dep", department.insee_geo);
+      }
+      return;
+    }
+
+    if (currentLevel === "epci") {
+      const epci = selectedAreas.epci as SelectedArea | null;
+      if (epci?.insee_geo) {
+        loadHistory("epci", epci.insee_geo);
       }
     }
-  }, [statsCache, currentPeriod, allRcpntRefs]);
+  }, [mapState, loadHistory]);
+
+  // Get current history data
+  const currentHistory = historyData;
 
   const computeAreaStats = useCallback(
     (
-      level: "country" | "region" | "department" | "epci" | "city",
+      level: "global" | "region" | "department" | "epci" | "city",
       insee_geo: string,
       siret: string,
       department: SelectedArea,
@@ -184,10 +215,12 @@ const ConformiteMap = () => {
               }, 0),
             };
           }
+        } else if (level === "global") {
+          return null;
         } else {
           if (currentSelectedRef) {
             const stat = stats[level][insee_geo.replace("r", "")].find(
-              (s) => s.ref === currentSelectedRef,
+              (s: StatRecord) => s.ref === currentSelectedRef,
             ) || { valid: 0, total: 0 };
             return {
               n_cities: stat.total,
@@ -200,9 +233,9 @@ const ConformiteMap = () => {
           }
 
           const stat = stats[level][insee_geo.replace("r", "")];
-          const stat_a = stat.find((s) => s.ref === "a") || { valid: 0, total: 0 };
-          const stat_1a = stat.find((s) => s.ref === "1.a") || { valid: 0, total: 0 };
-          const stat_2a = stat.find((s) => s.ref === "2.a") || { valid: 0, total: 0 };
+          const stat_a = stat.find((s: StatRecord) => s.ref === "a") || { valid: 0, total: 0 };
+          const stat_1a = stat.find((s: StatRecord) => s.ref === "1.a") || { valid: 0, total: 0 };
+          const stat_2a = stat.find((s: StatRecord) => s.ref === "2.a") || { valid: 0, total: 0 };
           const n_cities = stat["2"].total;
           const n_score_2 = stat_a.valid;
           const n_score_1 = stat_1a.valid - stat_a.valid + stat_2a.valid - stat_a.valid;
@@ -227,7 +260,7 @@ const ConformiteMap = () => {
   const geoJSON = useDisplayedGeoJSON(mapState);
 
   const mapData = useMemo(() => {
-    if (!geoJSON || !stats.country) return {}; // Wait for stats to load
+    if (!geoJSON || Object.keys(stats.region).length === 0) return {};
 
     const data: Record<
       string,
@@ -236,7 +269,7 @@ const ConformiteMap = () => {
     const features = geoJSON.features;
 
     // Determine score level as in MapWrapper
-    let scoreLevel: "country" | "region" | "department" | "epci" | "city";
+    let scoreLevel: "global" | "region" | "department" | "epci" | "city";
     if (mapState.currentLevel === "region" && mapState.regionView === "city") {
       scoreLevel = "city";
     } else {
@@ -246,7 +279,7 @@ const ConformiteMap = () => {
         department: mapState.departmentView === "city" ? "city" : "epci",
         epci: "city",
         city: "city",
-      }[mapState.currentLevel] as "country" | "region" | "department" | "epci" | "city";
+      }[mapState.currentLevel] as "global" | "region" | "department" | "epci" | "city";
     }
 
     features.forEach((feature) => {
@@ -303,6 +336,7 @@ const ConformiteMap = () => {
           panelState={panelState}
           isMobile={isMobile}
           container={null}
+          history={currentHistory}
         />
       }
       map={

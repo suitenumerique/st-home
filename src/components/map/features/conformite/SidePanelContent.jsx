@@ -11,8 +11,9 @@ import { Button } from "@codegouvfr/react-dsfr/Button";
 import Link from "next/link";
 import { ReferentielConformite } from "@/pages/conformite/referentiel";
 import styles from "./SidePanelContent.module.css";
+import HistoricalChart from "./HistoricalChart";
 
-const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats }) => {
+const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats, history }) => {
 
   const [showCriteriaSelector, setShowCriteriaSelector] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -22,17 +23,49 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     return new Intl.NumberFormat("fr-FR").format(value);
   };
 
-  const periods = useMemo(() => {
-    return [
-      { label: "Q1 2025", value: "2025-03" },
-      { label: "Q2 2025", value: "2025-06" },
-      { label: "Septembre 2025", value: "2025-09" },
-      { label: "Octobre 2025", value: "2025-10" },
-      { label: "Novembre 2025", value: "2025-11" },
-      { label: "Décembre 2025", value: "2025-12" },
-      { label: "Dernière mise à jour", value: "current" },
-    ];
-  }, []);
+  // Compute stats from history data for the selected period
+  const computeStatsFromHistory = (historyData, period, selectedRef) => {
+    if (!historyData?.months) return null;
+
+    const monthData = historyData.months.find((m) => m.month === period);
+    if (!monthData) return null;
+
+    const getRefValid = (ref) => monthData.refs.find((r) => r.ref === ref)?.valid || 0;
+    const total = monthData.total;
+
+    if (selectedRef) {
+      // Single criterion selected: binary conforme/non conforme
+      const valid = getRefValid(selectedRef);
+      return {
+        n_cities: total,
+        score: (valid / total) * 2,
+        details: {
+          "0": total - valid,
+          "2": valid,
+        },
+      };
+    }
+
+    // Overall score computation (same logic as computeAreaStats)
+    const stat_a_valid = getRefValid("a");
+    const stat_1a_valid = getRefValid("1.a");
+    const stat_2a_valid = getRefValid("2.a");
+
+    const n_score_2 = stat_a_valid; // fully conforming (have both 1.a and 2.a)
+    const n_score_1 = stat_1a_valid - stat_a_valid + stat_2a_valid - stat_a_valid; // partial
+    const n_score_0 = total - n_score_2 - n_score_1;
+    const score = (n_score_2 * 2 + n_score_1 * 1) / total;
+
+    return {
+      n_cities: total,
+      score: score,
+      details: {
+        "0": n_score_0,
+        "1": n_score_1,
+        "2": n_score_2,
+      },
+    };
+  };
 
   const breadcrumbSegments = useMemo(() => {
     const areaLevels = ["country", "region", "department", "epci", "city"];
@@ -83,12 +116,23 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
       ["0", "À risque"],
     ];
 
-    const conformityStats = computeAreaStats(
-      mapState.currentLevel,
-      mapState.selectedAreas[mapState.currentLevel]?.insee_geo || "",
-      null,
-      mapState.selectedAreas.department,
-    );
+    const currentPeriod = mapState.filters.period || "current";
+
+    // Use history data when available (preferred for all zone levels)
+    let conformityStats = null;
+    if (history) {
+      conformityStats = computeStatsFromHistory(history, currentPeriod, mapState.filters.rcpnt_ref);
+    }
+
+    // Fallback to computeAreaStats if history not available (shouldn't happen normally)
+    if (!conformityStats) {
+      conformityStats = computeAreaStats(
+        mapState.currentLevel,
+        mapState.selectedAreas[mapState.currentLevel]?.insee_geo || "",
+        null,
+        mapState.selectedAreas.department,
+      );
+    }
 
     if (!conformityStats) {
       return null;
@@ -119,7 +163,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
       details: statsDetails,
     }
 
-  }, [mapState.selectedAreas, mapState.currentLevel, mapState.filters.rcpnt_ref, computeAreaStats]);
+  }, [mapState.selectedAreas, mapState.currentLevel, mapState.filters.rcpnt_ref, mapState.filters.period, computeAreaStats, history]);
 
   const introduction = () => {
     return (
@@ -153,26 +197,6 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
       </div>
     )
   }
-
-  const periodSelector = () => {
-    return (
-      <div className={styles.periodSelector}>
-        <Select
-          label="Période"
-          nativeSelectProps={{
-            onChange: (e) => setMapState({ ...mapState, filters: { ...mapState.filters, period: e.target.value } }),
-            value: mapState.filters.period || "current",
-          }}
-        >
-          {periods && periods.map((period) => (
-            <option key={period.value} value={period.value}>
-              {period.label}
-            </option>
-          ))}
-        </Select>
-      </div>
-    );
-  };
 
   const breadcrumbs = () => {
     return (
@@ -296,10 +320,55 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     )
   }
 
-  const levelStats = () => {
+  const zoneScoreDisplay = () => {
+    if (!levelStatsDisplay) return null;
+
+    const currentPeriod = mapState.filters.period || "current";
+    let conformityStats = null;
+    if (history) {
+      conformityStats = computeStatsFromHistory(history, currentPeriod, mapState.filters.rcpnt_ref);
+    }
+    if (!conformityStats) {
+      conformityStats = computeAreaStats(
+        mapState.currentLevel,
+        mapState.selectedAreas[mapState.currentLevel]?.insee_geo || "",
+        null,
+        mapState.selectedAreas.department,
+      );
+    }
+
+    if (!conformityStats) return null;
+
+    const score = conformityStats.score;
+    const scoreColor = getColor(score);
+
     return (
-      <div>
-        {levelStatsDisplay && levelStatsDisplay.details.map(([label, percentage, scoreKey, n_cities], index) => (
+      <div className={styles.zoneScoreContainer}>
+        <div className={styles.scoreGradient}>
+          <div 
+            className={styles.scoreIndicator}
+            style={{
+              left: `${(score / 2) * 100}%`,
+              backgroundColor: scoreColor,
+            }}
+          />
+        </div>
+        <div className={styles.scoreLabels}>
+          <span>À risque</span>
+          <span>À renforcer</span>
+          <span>Conforme</span>
+        </div>
+      </div>
+    );
+  };
+
+  const citiesBreakdown = () => {
+    if (!levelStatsDisplay) return null;
+
+    return (
+      <div className={styles.citiesBreakdown}>
+        <h4 className={styles.breakdownTitle}>Répartition des communes</h4>
+        {levelStatsDisplay.details.map(([label, percentage, scoreKey, n_cities], index) => (
           <div
             key={index}
             className={styles.statRow}
@@ -318,8 +387,8 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
           </div>
         ))}
       </div>
-    )
-  }
+    );
+  };
 
   const communeInfo = () => {
     return (
@@ -486,15 +555,36 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
           )}
           {panelState === 'open' && (
             <div className={styles.contentWrapper}>
-              {periodSelector()}
+
               {((mapState.currentLevel === "department" && !mapState.selectedAreas.city) || (mapState.currentLevel === "region" && showRegionViewSelector) || mapState.filters.rcpnt_ref) && (
                 selections()
               )}
+              
               {!mapState.selectedAreas.city && mapState.selectedAreas[mapState.currentLevel] && (
-                levelStats()
+                zoneScoreDisplay()
               )}
-              {mapState.selectedAreas.city && !showCriteriaSelector && (
+              
+              {mapState.selectedAreas.city && !showCriteriaSelector ? (
                 communeInfo()
+              ) : (
+                <>
+                  
+                  <HistoricalChart
+                    history={history}
+                    selectedRef={mapState.filters.rcpnt_ref}
+                    selectedPeriod={mapState.filters.period || "current"}
+                    onPeriodChange={(period) => {
+                      setMapState((prev) => ({
+                        ...prev,
+                        filters: { ...prev.filters, period },
+                      }));
+                    }}
+                  />
+                  
+                  {!mapState.selectedAreas.city && mapState.selectedAreas[mapState.currentLevel] && (
+                    citiesBreakdown()
+                  )}
+                </>
               )}
             </div>
           )}
@@ -514,8 +604,23 @@ SidePanelContent.propTypes = {
   handleQuickNav: PropTypes.func.isRequired,
   isMobile: PropTypes.bool.isRequired,
   panelState: PropTypes.string.isRequired,
-  setPanelState: PropTypes.func.isRequired,
   computeAreaStats: PropTypes.func.isRequired,
+  history: PropTypes.shape({
+    scope: PropTypes.string.isRequired,
+    scope_id: PropTypes.string.isRequired,
+    months: PropTypes.arrayOf(
+      PropTypes.shape({
+        month: PropTypes.string.isRequired,
+        total: PropTypes.number.isRequired,
+        refs: PropTypes.arrayOf(
+          PropTypes.shape({
+            ref: PropTypes.string.isRequired,
+            valid: PropTypes.number.isRequired,
+          })
+        ).isRequired,
+      })
+    ).isRequired,
+  }),
 };
 
 export default SidePanelContent;
