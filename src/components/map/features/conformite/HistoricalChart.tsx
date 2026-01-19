@@ -58,7 +58,7 @@ export const HistoricalChart = ({
 }: HistoricalChartProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 280, height: 150 });
+  const [dimensions, setDimensions] = useState({ width: 0, height: 200 });
 
   const chartData = useMemo<ChartDataPoint[]>(() => {
     if (!history?.months) return [];
@@ -112,6 +112,12 @@ export const HistoricalChart = ({
   useEffect(() => {
     if (!containerRef.current) return;
 
+    // Set initial dimensions immediately
+    const initialWidth = containerRef.current.getBoundingClientRect().width;
+    if (initialWidth > 0) {
+      setDimensions({ width: Math.max(200, initialWidth), height: 200 });
+    }
+
     const observer = new ResizeObserver((entries) => {
       const { width } = entries[0].contentRect;
       setDimensions({ width: Math.max(200, width), height: 200 });
@@ -123,7 +129,7 @@ export const HistoricalChart = ({
 
   // Render chart
   useEffect(() => {
-    if (!svgRef.current || chartData.length === 0) return;
+    if (!svgRef.current || chartData.length === 0 || dimensions.width === 0) return;
 
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
@@ -157,6 +163,7 @@ export const HistoricalChart = ({
       .attr("fill", (d) => (d.month === selectedPeriod ? "rgba(0, 0, 145, 0.05)" : "transparent"))
       .attr("rx", 4)
       .attr("cursor", "pointer")
+      .style("pointer-events", "all")
       .on("click", (_, d) => {
         if (onPeriodChange) {
           onPeriodChange(d.month);
