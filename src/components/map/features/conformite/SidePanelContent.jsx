@@ -17,7 +17,6 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
 
   const [showCriteriaSelector, setShowCriteriaSelector] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
-  const [showRegionViewSelector, setShowRegionViewSelector] = useState(false);
 
   const formatNumber = (value) => {
     return new Intl.NumberFormat("fr-FR").format(value);
@@ -212,22 +211,11 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     )
   }
 
-  const handleTitleClick = (e) => {
-    if (e.altKey && mapState.currentLevel === "region") {
-      e.preventDefault();
-      setShowRegionViewSelector((prev) => !prev);
-    }
-  };
-
   const levelHeader = () => {
     return (
       <div className={styles.levelHeader}>
         <div>
-          <h3
-            className={styles.subTitle}
-            onClick={handleTitleClick}
-            style={{ cursor: 'default' }}
-          >
+          <h3 className={styles.subTitle}>
             {currentPageLabel}
           </h3>
           {!mapState.selectedAreas.city && levelStatsDisplay && (
@@ -277,7 +265,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
       <div className={styles.selectionsContainer}>
         <span className={styles.selectionLabel}>Sélection :</span>
         {
-          mapState.currentLevel === 'region' && showRegionViewSelector && (['department', 'city'].map((type, index) => (
+          mapState.currentLevel === 'region' && (['department', 'city'].map((type, index) => (
             <p key={index}
               className={`${styles.selectionTag} ${mapState.regionView === type ? styles.selectionTagActive : ''}`}
               onClick={() => {
@@ -308,66 +296,34 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
         }
         {
           mapState.filters.rcpnt_ref && (
-            <p
+            <div
               onClick={() => setShowCriteriaSelector(true)}
               className={`${styles.selectionTag} ${styles.selectionTagCriteria}`}
             >
               Critère {mapState.filters.rcpnt_ref}
-            </p>
+              <button
+                className={styles.selectionTagReset}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMapState({ ...mapState, filters: { ...mapState.filters, rcpnt_ref: null } });
+                }}
+                aria-label="Supprimer le critère"
+                title="Supprimer le critère"
+              >
+                <span className={fr.cx("fr-icon-close-line fr-icon--sm")} aria-hidden="true"></span>
+              </button>
+            </div>
           )
         }
       </div>
     )
   }
 
-  const zoneScoreDisplay = () => {
-    if (!levelStatsDisplay) return null;
-
-    const currentPeriod = mapState.filters.period || "current";
-    let conformityStats = null;
-    if (history) {
-      conformityStats = computeStatsFromHistory(history, currentPeriod, mapState.filters.rcpnt_ref);
-    }
-    if (!conformityStats) {
-      conformityStats = computeAreaStats(
-        mapState.currentLevel,
-        mapState.selectedAreas[mapState.currentLevel]?.insee_geo || "",
-        null,
-        mapState.selectedAreas.department,
-      );
-    }
-
-    if (!conformityStats) return null;
-
-    const score = conformityStats.score;
-    const scoreColor = getColor(score);
-
-    return (
-      <div className={styles.zoneScoreContainer}>
-        <div className={styles.scoreGradient}>
-          <div 
-            className={styles.scoreIndicator}
-            style={{
-              left: `${(score / 2) * 100}%`,
-              backgroundColor: scoreColor,
-            }}
-          />
-        </div>
-        <div className={styles.scoreLabels}>
-          <span>À risque</span>
-          <span>À renforcer</span>
-          <span>Conforme</span>
-        </div>
-      </div>
-    );
-  };
-
   const citiesBreakdown = () => {
     if (!levelStatsDisplay) return null;
 
     return (
       <div className={styles.citiesBreakdown}>
-        <h4 className={styles.breakdownTitle}>Répartition des communes</h4>
         {levelStatsDisplay.details.map(([label, percentage, scoreKey, n_cities], index) => (
           <div
             key={index}
@@ -556,19 +512,19 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
           {panelState === 'open' && (
             <div className={styles.contentWrapper}>
 
-              {((mapState.currentLevel === "department" && !mapState.selectedAreas.city) || (mapState.currentLevel === "region" && showRegionViewSelector) || mapState.filters.rcpnt_ref) && (
+              {((mapState.currentLevel === "department" && !mapState.selectedAreas.city) || (mapState.currentLevel === "region") || mapState.filters.rcpnt_ref) && (
                 selections()
-              )}
-              
-              {!mapState.selectedAreas.city && mapState.selectedAreas[mapState.currentLevel] && (
-                zoneScoreDisplay()
               )}
               
               {mapState.selectedAreas.city && !showCriteriaSelector ? (
                 communeInfo()
               ) : (
                 <>
-                  
+
+                  {!mapState.selectedAreas.city && mapState.selectedAreas[mapState.currentLevel] && (
+                    citiesBreakdown()
+                  )}
+
                   <HistoricalChart
                     history={history}
                     selectedRef={mapState.filters.rcpnt_ref}
@@ -581,9 +537,6 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
                     }}
                   />
                   
-                  {!mapState.selectedAreas.city && mapState.selectedAreas[mapState.currentLevel] && (
-                    citiesBreakdown()
-                  )}
                 </>
               )}
             </div>

@@ -147,7 +147,7 @@ export const HistoricalChart = ({
     svg.selectAll("*").remove();
 
     const { width, height } = dimensions;
-    const margin = { top: 15, right: 15, bottom: 30, left: 75 };
+    const margin = { top: 15, right: 15, bottom: 30, left: 60 };
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
@@ -215,6 +215,8 @@ export const HistoricalChart = ({
       .call((g) => g.select(".domain").remove())
       .call((g) => g.selectAll(".tick line").attr("stroke", "#e5e5e5"))
       .selectAll("text")
+      .attr("x", -margin.left)
+      .style("text-anchor", "start")
       .attr("font-size", "9px")
       .attr("fill", "#666");
 
@@ -275,11 +277,11 @@ export const HistoricalChart = ({
 
   return (
     <div className={styles.container} ref={containerRef}>
-      <div className={styles.header}>
-        <p className={styles.title}>Historique</p>
-        <p className={styles.subtitle}>Cliquez sur le graphique pour sélectionner une période</p>
-      </div>
       <svg ref={svgRef} width={dimensions.width} height={dimensions.height} />
+      <p className={styles.chartLegend}>
+        <div></div>
+        Evolution de la conformité
+      </p>
     </div>
   );
 };
