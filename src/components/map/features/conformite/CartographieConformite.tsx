@@ -147,14 +147,23 @@ const ConformiteMap = () => {
       requiredScopes.push("department");
     }
 
-    if (mapState.currentLevel === "department" && mapState.departmentView === "epci") {
+    if (
+      (mapState.currentLevel === "department" && mapState.departmentView === "epci") ||
+      (mapState.currentLevel === "region" && mapState.regionView === "epci")
+    ) {
       requiredScopes.push("epci");
     }
 
     requiredScopes.forEach((scope) => {
       loadStats(scope, currentPeriod);
     });
-  }, [mapState.currentLevel, mapState.departmentView, currentPeriod, loadStats]);
+  }, [
+    mapState.currentLevel,
+    mapState.departmentView,
+    mapState.regionView,
+    currentPeriod,
+    loadStats,
+  ]);
 
   useEffect(() => {
     const { currentLevel, selectedAreas } = mapState;
@@ -268,10 +277,11 @@ const ConformiteMap = () => {
     > = {};
     const features = geoJSON.features;
 
-    // Determine score level as in MapWrapper
     let scoreLevel: "global" | "region" | "department" | "epci" | "city";
     if (mapState.currentLevel === "region" && mapState.regionView === "city") {
       scoreLevel = "city";
+    } else if (mapState.currentLevel === "region" && mapState.regionView === "epci") {
+      scoreLevel = "epci";
     } else {
       scoreLevel = {
         country: "region",
@@ -294,7 +304,8 @@ const ConformiteMap = () => {
         props.INSEE_GEO || "",
         (props as unknown as { SIRET: string }).SIRET || "",
 
-        mapState.currentLevel === "region" && mapState.regionView === "city"
+        mapState.currentLevel === "region" &&
+          (mapState.regionView === "city" || mapState.regionView === "epci")
           ? (mapState.selectedAreas.region as SelectedArea)
           : (mapState.selectedAreas.department as SelectedArea),
       );

@@ -108,7 +108,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     }
     const chartSeries = mapState.filters.rcpnt_ref ? [
       ["2", "Conforme"],
-      ["0", "Non conforme"],
+      ["0", "A risque"],
     ] : [
       ["2", "Conforme"],
       ["1", "À renforcer"],
@@ -265,7 +265,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
       <div className={styles.selectionsContainer}>
         <span className={styles.selectionLabel}>Sélection :</span>
         {
-          mapState.currentLevel === 'region' && (['department', 'city'].map((type, index) => (
+          mapState.currentLevel === 'region' && (['department', 'epci', 'city'].map((type, index) => (
             <p key={index}
               className={`${styles.selectionTag} ${mapState.regionView === type ? styles.selectionTagActive : ''}`}
               onClick={() => {
@@ -280,7 +280,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
                 );
               }}
             >
-              {type === 'department' ? 'Département' : 'Commune'}
+              {type === 'department' ? 'Département' : type === 'epci' ? 'EPCI' : 'Commune'}
             </p>
           )))
         }

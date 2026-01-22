@@ -50,6 +50,9 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
     if (mapState.currentLevel === "region" && mapState.regionView === "city") {
       return "city";
     }
+    if (mapState.currentLevel === "region" && mapState.regionView === "epci") {
+      return "epci";
+    }
     const levelTransitions: { [key: string]: string } = {
       country: "region",
       region: "department",
@@ -164,7 +167,7 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
     async (
       level: ParentLevel,
       code: string,
-      regionView?: "department" | "city",
+      regionView?: "department" | "epci" | "city",
     ): Promise<SelectedArea | null> => {
       try {
         let selectedArea: SelectedArea;
@@ -183,11 +186,7 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
             selectedArea.cities = await loadDepartmentCities(code, period);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             selectedArea.geoJSONEPCI = processGeoJSONEPCI(geoJSON) as any;
-          } else if (level === "region" && regionView === "city") {
-            // Hidden feature: load all cities in the region
-            const period = mapState.filters.period as string | null;
-            selectedArea.cities = await loadRegionCities(code, period);
-
+          } else if (level === "region" && (regionView === "city" || regionView === "epci")) {
             // Load and combine GeoJSON for all departments in the region
             const departmentsInRegion = (parentAreas as ParentArea[]).filter(
               (area) => area.type === "department" && area.insee_reg === code,
@@ -207,15 +206,24 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
             const combinedFeatures = allDeptGeoJSON.flatMap((geoJSON) => geoJSON?.features || []);
 
             if (combinedFeatures.length === 0) {
-              console.warn(
-                "No features found for region cities view, falling back to region GeoJSON",
-              );
+              console.warn("No features found for region view, falling back to region GeoJSON");
               selectedArea.geoJSON = geoJSON;
             } else {
-              selectedArea.geoJSON = {
+              const combinedGeoJSON = {
                 type: "FeatureCollection",
                 features: combinedFeatures,
               } as GeoJSON.FeatureCollection;
+
+              if (regionView === "city") {
+                // Load all cities in the region
+                const period = mapState.filters.period as string | null;
+                selectedArea.cities = await loadRegionCities(code, period);
+                selectedArea.geoJSON = combinedGeoJSON;
+              } else {
+                // EPCI view: process combined GeoJSON to create EPCI boundaries
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                selectedArea.geoJSONEPCI = processGeoJSONEPCI(combinedGeoJSON) as any;
+              }
             }
           }
         }
@@ -241,7 +249,7 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
       departmentView: "city" | "epci" | null = null,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       updatedFilters?: any,
-      regionView?: "department" | "city",
+      regionView?: "department" | "epci" | "city",
     ) => {
       const allLevels = ["city", "epci", "department", "region", "country"];
       const parentLevels = allLevels.slice(allLevels.indexOf(level) + 1);
@@ -311,6 +319,19 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}) =
         const city = newSelectedAreas["city"] as Commune;
         if (city?.insee_dep) {
           newSelectedAreas["department"] = await computeSelectedArea("department", city.insee_dep);
+        }
+      }
+
+      // When clicking on an EPCI from region level (with EPCI view), populate the department
+      if (
+        source === "areaClick" &&
+        level === "epci" &&
+        mapState.currentLevel === "region" &&
+        mapState.regionView === "epci"
+      ) {
+        const epci = newSelectedAreas["epci"] as SelectedArea;
+        if (epci?.insee_dep) {
+          newSelectedAreas["department"] = await computeSelectedArea("department", epci.insee_dep);
         }
       }
 

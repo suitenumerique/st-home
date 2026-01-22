@@ -199,7 +199,7 @@ export const HistoricalChart = ({
 
     // Y axis with semantic labels
     const yAxisLabels: Record<number, string> = {
-      0: "Non conforme",
+      0: "A risque",
       1: "À renforcer",
       2: "Conforme",
     };
@@ -278,10 +278,10 @@ export const HistoricalChart = ({
   return (
     <div className={styles.container} ref={containerRef}>
       <svg ref={svgRef} width={dimensions.width} height={dimensions.height} />
-      <p className={styles.chartLegend}>
+      <div className={styles.chartLegend}>
         <div></div>
         Evolution de la conformité
-      </p>
+      </div>
     </div>
   );
 };

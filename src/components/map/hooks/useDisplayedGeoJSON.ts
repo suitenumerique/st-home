@@ -21,15 +21,16 @@ export const useDisplayedGeoJSON = (mapState: MapState) => {
       displayedGeoJSON =
         (mapState.selectedAreas[mapState.currentLevel] as SelectedArea)?.geoJSON || null;
     } else if (mapState.currentLevel === "region") {
-      // Hidden feature: show cities if regionView is "city"
-      if (mapState.regionView === "city") {
-        // The geoJSON at region level contains departments, not cities
-        // We need to show cities, which are loaded separately in selectedAreas.region.cities
-        // For now, return the region geoJSON (departments) as fallback
-        // TODO: You might want to load actual city GeoJSON data here
+      if (mapState.regionView === "epci") {
+        // Show EPCIs in the region
+        displayedGeoJSON =
+          (mapState.selectedAreas[mapState.currentLevel] as SelectedArea)?.geoJSONEPCI || null;
+      } else if (mapState.regionView === "city") {
+        // Show cities in the region
         displayedGeoJSON =
           (mapState.selectedAreas[mapState.currentLevel] as SelectedArea)?.geoJSON || null;
       } else {
+        // Default: show departments
         displayedGeoJSON =
           (mapState.selectedAreas[mapState.currentLevel] as SelectedArea)?.geoJSON || null;
       }

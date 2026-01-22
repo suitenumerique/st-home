@@ -134,7 +134,7 @@ export const InteractiveMap = ({
           }
         } else {
           await selectLevel(
-            nextLevel as "region" | "department" | "city",
+            nextLevel as "region" | "department" | "epci" | "city",
             nextLevel === "city" ? feature.properties.SIRET : feature.properties.INSEE_GEO,
             "areaClick",
           );
@@ -378,7 +378,7 @@ export const InteractiveMap = ({
               alignItems: "space-between",
             }}
           >
-            <p className="map-gradient-label">Non conforme</p>
+            <p className="map-gradient-label">A risque</p>
             <p className="map-gradient-label">Conforme</p>
           </div>
         )}

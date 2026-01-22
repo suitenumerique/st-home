@@ -47,7 +47,7 @@ export interface MapState {
     [key: string]: SelectedArea | Commune | null;
   };
   departmentView: "city" | "epci";
-  regionView?: "department" | "city"; // Hidden feature to show all cities in a region
+  regionView?: "department" | "epci" | "city";
   filters: {
     service_id: number | null;
     service_ids: number[] | null;
