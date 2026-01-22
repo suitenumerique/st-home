@@ -33,10 +33,11 @@ export const useMapContext = () => {
 interface MapProviderProps {
   children: ReactNode;
   initialFilters?: Record<string, unknown>;
+  initialDepartmentView?: "city" | "epci";
 }
 
-export const MapProvider = ({ children, initialFilters }: MapProviderProps) => {
-  const mapNavigation = useMapNavigation(initialFilters);
+export const MapProvider = ({ children, initialFilters, initialDepartmentView }: MapProviderProps) => {
+  const mapNavigation = useMapNavigation(initialFilters, initialDepartmentView);
 
   // @ts-expect-error to be checked
   return <MapContext.Provider value={mapNavigation}>{children}</MapContext.Provider>;

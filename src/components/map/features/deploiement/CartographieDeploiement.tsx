@@ -1,7 +1,7 @@
 "use client";
 
 import { MapProvider, useMapContext } from "@/components/map/context/MapContext";
-import { MapLayoutProvider } from "@/components/map/context/MapLayoutContext";
+import { MapLayoutProvider, useMapLayoutContext } from "@/components/map/context/MapLayoutContext";
 import { InteractiveMap } from "@/components/map/core/InteractiveMap";
 import { MapLayout } from "@/components/map/core/MapLayout";
 import { useDisplayedGeoJSON } from "@/components/map/hooks/useDisplayedGeoJSON";
@@ -15,6 +15,7 @@ import { StatRecord } from "./types";
 
 const DeploiementMap = () => {
   const { mapState, setMapState, selectLevel, goBack, handleQuickNav } = useMapContext();
+  const { panelState, isMobile } = useMapLayoutContext();
 
   const [stats, setStats] = useState<StatRecord[]>([]);
   const [coordMap, setCoordMap] = useState<Record<string, { longitude: number; latitude: number }>>(
@@ -400,6 +401,8 @@ const DeploiementMap = () => {
           computeAreaStats={computeAreaStats}
           goBack={goBack}
           handleQuickNav={handleQuickNav}
+          panelState={panelState}
+          isMobile={isMobile}
         />
       }
       map={
@@ -408,6 +411,8 @@ const DeploiementMap = () => {
           gradientColors={gradientColors}
           showGradientLegend={false}
           displayCircleValue={false}
+          fillOpacity={mapState.currentLevel === "city" || (mapState.currentLevel === "department" && mapState.departmentView === "city") ? 1 : 0}
+          hoverStrokeColor="#000091"
           customLayers={customLayers}
         />
       }
@@ -419,7 +424,7 @@ const DeploiementMap = () => {
 
 const CartographieDeploiement = () => {
   return (
-    <MapProvider initialFilters={{ service_ids: null }}>
+    <MapProvider initialFilters={{ service_ids: null }} initialDepartmentView="city">
       <MapLayoutProvider>
         <DeploiementMap />
       </MapLayoutProvider>

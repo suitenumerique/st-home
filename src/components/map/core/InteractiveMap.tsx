@@ -25,6 +25,8 @@ export interface InteractiveMapProps {
   gradientColors: string[];
   showGradientLegend?: boolean;
   displayCircleValue?: boolean;
+  fillOpacity?: number;
+  hoverStrokeColor?: string;
   customLayers?: Array<{
     id: string;
     source?: {
@@ -45,6 +47,8 @@ export const InteractiveMap = ({
   gradientColors,
   showGradientLegend = true,
   displayCircleValue = false,
+  fillOpacity = 1,
+  hoverStrokeColor,
   customLayers,
 }: InteractiveMapProps) => {
   const { mapState, selectLevel, goBack, handleQuickNav, nextLevel } = useMapContext();
@@ -269,7 +273,7 @@ export const InteractiveMap = ({
     type: "fill",
     paint: {
       "fill-color": ["get", "color"],
-      "fill-opacity": 1,
+      "fill-opacity": fillOpacity,
     },
   };
 
@@ -277,13 +281,18 @@ export const InteractiveMap = ({
     id: "polygon-stroke",
     type: "line",
     paint: {
-      "line-color": [
-        "case",
-        ["boolean", ["feature-state", "hover"], false],
-        ["get", "color_dark"],
-        "#ffffff",
-      ],
+      "line-color": "#ffffff",
       "line-width": ["interpolate", ["linear"], ["zoom"], 4, 0.7, 8, 1, 10, 2, 15, 2.5],
+    },
+  };
+
+  const hoverStrokeLayerStyle = {
+    id: "polygon-stroke-hover",
+    type: "line",
+    paint: {
+      "line-color": hoverStrokeColor ?? ["get", "color_dark"],
+      "line-width": ["interpolate", ["linear"], ["zoom"], 4, 1.2, 8, 1.8, 10, 2.5, 15, 3],
+      "line-opacity": ["case", ["boolean", ["feature-state", "hover"], false], 1, 0],
     },
   };
 
@@ -516,6 +525,10 @@ export const InteractiveMap = ({
             />
             <Layer
               {...(strokeLayerStyle as LayerProps)}
+              beforeId="toponyme localite importance 6et7 - Special DOM"
+            />
+            <Layer
+              {...(hoverStrokeLayerStyle as LayerProps)}
               beforeId="toponyme localite importance 6et7 - Special DOM"
             />
             {mapState.selectedAreas.city && <Layer {...(selectedCityLayerStyle as LayerProps)} />}
