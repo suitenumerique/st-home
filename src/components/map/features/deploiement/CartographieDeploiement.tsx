@@ -1,31 +1,50 @@
 "use client";
 
+import { MapProvider, useMapContext } from "@/components/map/context/MapContext";
+import { MapLayoutProvider, useMapLayoutContext } from "@/components/map/context/MapLayoutContext";
+import { InteractiveMap } from "@/components/map/core/InteractiveMap";
+import { MapLayout } from "@/components/map/core/MapLayout";
+import { useDisplayedGeoJSON } from "@/components/map/hooks/useDisplayedGeoJSON";
+import * as d3 from "d3";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import HexbinLayer from "../HexbinLayer";
-import MapWrapper from "../MapWrapper";
+import parentAreas from "../../../../../public/parent_areas.json";
+import HexbinLayer from "../../layers/HexbinLayer";
+import { FeatureProperties, SelectedArea } from "../../types";
 import SidePanelContent from "./SidePanelContent";
-
-import parentAreas from "../../../../public/parent_areas.json";
-import { AreaStats } from "../types";
 import { StatRecord } from "./types";
 
-const CartographieDeploiement = () => {
+const DeploiementMap = () => {
+  const { mapState, setMapState, selectLevel, goBack, handleQuickNav } = useMapContext();
+  const { panelState, isMobile } = useMapLayoutContext();
+
   const [stats, setStats] = useState<StatRecord[]>([]);
   const [coordMap, setCoordMap] = useState<Record<string, { longitude: number; latitude: number }>>(
     {},
   );
   const [services, setServices] = useState([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [mapState, setMapState] = useState<any>({
-    currentLevel: "country",
-    selectedAreas: {},
-    departmentView: "city",
-    filters: {
-      service_ids: null,
-    },
-  });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [customLayers, setCustomLayers] = useState<any[]>([]);
+
+  const gradientColors = useMemo(() => ["#EEEEEE", "#2A3C84"], []);
+  const gradientDomain = useMemo(() => [0, 1], []);
+
+  const colorsConfig = useMemo(() => {
+    return {
+      domain: gradientDomain,
+      range: gradientColors,
+      defaultColor: "#e2e8f0",
+    };
+  }, [gradientColors, gradientDomain]);
+
+  const getColor = useCallback(
+    (score: number | null | undefined): string => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const colorScale = d3.scaleLinear(colorsConfig.domain as any, colorsConfig.range as any);
+      // @ts-expect-error d3 types
+      return score === null || score === undefined ? colorsConfig.defaultColor : colorScale(score);
+    },
+    [colorsConfig],
+  );
 
   // Hex size in meters (Web Mercator). Use same size at all latitudes to avoid distortion
   const HEXBIN_SIZE_COUNTRY = 15000; // ~15 km across-flats
@@ -62,7 +81,7 @@ const CartographieDeploiement = () => {
       level: "country" | "region" | "department" | "epci" | "city",
       insee_geo: string,
       siret: string,
-    ): AreaStats | null => {
+    ) => {
       try {
         let filteredStats = stats;
         if (level === "region") {
@@ -72,10 +91,10 @@ const CartographieDeploiement = () => {
         } else if (level === "department") {
           filteredStats = filteredStats.filter((stat: StatRecord) => stat.dep === insee_geo);
         }
-        if (mapState.filters.service_ids && mapState.filters.service_ids.length > 0) {
+        if (mapState.filters.service_ids && (mapState.filters.service_ids as number[]).length > 0) {
           filteredStats = filteredStats.filter((stat: StatRecord) => {
             return stat.all_services?.some((service: string) =>
-              mapState.filters.service_ids.includes(Number(service)),
+              (mapState.filters.service_ids as number[]).includes(Number(service)),
             );
           });
         } else {
@@ -88,13 +107,6 @@ const CartographieDeploiement = () => {
             n_cities: 1,
             score: city ? 1 : 0,
           };
-          // const city = citiesByDepartment[
-          //   `${department.insee_geo}${mapState.filters.service_id ? `_${mapState.filters.service_id}` : ""}`
-          // ].find((city: { id: string }) => city.id === siret);
-          // return {
-          //   n_cities: 0,
-          //   score: city ? 1 : 0,
-          // };
         } else {
           let nTotalCities;
           if (level === "country") {
@@ -110,15 +122,6 @@ const CartographieDeploiement = () => {
             n_total_cities: nTotalCities,
             score: null,
           };
-          // const levelStats = stats[level as keyof AllStats];
-          // const nActiveCities =
-          //   levelStats?.find((stat: StatRecord) => stat.id === insee_geo.replace("r", ""))?.total || 0;
-          // const nTotalCities =
-          //   parentAreas.find((area) => area.insee_geo === insee_geo)?.n_cities || 0;
-          // return {
-          //   n_cities: nActiveCities,
-          //   score: nTotalCities > 0 ? nActiveCities / nTotalCities : 0,
-          // };
         }
       } catch {
         return {
@@ -139,27 +142,33 @@ const CartographieDeploiement = () => {
     const y = EARTH_RADIUS * Math.log(Math.tan(Math.PI / 4 + phi / 2));
     return { x, y };
   };
-  const fromMercator = (x: number, y: number): { lat: number; lon: number } => {
-    const lon = (x / EARTH_RADIUS) * (180 / Math.PI);
-    const lat = (2 * Math.atan(Math.exp(y / EARTH_RADIUS)) - Math.PI / 2) * (180 / Math.PI);
-    return { lat, lon };
-  };
+  const fromMercator = useCallback(
+    (x: number, y: number): { lat: number; lon: number } => {
+      const lon = (x / EARTH_RADIUS) * (180 / Math.PI);
+      const lat = (2 * Math.atan(Math.exp(y / EARTH_RADIUS)) - Math.PI / 2) * (180 / Math.PI);
+      return { lat, lon };
+    },
+    [EARTH_RADIUS],
+  );
 
   // Build a hex polygon around a Mercator center using a radius in meters, return lon/lat ring
-  const createHexagon = (centerX: number, centerY: number, acrossFlats: number): number[][] => {
-    const coordinates: number[][] = [];
-    // Convert across-flats to circumradius (center to vertex) for a regular hexagon
-    const radius = acrossFlats / Math.sqrt(3);
-    for (let i = 0; i < 6; i++) {
-      const angle = (Math.PI / 180) * (60 * i + 30); // flat-topped hex
-      const vx = centerX + radius * Math.cos(angle);
-      const vy = centerY + radius * Math.sin(angle);
-      const { lat, lon } = fromMercator(vx, vy);
-      coordinates.push([lon, lat]);
-    }
-    coordinates.push(coordinates[0]);
-    return coordinates;
-  };
+  const createHexagon = useCallback(
+    (centerX: number, centerY: number, acrossFlats: number): number[][] => {
+      const coordinates: number[][] = [];
+      // Convert across-flats to circumradius (center to vertex) for a regular hexagon
+      const radius = acrossFlats / Math.sqrt(3);
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 180) * (60 * i + 30); // flat-topped hex
+        const vx = centerX + radius * Math.cos(angle);
+        const vy = centerY + radius * Math.sin(angle);
+        const { lat, lon } = fromMercator(vx, vy);
+        coordinates.push([lon, lat]);
+      }
+      coordinates.push(coordinates[0]);
+      return coordinates;
+    },
+    [fromMercator],
+  );
 
   const processDataToHexbin = useCallback(
     (
@@ -168,8 +177,8 @@ const CartographieDeploiement = () => {
     ): GeoJSON.FeatureCollection => {
       const hexCells = new Map();
 
-      const filteredServices = mapState.filters.service_ids?.length
-        ? mapState.filters.service_ids
+      const filteredServices = (mapState.filters.service_ids as number[])?.length
+        ? (mapState.filters.service_ids as number[])
         : services.map((service: { id: number }) => service.id);
 
       apiData.forEach((entry) => {
@@ -249,7 +258,7 @@ const CartographieDeploiement = () => {
         features: features,
       };
     },
-    [hexbinSize, mapState.filters.service_ids, services],
+    [hexbinSize, mapState.filters.service_ids, services, createHexagon, fromMercator],
   );
 
   useEffect(() => {
@@ -263,11 +272,13 @@ const CartographieDeploiement = () => {
     let filteredStats = stats;
     if (mapState.currentLevel === "region") {
       filteredStats = filteredStats.filter(
-        (stat: StatRecord) => stat.reg === mapState.selectedAreas.region.insee_geo.replace("r", ""),
+        (stat: StatRecord) =>
+          stat.reg === (mapState.selectedAreas.region as SelectedArea).insee_geo.replace("r", ""),
       );
     } else if (mapState.currentLevel === "department") {
       filteredStats = filteredStats.filter(
-        (stat: StatRecord) => stat.dep === mapState.selectedAreas.department.insee_geo,
+        (stat: StatRecord) =>
+          stat.dep === (mapState.selectedAreas.department as SelectedArea).insee_geo,
       );
     }
 
@@ -305,26 +316,28 @@ const CartographieDeploiement = () => {
     if (
       stats.length > 0 &&
       mapState.selectedAreas.city &&
-      !mapState.selectedAreas.city.additionalCityStats
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      !(mapState.selectedAreas.city as any).additionalCityStats
     ) {
       const cityStats = stats.find(
-        (stat: StatRecord) => stat.id === mapState.selectedAreas.city.siret,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (stat: StatRecord) => stat.id === (mapState.selectedAreas.city as any).siret,
       );
       if (cityStats) {
-        // @ts-expect-error not typed
-        setMapState((prevState) => ({
-          ...prevState,
+        setMapState({
+          ...mapState,
           selectedAreas: {
-            ...prevState.selectedAreas,
+            ...mapState.selectedAreas,
             city: {
-              ...prevState.selectedAreas.city,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ...(mapState.selectedAreas.city as any),
               additionalCityStats: cityStats,
             },
           },
-        }));
+        });
       }
     }
-  }, [stats, mapState.selectedAreas.city, setMapState]);
+  }, [stats, mapState.selectedAreas.city, setMapState, mapState]);
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -335,20 +348,87 @@ const CartographieDeploiement = () => {
     fetchServices();
   }, []);
 
+  const geoJSON = useDisplayedGeoJSON(mapState);
+
+  const mapData = useMemo(() => {
+    if (!geoJSON || stats.length === 0) return {};
+
+    const data: Record<string, { value?: number; score?: number; color: string }> = {};
+    const features = geoJSON.features;
+
+    const scoreLevel = {
+      country: "region",
+      region: "department",
+      department: mapState.departmentView === "city" ? "city" : "epci",
+      epci: "city",
+      city: "city",
+    }[mapState.currentLevel] as "country" | "region" | "department" | "epci" | "city";
+
+    features.forEach((feature) => {
+      const props = feature.properties as FeatureProperties;
+      const code =
+        props.INSEE_GEO || props.EPCI_SIREN || (props as unknown as { SIRET: string }).SIRET;
+
+      if (!code) return;
+
+      const result = computeAreaStats(
+        scoreLevel,
+        props.INSEE_GEO || "",
+        (props as unknown as { SIRET: string }).SIRET || "",
+      );
+
+      if (result) {
+        data[code] = {
+          value: result.n_cities ?? undefined,
+          score: result.score ?? undefined,
+          color: getColor(result.score),
+        };
+      }
+    });
+
+    return data;
+  }, [geoJSON, stats, mapState.currentLevel, mapState.departmentView, computeAreaStats, getColor]);
+
   return stats ? (
-    <MapWrapper
-      SidePanelContent={SidePanelContent}
-      gradientColors={["#EEEEEE", "#2A3C84"]}
-      gradientDomain={[0, 1]}
-      showGradientLegend={false}
-      computeAreaStats={computeAreaStats}
-      mapState={mapState}
-      setMapState={setMapState}
-      displayCircleValue={false}
-      customLayers={customLayers}
+    <MapLayout
+      sidebar={
+        // @ts-expect-error to be checked not typed
+        <SidePanelContent
+          getColor={getColor}
+          mapState={mapState}
+          selectLevel={selectLevel}
+          setMapState={setMapState}
+          computeAreaStats={computeAreaStats}
+          goBack={goBack}
+          handleQuickNav={handleQuickNav}
+          panelState={panelState}
+          isMobile={isMobile}
+        />
+      }
+      map={
+        <InteractiveMap
+          data={mapData}
+          gradientColors={gradientColors}
+          showGradientLegend={false}
+          displayCircleValue={false}
+          fillOpacity={mapState.currentLevel === "city" || (mapState.currentLevel === "department" && mapState.departmentView === "city") ? 1 : 0}
+          hoverStrokeColor="#000091"
+          customLayers={customLayers}
+        />
+      }
     />
   ) : (
     <div>Chargement...</div>
+  );
+};
+
+const CartographieDeploiement = () => {
+  return (
+    <MapProvider initialFilters={{ service_ids: null }} initialDepartmentView="city">
+      <MapLayoutProvider>
+        <DeploiementMap />
+      </MapLayoutProvider>
+    </MapProvider>
   );
 };
 

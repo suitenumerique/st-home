@@ -1,22 +1,69 @@
+import { Select } from "@codegouvfr/react-dsfr/Select";
 import { fr } from "@codegouvfr/react-dsfr";
 import PropTypes from "prop-types";
-import { useMemo, useState, memo, useEffect } from "react";
-import CommuneSearch from "../../CommuneSearch";
-import CommuneInfo from "../../onboarding/CommuneInfo";
-import Breadcrumb from "../Breadcrumb";
-import MapButton from "../MapButton";
+import { useMemo, useState } from "react";
+import CommuneSearch from "../../../CommuneSearch";
+import CommuneInfo from "../../../onboarding/CommuneInfo";
+import Breadcrumb from "../../ui/Breadcrumb";
+import MapButton from "../../ui/MapButton";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import Link from "next/link";
 import { ReferentielConformite } from "@/pages/conformite/referentiel";
+import styles from "./SidePanelContent.module.css";
+import HistoricalChart from "./HistoricalChart";
 
-const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats }) => {
+const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats, history }) => {
 
   const [showCriteriaSelector, setShowCriteriaSelector] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
   const formatNumber = (value) => {
     return new Intl.NumberFormat("fr-FR").format(value);
+  };
+
+  // Compute stats from history data for the selected period
+  const computeStatsFromHistory = (historyData, period, selectedRef) => {
+    if (!historyData?.months) return null;
+
+    const monthData = historyData.months.find((m) => m.month === period);
+    if (!monthData) return null;
+
+    const getRefValid = (ref) => monthData.refs.find((r) => r.ref === ref)?.valid || 0;
+    const total = monthData.total;
+
+    if (selectedRef) {
+      // Single criterion selected: binary conforme/non conforme
+      const valid = getRefValid(selectedRef);
+      return {
+        n_cities: total,
+        score: (valid / total) * 2,
+        details: {
+          "0": total - valid,
+          "2": valid,
+        },
+      };
+    }
+
+    // Overall score computation (same logic as computeAreaStats)
+    const stat_a_valid = getRefValid("a");
+    const stat_1a_valid = getRefValid("1.a");
+    const stat_2a_valid = getRefValid("2.a");
+
+    const n_score_2 = stat_a_valid; // fully conforming (have both 1.a and 2.a)
+    const n_score_1 = stat_1a_valid - stat_a_valid + stat_2a_valid - stat_a_valid; // partial
+    const n_score_0 = total - n_score_2 - n_score_1;
+    const score = (n_score_2 * 2 + n_score_1 * 1) / total;
+
+    return {
+      n_cities: total,
+      score: score,
+      details: {
+        "0": n_score_0,
+        "1": n_score_1,
+        "2": n_score_2,
+      },
+    };
   };
 
   const breadcrumbSegments = useMemo(() => {
@@ -61,19 +108,30 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     }
     const chartSeries = mapState.filters.rcpnt_ref ? [
       ["2", "Conforme"],
-      ["0", "Non conforme"],
+      ["0", "A risque"],
     ] : [
       ["2", "Conforme"],
       ["1", "À renforcer"],
       ["0", "À risque"],
     ];
 
-    const conformityStats = computeAreaStats(
-      mapState.currentLevel,
-      mapState.selectedAreas[mapState.currentLevel]?.insee_geo || "",
-      null,
-      mapState.selectedAreas.department,
-    );
+    const currentPeriod = mapState.filters.period || "current";
+
+    // Use history data when available (preferred for all zone levels)
+    let conformityStats = null;
+    if (history) {
+      conformityStats = computeStatsFromHistory(history, currentPeriod, mapState.filters.rcpnt_ref);
+    }
+
+    // Fallback to computeAreaStats if history not available (shouldn't happen normally)
+    if (!conformityStats) {
+      conformityStats = computeAreaStats(
+        mapState.currentLevel,
+        mapState.selectedAreas[mapState.currentLevel]?.insee_geo || "",
+        null,
+        mapState.selectedAreas.department,
+      );
+    }
 
     if (!conformityStats) {
       return null;
@@ -104,18 +162,14 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
       details: statsDetails,
     }
 
-  }, [mapState.selectedAreas, mapState.currentLevel, mapState.filters.rcpnt_ref, computeAreaStats]);
+  }, [mapState.selectedAreas, mapState.currentLevel, mapState.filters.rcpnt_ref, mapState.filters.period, computeAreaStats, history]);
 
   const introduction = () => {
     return (
       <div
-        className={fr.cx("fr-pb-2w fr-mb-3w")}
-        style={{
-          borderBottom: "2px solid var(--border-default-grey)",
-          paddingTop: !isMobile ? "1rem" : "0",
-        }}
+        className={`${styles.introduction} ${!isMobile ? styles.introductionDesktop : styles.introductionMobile}`}
       >
-        <h2 style={{ color: "var(--text-title-blue-france)", fontSize: "1.8rem !important" }}>
+        <h2 className={styles.title}>
           Cartographie de la Présence Numérique des Territoires
         </h2>
         <p>
@@ -131,11 +185,11 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
           <strong>conformes</strong> aux <strong>critères de sécurité</strong>{" "}
           dans leur <strong>communication en ligne</strong>.
         </p>
-        <p style={{ marginBottom: "0" }}>
+        <p className={fr.cx("fr-mb-0")}>
           Les critères sont reliés aux usages d’un <strong>nom de domaine</strong> et{" "}
           <strong>structurés</strong> en <strong>deux parties</strong> :
         </p>
-        <ol style={{ paddingLeft: "2rem" }}>
+        <ol>
           <li>le site internet</li>
           <li>l’adresse de messagerie de la collectivité.</li>
         </ol>
@@ -159,13 +213,13 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
 
   const levelHeader = () => {
     return (
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+      <div className={styles.levelHeader}>
         <div>
-          <h3 className={fr.cx("fr-mb-0")} style={{ color: "var(--text-title-blue-france)" }}>
+          <h3 className={styles.subTitle}>
             {currentPageLabel}
           </h3>
           {!mapState.selectedAreas.city && levelStatsDisplay && (
-            <p className={fr.cx("fr-text--lg fr-mb-0")} style={{ color: "var(--text-title-blue-france)" }}>
+            <p className={styles.statsText}>
               {[
                 currentLevelLabel,
                 `${formatNumber(levelStatsDisplay.n_cities)} communes`,
@@ -175,7 +229,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
             </p>
           )}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "8px" }}>
+        <div className={styles.headerActions}>
           <MapButton
             onClick={() => setShowCriteriaSelector(true)}
             aria-label="Sélectionner un critère"
@@ -208,28 +262,32 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
 
   const selections = () => {
     return (
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "1.5rem", flexWrap: "wrap" }}>
-        <span style={{ flexShrink: "0" }} className={fr.cx("fr-text--sm fr-mb-0")}>Sélection :</span>
+      <div className={styles.selectionsContainer}>
+        <span className={styles.selectionLabel}>Sélection :</span>
+        {
+          mapState.currentLevel === 'region' && (['department', 'epci', 'city'].map((type, index) => (
+            <p key={index}
+              className={`${styles.selectionTag} ${mapState.regionView === type ? styles.selectionTagActive : ''}`}
+              onClick={() => {
+                // Re-select the current region with the new view
+                selectLevel(
+                  "region",
+                  mapState.selectedAreas.region.insee_geo,
+                  "areaClick",
+                  null,
+                  null,
+                  type
+                );
+              }}
+            >
+              {type === 'department' ? 'Département' : type === 'epci' ? 'EPCI' : 'Commune'}
+            </p>
+          )))
+        }
         {
           mapState.currentLevel === 'department' && (['epci', 'city'].map((type, index) => (
-            <p key={index} style={{
-              display: "inline-flex",
-              flexDirection: "row",
-              alignItems: "center",
-              width: "fit-content",
-              fontSize: "0.875rem",
-              lineHeight: "1.5rem",
-              minHeight: "2rem",
-              padding: "0.25rem 0.75rem",
-              borderRadius: "1rem",
-              minWidth: "2.25rem",
-              justifyContent: "center",
-              color: "var(--text-title-blue-france)",
-              marginBottom: "0",
-              cursor: "pointer",
-              flexShrink: "0",
-              backgroundColor: mapState.departmentView === type ? "var(--background-action-low-blue-france-active)" : "var(--background-action-low-blue-france)",
-              }}
+            <p key={index}
+              className={`${styles.selectionTag} ${mapState.departmentView === type ? styles.selectionTagActive : ''}`}
               onClick={() => setMapState({ ...mapState, departmentView: type })}
             >
               {type === 'epci' ? 'EPCI' : 'Commune'}
@@ -238,51 +296,43 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
         }
         {
           mapState.filters.rcpnt_ref && (
-            <p
+            <div
               onClick={() => setShowCriteriaSelector(true)}
-              style={{
-              display: "inline-flex",
-              flexDirection: "row",
-              alignItems: "center",
-              width: "fit-content",
-              fontSize: "0.875rem",
-              lineHeight: "1.5rem",
-              minHeight: "2rem",
-              padding: "0.25rem 0.75rem",
-              borderRadius: "1rem",
-              minWidth: "2.25rem",
-              justifyContent: "center",
-              marginBottom: "0",
-              flexShrink: "0",
-              backgroundColor: "var(--background-contrast-grey)",
-              cursor: "pointer",
-              }}
+              className={`${styles.selectionTag} ${styles.selectionTagCriteria}`}
             >
               Critère {mapState.filters.rcpnt_ref}
-            </p>
+              <button
+                className={styles.selectionTagReset}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMapState({ ...mapState, filters: { ...mapState.filters, rcpnt_ref: null } });
+                }}
+                aria-label="Supprimer le critère"
+                title="Supprimer le critère"
+              >
+                <span className={fr.cx("fr-icon-close-line fr-icon--sm")} aria-hidden="true"></span>
+              </button>
+            </div>
           )
         }
       </div>
     )
   }
 
-  const levelStats = () => {
+  const citiesBreakdown = () => {
+    if (!levelStatsDisplay) return null;
+
     return (
-      <div>
-        {levelStatsDisplay && levelStatsDisplay.details.map(([label, percentage, scoreKey, n_cities], index) => (
+      <div className={styles.citiesBreakdown}>
+        {levelStatsDisplay.details.map(([label, percentage, scoreKey, n_cities], index) => (
           <div
             key={index}
-            style={{ display: "flex", alignItems: "center", marginBottom: "0.5rem" }}
+            className={styles.statRow}
           >
             <div
+              className={styles.statDot}
               style={{
-                width: "16px",
-                height: "16px",
                 backgroundColor: getColor(scoreKey),
-                borderRadius: "100%",
-                border: "1px solid rgba(255, 255, 255, 0.2)",
-                boxSizing: "border-box",
-                marginRight: "0.5rem",
               }}
             ></div>
             <span>{label}&nbsp;:</span>
@@ -293,8 +343,8 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
           </div>
         ))}
       </div>
-    )
-  }
+    );
+  };
 
   const communeInfo = () => {
     return (
@@ -304,7 +354,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
           <a href="/conformite/referentiel">Référentiel de la Présence Numérique des Territoires</a> :
         </p>
         <CommuneInfo commune={mapState.selectedAreas.city} servicePublicUrlOnExpand={true} />
-        <div style={{ marginTop: "-0.5rem"}}>
+        <div className={styles.communeInfoButton}>
           <Button
             priority="primary"
             linkProps={{
@@ -315,28 +365,6 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
           >
             Vérifier l'éligibilité</Button>
         </div>
-        {/* {
-          mapState.selectedAreas.city.structures?.length > 0 && (
-            <div style={{
-              borderRadius: "4px",
-              padding: "1.2rem",
-              backgroundColor: "var(--background-alt-blue-france)",
-            }}>
-              <h3>Bonne nouvelle !</h3>
-              <p>
-                La collectivité pourra bientôt être <strong>accompagnée par la structure de mutualisation de son choix</strong> pour utiliser la Suite Territoriale.
-              </p>
-              <Button
-                priority="secondary"
-                linkProps={{
-                  href: "/bienvenue/" + mapState.selectedAreas.city.siret,
-                }}
-              >
-                Voir les structures partenaires
-              </Button>
-            </div>
-          )
-        } */}
       </div>
     )
   }
@@ -344,16 +372,16 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
   const criteriaSelector = () => {
     return (
       <div>
-        <div className={fr.cx("fr-mb-2w")} style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "space-between", marginTop: mapState.currentLevel === "country" ? "1.5rem" : "0" }}>
-          <h3 className={fr.cx("fr-mb-0")} style={{ color: "var(--text-title-blue-france)" }}>
+        <div className={`${styles.criteriaHeader} ${mapState.currentLevel === "country" ? styles.criteriaHeaderMobile : styles.criteriaHeaderDesktop}`}>
+          <h3 className={styles.subTitle}>
             Critères
           </h3>
           <button
-            className={fr.cx("fr-text--sm fr-mb-0 fr-p-0 fr-p-1w")}
+            className={styles.closeButton}
             onClick={() => setShowCriteriaSelector(false)}
           >
             Fermer
-            <svg className={fr.cx("fr-ml-1w")} width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M5.00048 4.05781L8.30048 0.757812L9.24315 1.70048L5.94315 5.00048L9.24315 8.30048L8.30048 9.24315L5.00048 5.94315L1.70048 9.24315L0.757812 8.30048L4.05781 5.00048L0.757812 1.70048L1.70048 0.757812L5.00048 4.05781Z" fill="#000091"/>
             </svg>
           </button>
@@ -366,6 +394,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
         <form>
           <RadioButtons
             name="all_criteria"
+            className={fr.cx("fr-mb-2w")}
             options={[
               {
                 label: 'Tous les critères',
@@ -379,18 +408,8 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
 
           {['1. Site internet', '2. Messagerie'].map((section, index) => (
             <div key={index}>
-              <div style={{
-                fontSize: "var(--text-sm)",
-                fontWeight: "bold",
-                padding: "0.5rem 0.75rem",
-                borderRadius: "4px",
-                color: "var(--text-title-blue-france)",
-                marginBottom: "1rem",
-                cursor: "pointer",
-                backgroundColor: 'var(--background-action-low-blue-france)',
-                width: "fit-content",
-              }}>{section}</div>
-              <div style={{ display: "flex", alignItems: "center", marginBottom: "0.75rem" }}>
+              <div className={styles.criteriaSectionTitle}>{section}</div>
+              <div className={styles.criteriaSectionHeader}>
                 <RadioButtons
                   className={fr.cx("fr-mb-0")}
                   name={`${String(index + 1)}.a`}
@@ -404,7 +423,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
                     }
                   ]}
                 />
-                <div style={{ paddingBottom: "0.75rem", paddingLeft: "0.75rem" }}>
+                <div className={styles.criteriaBadgesContainer}>
                   {['mandatory', 'recommended'].map((level, index) => (
                     <span
                       key={index}
@@ -421,24 +440,23 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
                   ))}
                 </div>
               </div>
-              <div style={{ paddingLeft: "1.5rem" }}>
+              <div className={styles.criteriaList}>
                 <RadioButtons
                   name={`${section.all_key}-criteria`}
                   options={ReferentielConformite[index].items.map((criterion) => ({
                     key: criterion.num,
-                    label: <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
+                    label: <div className={styles.criteriaLabel}>
                       <span
-                        style={{ marginTop: "2px" }}
-                        className={fr.cx(
+                        className={`${fr.cx(
                           "fr-badge",
                           "fr-badge--sm",
                           "fr-badge--no-icon",
                           criterion.level === "mandatory" ? "fr-badge--success" : "fr-badge--info",
-                        )}
+                        )} ${styles.criteriaNumber}`}
                       >
                         {criterion.num}
                       </span>
-                      <span style={{ fontSize: "var(--text-sm)" }}>{criterion.shortTitle}</span>
+                      <span className={styles.criteriaTitle}>{criterion.shortTitle}</span>
                     </div>,
                     nativeInputProps: {
                       checked: mapState.filters.rcpnt_ref === criterion.num,
@@ -458,7 +476,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     <div>
       {
         !isMobile && (
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div className={styles.searchContainer}>
             {mapState.currentLevel !== "country" && (
               <MapButton
                 onClick={() => goBack()}
@@ -492,15 +510,34 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
             levelHeader()
           )}
           {panelState === 'open' && (
-            <div style={{ marginTop: "1rem" }}>
-              {((mapState.currentLevel === "department" && !mapState.selectedAreas.city) || mapState.filters.rcpnt_ref) && (
+            <div className={styles.contentWrapper}>
+
+              {((mapState.currentLevel === "department" && !mapState.selectedAreas.city) || (mapState.currentLevel === "region") || mapState.filters.rcpnt_ref) && (
                 selections()
               )}
-              {!mapState.selectedAreas.city && mapState.selectedAreas[mapState.currentLevel] && (
-                levelStats()
-              )}
-              {mapState.selectedAreas.city && !showCriteriaSelector && (
+              
+              {mapState.selectedAreas.city && !showCriteriaSelector ? (
                 communeInfo()
+              ) : (
+                <>
+
+                  {!mapState.selectedAreas.city && mapState.selectedAreas[mapState.currentLevel] && (
+                    citiesBreakdown()
+                  )}
+
+                  <HistoricalChart
+                    history={history}
+                    selectedRef={mapState.filters.rcpnt_ref}
+                    selectedPeriod={mapState.filters.period || "current"}
+                    onPeriodChange={(period) => {
+                      setMapState((prev) => ({
+                        ...prev,
+                        filters: { ...prev.filters, period },
+                      }));
+                    }}
+                  />
+                  
+                </>
               )}
             </div>
           )}
@@ -520,8 +557,23 @@ SidePanelContent.propTypes = {
   handleQuickNav: PropTypes.func.isRequired,
   isMobile: PropTypes.bool.isRequired,
   panelState: PropTypes.string.isRequired,
-  setPanelState: PropTypes.func.isRequired,
   computeAreaStats: PropTypes.func.isRequired,
+  history: PropTypes.shape({
+    scope: PropTypes.string.isRequired,
+    scope_id: PropTypes.string.isRequired,
+    months: PropTypes.arrayOf(
+      PropTypes.shape({
+        month: PropTypes.string.isRequired,
+        total: PropTypes.number.isRequired,
+        refs: PropTypes.arrayOf(
+          PropTypes.shape({
+            ref: PropTypes.string.isRequired,
+            valid: PropTypes.number.isRequired,
+          })
+        ).isRequired,
+      })
+    ).isRequired,
+  }),
 };
 
 export default SidePanelContent;

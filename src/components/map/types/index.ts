@@ -47,10 +47,14 @@ export interface MapState {
     [key: string]: SelectedArea | Commune | null;
   };
   departmentView: "city" | "epci";
+  regionView?: "department" | "epci" | "city";
   filters: {
     service_id: number | null;
     service_ids: number[] | null;
     rcpnt_ref: string | null;
+    period: string | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any;
   };
 }
 

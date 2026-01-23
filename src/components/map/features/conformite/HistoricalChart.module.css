@@ -1,0 +1,18 @@
+.container {
+  width: 100%;
+}
+
+.chartLegend {
+  font-size: 0.75rem;
+  color: var(--text-title-grey);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chartLegend div {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--text-title-grey);
+}

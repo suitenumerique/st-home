@@ -1,14 +1,14 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import PropTypes from "prop-types";
 import { useMemo, useState, useEffect } from "react";
-import CommuneSearch from "../../CommuneSearch";
-// import CommuneInfo from "../../onboarding/CommuneInfo";
-import Breadcrumb from "../Breadcrumb";
-import MapButton from "../MapButton";
+import CommuneSearch from "../../../CommuneSearch";
+// import CommuneInfo from "../../../onboarding/CommuneInfo";
+import Breadcrumb from "../../ui/Breadcrumb";
+import MapButton from "../../ui/MapButton";
 import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
-import styles from "../../../styles/cartographie-deploiement.module.css";
+import styles from "../../../../styles/cartographie-deploiement.module.css";
 import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox";
 
 const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, setPanelState,  computeAreaStats }) => {
