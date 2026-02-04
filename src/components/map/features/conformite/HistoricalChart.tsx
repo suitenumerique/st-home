@@ -113,6 +113,15 @@ export const HistoricalChart = ({
 
   const hasData = chartData.length > 0;
 
+  // When the selected period is no longer in chartData (e.g. after changing timeframe), pick a valid one
+  useEffect(() => {
+    if (chartData.length === 0 || !onPeriodChange) return;
+    const isInData = chartData.some((d) => d.month === selectedPeriod);
+    if (!isInData) {
+      onPeriodChange(chartData[chartData.length - 1].month);
+    }
+  }, [chartData, selectedPeriod, onPeriodChange]);
+
   // Observe container size
   useEffect(() => {
     if (!containerRef.current) return;
@@ -207,23 +216,26 @@ export const HistoricalChart = ({
     const selectedIndex = chartData.findIndex((d) => d.month === selectedPeriod);
     const prevIndex = chartData.findIndex((d) => d.month === previousSelectedPeriodRef.current);
     const fromIndex = prevIndex >= 0 ? prevIndex : selectedIndex;
-    const highlight = clickZoneContainer
-      .append("rect")
-      .attr("class", "click-zone-highlight")
-      .attr("y", innerHeight + 8)
-      .attr("width", zoneWidth)
-      .attr("height", 21)
-      .attr("rx", 4)
-      .attr("fill", "#DAE2FF")
-      .attr("stroke", "#90A7FF")
-      .style("pointer-events", "none")
-      .attr("x", fromIndex * zoneWidth);
 
-    highlight
-      .transition()
-      .duration(250)
-      .ease(d3.easeCubicOut)
-      .attr("x", selectedIndex * zoneWidth);
+    if (selectedIndex >= 0) {
+      const highlight = clickZoneContainer
+        .append("rect")
+        .attr("class", "click-zone-highlight")
+        .attr("y", innerHeight + 8)
+        .attr("width", zoneWidth)
+        .attr("height", 21)
+        .attr("rx", 4)
+        .attr("fill", "#DAE2FF")
+        .attr("stroke", "#90A7FF")
+        .style("pointer-events", "none")
+        .attr("x", fromIndex * zoneWidth);
+
+      highlight
+        .transition()
+        .duration(250)
+        .ease(d3.easeCubicOut)
+        .attr("x", selectedIndex * zoneWidth);
+    }
 
     previousSelectedPeriodRef.current = selectedPeriod;
 
