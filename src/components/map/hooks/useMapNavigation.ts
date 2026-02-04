@@ -11,7 +11,10 @@ import { useMapURLState } from "./useMapURLState";
 export type CollectiviteLevel = "country" | "region" | "department" | "epci" | "city";
 export type ParentLevel = "country" | "region" | "department" | "epci";
 
-export const useMapNavigation = (initialFilters: Record<string, unknown> = {}, initialDepartmentView: "city" | "epci" = "epci") => {
+export const useMapNavigation = (
+  initialFilters: Record<string, unknown> = {},
+  initialDepartmentView: "city" | "epci" = "epci",
+) => {
   const [mapState, setMapState] = useState<MapState>({
     currentLevel: "country",
     selectedAreas: {},

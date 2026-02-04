@@ -411,7 +411,12 @@ const DeploiementMap = () => {
           gradientColors={gradientColors}
           showGradientLegend={false}
           displayCircleValue={false}
-          fillOpacity={mapState.currentLevel === "city" || (mapState.currentLevel === "department" && mapState.departmentView === "city") ? 1 : 0}
+          fillOpacity={
+            mapState.currentLevel === "city" ||
+            (mapState.currentLevel === "department" && mapState.departmentView === "city")
+              ? 1
+              : 0
+          }
           hoverStrokeColor="#000091"
           customLayers={customLayers}
         />
