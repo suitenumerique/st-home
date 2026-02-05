@@ -13,9 +13,6 @@
       "size": "M"
     },
     {
-      "command": "0 0 * * * scripts/scalingo_pgdump.sh"
-    },
-    {
       "command": "0 */1 * * * make cms-refresh"
     }
   ]
