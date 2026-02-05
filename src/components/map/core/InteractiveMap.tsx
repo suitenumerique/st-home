@@ -16,6 +16,7 @@ import CommuneSearch from "../../CommuneSearch";
 import { useMapContext } from "../context/MapContext";
 import { useMapLayoutContext } from "../context/MapLayoutContext";
 import { useDisplayedGeoJSON } from "../hooks/useDisplayedGeoJSON";
+import { useNeighbourGeoJSON } from "../hooks/useNeighbourGeoJSON";
 import { FeatureProperties } from "../types";
 import MapButton from "../ui/MapButton";
 
@@ -55,6 +56,7 @@ export const InteractiveMap = ({
   const { panelState, isMobile } = useMapLayoutContext();
 
   const rawGeoJSON = useDisplayedGeoJSON(mapState);
+  const neighbourGeoJSON = useNeighbourGeoJSON(mapState);
   const mapRef = useRef<MapRef>(null);
 
   const [popupInfo, setPopupInfo] = useState<{
@@ -64,6 +66,7 @@ export const InteractiveMap = ({
   } | null>(null);
   const [hoveredFeatureScore, setHoveredFeatureScore] = useState<number | null>(null);
   const hoveredFeatureIdRef = useRef<string | number | null>(null);
+  const hoveredNeighbourIdRef = useRef<string | number | null>(null);
   const [isMapUpdating, setIsMapUpdating] = useState(false);
   const [searchOpen, setSearchOpen] = useState(true);
 
@@ -124,6 +127,19 @@ export const InteractiveMap = ({
     if (isMapUpdating) return;
     if (event.features && event.features.length > 0) {
       const feature = event.features[0];
+      const layerId = (feature as { layer?: { id?: string } }).layer?.id;
+
+      // Click on neighbour layer: select that region (at region level) or department (at department/epci/city level)
+      if (layerId === "neighbour-polygon-fill" && feature.properties?.INSEE_GEO) {
+        const code = feature.properties.INSEE_GEO as string;
+        if (mapState.currentLevel === "region") {
+          await selectLevel("region", code, "areaClick");
+        } else if (["department", "epci", "city"].includes(mapState.currentLevel)) {
+          await selectLevel("department", code, "areaClick");
+        }
+        return;
+      }
+
       if (nextLevel) {
         if (
           nextLevel === "region" &&
@@ -159,21 +175,57 @@ export const InteractiveMap = ({
       }
       hoveredFeatureIdRef.current = null;
     }
+    if (hoveredNeighbourIdRef.current !== null && map.getSource("neighbour-polygons")) {
+      try {
+        map.setFeatureState(
+          { source: "neighbour-polygons", id: hoveredNeighbourIdRef.current },
+          { hover: false },
+        );
+      } catch {
+        // Source may have been removed
+      }
+      hoveredNeighbourIdRef.current = null;
+    }
   }, []);
 
   const onMouseMove = useCallback(
     (event: MapLayerMouseEvent) => {
       if (event.features && event.features.length > 0) {
         const map = mapRef.current?.getMap();
-        if (map && map.getSource("interactive-polygons")) {
-          const featureId = event.features[0].id;
+        const feature = event.features[0];
+        const layerId = (feature as { layer?: { id?: string } }).layer?.id;
 
-          // Clear previous hover state
-          if (hoveredFeatureIdRef.current !== null && hoveredFeatureIdRef.current !== featureId) {
+        if (layerId === "neighbour-polygon-fill" && map?.getSource("neighbour-polygons")) {
+          const featureId = feature.id;
+          if (hoveredNeighbourIdRef.current !== featureId) {
             clearHoverState(map);
           }
+          if (featureId !== undefined) {
+            hoveredNeighbourIdRef.current = featureId;
+            try {
+              map.setFeatureState({ source: "neighbour-polygons", id: featureId }, { hover: true });
+            } catch {
+              // Source may have been removed
+            }
+          }
+          setHoveredFeatureScore(null);
+          const center = turf.center(feature as GeoJSON.Feature);
+          setPopupInfo({
+            longitude: center.geometry.coordinates[0] as number,
+            latitude: center.geometry.coordinates[1] as number,
+            properties: feature.properties as FeatureProperties,
+          });
+          return;
+        }
 
-          // Set new hover state
+        if (map && map.getSource("interactive-polygons")) {
+          const featureId = feature.id;
+          if (
+            hoveredNeighbourIdRef.current !== null ||
+            (hoveredFeatureIdRef.current !== null && hoveredFeatureIdRef.current !== featureId)
+          ) {
+            clearHoverState(map);
+          }
           if (featureId !== undefined) {
             hoveredFeatureIdRef.current = featureId;
             try {
@@ -185,13 +237,12 @@ export const InteractiveMap = ({
               // Source may have been removed
             }
           }
-
-          setHoveredFeatureScore(event.features[0].properties.SCORE as number);
-          const center = turf.center(event.features[0] as GeoJSON.Feature);
+          setHoveredFeatureScore(feature.properties.SCORE as number);
+          const center = turf.center(feature as GeoJSON.Feature);
           setPopupInfo({
             longitude: center.geometry.coordinates[0] as number,
             latitude: center.geometry.coordinates[1] as number,
-            properties: event.features[0].properties as FeatureProperties,
+            properties: feature.properties as FeatureProperties,
           });
         }
       } else {
@@ -452,7 +503,10 @@ export const InteractiveMap = ({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         mapStyle={mapStyles.desaturated as any}
         projection="mercator"
-        interactiveLayerIds={["polygon-fill"]}
+        interactiveLayerIds={[
+          "polygon-fill",
+          ...(neighbourGeoJSON ? ["neighbour-polygon-fill"] : []),
+        ]}
         onClick={handleAreaClick}
         onMouseLeave={onMouseLeave}
         onMouseMove={onMouseMove}
@@ -517,6 +571,7 @@ export const InteractiveMap = ({
           return null;
         })}
 
+        {/* Coloured layer first so it is always above the neighbour layer (beforeId places neighbour below it) */}
         {currentGeoJSON && (
           <Source id="interactive-polygons" type="geojson" data={currentGeoJSON} generateId={true}>
             <Layer
@@ -532,6 +587,46 @@ export const InteractiveMap = ({
               beforeId="toponyme localite importance 6et7 - Special DOM"
             />
             {mapState.selectedAreas.city && <Layer {...(selectedCityLayerStyle as LayerProps)} />}
+          </Source>
+        )}
+
+        {/* Neighbour layer: below coloured; inserted before polygon-fill so it never covers it */}
+        {neighbourGeoJSON && (
+          <Source id="neighbour-polygons" type="geojson" data={neighbourGeoJSON} generateId={true}>
+            <Layer
+              id="neighbour-polygon-fill"
+              type="fill"
+              paint={{
+                "fill-color": "#CECECE",
+                "fill-opacity": ["case", ["boolean", ["feature-state", "hover"], false], 0.4, 0.1],
+              }}
+              beforeId={
+                currentGeoJSON ? "polygon-fill" : "toponyme localite importance 6et7 - Special DOM"
+              }
+            />
+            <Layer
+              id="neighbour-polygon-stroke"
+              type="line"
+              paint={{
+                "line-color": "#C3C3C3",
+                "line-width": [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  4,
+                  0.5,
+                  8,
+                  0.8,
+                  10,
+                  1.2,
+                  15,
+                  1.5,
+                ],
+              }}
+              beforeId={
+                currentGeoJSON ? "polygon-fill" : "toponyme localite importance 6et7 - Special DOM"
+              }
+            />
           </Source>
         )}
 
