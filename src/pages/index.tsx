@@ -102,11 +102,11 @@ export default function Home() {
     //   ),
     // },
     {
-      value: "8 %",
+      value: "12 %",
       title: "extensions non conformes",
       content: (
         <>
-          2 900 sites web de communes utilisent une extension inadéquate (.com, .org etc). Seuls le{" "}
+          2 600 sites web de communes utilisent une extension inadéquate (.com, .org etc). Seuls le{" "}
           <strong>.fr</strong> et les extensions géographiques (<strong>.bzh</strong>,{" "}
           <strong>.re</strong>, ...) constituent une marque de confiance suffisante.
           <br />
@@ -137,11 +137,11 @@ export default function Home() {
       ),
     },
     {
-      value: "278",
+      value: "302",
       title: "cyberattaques documentées",
       content: (
         <>
-          278 organismes publics (communes, EPCI, syndicats, hôpitaux) victimes de cyberattaques ont
+          302 organismes publics (communes, EPCI, syndicats, hôpitaux) victimes de cyberattaques ont
           été recensés par le réseau Déclic depuis 2019
           <br />
           <br />
@@ -175,7 +175,7 @@ export default function Home() {
       ),
     },
     {
-      value: "75 %",
+      value: "57 %",
       title: "messageries génériques",
       content: (
         <>
