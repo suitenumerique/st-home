@@ -14,7 +14,7 @@
     "only-include-used-icons": "node node_modules/@codegouvfr/react-dsfr/bin/only-include-used-icons.js",
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start --port 3000",
     "prepare": "husky",
     "lint": "prettier --write '**/*.{ts,tsx,css,md,mdx,mjs,js}' --print-width 100 && next lint --no-cache && npm run lint:types",
     "lint:check": "prettier '**/*.{ts,tsx,css,md,mdx,mjs,js}' --list-different --print-width 100 && next lint --no-cache && npm run lint:types",

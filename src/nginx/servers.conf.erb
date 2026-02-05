@@ -1,0 +1,26 @@
+# ERB templated nginx configuration
+# see https://doc.scalingo.com/platform/deployment/buildpacks/nginx
+
+upstream next {
+  server localhost:3000 fail_timeout=0;
+}
+
+server {
+    listen <%= ENV["PORT"] %>;
+    server_name _;
+    server_tokens off;
+
+    <% if ENV["NGINX_BLOCKLIST"] && !ENV["NGINX_BLOCKLIST"].empty? %>
+    # IP Blocklist - deny access to these IPs
+    <% ENV["NGINX_BLOCKLIST"].split(',').each do |ip| %>
+    deny <%= ip.strip %>;
+    <% end %>
+    <% end %>
+
+    location / {
+        proxy_pass http://next;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+    }
+}

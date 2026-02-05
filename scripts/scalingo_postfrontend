@@ -8,5 +8,6 @@ echo "-----> Running post-frontend script"
 make data-geoip-download
 
 mv data/* .
+mv src/nginx/* .
 
 echo "3.13" > .python-version
