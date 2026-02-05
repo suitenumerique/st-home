@@ -598,7 +598,7 @@ export const InteractiveMap = ({
               type="fill"
               paint={{
                 "fill-color": "#CECECE",
-                "fill-opacity": ["case", ["boolean", ["feature-state", "hover"], false], 0.4, 0.1],
+                "fill-opacity": ["case", ["boolean", ["feature-state", "hover"], false], 0.6, 0.1],
               }}
               beforeId={
                 currentGeoJSON ? "polygon-fill" : "toponyme localite importance 6et7 - Special DOM"
@@ -608,7 +608,8 @@ export const InteractiveMap = ({
               id="neighbour-polygon-stroke"
               type="line"
               paint={{
-                "line-color": "#C3C3C3",
+                "line-color": "#3A3A3A",
+                "line-opacity": ["case", ["boolean", ["feature-state", "hover"], false], 1, 0.5],
                 "line-width": [
                   "interpolate",
                   ["linear"],
