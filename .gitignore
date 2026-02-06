@@ -74,3 +74,6 @@ __pycache__/
 
 *.pem
 data/dumps/
+
+# Database backups
+db-backup.tar.gz

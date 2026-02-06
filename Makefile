@@ -57,6 +57,11 @@ create-env-files:  ## Create the environment configuration files
 
 start:  ## Start the development environment
 	$(COMPOSE) up -d --build frontend-dev
+	@echo "$(GREEN)Frontend development environment started!$(RESET)"
+	@echo "$(BOLD)Next steps:$(RESET)"
+	@echo "  • Visit http://localhost:8950 to access the website"
+	@echo "  • Run 'make help' to see all available commands"
+	@echo ""
 .PHONY: start
 
 start-built:  ## Start the production-like environment
@@ -197,6 +202,17 @@ db-push:  ## Run database migrations (Drizzle managed tables: st_*)
 db-generate:  ## Run manual database migrations (non-Drizzle managed tables, see scripts/db-migrate.ts)
 	$(COMPOSE_RUN) frontend-dev npm run db:generate
 .PHONY: db-generate
+
+db-restore:  ## Restore a database from db-backup.tar.gz (runs entirely in Docker)
+	@test -f db-backup.tar.gz || (echo "Error: db-backup.tar.gz not found in project root" && exit 1)
+	$(COMPOSE) up -d postgresql
+	@echo "Waiting for PostgreSQL to be ready..."
+	@docker exec st-home-postgresql-1 sh -c 'until pg_isready -U usr; do sleep 1; done'
+	docker exec st-home-postgresql-1 sh -c 'dropdb -U usr --if-exists st_home_local && createdb -U usr st_home_local'
+	docker cp db-backup.tar.gz st-home-postgresql-1:/tmp/db-backup.tar.gz
+	docker exec st-home-postgresql-1 sh -c 'cd /tmp && tar xzf db-backup.tar.gz && pg_restore -U usr -d st_home_local --no-owner --no-privileges /tmp/*.pgsql && rm -f /tmp/db-backup.tar.gz /tmp/*.pgsql'
+	@echo "$(GREEN)Database restored successfully from db-backup.tar.gz!$(RESET)"
+.PHONY: db-restore
 
 db-reset:  ## Reset the local database
 db-reset: \
