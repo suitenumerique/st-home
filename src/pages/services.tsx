@@ -159,7 +159,7 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
       },
     };
   } catch (error) {
-    console.error("Error fetching articles:", error);
+    console.error("Error fetching services:", error);
     return {
       props: {
         sections: [],

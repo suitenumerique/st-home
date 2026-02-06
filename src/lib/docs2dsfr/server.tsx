@@ -108,7 +108,7 @@ export async function fetchDocumentContent(
       },
     },
     forceRefresh,
-    "content",
+    "created_at",
   );
 
   return data as DocsContentResponse;
@@ -177,9 +177,15 @@ export async function getDocument(
   // Convert custom tags to components (must have a "-" in the name)
   Object.keys(htmlComponents).forEach((component) => {
     if (component.includes("-")) {
+      // Match opening and closing tags in separate <p> blocks (with optional content between)
       document.content = document.content.replace(
-        new RegExp(`<p>&lt;${component}&gt;<\/p>(.*?)<p>&lt;\/${component}&gt;<\/p>`, "g"),
+        new RegExp(`<p>&lt;${component}&gt;<\/p>(.*?)<p>&lt;\/${component}&gt;<\/p>`, "gs"),
         `<${component}>$1</${component}>`,
+      );
+      // Match both tags inside a single <p> block (e.g. <p>&lt;commune-search&gt;&lt;/commune-search&gt;</p>)
+      document.content = document.content.replace(
+        new RegExp(`<p>&lt;${component}&gt;&lt;\/${component}&gt;<\/p>`, "g"),
+        `<${component}></${component}>`,
       );
     }
   });

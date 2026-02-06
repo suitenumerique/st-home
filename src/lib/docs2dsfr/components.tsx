@@ -1,7 +1,14 @@
+import CommuneSearch from "@/components/CommuneSearch";
 import FaqList from "@/components/FaqList";
 import { Quote } from "@codegouvfr/react-dsfr/Quote";
 import Image from "next/image";
+import { useRouter } from "next/router";
 import React, { ReactNode } from "react";
+
+function CommuneSearchDoc() {
+  const router = useRouter();
+  return <CommuneSearch onSelect={(commune) => router.push(`/bienvenue/${commune.siret}`)} />;
+}
 
 export const htmlComponents = {
   blockquote: (props: React.BlockquoteHTMLAttributes<HTMLQuoteElement>) => {
@@ -63,6 +70,8 @@ export const htmlComponents = {
 
     return <FaqList faqs={faqs} />;
   },
+
+  "commune-search": CommuneSearchDoc,
 
   // // Add table components that use DSFR classes
   // table: (props: React.HTMLAttributes<HTMLTableElement>) => (
