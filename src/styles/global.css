@@ -65,6 +65,11 @@ body {
   margin: 1rem 0 2rem 0;
 }
 
+/* Info section after FAQ */
+.services-section section.fr-accordion ~ p {
+  font-size: 0.85em;
+}
+
 /* Leaflet */
 
 path.leaflet-interactive:focus {
