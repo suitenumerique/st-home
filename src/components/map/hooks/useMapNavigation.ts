@@ -11,7 +11,10 @@ import { useMapURLState } from "./useMapURLState";
 export type CollectiviteLevel = "country" | "region" | "department" | "epci" | "city";
 export type ParentLevel = "country" | "region" | "department" | "epci";
 
-export const useMapNavigation = (initialFilters: Record<string, unknown> = {}, initialDepartmentView: "city" | "epci" = "epci") => {
+export const useMapNavigation = (
+  initialFilters: Record<string, unknown> = {},
+  initialDepartmentView: "city" | "epci" = "epci",
+) => {
   const [mapState, setMapState] = useState<MapState>({
     currentLevel: "country",
     selectedAreas: {},
@@ -306,6 +309,32 @@ export const useMapNavigation = (initialFilters: Record<string, unknown> = {}, i
             parentCode as string,
             parentLevel === "region" ? mapState.regionView : undefined,
           );
+        }
+      }
+
+      // When selecting a department (e.g. from neighbour layer at department or EPCI level),
+      // ensure its region is loaded and clear EPCI/city if we switched department
+      if (
+        source === "areaClick" &&
+        level === "department" &&
+        (newSelectedAreas["department"] as SelectedArea)?.insee_reg
+      ) {
+        const newDept = newSelectedAreas["department"] as SelectedArea;
+        const newRegionCode = newDept.insee_reg as string;
+        const currentRegionCode = (mapState.selectedAreas["region"] as SelectedArea)?.insee_geo;
+        const currentDeptCode = (mapState.selectedAreas["department"] as SelectedArea)?.insee_geo;
+        const switchedDepartment = currentDeptCode !== newDept.insee_geo;
+
+        if (newRegionCode !== currentRegionCode) {
+          newSelectedAreas["region"] = await computeSelectedArea(
+            "region",
+            newRegionCode,
+            mapState.regionView,
+          );
+        }
+        if (switchedDepartment) {
+          newSelectedAreas["epci"] = null;
+          newSelectedAreas["city"] = null;
         }
       }
 

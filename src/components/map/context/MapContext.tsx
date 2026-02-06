@@ -36,7 +36,11 @@ interface MapProviderProps {
   initialDepartmentView?: "city" | "epci";
 }
 
-export const MapProvider = ({ children, initialFilters, initialDepartmentView }: MapProviderProps) => {
+export const MapProvider = ({
+  children,
+  initialFilters,
+  initialDepartmentView,
+}: MapProviderProps) => {
   const mapNavigation = useMapNavigation(initialFilters, initialDepartmentView);
 
   // @ts-expect-error to be checked
