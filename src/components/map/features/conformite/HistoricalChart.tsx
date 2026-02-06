@@ -1,5 +1,6 @@
 "use client";
 
+import { fr } from "@codegouvfr/react-dsfr";
 import * as d3 from "d3";
 import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./HistoricalChart.module.css";
@@ -30,24 +31,11 @@ const COLORS = {
 
 // Format month for display
 const formatMonth = (month: string): string => {
-  if (month === "current") return "Actuel";
+  if (month === "current") return "ce mois";
   const [year, m] = month.split("-");
-  const monthNames = [
-    "",
-    "Jan",
-    "Fév",
-    "Mar",
-    "Avr",
-    "Mai",
-    "Juin",
-    "Juil",
-    "Août",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Déc",
-  ];
-  return `${monthNames[parseInt(m)]} ${year.slice(2)}`;
+  const monthNum = parseInt(m);
+  const yearShort = year.slice(2);
+  return `${monthNum.toString().padStart(2, "0")}.${yearShort}`;
 };
 
 export const HistoricalChart = ({
@@ -58,12 +46,27 @@ export const HistoricalChart = ({
 }: HistoricalChartProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const previousSelectedPeriodRef = useRef<string | undefined>(undefined);
   const [dimensions, setDimensions] = useState({ width: 0, height: 200 });
+  const [timeRange, setTimeRange] = useState<"6months" | "2025">("6months");
 
   const chartData = useMemo<ChartDataPoint[]>(() => {
     if (!history?.months) return [];
 
-    return history.months
+    let filteredMonths = history.months;
+
+    if (timeRange === "6months") {
+      const dateMonths = filteredMonths.filter((m) => m.month !== "current");
+      const sortedDateMonths = [...dateMonths].sort((a, b) => b.month.localeCompare(a.month));
+      const last6Months = sortedDateMonths.slice(0, 6).map((m) => m.month);
+      filteredMonths = filteredMonths.filter(
+        (m) => m.month === "current" || last6Months.includes(m.month),
+      );
+    } else if (timeRange === "2025") {
+      filteredMonths = filteredMonths.filter((m) => m.month.startsWith("2025-"));
+    }
+
+    return filteredMonths
       .map((monthData) => {
         const getRefValid = (ref: string) => monthData.refs.find((r) => r.ref === ref)?.valid || 0;
         const total = monthData.total;
@@ -106,9 +109,18 @@ export const HistoricalChart = ({
         if (b.month === "current") return -1;
         return a.month.localeCompare(b.month);
       });
-  }, [history, selectedRef]);
+  }, [history, selectedRef, timeRange]);
 
   const hasData = chartData.length > 0;
+
+  // When the selected period is no longer in chartData (e.g. after changing timeframe), pick a valid one
+  useEffect(() => {
+    if (chartData.length === 0 || !onPeriodChange) return;
+    const isInData = chartData.some((d) => d.month === selectedPeriod);
+    if (!isInData) {
+      onPeriodChange(chartData[chartData.length - 1].month);
+    }
+  }, [chartData, selectedPeriod, onPeriodChange]);
 
   // Observe container size
   useEffect(() => {
@@ -163,16 +175,35 @@ export const HistoricalChart = ({
     // Line chart with gradient
     const y = d3.scaleLinear().domain([0, 2]).range([innerHeight, 0]);
 
-    // Clickable zones for each period (rendered first to appear below)
-    g.selectAll(".click-zone")
+    // Click zone container: each zone width = total width / number of zones
+    const zoneWidth = innerWidth / chartData.length;
+    const clickZoneContainer = g
+      .append("g")
+      .attr("class", "click-zone-container")
+      .attr("aria-label", "Sélection de la période");
+
+    clickZoneContainer
+      .append("rect")
+      .attr("class", "click-zone-container__bg")
+      .attr("x", 0)
+      .attr("y", innerHeight + 8)
+      .attr("width", innerWidth)
+      .attr("height", 21)
+      .attr("fill", "#EEF1F4")
+      .attr("stroke", "#CFD5DE")
+      .attr("rx", 4);
+
+    clickZoneContainer
+      .selectAll(".click-zone")
       .data(chartData)
       .join("rect")
       .attr("class", "click-zone")
-      .attr("x", (d) => (x(d.month) || 0) - x.bandwidth() * 0.1)
-      .attr("y", -10)
-      .attr("width", x.bandwidth() * 1.2)
-      .attr("height", innerHeight + 30)
-      .attr("fill", (d) => (d.month === selectedPeriod ? "rgba(0, 0, 145, 0.05)" : "transparent"))
+      .attr("x", (_, i) => i * zoneWidth)
+      .attr("y", innerHeight + 8)
+      .attr("width", zoneWidth)
+      .attr("height", 21)
+      .attr("fill", "transparent")
+      .attr("stroke", "transparent")
       .attr("rx", 4)
       .attr("cursor", "pointer")
       .style("pointer-events", "all")
@@ -182,9 +213,35 @@ export const HistoricalChart = ({
         }
       });
 
+    const selectedIndex = chartData.findIndex((d) => d.month === selectedPeriod);
+    const prevIndex = chartData.findIndex((d) => d.month === previousSelectedPeriodRef.current);
+    const fromIndex = prevIndex >= 0 ? prevIndex : selectedIndex;
+
+    if (selectedIndex >= 0) {
+      const highlight = clickZoneContainer
+        .append("rect")
+        .attr("class", "click-zone-highlight")
+        .attr("y", innerHeight + 8)
+        .attr("width", zoneWidth)
+        .attr("height", 21)
+        .attr("rx", 4)
+        .attr("fill", "#DAE2FF")
+        .attr("stroke", "#90A7FF")
+        .style("pointer-events", "none")
+        .attr("x", fromIndex * zoneWidth);
+
+      highlight
+        .transition()
+        .duration(250)
+        .ease(d3.easeCubicOut)
+        .attr("x", selectedIndex * zoneWidth);
+    }
+
+    previousSelectedPeriodRef.current = selectedPeriod;
+
     // X axis
     g.append("g")
-      .attr("transform", `translate(0,${innerHeight})`)
+      .attr("transform", `translate(0,${innerHeight - 1})`)
       .call(
         d3
           .axisBottom(x)
@@ -194,8 +251,9 @@ export const HistoricalChart = ({
       .call((g) => g.select(".domain").remove())
       .selectAll("text")
       .attr("font-size", "10px")
+      .attr("pointer-events", "none")
       .attr("fill", (d) => (d === selectedPeriod ? "#000091" : "#666"))
-      .attr("font-weight", (d) => (d === selectedPeriod ? "600" : "400"));
+      .attr("dy", "2em");
 
     // Y axis with semantic labels
     const yAxisLabels: Record<number, string> = {
@@ -213,11 +271,13 @@ export const HistoricalChart = ({
           .tickSize(-innerWidth),
       )
       .call((g) => g.select(".domain").remove())
-      .call((g) => g.selectAll(".tick line").attr("stroke", "#e5e5e5"))
+      .call((g) =>
+        g.selectAll(".tick line").attr("stroke", "#929292").attr("stroke-dasharray", "1, 3"),
+      )
       .selectAll("text")
       .attr("x", -margin.left)
       .style("text-anchor", "start")
-      .attr("font-size", "9px")
+      .attr("font-size", "11px")
       .attr("fill", "#666");
 
     // Create gradient definition
@@ -235,7 +295,6 @@ export const HistoricalChart = ({
     gradient.append("stop").attr("offset", "50%").attr("stop-color", COLORS.aRenforcer);
     gradient.append("stop").attr("offset", "100%").attr("stop-color", COLORS.conforme);
 
-    // Line generator
     const line = d3
       .line<ChartDataPoint>()
       .x((d) => (x(d.month) || 0) + x.bandwidth() / 2)
@@ -251,23 +310,47 @@ export const HistoricalChart = ({
       .attr("d", line)
       .style("pointer-events", "none");
 
-    // Draw points
+    // Draw points: outer white stroke, then paler stroke, then full-color center
+    const pointRadius = 4;
+    const palerStrokeWidth = 1;
+    const whiteStrokeWidth = 3;
+    const getPointColor = (d: ChartDataPoint) => {
+      const colorScale = d3
+        .scaleLinear<string>()
+        .domain([0, 1, 2])
+        .range([COLORS.aRisque, COLORS.aRenforcer, COLORS.conforme]);
+      return colorScale(d.score);
+    };
+    const getPalerColor = (fullColor: string) => d3.interpolateRgb(fullColor, "white")(0.5);
+
+    g.selectAll(".point-outer")
+      .data(chartData)
+      .join("circle")
+      .attr("class", "point-outer")
+      .attr("cx", (d) => (x(d.month) || 0) + x.bandwidth() / 2)
+      .attr("cy", (d) => y(d.score))
+      .attr("r", pointRadius + palerStrokeWidth + whiteStrokeWidth)
+      .attr("fill", "#fff")
+      .style("pointer-events", "none");
+
+    g.selectAll(".point-mid")
+      .data(chartData)
+      .join("circle")
+      .attr("class", "point-mid")
+      .attr("cx", (d) => (x(d.month) || 0) + x.bandwidth() / 2)
+      .attr("cy", (d) => y(d.score))
+      .attr("r", pointRadius + palerStrokeWidth)
+      .attr("fill", (d) => getPalerColor(getPointColor(d)))
+      .style("pointer-events", "none");
+
     g.selectAll(".point")
       .data(chartData)
       .join("circle")
       .attr("class", "point")
       .attr("cx", (d) => (x(d.month) || 0) + x.bandwidth() / 2)
       .attr("cy", (d) => y(d.score))
-      .attr("r", 4)
-      .attr("fill", (d) => {
-        const colorScale = d3
-          .scaleLinear<string>()
-          .domain([0, 1, 2])
-          .range([COLORS.aRisque, COLORS.aRenforcer, COLORS.conforme]);
-        return colorScale(d.score);
-      })
-      .attr("stroke", "#fff")
-      .attr("stroke-width", 1.5)
+      .attr("r", pointRadius)
+      .attr("fill", getPointColor)
       .style("pointer-events", "none");
   }, [chartData, dimensions, selectedRef, selectedPeriod, onPeriodChange]);
 
@@ -278,9 +361,25 @@ export const HistoricalChart = ({
   return (
     <div className={styles.container} ref={containerRef}>
       <svg ref={svgRef} width={dimensions.width} height={dimensions.height} />
-      <div className={styles.chartLegend}>
-        <div></div>
-        Evolution de la conformité
+      <div className={styles.chartFooter}>
+        <div className={styles.chartLegend}>
+          <div></div>
+          <span>Evolution de la conformité</span>
+        </div>
+        <div className={styles.selectWrapper}>
+          <select
+            className={styles.timeRangeSelect}
+            value={timeRange}
+            onChange={(e) => setTimeRange(e.target.value as "6months" | "2025")}
+          >
+            <option value="6months">Derniers 6 mois</option>
+            <option value="2025">2025</option>
+          </select>
+          <span
+            className={`${fr.cx("fr-icon-arrow-down-s-line")} ${styles.caretIcon}`}
+            aria-hidden="true"
+          />
+        </div>
       </div>
     </div>
   );
