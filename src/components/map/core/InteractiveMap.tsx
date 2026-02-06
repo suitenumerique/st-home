@@ -58,6 +58,7 @@ export const InteractiveMap = ({
   const rawGeoJSON = useDisplayedGeoJSON(mapState);
   const neighbourGeoJSON = useNeighbourGeoJSON(mapState);
   const mapRef = useRef<MapRef>(null);
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
 
   const [popupInfo, setPopupInfo] = useState<{
     longitude: number;
@@ -316,7 +317,7 @@ export const InteractiveMap = ({
     }, 600);
 
     return () => clearTimeout(timeout);
-  }, [mapState.currentLevel, currentGeoJSON, fitToFrance, fitToGeoJSONBounds]);
+  }, [mapState.currentLevel, currentGeoJSON, fitToFrance, fitToGeoJSONBounds, isMapLoaded]);
 
   // Styling
   const fillLayerStyle = {
@@ -511,6 +512,7 @@ export const InteractiveMap = ({
         onMouseLeave={onMouseLeave}
         onMouseMove={onMouseMove}
         cursor="pointer"
+        onLoad={() => setIsMapLoaded(true)}
         onResize={() => {
           if (!mapRef.current || !currentGeoJSON) return;
           try {
