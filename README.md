@@ -90,6 +90,9 @@ make db-reset-sample
 
 # Explorer la base de données avec Drizzle Studio
 make db-browse
+
+# Restaurer un backup de prod
+make db-restore
 ```
 
 #### Ajout de colonnes dans la base de données
