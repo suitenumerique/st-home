@@ -4,9 +4,20 @@ import unicodedata
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from typing import Iterable
+from urllib.parse import urlparse
 
 import maxminddb
 from cachetools import TTLCache, cached
+
+
+def is_safe_url(url: str) -> bool:
+    if not url:
+        return False
+    try:
+        parsed = urlparse(url.lower())
+        return parsed.scheme in ("http", "https")
+    except Exception:
+        return False
 
 
 def normalize(s):

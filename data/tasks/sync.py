@@ -4,6 +4,7 @@ import logging
 import os
 import re
 from collections import defaultdict
+from urllib.parse import urlparse
 
 from sentry_sdk.crons import monitor
 
@@ -16,6 +17,7 @@ from .db import (
     init_db,
     update_rcpnt_stats,
 )
+from .lib import is_safe_url
 from .defs import HARDCODED_COMMUNES, HARDCODED_DILA_SIRETS
 from .dumps import (
     add_dila_issue,
@@ -388,13 +390,12 @@ def associate_dila_to_organizations(orgs: list):
                 if len(dila_match.get("adresse_courriel") or []) > 0
                 else ""
             )
-            org["_st_website"] = (
+            raw_website = (
                 dila_match["site_internet"][0].get("valeur", "")
                 if len(dila_match.get("site_internet") or []) > 0
                 else ""
             )
-            # Remove trailing anchor from website
-            org["_st_website"] = org["_st_website"].strip().split("#")[0]
+            org["_st_website"] = raw_website.strip().split("#")[0] if is_safe_url(raw_website) else ""
 
             org["_st_dila"] = dila_match
 
