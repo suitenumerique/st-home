@@ -14,8 +14,28 @@ export default function DepartmentPresenceView({ organisation }: DepartmentPrese
     <div className={fr.cx("fr-container")}>
       <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
         <h2 className={fr.cx("fr-h2")}>Consultez la présence numérique de votre département</h2>
-
         <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
+          <div className="departement-section">
+            <span>
+              <Link className="fr-link fr-icon-arrow-right-line fr-link--icon-right" href="/conformite/referentiel">Voir la présence numérique de mon EPCI</Link>
+            </span>
+          </div>
+        </div>
+        <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
+          <div className="departement-section">
+            <span>
+              <Link className="fr-link fr-icon-arrow-right-line fr-link--icon-right" href="/conformite/referentiel">Voir la présence numérique de mon département</Link>
+            </span>
+          </div>
+        </div>
+        <div className={fr.cx("fr-col-12")}>
+          <div className="departement-section">
+            <h5 style={{ marginBottom: "0" }}>L'expertise à proximité</h5>
+            <p style={{ color: "var(--text-mention-grey, #666)", marginBottom: "0" }}>Le premier réflexe pour aborder les enjeux numériques est de vous entourer. Rapprochez-vous et appuyez-vous sur vos acteurs locaux : opérateurs publics de services numériques, centre de gestion, délégués territoriaux des administrations publiques, associations d'élus, prestataires. Ils pourront vous accompagner dans vos tâches quotidiennes, vos projets et votre outillage.</p>
+          </div>
+        </div>
+
+        {/* <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
           <div className="departement-section">
             <p className="section-name">
               Les Chiffres clés de la conformité · {organisation.insee_dep}
@@ -115,7 +135,8 @@ export default function DepartmentPresenceView({ organisation }: DepartmentPrese
               </Link>
             </p>
           </div>
-        </div>
+        </div> */}
+
       </div>
     </div>
   );

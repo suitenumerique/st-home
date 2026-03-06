@@ -113,6 +113,15 @@ body {
 .st-bienvenue-page {
   padding-top: 0 !important;
 
+  .commune-type-badge {
+    font-size: 12px;
+    background-color: var(--background-contrast-grey, #EEEEEE);
+    padding: 0.25rem 0.5rem;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 1rem;
+  }
+
   .service-tile {
     padding: 1rem;
     border-radius: 8px;
@@ -238,6 +247,8 @@ body {
     flex-direction: column;
     gap: 1rem;
     background-color: #f5f5fe;
+    border-radius: 8px;
+    border: 1px solid var(--light-decisions-border-border-default-grey, #ddd);
 
     .section-name {
       font-size: 12px;

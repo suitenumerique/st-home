@@ -4,7 +4,7 @@ import Image from "next/image";
 export default function TrialContact() {
   return (
     <div className="trial-contact">
-      <Image src="/images/logo-st.svg" alt="" role="presentation" width={300} height={200} />
+      <Image src="/images/interest-test.svg" alt="" role="presentation" width={580} height={105} />
       <div className="buttons">
         <Button
           priority="primary"
@@ -22,7 +22,7 @@ export default function TrialContact() {
             href: "mailto:contact@suite.anct.gouv.fr",
           }}
         >
-          Nous écrire
+          Nous contacter
         </Button>
       </div>
     </div>

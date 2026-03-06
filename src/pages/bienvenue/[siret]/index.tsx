@@ -11,10 +11,12 @@ import { NextSeo } from "next-seo";
 // Import view components
 import Newsletter from "@/components/Newsletter";
 import ErrorView from "@/components/onboarding/ErrorView";
+import DepartmentPresenceView from "@/components/onboarding/DepartmentPresenceView";
 import MutualisationView from "@/components/onboarding/MutualisationView";
 import OPSNServicesView from "@/components/onboarding/OPSNServicesView";
 import OrganisationPresenceView from "@/components/onboarding/OrganisationPresenceView";
 import OtherServicesView from "@/components/onboarding/OtherServicesView";
+import SuiteServicesBasicView from "@/components/onboarding/SuiteServicesBasicView";
 import SuiteServicesView from "@/components/onboarding/SuiteServicesView";
 import UsedServicesView from "@/components/onboarding/UsedServicesView";
 import TrialContact from "@/components/TrialContact";
@@ -22,11 +24,14 @@ import TrialContact from "@/components/TrialContact";
 // Import types and functions
 import { type Commune, type Service } from "@/lib/onboarding";
 
+type OpsnCase = "no_opsn" | "opsn_lettre_intention" | "opsn_convention";
+
 interface PageProps {
   commune?: Commune & { epci_siret?: string };
   error?: string;
   allServices: Service[];
   usedServicesIds: number[];
+  opsnCase: OpsnCase;
 }
 
 type Structure = {
@@ -36,7 +41,7 @@ type Structure = {
 };
 
 export default function Bienvenue(props: PageProps) {
-  const { commune, error, allServices = [], usedServicesIds = [] } = props;
+  const { commune, error, opsnCase, allServices = [], usedServicesIds = [] } = props;
 
   const usedServices = usedServicesIds
     .map((id) => allServices.find((s) => s.id === id))
@@ -82,6 +87,9 @@ export default function Bienvenue(props: PageProps) {
 
     return (
       <div className={fr.cx("fr-mb-4w")}>
+        <span className="commune-type-badge">
+          {commune.type === "commune" ? "Commune" : "EPCI"}
+        </span>
         <h1
           className={fr.cx("fr-h1", "fr-mb-4w")}
           style={{ color: "var(--text-title-blue-france)" }}
@@ -97,26 +105,42 @@ export default function Bienvenue(props: PageProps) {
           <OrganisationPresenceView organisation={commune as Commune} />
         </div>
 
-        {usedServices.length > 0 && (
+        {/* OPSN block — rendered based on the external API response */}
+        {opsnCase === "no_opsn" && (
+          <>
+            <div className={fr.cx("fr-mb-15w")}>
+              <SuiteServicesBasicView commune={commune as Commune} />
+            </div>
+            <div className={fr.cx("fr-mb-15w")}>
+              {usedServices.length > 0 && (
+                <UsedServicesView services={usedServices} />
+              )}
+            </div>
+          </>
+        )}
+        {opsnCase === "opsn_lettre_intention" && (
           <div className={fr.cx("fr-mb-15w")}>
-            <UsedServicesView services={usedServices} />
+          </div>
+        )}
+        {opsnCase === "opsn_convention" && (
+          <div className={fr.cx("fr-mb-15w")}>
           </div>
         )}
 
-        {commune.structures && commune.structures.length > 0 && (
+        {/* {commune.structures && commune.structures.length > 0 && (
           <div className={fr.cx("fr-mb-15w")}>
             <OPSNServicesView
               services={opsnServices as Service[]}
               commune={commune as Commune & { structures: Structure[] }}
             />
           </div>
-        )}
+        )} */}
 
-        <div className={fr.cx("fr-mb-15w")}>
+        {/* <div className={fr.cx("fr-mb-15w")}>
           <SuiteServicesView commune={commune as Commune} services={suiteServices as Service[]} />
-        </div>
+        </div> */}
 
-        {!commune.st_eligible && (
+        {/* {!commune.st_eligible && (
           <div className={fr.cx("fr-mb-15w")}>
             <MutualisationView
               services={
@@ -133,13 +157,13 @@ export default function Bienvenue(props: PageProps) {
               organisation={commune as Commune}
             />
           </div>
-        )}
+        )} */}
 
-        <div className={fr.cx("fr-mb-15w")}>
+        {/* <div className={fr.cx("fr-mb-15w")}>
           <OtherServicesView organisation={commune as Commune} />
-        </div>
+        </div> */}
 
-        {/* <DepartmentPresenceView organisation={commune as Commune} /> */}
+        <DepartmentPresenceView organisation={commune as Commune} />
       </div>
     );
   };
@@ -225,6 +249,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
     return {
       props: {
         error: "Identifiant de collectivité invalide",
+        opsnCase: "no_opsn" as OpsnCase,
         allServices: [],
         usedServicesIds: [],
       },
@@ -248,6 +273,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
     return {
       props: {
         error: `La Suite territoriale n'est disponible que pour les collectivités françaises. Le SIRET ${siret} ne correspond à aucune d'entre elles.`,
+        opsnCase: "no_opsn" as OpsnCase,
         allServices: [],
         usedServicesIds: [],
       },
@@ -257,18 +283,19 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   // Convert the Drizzle result to the Commune type
   const communeData: Commune = JSON.parse(JSON.stringify(commune));
 
-  communeData.structures = communeData.structures?.map((structure) => {
-    if (structure.name === "Mégalis Bretagne") {
-      structure.name = "Mégalis";
-      structure.shortname = "Mégalis";
-    }
-    return structure;
-  });
+  // Fetch from EO
+  let opsnCase: OpsnCase = "no_opsn";
+  try {
+    // Fetch from EO API
+  } catch {
+    // API error
+  }
 
   // Determine the onboarding case with options
   return {
     props: {
       commune: communeData,
+      opsnCase,
       allServices,
       usedServicesIds: organizationServices.map((service) => service.id),
     },
