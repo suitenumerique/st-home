@@ -4,8 +4,7 @@ import { exec } from "child_process";
 // an unexpected page refresh from the frontend.
 
 const routes = [
-  "http://localhost:3000/api/communes/search?q=paris",
-  "http://localhost:3000/api/auth/session",
+  "http://localhost:3000/api/communes/search?q=paris"
 ];
 
 async function waitForServer(): Promise<boolean> {

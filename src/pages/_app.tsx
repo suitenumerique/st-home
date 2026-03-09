@@ -4,7 +4,6 @@ import "../styles/global.css";
 import type { AppProps } from "next/app";
 import { useEffect } from "react";
 
-// import { SessionProvider } from "next-auth/react";
 import Link from "next/link";
 
 import { createNextDsfrIntegrationApi } from "@codegouvfr/react-dsfr/next-pagesdir";
@@ -43,7 +42,7 @@ const { withAppEmotionCache, augmentDocumentWithEmotionCache } = createEmotionSs
 
 export { augmentDocumentWithEmotionCache };
 
-function App({ Component, pageProps: { /*session,*/ ...pageProps } }: AppProps) {
+function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_MATOMO_SITE_ID) return;
     init({
@@ -52,7 +51,6 @@ function App({ Component, pageProps: { /*session,*/ ...pageProps } }: AppProps) 
     });
   }, []);
 
-  // <SessionProvider session={session}>
   return (
     <>
       <DefaultSeo

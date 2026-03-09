@@ -1,7 +1,4 @@
 import { ReactNode } from "react";
-
-//import { signOut, useSession } from "next-auth/react";
-
 import { Footer } from "@codegouvfr/react-dsfr/Footer";
 import { Header } from "@codegouvfr/react-dsfr/Header";
 import { SkipLinks } from "@codegouvfr/react-dsfr/SkipLinks";
@@ -62,7 +59,6 @@ type LayoutProps = {
 
 export function PageLayout({ children }: LayoutProps) {
   const router = useRouter();
-  // const { data: session } = useSession();
   const contentSecurityPolicy = process.env.CONTENT_SECURITY_POLICY;
 
   const navItems = [
@@ -123,40 +119,6 @@ export function PageLayout({ children }: LayoutProps) {
       text: <>Centre d&rsquo;aide</>,
     },
   ];
-
-  // const quickAccessItems = session && session.user
-  //   ? [
-  //       {
-  //         iconId: "fr-icon-question-line" as const,
-  //         linkProps: {
-  //           href: "https://aide.suiteterritoriale.anct.gouv.fr/",
-  //         },
-  //         text: "Aide",
-  //       },
-  //       {
-  //         buttonProps: {
-  //           onClick: () => signOut({ callbackUrl: "/" }),
-  //         },
-  //         iconId: "fr-icon-logout-box-r-line" as const,
-  //         text: `Déconnecter ${session.user.email}`,
-  //       },
-  //     ]
-  //   : [
-  //       {
-  //         iconId: "fr-icon-question-line" as const,
-  //         linkProps: {
-  //           href: "https://aide.suiteterritoriale.anct.gouv.fr/",
-  //         },
-  //         text: "Aide",
-  //       },
-  //       {
-  //         iconId: "fr-icon-account-line" as const,
-  //         linkProps: {
-  //           href: "/login",
-  //         },
-  //         text: "Se connecter",
-  //       },
-  //     ];
 
   return (
     <>
