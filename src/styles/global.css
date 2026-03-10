@@ -115,7 +115,7 @@ body {
 
   .commune-type-badge {
     font-size: 12px;
-    background-color: var(--background-contrast-grey, #EEEEEE);
+    background-color: var(--background-contrast-grey, #eeeeee);
     padding: 0.25rem 0.5rem;
     border-radius: 20px;
     display: inline-block;

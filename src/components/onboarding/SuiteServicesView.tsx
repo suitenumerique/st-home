@@ -1,9 +1,9 @@
 import type { Commune, Service } from "@/lib/onboarding";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Button } from "@codegouvfr/react-dsfr/Button";
-import Link from "next/link";
-import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 type SuiteServicesViewProps = {
   services: Service[];
@@ -56,7 +56,9 @@ export default function SuiteServicesView({ services, commune }: SuiteServicesVi
         </div>
         <div className={fr.cx("fr-col-12", "fr-col-md-5", "fr-col-offset-md-1")}>
           <div className="suite-services-section">
-            <h2 className={fr.cx("fr-h2")}>Utilisez les autres services de la Suite territoriale</h2>
+            <h2 className={fr.cx("fr-h2")}>
+              Utilisez les autres services de la Suite territoriale
+            </h2>
             <p>
               Grâce à l’Incubateur des territoires, la collectivité peut également accéder à ces
               services :

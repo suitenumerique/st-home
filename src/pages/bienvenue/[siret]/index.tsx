@@ -10,14 +10,10 @@ import { NextSeo } from "next-seo";
 
 // Import view components
 import Newsletter from "@/components/Newsletter";
-import ErrorView from "@/components/onboarding/ErrorView";
 import DepartmentPresenceView from "@/components/onboarding/DepartmentPresenceView";
-import MutualisationView from "@/components/onboarding/MutualisationView";
-import OPSNServicesView from "@/components/onboarding/OPSNServicesView";
+import ErrorView from "@/components/onboarding/ErrorView";
 import OrganisationPresenceView from "@/components/onboarding/OrganisationPresenceView";
-import OtherServicesView from "@/components/onboarding/OtherServicesView";
 import SuiteServicesBasicView from "@/components/onboarding/SuiteServicesBasicView";
-import SuiteServicesView from "@/components/onboarding/SuiteServicesView";
 import UsedServicesView from "@/components/onboarding/UsedServicesView";
 import TrialContact from "@/components/TrialContact";
 
@@ -69,12 +65,7 @@ export default function Bienvenue(props: PageProps) {
           "Mon suivi social",
           "Deveco",
         ]
-      : [
-          "Annuaire des collectivités",
-          "Mon suivi social",
-          "Deveco",
-          "Adresses",
-        ];
+      : ["Annuaire des collectivités", "Mon suivi social", "Deveco", "Adresses"];
   const suiteServices = suiteServicesNames
     .map((name) => allServices.find((s) => s.name === name))
     .filter((s) => s && !usedServices.find((us) => us.id === s.id));
@@ -112,20 +103,12 @@ export default function Bienvenue(props: PageProps) {
               <SuiteServicesBasicView commune={commune as Commune} />
             </div>
             <div className={fr.cx("fr-mb-15w")}>
-              {usedServices.length > 0 && (
-                <UsedServicesView services={usedServices} />
-              )}
+              {usedServices.length > 0 && <UsedServicesView services={usedServices} />}
             </div>
           </>
         )}
-        {opsnCase === "opsn_lettre_intention" && (
-          <div className={fr.cx("fr-mb-15w")}>
-          </div>
-        )}
-        {opsnCase === "opsn_convention" && (
-          <div className={fr.cx("fr-mb-15w")}>
-          </div>
-        )}
+        {opsnCase === "opsn_lettre_intention" && <div className={fr.cx("fr-mb-15w")}></div>}
+        {opsnCase === "opsn_convention" && <div className={fr.cx("fr-mb-15w")}></div>}
 
         {/* {commune.structures && commune.structures.length > 0 && (
           <div className={fr.cx("fr-mb-15w")}>
@@ -284,7 +267,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   const communeData: Commune = JSON.parse(JSON.stringify(commune));
 
   // Fetch from EO
-  let opsnCase: OpsnCase = "no_opsn";
+  const opsnCase: OpsnCase = "no_opsn";
   try {
     // Fetch from EO API
   } catch {

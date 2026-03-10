@@ -56,10 +56,12 @@ export default function OPSNServicesView({ services, commune }: OPSNServicesView
         </p>
         {selectedService && (
           <p>
-            { selectedService.name !== 'Nom de domaine' && (
-              <><Link className="fr-link" href={selectedService.url}>
-                {selectedService.name}
-              </Link>{' '}</>
+            {selectedService.name !== "Nom de domaine" && (
+              <>
+                <Link className="fr-link" href={selectedService.url}>
+                  {selectedService.name}
+                </Link>{" "}
+              </>
             )}
             {selectedService.description}
           </p>

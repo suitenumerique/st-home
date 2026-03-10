@@ -8,7 +8,6 @@ type SuiteServicesBasicViewProps = {
 };
 
 export default function SuiteServicesBasicView({ commune }: SuiteServicesBasicViewProps) {
-
   return (
     <div className={fr.cx("fr-container", "fr-mb-8w")}>
       <div className={fr.cx("fr-grid-row", "fr-grid-row--middle")}>
@@ -16,7 +15,9 @@ export default function SuiteServicesBasicView({ commune }: SuiteServicesBasicVi
           <div className="suite-services-basic-section">
             <h2 className={fr.cx("fr-h2")}>Accédez aux services de la suite territoriale </h2>
             <p>
-              Retrouvez tous les services de la suite territoriale et de nos partenaires publiques et privés, pour répondre à vos enjeux d’identité pour l’authentification, de communication, de partage de vos documents, etc.
+              Retrouvez tous les services de la suite territoriale et de nos partenaires publiques
+              et privés, pour répondre à vos enjeux d’identité pour l’authentification, de
+              communication, de partage de vos documents, etc.
             </p>
             <div
               className="fr-mb-1w"

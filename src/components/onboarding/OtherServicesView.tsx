@@ -54,7 +54,7 @@ export default function OtherServicesView({ organisation }: OtherServicesViewPro
             {organisation.type === "commune" && organisation.population < 3500 && (
               <div className={fr.cx("fr-col-12")}>
                 <div className="other-service">
-                  <div className="content" style={{maxWidth: "600px"}}>
+                  <div className="content" style={{ maxWidth: "600px" }}>
                     <div className="title">
                       <h5
                         style={{ color: "var(--light-decisions-text-text-default-grey, #3A3A3A)" }}
@@ -81,7 +81,8 @@ export default function OtherServicesView({ organisation }: OtherServicesViewPro
                       borderRadius: "0px",
                       width: "250px",
                     }}
-                    src={services[0].picture_url ?? undefined} alt={services[0].name}
+                    src={services[0].picture_url ?? undefined}
+                    alt={services[0].name}
                   />
                 </div>
               </div>
