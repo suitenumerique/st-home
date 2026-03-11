@@ -313,7 +313,7 @@ def associate_dila_to_organizations(orgs: list):
 
         # Simple cases first
 
-        # Harcoded special cases
+        # Hardcoded special cases
         if (
             org["siret"] in HARDCODED_DILA_SIRETS
             and HARDCODED_DILA_SIRETS[org["siret"]] in orgs_dila_by_id

@@ -192,7 +192,7 @@ def test_ok(http_server):
 
 
 def test_http_www_redirect_nok(http_server, force_all_to_localhost):
-    """Test a site that doesnt redirect its www correctly"""
+    """Test a site that doesn't redirect its www correctly"""
     issues = check_website("http://www.localexample.fr/")
     assert Issues.WEBSITE_HTTP_NOWWW in issues
 
