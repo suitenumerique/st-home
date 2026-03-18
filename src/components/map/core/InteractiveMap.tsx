@@ -6,7 +6,7 @@ import * as turf from "@turf/turf";
 import { mapStyles } from "carte-facile";
 import "carte-facile/carte-facile.css";
 import * as d3 from "d3";
-import maplibregl, { MapLayerMouseEvent } from "maplibre-gl";
+import maplibregl, { MapLayerMouseEvent, StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -27,6 +27,9 @@ export interface InteractiveMapProps {
   showGradientLegend?: boolean;
   displayCircleValue?: boolean;
   fillOpacity?: number;
+  hoverFill?: boolean;
+  mapStyle?: StyleSpecification;
+  strokeColor?: string;
   hoverStrokeColor?: string;
   customLayers?: Array<{
     id: string;
@@ -43,12 +46,28 @@ export interface InteractiveMapProps {
   }>;
 }
 
+const WATER_COLOR = "#ffffff";
+export const customMapStyle = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ...(mapStyles.desaturated as any),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  layers: (mapStyles.desaturated as any).layers.map((layer: any) => {
+    if (layer.type === "fill" && layer.id?.toLowerCase().includes("hydro")) {
+      return { ...layer, paint: { ...layer.paint, "fill-color": WATER_COLOR } };
+    }
+    return layer;
+  }),
+} as unknown as StyleSpecification;
+
 export const InteractiveMap = ({
   data,
   gradientColors,
   showGradientLegend = true,
   displayCircleValue = false,
   fillOpacity = 1,
+  hoverFill = true,
+  mapStyle = mapStyles.desaturated as unknown as StyleSpecification,
+  strokeColor = "#ffffff",
   hoverStrokeColor,
   customLayers,
 }: InteractiveMapProps) => {
@@ -68,6 +87,8 @@ export const InteractiveMap = ({
   const [hoveredFeatureScore, setHoveredFeatureScore] = useState<number | null>(null);
   const hoveredFeatureIdRef = useRef<string | number | null>(null);
   const hoveredNeighbourIdRef = useRef<string | number | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const originalDotColorRef = useRef<any>(null);
   const [isMapUpdating, setIsMapUpdating] = useState(false);
   const [searchOpen, setSearchOpen] = useState(true);
 
@@ -103,8 +124,7 @@ export const InteractiveMap = ({
 
   // Point Features for Circle Values
   const pointFeatures = useMemo(() => {
-    if (!currentGeoJSON || ["department", "epci", "city"].includes(mapState.currentLevel))
-      return null;
+    if (!currentGeoJSON) return null;
     const features = currentGeoJSON.features.map((feature) => {
       const centroid = turf.centroid(feature as GeoJSON.Feature);
       return {
@@ -121,7 +141,7 @@ export const InteractiveMap = ({
       features,
       id: `point-features-${Math.random().toString(36).substring(2, 15)}`,
     };
-  }, [currentGeoJSON, mapState.currentLevel]);
+  }, [currentGeoJSON]);
 
   // Interaction Handlers
   const handleAreaClick = async (event: MapLayerMouseEvent) => {
@@ -250,6 +270,10 @@ export const InteractiveMap = ({
         const map = mapRef.current?.getMap();
         if (map) {
           clearHoverState(map);
+          if (map.getLayer("city-dots") && originalDotColorRef.current !== null) {
+            map.setPaintProperty("city-dots", "circle-color", originalDotColorRef.current);
+            originalDotColorRef.current = null;
+          }
         }
         setHoveredFeatureScore(null);
         setPopupInfo(null);
@@ -324,8 +348,12 @@ export const InteractiveMap = ({
     id: "polygon-fill",
     type: "fill",
     paint: {
-      "fill-color": ["get", "color"],
-      "fill-opacity": fillOpacity,
+      "fill-color": hoverFill
+        ? ["case", ["boolean", ["feature-state", "hover"], false], "#A1A9CB", ["get", "color"]]
+        : ["get", "color"],
+      "fill-opacity": hoverFill
+        ? ["case", ["boolean", ["feature-state", "hover"], false], 0.5, fillOpacity]
+        : fillOpacity,
     },
   };
 
@@ -333,8 +361,8 @@ export const InteractiveMap = ({
     id: "polygon-stroke",
     type: "line",
     paint: {
-      "line-color": "#ffffff",
-      "line-width": ["interpolate", ["linear"], ["zoom"], 4, 0.7, 8, 1, 10, 2, 15, 2.5],
+      "line-color": ["case", ["==", ["get", "color"], "#2A3C84"], "#ffffff", strokeColor],
+      "line-width": ["interpolate", ["linear"], ["zoom"], 4, 1.5, 8, 1, 10, 0.8, 15, 0.5],
     },
   };
 
@@ -501,8 +529,7 @@ export const InteractiveMap = ({
     <div style={{ position: "relative", flex: 1, overflow: "hidden", height: "100%" }}>
       <Map
         ref={mapRef}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        mapStyle={mapStyles.desaturated as any}
+        mapStyle={mapStyle}
         projection="mercator"
         interactiveLayerIds={[
           "polygon-fill",
@@ -511,6 +538,7 @@ export const InteractiveMap = ({
         onClick={handleAreaClick}
         onMouseLeave={onMouseLeave}
         onMouseMove={onMouseMove}
+        minZoom={4.5}
         cursor="pointer"
         onLoad={() => setIsMapLoaded(true)}
         onResize={() => {
@@ -545,6 +573,26 @@ export const InteractiveMap = ({
         )}
         <ScaleControl position="bottom-left" />
 
+        {/* Coloured layer first so it is always above the neighbour layer (beforeId places neighbour below it) */}
+        {currentGeoJSON && (
+          <Source id="interactive-polygons" type="geojson" data={currentGeoJSON} generateId={true}>
+            <Layer
+              {...(fillLayerStyle as LayerProps)}
+              beforeId="toponyme localite importance 6et7 - Special DOM"
+            />
+            <Layer
+              {...(strokeLayerStyle as LayerProps)}
+              beforeId="toponyme localite importance 6et7 - Special DOM"
+            />
+            <Layer
+              {...(hoverStrokeLayerStyle as LayerProps)}
+              beforeId="toponyme localite importance 6et7 - Special DOM"
+            />
+            {mapState.selectedAreas.city && <Layer {...(selectedCityLayerStyle as LayerProps)} />}
+          </Source>
+        )}
+
+        {/* Custom layers: rendered after polygon source so they can use beforeId="polygon-stroke" to sit below borders */}
         {customLayers?.map((customLayer) => {
           if ("component" in customLayer && customLayer.component) {
             const Component = customLayer.component;
@@ -572,25 +620,6 @@ export const InteractiveMap = ({
           }
           return null;
         })}
-
-        {/* Coloured layer first so it is always above the neighbour layer (beforeId places neighbour below it) */}
-        {currentGeoJSON && (
-          <Source id="interactive-polygons" type="geojson" data={currentGeoJSON} generateId={true}>
-            <Layer
-              {...(fillLayerStyle as LayerProps)}
-              beforeId="toponyme localite importance 6et7 - Special DOM"
-            />
-            <Layer
-              {...(strokeLayerStyle as LayerProps)}
-              beforeId="toponyme localite importance 6et7 - Special DOM"
-            />
-            <Layer
-              {...(hoverStrokeLayerStyle as LayerProps)}
-              beforeId="toponyme localite importance 6et7 - Special DOM"
-            />
-            {mapState.selectedAreas.city && <Layer {...(selectedCityLayerStyle as LayerProps)} />}
-          </Source>
-        )}
 
         {/* Neighbour layer: below coloured; inserted before polygon-fill so it never covers it */}
         {neighbourGeoJSON && (
