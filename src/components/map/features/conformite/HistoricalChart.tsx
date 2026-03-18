@@ -71,6 +71,8 @@ export const HistoricalChart = ({
         const getRefValid = (ref: string) => monthData.refs.find((r) => r.ref === ref)?.valid || 0;
         const total = monthData.total;
 
+        if (total === 0) return null;
+
         if (selectedRef) {
           const valid = getRefValid(selectedRef);
           return {
@@ -103,6 +105,7 @@ export const HistoricalChart = ({
           total,
         };
       })
+      .filter((d) => d !== null)
       .sort((a, b) => {
         // Sort chronologically, with "current" at the end
         if (a.month === "current") return 1;
