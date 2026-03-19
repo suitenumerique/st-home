@@ -12,8 +12,8 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
   const [services, setServices] = useState([]);
   const [scopedStats, setScopedStats] = useState([]);
   const [expandedServices, setExpandedServices] = useState(new Set());
-  const [orgTypeFilter, setOrgTypeFilter] = useState('all');
-  const [openDropdown, setOpenDropdown] = useState(null); // 'service' | 'structure' | null
+  const [hoveredServiceId, setHoveredServiceId] = useState(null);
+  const [openDropdown, setOpenDropdown] = useState(null); // 'structure' | null
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -22,8 +22,8 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
         setOpenDropdown(null);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside, true);
+    return () => document.removeEventListener('mousedown', handleClickOutside, true);
   }, []);
 
   const formatNumber = (value) => {
@@ -70,12 +70,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     });
   }, [services, scopedStats]);
 
-  const displayedServices = useMemo(() => {
-    if (!mapState.filters.service_ids || mapState.filters.service_ids.length === 0) {
-      return sortedServices;
-    }
-    return sortedServices.filter(s => mapState.filters.service_ids.includes(s.id));
-  }, [sortedServices, mapState.filters.service_ids]);
+  const displayedServices = sortedServices;
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -122,10 +117,12 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     );
   }, [mapState.currentLevel, mapState.selectedAreas, mapState.filters, computeAreaStats]);
 
+  const orgType = mapState.filters.org_type ?? 'all';
+
   const getServiceCount = (stats) => {
     if (!stats) return 0;
-    if (orgTypeFilter === 'commune') return stats.communes || 0;
-    if (orgTypeFilter === 'epci') return stats.epci || 0;
+    if (orgType === 'commune') return stats.communes || 0;
+    if (orgType === 'epci') return stats.epci || 0;
     return stats.total || 0;
   };
 
@@ -142,82 +139,36 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     </div>
   );
 
-  const selectedService = useMemo(() => {
-    if (!mapState.filters.service_ids?.length) return null;
-    return services.find(s => s.id === mapState.filters.service_ids[0]) || null;
-  }, [mapState.filters.service_ids, services]);
-
-  const orgTypeLabel = { all: 'Toutes structures', commune: 'Communes', epci: 'EPCI' }[orgTypeFilter];
+  const orgTypeLabel = { all: 'Toutes structures', commune: 'Communes', epci: 'EPCI' }[orgType];
 
   const filters = () => (
     <div className={styles.filtersContainer} ref={dropdownRef}>
-      {/* Service dropdown */}
       <div className={styles.filterDropdown}>
         <button
           className={styles.filterDropdownButton}
-          onClick={() => setOpenDropdown(openDropdown === 'service' ? null : 'service')}
-          aria-expanded={openDropdown === 'service'}
+          onClick={() => setOpenDropdown(openDropdown === 'structure' ? null : 'structure')}
+          aria-expanded={openDropdown === 'structure'}
         >
-          {selectedService?.logo_url && (
-            <img src={selectedService.logo_url} alt="" aria-hidden="true" className={styles.filterDropdownLogo} />
-          )}
-          {selectedService ? selectedService.name : 'Tous les services'}
+          {orgTypeLabel}
           <span className={fr.cx("fr-icon-arrow-down-s-line fr-icon--sm")} aria-hidden="true"></span>
         </button>
-        {openDropdown === 'service' && (
+        {openDropdown === 'structure' && (
           <ul className={styles.filterDropdownMenu}>
-            <li
-              className={`${styles.filterDropdownOption} ${!mapState.filters.service_ids?.length ? styles.filterDropdownOptionActive : ''}`}
-              onClick={() => {
-                setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: null } });
-                setOpenDropdown(null);
-              }}
-            >
-              Tous les services
-            </li>
-            {services.map(s => (
+            {[['all', 'Toutes structures'], ['commune', 'Communes'], ['epci', 'EPCI']].map(([val, label]) => (
               <li
-                key={s.id}
-                className={`${styles.filterDropdownOption} ${mapState.filters.service_ids?.includes(s.id) ? styles.filterDropdownOptionActive : ''}`}
+                key={val}
+                className={`${styles.filterDropdownOption} ${orgType === val ? styles.filterDropdownOptionActive : ''}`}
                 onClick={() => {
-                  setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: [s.id] } });
+                  setMapState({ ...mapState, filters: { ...mapState.filters, org_type: val === 'all' ? null : val } });
                   setOpenDropdown(null);
                 }}
               >
-                {s.logo_url && <img src={s.logo_url} alt="" aria-hidden="true" className={styles.filterDropdownLogo} />}
-                {s.name}
+                {label}
               </li>
             ))}
           </ul>
         )}
       </div>
-
-      {/* Structure type dropdown */}
-      {/* {!mapState.selectedAreas.city && (
-        <div className={styles.filterDropdown}>
-          <button
-            className={styles.filterDropdownButton}
-            onClick={() => setOpenDropdown(openDropdown === 'structure' ? null : 'structure')}
-            aria-expanded={openDropdown === 'structure'}
-          >
-            {orgTypeLabel}
-            <span className={fr.cx("fr-icon-arrow-down-s-line fr-icon--sm")} aria-hidden="true"></span>
-          </button>
-          {openDropdown === 'structure' && (
-            <ul className={styles.filterDropdownMenu}>
-              {[['all', 'Toutes structures'], ['commune', 'Communes'], ['epci', 'EPCI']].map(([val, label]) => (
-                <li
-                  key={val}
-                  className={`${styles.filterDropdownOption} ${orgTypeFilter === val ? styles.filterDropdownOptionActive : ''}`}
-                  onClick={() => { setOrgTypeFilter(val); setOpenDropdown(null); }}
-                >
-                  {label}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )} */}
     </div>
   );
 
@@ -229,10 +180,10 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     return (
       <div className={compact ? styles.serviceDetailsCompact : styles.serviceDetails}>
         <ul className={styles.serviceDetailsList}>
-          {(orgTypeFilter === 'all' || orgTypeFilter === 'commune') && (
+          {(orgType === 'all' || orgType === 'commune') && (
             <li>Communes : <strong>{formatNumber(communes)}</strong></li>
           )}
-          {(orgTypeFilter === 'all' || orgTypeFilter === 'epci') && (
+          {(orgType === 'all' || orgType === 'epci') && (
             <li>EPCI : <strong>{formatNumber(epci)}</strong></li>
           )}
         </ul>
@@ -252,6 +203,8 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
           const stats = scopedStats.find(s => s.id === parseInt(service.id));
           const count = getServiceCount(stats);
           const isExpanded = expandedServices.has(service.id);
+          const isSelected = !!(mapState.filters.service_ids?.includes(service.id));
+          const isDimmed = !!(mapState.filters.service_ids?.length > 0 && !isSelected);
 
           if (singleService) {
             return (
@@ -262,7 +215,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
           }
 
           return (
-            <div key={service.id} className={styles.serviceAccordion}>
+            <div key={service.id} className={`${styles.serviceAccordion} ${isDimmed ? styles.dimmed : ''}`}>
               <button
                 className={styles.serviceHeader}
                 onClick={() => toggleService(service.id)}
@@ -270,7 +223,21 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
               >
                 <div className={styles.serviceHeaderLeft}>
                   {service.logo_url && (
-                    <img className={styles.serviceLogo} src={service.logo_url} alt="" aria-hidden="true" />
+                    <div
+                      className={`${styles.productCheckbox} ${isSelected ? styles.productCheckboxSelected : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: isSelected ? null : [service.id] } });
+                      }}
+                      onMouseEnter={() => setHoveredServiceId(service.id)}
+                      onMouseLeave={() => setHoveredServiceId(null)}
+                    >
+                      {hoveredServiceId === service.id || isSelected ? (
+                        <span className={fr.cx("fr-icon-check-line")} aria-hidden="true" />
+                      ) : (
+                        <img className={styles.productCheckboxImage} src={service.logo_url} alt={service.name} />
+                      )}
+                    </div>
                   )}
                   <span className={styles.serviceName}>{service.name}</span>
                   {service.maturity !== 'stable' && (

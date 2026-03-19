@@ -60,13 +60,13 @@
 .filterDropdownButton {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   border: 2px solid var(--border-action-high-blue-france);
   border-radius: 0.5rem;
-  padding: 0.65rem 1.25rem;
+  padding: 0.35rem 0.875rem;
   background: white;
   color: var(--text-action-high-blue-france);
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -165,11 +165,32 @@
   flex-wrap: wrap;
 }
 
-.serviceLogo {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
+.productCheckbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #f6f6f6;
+  border-radius: 4px;
+  padding: 0.3rem;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.productCheckboxSelected {
+  border-color: #2a3c84;
+}
+
+.productCheckboxImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.dimmed {
+  opacity: 0.4;
 }
 
 .serviceName {
