@@ -89,12 +89,19 @@ const DeploiementMap = () => {
       try {
         const orgType = mapState.filters.org_type as string | null;
 
+        const serviceIds = mapState.filters.service_ids as number[] | null;
+
         const filterList = (list: StatRecord[]) => {
           let filtered = list;
           if (level === "region") {
             filtered = filtered.filter((stat) => stat.reg === insee_geo.replace("r", ""));
           } else if (level === "department") {
             filtered = filtered.filter((stat) => stat.dep === insee_geo);
+          }
+          if (serviceIds?.length) {
+            return filtered.filter((stat) =>
+              stat.all_services?.some((s: string) => serviceIds.includes(Number(s))),
+            );
           }
           // @ts-expect-error not typed
           return filtered.filter((stat) => stat.all_services.length > 0);
