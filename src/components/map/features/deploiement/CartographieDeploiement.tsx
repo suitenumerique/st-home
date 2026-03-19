@@ -87,26 +87,24 @@ const DeploiementMap = () => {
       siret: string,
     ) => {
       try {
-        let filteredStats = stats;
-        if (level === "region") {
-          filteredStats = filteredStats.filter(
-            (stat: StatRecord) => stat.reg === insee_geo.replace("r", ""),
-          );
-        } else if (level === "department") {
-          filteredStats = filteredStats.filter((stat: StatRecord) => stat.dep === insee_geo);
-        }
-        if (mapState.filters.service_ids && (mapState.filters.service_ids as number[]).length > 0) {
-          filteredStats = filteredStats.filter((stat: StatRecord) => {
-            return stat.all_services?.some((service: string) =>
-              (mapState.filters.service_ids as number[]).includes(Number(service)),
-            );
-          });
-        } else {
+        const orgType = mapState.filters.org_type as string | null;
+
+        const filterList = (list: StatRecord[]) => {
+          let filtered = list;
+          if (level === "region") {
+            filtered = filtered.filter((stat) => stat.reg === insee_geo.replace("r", ""));
+          } else if (level === "department") {
+            filtered = filtered.filter((stat) => stat.dep === insee_geo);
+          }
           // @ts-expect-error not typed
-          filteredStats = filteredStats.filter((stat: StatRecord) => stat.all_services.length > 0);
-        }
+          return filtered.filter((stat) => stat.all_services.length > 0);
+        };
+
+        const filteredCommunes = orgType !== "epci" ? filterList(stats) : [];
+        const filteredEpci = orgType !== "commune" ? filterList(epciStats) : [];
+
         if (level === "city") {
-          const city = filteredStats.find((city: { id: string }) => city.id === siret);
+          const city = stats.find((city: { id: string }) => city.id === siret);
           return {
             n_cities: 1,
             score: city ? 1 : 0,
@@ -121,10 +119,16 @@ const DeploiementMap = () => {
           } else {
             nTotalCities = parentAreas.find((area) => area.insee_geo === insee_geo)?.n_cities || 0;
           }
+          const total = filteredCommunes.length + filteredEpci.length;
           return {
-            n_cities: filteredStats.length,
+            n_cities: total,
             n_total_cities: nTotalCities,
-            score: nTotalCities > 0 ? filteredStats.length / nTotalCities : null,
+            score:
+              orgType === "epci"
+                ? null
+                : nTotalCities > 0
+                  ? filteredCommunes.length / nTotalCities
+                  : null,
           };
         }
       } catch {
@@ -134,7 +138,7 @@ const DeploiementMap = () => {
         };
       }
     },
-    [stats, mapState.filters],
+    [stats, epciStats, mapState.filters],
   );
 
   useEffect(() => {
@@ -165,9 +169,14 @@ const DeploiementMap = () => {
         })
         .filter(Boolean) as GeoJSON.Feature[];
 
+    const orgTypeFilter = mapState.filters.org_type as string | null;
+
     const cityPointsGeoJSON: GeoJSON.FeatureCollection = {
       type: "FeatureCollection",
-      features: toPointFeatures(filterByServiceIds(stats)),
+      features:
+        !orgTypeFilter || orgTypeFilter === "commune"
+          ? toPointFeatures(filterByServiceIds(stats))
+          : [],
     };
 
     // Compute EPCI centroids by averaging member commune coordinates
@@ -210,7 +219,8 @@ const DeploiementMap = () => {
 
     const epciPointsGeoJSON: GeoJSON.FeatureCollection = {
       type: "FeatureCollection",
-      features: toEpciPointFeatures(filteredEpciStats),
+      features:
+        !orgTypeFilter || orgTypeFilter === "epci" ? toEpciPointFeatures(filteredEpciStats) : [],
     };
 
     const selectedRegion =
@@ -225,16 +235,6 @@ const DeploiementMap = () => {
         return ["case", ["==", ["get", "dep"], selectedDep], "#2A3C84", "#CCCCCC"];
       }
       return "#2A3C84";
-    })();
-
-    const epciDotColor = (() => {
-      if (mapState.currentLevel === "region" && selectedRegion) {
-        return ["case", ["==", ["get", "reg"], selectedRegion], "#00867A", "#CCCCCC"];
-      }
-      if (["department", "epci", "city"].includes(mapState.currentLevel) && selectedDep) {
-        return ["case", ["==", ["get", "dep"], selectedDep], "#00867A", "#CCCCCC"];
-      }
-      return "#00867A";
     })();
 
     const epciGeoJSON = (mapState.selectedAreas.department as SelectedArea)?.geoJSONEPCI;
@@ -291,11 +291,9 @@ const DeploiementMap = () => {
             type: "circle",
             beforeId: "polygon-stroke",
             paint: {
-              "circle-radius": ["interpolate", ["linear"], ["zoom"], 4, 2.5, 8, 5, 12, 8, 16, 12],
-              "circle-color": epciDotColor,
-              "circle-opacity": 0.9,
-              "circle-stroke-width": 1.5,
-              "circle-stroke-color": "#ffffff",
+              "circle-radius": ["interpolate", ["linear"], ["zoom"], 4, 1.5, 8, 3, 12, 5, 16, 8],
+              "circle-color": communeColor,
+              "circle-opacity": 0.8,
             },
           } as import("react-map-gl/maplibre").LayerProps,
         ],
@@ -306,6 +304,7 @@ const DeploiementMap = () => {
     stats,
     epciStats,
     coordMap,
+    mapState.filters.org_type,
     mapState.filters.service_ids,
     mapState.currentLevel,
     mapState.selectedAreas,
