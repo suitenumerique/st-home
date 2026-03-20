@@ -10,9 +10,10 @@ export default {
   tablesFilter: [
     "st_organizations",
     "st_services",
-    "st_organizations_to_structures",
+    "st_organizations_to_operators",
     "st_organizations_to_services",
-    "st_mutualization_structures",
+    "st_operators",
+    "st_services_to_operators",
   ],
   verbose: true,
   strict: true,

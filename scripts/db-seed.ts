@@ -3,12 +3,18 @@ import path from "path";
 import { pool } from "../src/lib/db";
 import { unaccent } from "../src/lib/string";
 
+interface OperatorLink {
+  id: string;
+  is_perimetre: boolean;
+  is_adherent: boolean;
+}
+
 interface Organization {
   type: string;
   insee_com: string;
   zipcode: string;
   email_official: string;
-  structures: number[];
+  operators: OperatorLink[];
   website_url: string | null;
   phone: string | null;
   issues: string[];
@@ -22,7 +28,10 @@ interface Organization {
   email_tld: string | null;
   epci_name: string;
   epci_siren: string;
+  epci_siret: string;
   epci_population: number;
+  dep_siret: string;
+  region_siret: string;
   service_public_url: string;
   service_public_id: string;
   name: string;
@@ -36,28 +45,32 @@ interface Organization {
   st_active: boolean;
 }
 
-interface Structure {
-  id: number;
-  Nom: string;
-  Sigle: string;
-  Nom_sigle: string;
-  Typologie: string;
-  Statut_juridique: string;
-  Site_web: string;
+interface Operator {
+  id: string;
+  nom: string;
+  nom_avec_article: string | null;
+  statut: string | null;
+  url: string;
+  siret: string | null;
+  services: number[];
+  departements: string[];
 }
 
 interface Service {
-  id: string;
+  id: number;
   nom: string;
   url: string;
-  logo_url: string;
+  type: string | null;
+  nom_instance: string | null;
+  logo_url: string | null;
   maturite: string;
-  date_lancement: string;
+  date_lancement: string | null;
+  description: string | null;
 }
 
 interface ServiceUsage {
-  organization_siret: string;
-  service_id: string;
+  siret: string;
+  service: number;
   active: boolean;
 }
 
@@ -84,12 +97,12 @@ async function importOrganizations(dumpsDir: string) {
     }
 
     const communesPath = path.join(dumpsDir, "organizations.json");
-    const structuresPath = path.join(dumpsDir, "structures.json");
+    const operatorsPath = path.join(dumpsDir, "operators.json");
     const servicesPath = path.join(dumpsDir, "services.json");
     const serviceUsagesPath = path.join(dumpsDir, "service_usages.json");
 
     // Verify all required files exist
-    for (const filePath of [communesPath, structuresPath]) {
+    for (const filePath of [communesPath, operatorsPath]) {
       if (!fs.existsSync(filePath)) {
         console.error(`Required file not found: ${filePath}`);
         process.exit(1);
@@ -102,33 +115,28 @@ async function importOrganizations(dumpsDir: string) {
 
     console.log(`Found ${communes.length} organizations to import.`);
 
-    console.log(`Reading structures from ${structuresPath}...`);
-    const structuresData = fs.readFileSync(structuresPath, "utf8");
-    const structuresList: Structure[] = JSON.parse(structuresData);
-
-    // Filter out structures that are not mutualization structures
-    const mutualizationStructures = structuresList.filter(
-      (structure) =>
-        structure.Typologie &&
-        (structure.Typologie.indexOf("OPSN") !== -1 ||
-          structure.Typologie.indexOf("Centre de gestion") !== -1),
-    );
+    console.log(`Reading operators from ${operatorsPath}...`);
+    const operatorsData = fs.readFileSync(operatorsPath, "utf8");
+    const operatorsList: Operator[] = JSON.parse(operatorsData);
 
     client = await pool.connect();
 
     // Prepare bulk insert data
-    const structureValues = mutualizationStructures.map((structure) => ({
-      id: String(structure.id),
-      name: structure.Nom,
-      name_unaccent: unaccent(structure.Nom),
-      shortname: structure.Sigle,
-      type: structure.Typologie,
-      website: structure.Site_web || null,
+    const operatorValues = operatorsList.map((operator) => ({
+      id: operator.id,
+      name: operator.nom,
+      name_unaccent: unaccent(operator.nom),
+      shortname: operator.nom,
+      name_with_article: operator.nom_avec_article || operator.nom,
+      status: operator.statut || null,
+      type: "operator",
+      website: operator.url,
+      siret: operator.siret,
     }));
 
-    // Keep track of valid organizations and structures
-    const validStructureIds = new Set(mutualizationStructures.map((s) => String(s.id)));
-    const organizationSirets = new Set();
+    // Keep track of valid organizations and operators
+    const validOperatorIds = new Set<string>(operatorsList.map((s) => s.id));
+    const organizationSirets = new Set<string>();
 
     const organizationValues = communes
       .filter((commune) => {
@@ -167,26 +175,33 @@ async function importOrganizations(dumpsDir: string) {
         email_tld: commune.email_tld || null,
         epci_name: commune.epci_name || null,
         epci_siren: commune.epci_siren || null,
+        epci_siret: commune.epci_siret || null,
         epci_population: commune.epci_population || null,
+        dep_siret: commune.dep_siret || null,
+        region_siret: commune.region_siret || null,
         st_eligible: commune.st_eligible || false,
         st_active: commune.st_active || false,
         service_public_url: commune.service_public_url,
         service_public_id: commune.service_public_id || null,
       }));
 
-    // Fill structure relations for communes only
-    const structureRelations: {
+    // Fill operator relations for communes only
+    const operatorRelations: {
       organization_siret: string;
-      structure_id: string;
+      operator_id: string;
+      is_perimetre: boolean;
+      is_adherent: boolean;
     }[] = [];
     organizationValues.forEach((commune) => {
       const originalCommune = communes.find((c) => c.siret === commune.siret);
-      if (originalCommune?.structures && originalCommune.structures.length > 0) {
-        originalCommune.structures.forEach((structureId) => {
-          if (validStructureIds.has(String(structureId))) {
-            structureRelations.push({
+      if (originalCommune?.operators && originalCommune.operators.length > 0) {
+        originalCommune.operators.forEach((link) => {
+          if (validOperatorIds.has(link.id)) {
+            operatorRelations.push({
               organization_siret: commune.siret,
-              structure_id: String(structureId),
+              operator_id: link.id,
+              is_perimetre: link.is_perimetre ?? false,
+              is_adherent: link.is_adherent ?? false,
             });
           }
         });
@@ -195,34 +210,40 @@ async function importOrganizations(dumpsDir: string) {
 
     console.log(`Reading services from ${servicesPath}...`);
     const servicesData = fs.readFileSync(servicesPath, "utf8");
-
-    // Prepare services
-    const services: Service[] = JSON.parse(servicesData).map((service) => ({
-      id: parseInt(service.id, 10),
-      name: service.nom,
-      url: service.url,
-      logo_url: service.logo_url || null,
-      maturity: service.maturite,
-      launch_date: service.date_lancement ? new Date(service.date_lancement) : null,
-    }));
+    const services: Service[] = JSON.parse(servicesData);
 
     console.log(`Reading service usages from ${serviceUsagesPath}...`);
     const serviceUsagesData = fs.readFileSync(serviceUsagesPath, "utf8");
-
-    // Prepare service usages
-    const serviceUsage: ServiceUsage[] = JSON.parse(serviceUsagesData)
-      .map((row) => ({
-        organization_siret: row.siret,
-        service_id: parseInt(row.service, 10),
-        active: row.active === "1",
-      }))
-      .filter(
-        (serviceUsage) =>
-          serviceUsage.organization_siret &&
-          organizationSirets.has(serviceUsage.organization_siret),
-      );
+    const serviceUsage: ServiceUsage[] = (JSON.parse(serviceUsagesData) as ServiceUsage[]).filter(
+      (usage) => usage.siret && organizationSirets.has(usage.siret),
+    );
 
     console.log(`Found ${serviceUsage.length} service usages to import.`);
+
+    // Prepare services to operators relations
+    const validServiceIds = new Set<number>(services.map((s) => s.id));
+    const servicesToOperatorsRelations: {
+      service_id: number;
+      operator_id: string;
+      position: number;
+    }[] = [];
+    operatorsList.forEach((operator) => {
+      if (operator.services && operator.services.length > 0) {
+        operator.services
+          .filter((id) => validServiceIds.has(id))
+          .forEach((serviceId, index) => {
+            servicesToOperatorsRelations.push({
+              service_id: serviceId,
+              operator_id: operator.id,
+              position: index,
+            });
+          });
+      }
+    });
+
+    console.log(
+      `Found ${servicesToOperatorsRelations.length} services to operators relations to import.`,
+    );
 
     console.log(`Starting DB transaction...`);
 
@@ -230,19 +251,20 @@ async function importOrganizations(dumpsDir: string) {
     await client.query("BEGIN");
 
     // Clear existing data
-    await client.query("TRUNCATE TABLE st_organizations_to_structures");
+    await client.query("TRUNCATE TABLE st_organizations_to_operators");
     await client.query("TRUNCATE TABLE st_organizations CASCADE");
-    await client.query("TRUNCATE TABLE st_mutualization_structures CASCADE");
+    await client.query("TRUNCATE TABLE st_operators CASCADE");
     await client.query("TRUNCATE TABLE st_services CASCADE");
     await client.query("TRUNCATE TABLE st_organizations_to_services CASCADE");
+    await client.query("TRUNCATE TABLE st_services_to_operators CASCADE");
 
-    // Bulk insert structures
-    console.log(`Bulk inserting ${structureValues.length} structures...`);
-    const structureQuery = `
-      INSERT INTO st_mutualization_structures
-      SELECT * FROM json_populate_recordset(null::st_mutualization_structures, $1)
+    // Bulk insert operators
+    console.log(`Bulk inserting ${operatorValues.length} operators...`);
+    const operatorQuery = `
+      INSERT INTO st_operators
+      SELECT * FROM json_populate_recordset(null::st_operators, $1)
     `;
-    await client.query(structureQuery, [JSON.stringify(structureValues)]);
+    await client.query(operatorQuery, [JSON.stringify(operatorValues)]);
 
     // Bulk insert organizations
     console.log(`Bulk inserting ${organizationValues.length} organizations...`);
@@ -253,35 +275,64 @@ async function importOrganizations(dumpsDir: string) {
     await client.query(orgQuery, [JSON.stringify(organizationValues)]);
 
     // Bulk insert relations
-    if (structureRelations.length > 0) {
-      console.log(`Bulk inserting ${structureRelations.length} structure relations...`);
+    if (operatorRelations.length > 0) {
+      console.log(`Bulk inserting ${operatorRelations.length} operator relations...`);
       const relationsQuery = `
-        INSERT INTO st_organizations_to_structures (organization_siret, structure_id)
-        SELECT * FROM json_populate_recordset(null::st_organizations_to_structures, $1)
+        INSERT INTO st_organizations_to_operators (organization_siret, operator_id, is_perimetre, is_adherent)
+        SELECT * FROM json_populate_recordset(null::st_organizations_to_operators, $1)
       `;
-      await client.query(relationsQuery, [JSON.stringify(structureRelations)]);
+      await client.query(relationsQuery, [JSON.stringify(operatorRelations)]);
     }
 
-    // Bulk insert services
-    console.log(`Bulk inserting ${services.length} services...`);
+    // Bulk insert services (map French dump keys to DB column names)
+    const serviceValues = services.map((s) => ({
+      id: s.id,
+      name: s.nom,
+      url: s.url,
+      type: s.type,
+      instance_name: s.nom_instance,
+      logo_url: s.logo_url,
+      maturity: s.maturite,
+      launch_date: s.date_lancement,
+      description: s.description || null,
+    }));
+
+    console.log(`Bulk inserting ${serviceValues.length} services...`);
     const servicesQuery = `
       INSERT INTO st_services
       SELECT * FROM json_populate_recordset(null::st_services, $1)
     `;
-    await client.query(servicesQuery, [JSON.stringify(services)]);
+    await client.query(servicesQuery, [JSON.stringify(serviceValues)]);
 
-    // Bulk insert service usage
-    console.log(`Bulk inserting ${serviceUsage.length} service usage...`);
+    // Bulk insert service usage (map French dump keys to DB column names)
+    const serviceUsageValues = serviceUsage.map((u) => ({
+      organization_siret: u.siret,
+      service_id: u.service,
+      active: u.active,
+    }));
+    console.log(`Bulk inserting ${serviceUsageValues.length} service usage...`);
     const serviceUsageQuery = `
       INSERT INTO st_organizations_to_services
       SELECT * FROM json_populate_recordset(null::st_organizations_to_services, $1)
     `;
-    await client.query(serviceUsageQuery, [JSON.stringify(serviceUsage)]);
+    await client.query(serviceUsageQuery, [JSON.stringify(serviceUsageValues)]);
+
+    // Bulk insert services to operators relations
+    if (servicesToOperatorsRelations.length > 0) {
+      console.log(
+        `Bulk inserting ${servicesToOperatorsRelations.length} services to operators relations...`,
+      );
+      const servicesToOperatorsQuery = `
+        INSERT INTO st_services_to_operators (service_id, operator_id, position)
+        SELECT * FROM json_populate_recordset(null::st_services_to_operators, $1)
+      `;
+      await client.query(servicesToOperatorsQuery, [JSON.stringify(servicesToOperatorsRelations)]);
+    }
 
     await client.query("COMMIT");
 
     console.log(
-      `Successfully imported ${organizationValues.length} organizations and ${structureValues.length} structures.`,
+      `Successfully imported ${organizationValues.length} organizations and ${operatorValues.length} operators.`,
     );
   } catch (error) {
     console.error("Error importing organizations:", error);

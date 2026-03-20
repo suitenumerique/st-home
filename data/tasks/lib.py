@@ -44,16 +44,12 @@ def iter_insee_communes():
 
 def iter_insee_departements():
     with open("dumps/insee_departements.json") as f:
-        data = json.load(f)
-    for row in data:
-        yield row
+        yield from json.load(f)
 
 
 def iter_insee_regions():
     with open("dumps/insee_regions.json") as f:
-        data = json.load(f)
-    for row in data:
-        yield row
+        yield from json.load(f)
 
 
 def get_communes_population_by_insee():
@@ -73,25 +69,19 @@ def iter_dila(type_service_local):
             yield service
 
 
-def iter_repertoire_structures():
-    with open("dumps/structures.json") as f:
-        data = json.load(f)
-    for structure in data:
-        yield structure
+def iter_operators():
+    with open("dumps/operators.json") as f:
+        yield from json.load(f)
+
+
+def iter_adherents():
+    with open("dumps/adherents.json") as f:
+        yield from json.load(f)
 
 
 def iter_groupements_memberships():
     with open("dumps/groupements_memberships.json") as f:
-        data = json.load(f)
-    for membership in data:
-        yield membership
-
-
-def iter_repertoire_collectivites():
-    with open("dumps/collectivites.json") as f:
-        data = json.load(f)
-    for collectivite in data:
-        yield collectivite
+        yield from json.load(f)
 
 
 def iter_perimetre_epci():
@@ -104,9 +94,7 @@ def iter_perimetre_epci():
 
 def iter_sirene():
     with open("dumps/sirene.json") as f:
-        data = json.load(f)
-    for row in data:
-        yield row
+        yield from json.load(f)
 
 
 def geoip_country_by_ip(ip):

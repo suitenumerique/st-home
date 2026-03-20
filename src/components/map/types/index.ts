@@ -1,4 +1,4 @@
-import { Commune } from "@/lib/onboarding";
+import { Commune } from "@/lib/schema";
 import L from "leaflet";
 
 export interface SearchCommune {

@@ -72,6 +72,10 @@ stop:  ## Stop the development environment
 	$(COMPOSE) stop
 .PHONY: stop
 
+logs:  ## Display all services logs (follow mode)
+	@$(COMPOSE) logs -f
+.PHONY: logs
+
 restart:  ## Restart the development environment
 	$(MAKE) stop
 	$(MAKE) start

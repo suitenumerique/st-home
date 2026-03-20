@@ -1,8 +1,16 @@
-import { and, desc, eq, like, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, like, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
+import type { Commune } from "./schema";
 import * as schema from "./schema";
-import { mutualizationStructures, organizations, organizationsToStructures } from "./schema";
+import {
+  operators,
+  organizations,
+  organizationsToOperators,
+  organizationsToServices,
+  services,
+  servicesToOperators,
+} from "./schema";
 import { unaccent } from "./string";
 
 function getConnectionString() {
@@ -67,7 +75,17 @@ export async function findOrganizationBySiret(siret: string) {
   return organization;
 }
 
-export async function findOrganizationsWithStructures(siret: string) {
+export async function findOrganizationBySiren(siren: string) {
+  const [organization] = await db
+    .select()
+    .from(organizations)
+    .where(eq(organizations.siren, siren))
+    .limit(1);
+
+  return organization;
+}
+
+export async function findOrganizationsWithOperators(siret: string): Promise<Commune | null> {
   const [organization] = await db
     .select()
     .from(organizations)
@@ -76,25 +94,37 @@ export async function findOrganizationsWithStructures(siret: string) {
 
   if (!organization) return null;
 
-  const structures = await db
+  const orgOperators = await db
     .select({
-      id: mutualizationStructures.id,
-      name: mutualizationStructures.name,
-      shortname: mutualizationStructures.shortname,
-      type: mutualizationStructures.type,
-      website: mutualizationStructures.website,
+      id: operators.id,
+      name: operators.name,
+      shortname: operators.shortname,
+      name_with_article: operators.name_with_article,
+      type: operators.type,
+      website: operators.website,
+      status: operators.status,
+      isPerimetre: organizationsToOperators.isPerimetre,
+      isAdherent: organizationsToOperators.isAdherent,
     })
-    .from(organizationsToStructures)
-    .innerJoin(
-      mutualizationStructures,
-      eq(organizationsToStructures.structureId, mutualizationStructures.id),
-    )
-    .where(eq(organizationsToStructures.organizationSiret, siret));
+    .from(organizationsToOperators)
+    .innerJoin(operators, eq(organizationsToOperators.operatorId, operators.id))
+    .where(eq(organizationsToOperators.organizationSiret, siret));
 
   return {
     ...organization,
-    structures,
+    operators: orgOperators,
   };
+}
+
+export async function findOrganizationServicesBySiret(siret: string) {
+  const services = await db
+    .select({
+      id: organizationsToServices.serviceId,
+    })
+    .from(organizationsToServices)
+    .where(eq(organizationsToServices.organizationSiret, siret));
+
+  return services;
 }
 
 export async function searchOrganizations(query: string, type: string, limit = 10) {
@@ -140,15 +170,44 @@ export async function searchOrganizations(query: string, type: string, limit = 1
   return uniqueResults;
 }
 
+// Service types where only the first (lowest ID) should be kept
+const DEDUPLICATED_SERVICE_TYPES = ["proconnect", "messages", "drive", "meet", "esd"];
+
+export async function findAllServices() {
+  const allServices = await db.select().from(services).orderBy(desc(services.name));
+
+  // For deduplicated types, keep only the first occurrence (lowest ID)
+  const seenTypes = new Set<string>();
+  return allServices.filter((s) => {
+    if (s.type && DEDUPLICATED_SERVICE_TYPES.includes(s.type)) {
+      if (seenTypes.has(s.type)) return false;
+      seenTypes.add(s.type);
+    }
+    return true;
+  });
+}
+
 export const searchCommunes = searchOrganizations;
 
-// Function to find a single mutualization structure by its ID
-export async function findMutualizationStructureById(id: string) {
-  const [structure] = await db
-    .select()
-    .from(mutualizationStructures)
-    .where(eq(mutualizationStructures.id, id))
-    .limit(1);
+// Function to find a single operator by its ID
+export async function findOperatorById(id: string) {
+  const [operator] = await db.select().from(operators).where(eq(operators.id, id)).limit(1);
 
-  return structure; // Returns the structure object or undefined if not found
+  return operator;
+}
+
+export async function findServicesByOperatorIds(operatorIds: string[]) {
+  if (operatorIds.length === 0) return [];
+
+  const results = await db
+    .select({
+      service: services,
+      operatorId: servicesToOperators.operatorId,
+    })
+    .from(servicesToOperators)
+    .innerJoin(services, eq(servicesToOperators.serviceId, services.id))
+    .where(inArray(servicesToOperators.operatorId, operatorIds))
+    .orderBy(servicesToOperators.operatorId, servicesToOperators.position);
+
+  return results;
 }

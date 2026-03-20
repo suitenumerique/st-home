@@ -3,9 +3,7 @@ import { exec } from "child_process";
 // This script ensures that API routes are compiled and won't cause
 // an unexpected page refresh from the frontend.
 
-const routes = [
-  "http://localhost:3000/api/communes/search?q=paris"
-];
+const routes = ["http://localhost:3000/api/communes/search?q=paris"];
 
 async function waitForServer(): Promise<boolean> {
   return new Promise((resolve) => {
