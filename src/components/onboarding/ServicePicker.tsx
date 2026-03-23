@@ -34,7 +34,15 @@ export default function ServicePicker({ services, selectedService, onSelect }: S
           <div
             key={service.id}
             className={`service-app-button ${selectedService?.id === service.id ? "selected" : ""}`}
+            role="button"
+            tabIndex={0}
             onClick={() => onSelect(service)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onSelect(service);
+              }
+            }}
           >
             <img src={service.logo_url ?? undefined} alt={service.name} />
             <span className="title">{service.name}</span>

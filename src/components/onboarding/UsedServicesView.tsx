@@ -25,7 +25,15 @@ export default function UsedServicesView({ services }: UsedServicesViewProps) {
           <div
             key={service.id}
             className="service-tile"
+            role="button"
+            tabIndex={0}
             onClick={() => window.open(service.url, "_blank")}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                window.open(service.url, "_blank");
+              }
+            }}
           >
             <div className="content">
               <img src={service.logo_url ?? undefined} alt={service.name} />

@@ -78,6 +78,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   const requiredFields: (keyof SignUpRequestBody)[] = [
     "siret",
     "name",
+    "firstname",
     "role",
     "email",
     "cgu_accepted",
@@ -164,7 +165,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     if (!apiKey || !docId) {
       console.error("GRIST_API_KEY or GRIST_DOC_ID is not configured.");
-      console.log(JSON.stringify(recordToAdd));
       Sentry.captureMessage("Grist API configuration missing", {
         level: "error",
         extra: { requestBody: req.body },

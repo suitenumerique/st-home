@@ -101,6 +101,7 @@ export const organizationsToOperators = pgTable(
   (table) => {
     return {
       pk: primaryKey({ columns: [table.organizationSiret, table.operatorId] }),
+      operatorIdIdx: index("st_organizations_to_operators_operator_id_index").on(table.operatorId),
     };
   },
 );

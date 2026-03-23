@@ -58,7 +58,7 @@ export default function OPSNBasicView({ operator, commune, reversed = false }: O
         </div>
         <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
           <Image
-            src="/bienvenue-illu/opsn-basic.jpg"
+            src="/images/bienvenue-illu/opsn-basic.jpg"
             width={670}
             height={400}
             style={{ width: "100%", height: "auto" }}

@@ -1,4 +1,4 @@
-import { Commune } from "@/lib/schema";
+import type { Commune } from "@/lib/schema";
 import { fr } from "@codegouvfr/react-dsfr";
 import Link from "next/link";
 

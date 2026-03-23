@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, like, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, like, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import type { Commune } from "./schema";
@@ -174,7 +174,10 @@ export async function searchOrganizations(query: string, type: string, limit = 1
 const DEDUPLICATED_SERVICE_TYPES = ["proconnect", "messages", "drive", "meet", "esd"];
 
 export async function findAllServices() {
-  const allServices = await db.select().from(services).orderBy(desc(services.name));
+  const allServices = await db
+    .select()
+    .from(services)
+    .orderBy(desc(services.name), asc(services.id));
 
   // For deduplicated types, keep only the first occurrence (lowest ID)
   const seenTypes = new Set<string>();

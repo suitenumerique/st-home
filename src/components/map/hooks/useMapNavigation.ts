@@ -1,5 +1,5 @@
 import { Commune as SearchCommuneType } from "@/components/CommuneSearch";
-import { Commune } from "@/lib/schema";
+import type { Commune } from "@/lib/schema";
 import * as turf from "@turf/turf";
 import * as d3 from "d3";
 import { useCallback, useEffect, useMemo, useState } from "react";

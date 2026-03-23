@@ -1,4 +1,4 @@
-import { Commune } from "@/lib/schema";
+import type { Commune } from "@/lib/schema";
 import { fr } from "@codegouvfr/react-dsfr";
 import Link from "next/link";
 
@@ -17,24 +17,28 @@ export default function DepartmentPresenceView({ organisation }: DepartmentPrese
         <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
           <div className="departement-section">
             <span>
-              <Link
-                className="fr-link fr-icon-arrow-right-line fr-link--icon-right"
-                href={`/bienvenue/${organisation.epci_siret}`}
-              >
-                Voir la présence numérique de mon EPCI
-              </Link>
+              {organisation.epci_siret && (
+                <Link
+                  className="fr-link fr-icon-arrow-right-line fr-link--icon-right"
+                  href={`/bienvenue/${organisation.epci_siret}`}
+                >
+                  Voir la présence numérique de mon EPCI
+                </Link>
+              )}
             </span>
           </div>
         </div>
         <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
           <div className="departement-section">
             <span>
-              <Link
-                className="fr-link fr-icon-arrow-right-line fr-link--icon-right"
-                href={`/bienvenue/${organisation.dep_siret}`}
-              >
-                Voir la présence numérique de mon département
-              </Link>
+              {organisation.dep_siret && (
+                <Link
+                  className="fr-link fr-icon-arrow-right-line fr-link--icon-right"
+                  href={`/bienvenue/${organisation.dep_siret}`}
+                >
+                  Voir la présence numérique de mon département
+                </Link>
+              )}
             </span>
           </div>
         </div>

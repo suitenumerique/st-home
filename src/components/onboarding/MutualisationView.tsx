@@ -1,11 +1,10 @@
-import type { Commune, Service } from "@/lib/schema";
+import type { Service } from "@/lib/schema";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { useState } from "react";
 import ServicePicker from "./ServicePicker";
 
 type MutualisationViewProps = {
-  organisation: Commune;
   services: Service[];
   reversed?: boolean;
 };

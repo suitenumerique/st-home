@@ -36,6 +36,7 @@ export default function ContactForm(props: PageProps) {
   } | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [userEmail, setUserEmail] = useState("");
+  const [selectedOperatorId, setSelectedOperatorId] = useState<string | null>(operatorId);
 
   let currentPageBreadcrumbs = [
     {
@@ -392,7 +393,10 @@ export default function ContactForm(props: PageProps) {
                           nativeInputProps: {
                             name: "operatorId",
                             value: op.id,
-                            defaultChecked: op.id === operatorId,
+                            checked: selectedOperatorId === op.id,
+                            onChange: () => {
+                              setSelectedOperatorId((prev) => (prev === op.id ? null : op.id));
+                            },
                           },
                         }))}
                     />
