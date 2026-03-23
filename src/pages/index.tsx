@@ -372,6 +372,7 @@ export default function Home() {
       </section>
       */}
 
+      {/*
       <section
         style={{
           borderBottom: "1px solid var(--border-default-grey)",
@@ -394,6 +395,7 @@ export default function Home() {
           </span>
         </div>
       </section>
+      */}
 
       {/* Tools section */}
       <section className={fr.cx("fr-container", "fr-mt-6w", "fr-mb-10w")}>

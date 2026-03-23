@@ -181,13 +181,22 @@ export async function findAllServices() {
 
   // For deduplicated types, keep only the first occurrence (lowest ID)
   const seenTypes = new Set<string>();
-  return allServices.filter((s) => {
+  const filtered = allServices.filter((s) => {
     if (s.type && DEDUPLICATED_SERVICE_TYPES.includes(s.type)) {
       if (seenTypes.has(s.type)) return false;
       seenTypes.add(s.type);
     }
     return true;
   });
+
+  // ProConnect always first
+  filtered.sort((a, b) => {
+    if (a.type === "proconnect" && b.type !== "proconnect") return -1;
+    if (a.type !== "proconnect" && b.type === "proconnect") return 1;
+    return 0;
+  });
+
+  return filtered;
 }
 
 export const searchCommunes = searchOrganizations;
