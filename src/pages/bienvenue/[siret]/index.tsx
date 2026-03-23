@@ -283,7 +283,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   }
 
   // Services hidden from all views on the bienvenue page
-  const HIDDEN_SERVICE_IDS = new Set([47, 48]);
+  const HIDDEN_SERVICE_IDS = new Set([5, 6, 10, 11, 47, 48, 100]);
 
   const allServices = (await findAllServices()).filter((s) => !HIDDEN_SERVICE_IDS.has(s.id));
   const organizationServices = await findOrganizationServicesBySiret(siret);

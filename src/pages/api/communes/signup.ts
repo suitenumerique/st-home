@@ -12,6 +12,7 @@ interface SignUpRequestBody {
   role: string;
   cgu_accepted: "yes";
   precisions?: string;
+  operatorId?: string;
 }
 
 type SignUpResponse = {
@@ -62,8 +63,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       .json({ success: false, message: "Trop de tentatives. Veuillez réessayer plus tard." });
   }
 
-  const { siret, name, firstname, role, email, precisions, cgu_accepted }: SignUpRequestBody =
-    req.body;
+  const {
+    siret,
+    name,
+    firstname,
+    role,
+    email,
+    precisions,
+    cgu_accepted,
+    operatorId,
+  }: SignUpRequestBody = req.body;
 
   // Validation
   const requiredFields: (keyof SignUpRequestBody)[] = [
@@ -125,6 +134,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     }
 
     const fullName = firstname ? `${firstname} ${name}` : name;
+
+    // Resolve operator info from form selection
+    const selectedOperator = operatorId
+      ? (commune.operators || []).find((op) => op.id === operatorId)
+      : null;
+    const opsnName = selectedOperator?.name || "";
+    const membreOpsn = selectedOperator ? (selectedOperator.isAdherent ? "Oui" : "Non") : "";
+
     recordToAdd = {
       Nom: fullName,
       Prenom: firstname || "",
@@ -132,6 +149,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       Fonction: role,
       Structure: commune.name,
       SIRET: commune.siret,
+      Telephone: commune.phone || "",
+      ...(commune.type === "commune" ? { CP: commune.zipcode || "" } : {}),
+      OPSN: opsnName,
+      Membre_OPSN: membreOpsn,
       Precisions: precisions || "",
       IP: ip,
     };
@@ -171,6 +192,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         success: false,
         message:
           "Échec de l'enregistrement de l'inscription (service distant). Veuillez réessayer plus tard ou nous contacter.",
+      });
+    }
+
+    // Post to Messages API (non-blocking)
+    const messagesEndpoint = process.env.SIGNUP_MESSAGES_API_ENDPOINT;
+    const messagesChannelId = process.env.SIGNUP_MESSAGES_CHANNEL_ID;
+    if (messagesEndpoint && messagesChannelId) {
+      const textBody = [
+        `Nouvelle inscription depuis le formulaire de contact`,
+        ``,
+        `Nom: ${recordToAdd.Nom}`,
+        `Email: ${recordToAdd.Mail}`,
+        `Fonction: ${recordToAdd.Fonction}`,
+        `Structure: ${recordToAdd.Structure} (SIRET: ${recordToAdd.SIRET})`,
+        `Téléphone: ${recordToAdd.Telephone || "Inconnu"}`,
+        recordToAdd.CP ? `Code postal: ${recordToAdd.CP}` : "",
+        recordToAdd.OPSN ? `OPSN: ${recordToAdd.OPSN}` : "",
+        recordToAdd.Membre_OPSN ? `Membre OPSN: ${recordToAdd.Membre_OPSN}` : "",
+        recordToAdd.Precisions ? `Précisions: ${recordToAdd.Precisions}` : "",
+      ].join("\n");
+
+      fetch(`${messagesEndpoint}deliver/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Channel-ID": messagesChannelId,
+        },
+        body: JSON.stringify({ email, textBody }),
+      }).catch((err) => {
+        console.error("Messages API Error:", err);
+        Sentry.captureException(err, {
+          tags: { api_route: "/api/communes/signup", target: "messages" },
+        });
       });
     }
 

@@ -383,7 +383,12 @@ export default function ContactForm(props: PageProps) {
                       options={(commune.operators || [])
                         .filter((op) => op.isPerimetre)
                         .map((op) => ({
-                          label: op.name_with_article || op.name,
+                          label: (
+                            <span>
+                              Je souhaite que <strong>{op.name_with_article || op.name}</strong> me
+                              recontacte.
+                            </span>
+                          ),
                           nativeInputProps: {
                             name: "operatorId",
                             value: op.id,

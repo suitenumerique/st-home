@@ -93,7 +93,7 @@ GENERIC_EMAIL_DOMAINS = [
     "fr.oleane.com",
     "collectivite47.fr",  # Distribués par le CDG47
     "intramuros.org",
-    "info46.fr"
+    "info46.fr",
 ]
 
 DOMAIN_EXTENSIONS_ALLOWED = [

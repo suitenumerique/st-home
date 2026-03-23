@@ -4,7 +4,6 @@ import logging
 import os
 import re
 from collections import defaultdict
-from urllib.parse import urlparse
 
 from sentry_sdk.crons import monitor
 
@@ -17,7 +16,6 @@ from .db import (
     init_db,
     update_rcpnt_stats,
 )
-from .lib import is_safe_url
 from .defs import HARDCODED_COMMUNES, HARDCODED_DILA_SIRETS
 from .dumps import (
     add_dila_issue,
@@ -39,6 +37,7 @@ from .dumps import (
 from .lib import (
     duplicates,
     get_communes_population_by_insee,
+    is_safe_url,
     iter_adherents,
     iter_dila,
     iter_insee_communes,
@@ -390,7 +389,9 @@ def associate_dila_to_organizations(orgs: list):
                 if len(dila_match.get("site_internet") or []) > 0
                 else ""
             )
-            org["_st_website"] = raw_website.strip().split("#")[0] if is_safe_url(raw_website) else ""
+            org["_st_website"] = (
+                raw_website.strip().split("#")[0] if is_safe_url(raw_website) else ""
+            )
 
             org["_st_dila"] = dila_match
 
@@ -441,9 +442,7 @@ def associate_operators_to_orgs(orgs: list):
                 else:
                     operator_links[operator_id] = {"is_perimetre": False, "is_adherent": True}
 
-        org["_st_operators"] = [
-            {"id": op_id, **flags} for op_id, flags in operator_links.items()
-        ]
+        org["_st_operators"] = [{"id": op_id, **flags} for op_id, flags in operator_links.items()]
 
 
 def compute_slug_for_communes(orgs: list):
@@ -660,7 +659,8 @@ def create_new_dumps(orgs: list):
                 "service_public_id": id_sp,
                 "st_eligible": st_eligible,
                 "st_active": st_active,
-                "operators": org.get("_st_operators") or [],  # list of {id, is_perimetre, is_adherent}
+                "operators": org.get("_st_operators")
+                or [],  # list of {id, is_perimetre, is_adherent}
             }
         )
 

@@ -12,7 +12,7 @@ export default function UsedServicesView({ services }: UsedServicesViewProps) {
   return (
     <>
       <h2 className={fr.cx("fr-h2")} style={{ textAlign: "center" }}>
-        Les services activés dans la collectivité
+        Les services déjà utilisés dans la collectivité
       </h2>
       <p style={{ textAlign: "center" }}>
         Vous faites partie de la collectivité ? Connectez-vous directement aux services.
