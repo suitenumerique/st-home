@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { type InferSelectModel, relations, sql } from "drizzle-orm";
 import {
   boolean,
   date,
@@ -40,7 +40,10 @@ export const organizations = pgTable(
     email_metadata: jsonb("email_metadata").$type<Record<string, string>>(),
     epci_name: text("epci_name"),
     epci_siren: text("epci_siren"),
+    epci_siret: text("epci_siret"),
     epci_population: integer("epci_population"),
+    dep_siret: text("dep_siret"),
+    region_siret: text("region_siret"),
     st_eligible: boolean("st_eligible").notNull().default(false),
     st_active: boolean("st_active").notNull().default(false),
     service_public_url: text("service_public_url"),
@@ -60,66 +63,47 @@ export const organizations = pgTable(
   ],
 );
 
-// MutualizationStructure table
-export const mutualizationStructures = pgTable(
-  "st_mutualization_structures",
+// Operators table
+export const operators = pgTable(
+  "st_operators",
   {
     id: text("id").primaryKey(),
     name: text("name").notNull(),
     name_unaccent: text("name_unaccent").notNull(),
     shortname: text("shortname"),
+    name_with_article: text("name_with_article"),
+    status: text("status"),
     type: text("type").notNull(),
     website: text("website"),
+    siret: text("siret"),
   },
   (table) => [
-    index("st_mutualizationstructures_name_search_index").using(
+    index("st_operators_name_search_index").using(
       "gin",
       sql`to_tsvector('french', ${table.name_unaccent})`,
     ),
   ],
 );
 
-// Organization to MutualizationStructure many-to-many relation table
-export const organizationsToStructures = pgTable(
-  "st_organizations_to_structures",
+// Organization to Operator many-to-many relation table
+export const organizationsToOperators = pgTable(
+  "st_organizations_to_operators",
   {
     organizationSiret: text("organization_siret")
       .notNull()
       .references(() => organizations.siret, { onDelete: "cascade" }),
-    structureId: text("structure_id")
+    operatorId: text("operator_id")
       .notNull()
-      .references(() => mutualizationStructures.id, { onDelete: "cascade" }),
+      .references(() => operators.id, { onDelete: "cascade" }),
+    isPerimetre: boolean("is_perimetre").notNull().default(false),
+    isAdherent: boolean("is_adherent").notNull().default(false),
   },
   (table) => {
     return {
-      pk: primaryKey({ columns: [table.organizationSiret, table.structureId] }),
+      pk: primaryKey({ columns: [table.organizationSiret, table.operatorId] }),
+      operatorIdIdx: index("st_organizations_to_operators_operator_id_index").on(table.operatorId),
     };
   },
-);
-
-// Organization relations
-export const organizationsRelations = relations(organizations, ({ many }) => ({
-  structures: many(organizationsToStructures),
-}));
-
-// MutualizationStructure relations
-export const mutualizationStructuresRelations = relations(mutualizationStructures, ({ many }) => ({
-  organizations: many(organizationsToStructures),
-}));
-
-// OrganizationsToStructures relations
-export const organizationsToStructuresRelations = relations(
-  organizationsToStructures,
-  ({ one }) => ({
-    organization: one(organizations, {
-      fields: [organizationsToStructures.organizationSiret],
-      references: [organizations.siret],
-    }),
-    structure: one(mutualizationStructures, {
-      fields: [organizationsToStructures.structureId],
-      references: [mutualizationStructures.id],
-    }),
-  }),
 );
 
 // Services table
@@ -129,11 +113,33 @@ export const services = pgTable(
     id: integer("id").primaryKey(),
     name: text("name").notNull(),
     url: text("url").notNull(),
+    type: text("type"),
+    instance_name: text("instance_name"),
     logo_url: text("logo_url"),
     maturity: text("maturity").notNull(),
     launch_date: date("launch_date"),
+    description: text("description"),
   },
   (table) => [index("st_services_url_index").using("btree", table.url)],
+);
+
+// Services to Operators many-to-many relation table
+export const servicesToOperators = pgTable(
+  "st_services_to_operators",
+  {
+    serviceId: integer("service_id")
+      .notNull()
+      .references(() => services.id, { onDelete: "cascade" }),
+    operatorId: text("operator_id")
+      .notNull()
+      .references(() => operators.id, { onDelete: "cascade" }),
+    position: integer("position").notNull().default(0),
+  },
+  (table) => {
+    return {
+      pk: primaryKey({ columns: [table.serviceId, table.operatorId] }),
+    };
+  },
 );
 
 // ServiceUsage
@@ -155,6 +161,29 @@ export const organizationsToServices = pgTable(
   },
 );
 
+// Organization relations
+export const organizationsRelations = relations(organizations, ({ many }) => ({
+  operators: many(organizationsToOperators),
+}));
+
+// Operator relations
+export const operatorsRelations = relations(operators, ({ many }) => ({
+  organizations: many(organizationsToOperators),
+  services: many(servicesToOperators),
+}));
+
+// OrganizationsToOperators relations
+export const organizationsToOperatorsRelations = relations(organizationsToOperators, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [organizationsToOperators.organizationSiret],
+    references: [organizations.siret],
+  }),
+  operator: one(operators, {
+    fields: [organizationsToOperators.operatorId],
+    references: [operators.id],
+  }),
+}));
+
 // ServiceUsage relations
 export const organizationsToServicesRelations = relations(organizationsToServices, ({ one }) => ({
   organization: one(organizations, {
@@ -166,3 +195,37 @@ export const organizationsToServicesRelations = relations(organizationsToService
     references: [services.id],
   }),
 }));
+
+// ServicesToOperators relations
+export const servicesToOperatorsRelations = relations(servicesToOperators, ({ one }) => ({
+  service: one(services, {
+    fields: [servicesToOperators.serviceId],
+    references: [services.id],
+  }),
+  operator: one(operators, {
+    fields: [servicesToOperators.operatorId],
+    references: [operators.id],
+  }),
+}));
+
+// Update existing relations to include servicesToOperators
+export const servicesRelations = relations(services, ({ many }) => ({
+  operators: many(servicesToOperators),
+}));
+
+// Inferred types
+export type Organization = InferSelectModel<typeof organizations>;
+export type Operator = InferSelectModel<typeof operators>;
+export type Service = InferSelectModel<typeof services>;
+
+export type OperatorWithRole = Pick<
+  Operator,
+  "id" | "name" | "shortname" | "name_with_article" | "type" | "website" | "status"
+> & {
+  isPerimetre: boolean;
+  isAdherent: boolean;
+};
+
+export type Commune = Organization & {
+  operators?: OperatorWithRole[];
+};

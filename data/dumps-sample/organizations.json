@@ -28,13 +28,16 @@
     "epci_population": 40570,
     "epci_name": "CC de la Dombes",
     "epci_siren": "200069193",
+    "epci_siret": "20006919300017",
+    "dep_siret": "22010001000015",
+    "region_siret": "20001773200015",
     "service_public_url": "https://lannuaire.service-public.fr/auvergne-rhone-alpes/ain/12705004-0d2a-4b54-bc10-d6cef127f68a",
     "service_public_id": "12705004-0d2a-4b54-bc10-d6cef127f68a",
     "st_eligible": true,
     "st_active": false,
-    "structures": [
-        2,
-        131
+    "operators": [
+        {"id": "42d8135b-ffc7-45be-bbbb-23be48005d65", "is_perimetre": true, "is_adherent": true},
+        {"id": "d23b0d53-8150-4023-aea5-8136817daf6b", "is_perimetre": true, "is_adherent": false}
     ]
 },
 {
@@ -80,12 +83,15 @@
     "epci_population": 82840,
     "epci_name": "CC de la Plaine de l'Ain",
     "epci_siren": "240100883",
+    "epci_siret": "24010088300012",
+    "dep_siret": "22010001000015",
+    "region_siret": "20001773200015",
     "service_public_url": "https://lannuaire.service-public.fr/auvergne-rhone-alpes/ain/2ea9d130-d969-4cf3-bf0b-676abafe68be",
     "service_public_id": "2ea9d130-d969-4cf3-bf0b-676abafe68be",
     "st_eligible": true,
     "st_active": false,
-    "structures": [
-        131
+    "operators": [
+        {"id": "d23b0d53-8150-4023-aea5-8136817daf6b", "is_perimetre": true, "is_adherent": false}
     ]
 },
 {
@@ -130,11 +136,14 @@
     "epci_population": 82840,
     "epci_name": "CC de la Plaine de l'Ain",
     "epci_siren": "240100883",
+    "epci_siret": "24010088300012",
+    "dep_siret": "22010001000015",
+    "region_siret": "20001773200015",
     "service_public_url": "https://lannuaire.service-public.fr/auvergne-rhone-alpes/ain/8ef7a371-e10d-49d4-914e-2bf246247fb0",
     "service_public_id": "8ef7a371-e10d-49d4-914e-2bf246247fb0",
     "st_eligible": false,
     "st_active": false,
-    "structures": [
+    "operators": [
     ]
 },
 {
@@ -179,13 +188,16 @@
     "epci_population": 40893,
     "epci_name": "CC Dombes Saône Vallée",
     "epci_siren": "200042497",
+    "epci_siret": "20004249700012",
+    "dep_siret": "22010001000015",
+    "region_siret": "20001773200015",
     "service_public_url": "https://lannuaire.service-public.fr/auvergne-rhone-alpes/ain/3f7877b8-6e4a-47b5-abf4-5729a0db5759",
     "service_public_id": "3f7877b8-6e4a-47b5-abf4-5729a0db5759",
     "st_eligible": true,
     "st_active": true,
-    "structures": [
-        2,
-        131
+    "operators": [
+        {"id": "42d8135b-ffc7-45be-bbbb-23be48005d65", "is_perimetre": true, "is_adherent": true},
+        {"id": "d23b0d53-8150-4023-aea5-8136817daf6b", "is_perimetre": true, "is_adherent": false}
     ]
 }
 ]

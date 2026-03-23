@@ -21,7 +21,7 @@ def dump_dila():
     url = "https://www.data.gouv.fr/fr/datasets/r/73302880-e4df-4d4c-8676-1a61bb997f3d"
 
     # Stream download
-    response = requests.get(url, stream=True)
+    response = requests.get(url, stream=True, timeout=120)
     response.raise_for_status()
 
     # Decompress bz2 and extract tar in memory
@@ -66,7 +66,7 @@ def dump_insee_communes():
         return
 
     url = "https://www.insee.fr/fr/statistiques/fichier/8377162/v_commune_2025.csv"
-    r = requests.get(url)
+    r = requests.get(url, timeout=120)
     r.raise_for_status()
     r.encoding = "utf-8"
 
@@ -87,7 +87,7 @@ def dump_insee_departements():
         return
 
     url = "https://www.insee.fr/fr/statistiques/fichier/8377162/v_departement_2025.csv"
-    r = requests.get(url)
+    r = requests.get(url, timeout=120)
     r.raise_for_status()
     r.encoding = "utf-8"
 
@@ -103,7 +103,7 @@ def dump_insee_regions():
         return
 
     url = "https://www.insee.fr/fr/statistiques/fichier/8377162/v_region_2025.csv"
-    r = requests.get(url)
+    r = requests.get(url, timeout=120)
     r.raise_for_status()
     r.encoding = "utf-8"
 
@@ -119,7 +119,7 @@ def dump_perimetre_epci():
 
     # https://www.data.gouv.fr/fr/datasets/base-nationale-sur-les-intercommunalites/
     url = "https://www.data.gouv.fr/fr/datasets/r/6e05c448-62cc-4470-aa0f-4f31adea0bc4"
-    r = requests.get(url)
+    r = requests.get(url, timeout=120)
     r.raise_for_status()
 
     # Convert CSV to JSON
@@ -137,7 +137,7 @@ def dump_insee_population():
 
     # https://www.insee.fr/fr/statistiques/8680726?sommaire=8681011
     url = "https://www.insee.fr/fr/statistiques/fichier/8680726/ensemble.zip"
-    r = requests.get(url)
+    r = requests.get(url, timeout=120)
     data = {"communes": {}}
     # Read from zip file
     with zipfile.ZipFile(io.BytesIO(r.content)) as thezip:
@@ -200,7 +200,7 @@ def dump_groupements_memberships():
 
     # https://www.data.gouv.fr/fr/datasets/5e1f20058b4c414d3f94460d/
     url = "https://www.data.gouv.fr/fr/datasets/r/348cc004-22b4-4b12-9281-b00d4ccb1d88"
-    r = requests.get(url)
+    r = requests.get(url, timeout=120)
     r.raise_for_status()
 
     # Convert XLSX to JSON
@@ -229,11 +229,24 @@ def dump_services():
 
     # https://www.data.gouv.fr/fr/datasets/68b0a2a1117b75b1b09edc6b/
     url = "https://www.data.gouv.fr/fr/datasets/r/610560cf-5893-4a53-b4d3-03e17d877e1c"
-    r = requests.get(url)
+    r = requests.get(url, timeout=120)
     r.raise_for_status()
 
-    # Convert CSV to JSON
-    rows = list(csv.DictReader(r.content.decode("utf-8").splitlines(), delimiter=";"))
+    # Convert CSV to JSON, keeping original French key names
+    rows = [
+        {
+            "id": int(row["id"]),
+            "nom": row["nom"],
+            "description": row.get("description") or None,
+            "url": row["url"],
+            "type": row.get("type") or None,
+            "nom_instance": row.get("nom_instance") or None,
+            "maturite": row["maturite"],
+            "date_lancement": row["date_lancement"] or None,
+            "logo_url": row["logo_url"] or None,
+        }
+        for row in csv.DictReader(r.content.decode("utf-8").splitlines(), delimiter=";")
+    ]
     assert len(rows) > 1
     with open("dumps/services.json", "w") as f:
         json.dump(rows, f, ensure_ascii=False, indent=4)
@@ -245,14 +258,83 @@ def dump_service_usages():
 
     # https://www.data.gouv.fr/fr/datasets/68b0a2a1117b75b1b09edc6b/
     url = "https://www.data.gouv.fr/fr/datasets/r/8f100b83-73c5-49ce-90ce-03d5c6a1783d"
-    r = requests.get(url)
+    r = requests.get(url, timeout=120)
+    r.raise_for_status()
+
+    # Decompress .csv.gz and parse CSV to JSON, keeping original French key names
+    with gzip.open(io.BytesIO(r.content), mode="rt", encoding="utf-8") as gzfile:
+        rows = [
+            {
+                "siret": row["siret"],
+                "service": int(row["service"]),
+                "active": row["active"] == "1",
+            }
+            for row in csv.DictReader(gzfile, delimiter=";")
+        ]
+    assert len(rows) > 20000
+    with open("dumps/service_usages.json", "w") as f:
+        json.dump(rows, f, ensure_ascii=False, indent=4)
+
+
+def dump_operators():
+    if Path("dumps/operators.json").exists():
+        return
+
+    # https://www.data.gouv.fr/fr/datasets/68b0a2a1117b75b1b09edc6b/
+    url = "https://www.data.gouv.fr/fr/datasets/r/902bb360-0b60-46d2-8169-4207a01caed1"
+    r = requests.get(url, timeout=120)
+    r.raise_for_status()
+
+    # Convert CSV to JSON, normalizing field names and types
+    rows = [
+        {
+            "id": row["id"],
+            "nom": row["nom"],
+            "nom_avec_article": row.get("nom_avec_article") or None,
+            "statut": row.get("statut") or None,
+            "url": row["url"],
+            "siret": row.get("siret") or None,
+            "services": [int(x) for x in row["services"].split(",") if x],
+            "departements": [x for x in row["departements"].split(",") if x],
+        }
+        for row in csv.DictReader(r.content.decode("utf-8").splitlines(), delimiter=";")
+    ]
+    assert len(rows) > 10
+    with open("dumps/operators.json", "w") as f:
+        json.dump(rows, f, ensure_ascii=False, indent=4)
+
+
+def dump_adherents():
+    if Path("dumps/adherents.json").exists():
+        return
+
+    # https://www.data.gouv.fr/fr/datasets/68b0a2a1117b75b1b09edc6b/
+    url = "https://www.data.gouv.fr/fr/datasets/r/ffc74be0-fb88-40cf-9048-f53e955eac28"
+    r = requests.get(url, timeout=120)
     r.raise_for_status()
 
     # Decompress .csv.gz and parse CSV to JSON
     with gzip.open(io.BytesIO(r.content), mode="rt", encoding="utf-8") as gzfile:
         rows = list(csv.DictReader(gzfile, delimiter=";"))
-    assert len(rows) > 20000
-    with open("dumps/service_usages.json", "w") as f:
+    assert len(rows) > 10
+    with open("dumps/adherents.json", "w") as f:
+        json.dump(rows, f, ensure_ascii=False, indent=4)
+
+
+def dump_operators_subscriptions():
+    if Path("dumps/operators_subscriptions.json").exists():
+        return
+
+    # https://www.data.gouv.fr/fr/datasets/68b0a2a1117b75b1b09edc6b/
+    url = "https://www.data.gouv.fr/fr/datasets/r/873dab81-45a1-463f-a297-54f5d466c325"
+    r = requests.get(url, timeout=120)
+    r.raise_for_status()
+
+    # Decompress .csv.gz and parse CSV to JSON
+    with gzip.open(io.BytesIO(r.content), mode="rt", encoding="utf-8") as gzfile:
+        rows = list(csv.DictReader(gzfile, delimiter=";"))
+    assert len(rows) > 10
+    with open("dumps/operators_subscriptions.json", "w") as f:
         json.dump(rows, f, ensure_ascii=False, indent=4)
 
 

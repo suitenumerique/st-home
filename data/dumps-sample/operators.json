@@ -1,0 +1,435 @@
+[
+    {
+        "id": "047fcfa1-9276-4668-a15d-a7bb38b7786f",
+        "nom": "ADICA",
+        "nom_avec_article": null,
+        "statut": null,
+        "url": "https://www.adica.fr/",
+        "siret": "20003547500025",
+        "services": [],
+        "departements": []
+    },
+    {
+        "id": "eea5957e-c63c-44e9-acfa-b07081c7320a",
+        "nom": "Adico",
+        "nom_avec_article": "l'Adico",
+        "statut": "partenaire",
+        "url": "https://www.adico.fr/",
+        "siret": "38445261100047",
+        "services": [
+            2,
+            12,
+            49,
+            58
+        ],
+        "departements": [
+            "60"
+        ]
+    },
+    {
+        "id": "42619426-f1d9-4823-88f0-0e8be8c6d20b",
+        "nom": "ADM81",
+        "nom_avec_article": "l'Association des maires du Tarn",
+        "statut": null,
+        "url": "https://www.maires81.asso.fr/",
+        "siret": "37859826200",
+        "services": [],
+        "departements": [
+            "81"
+        ]
+    },
+    {
+        "id": "f0ce6732-e2a9-4a2d-b476-8a52bc4bb282",
+        "nom": "Alpi",
+        "nom_avec_article": "l'Alpi",
+        "statut": "intention",
+        "url": "https://www.alpi40.fr/",
+        "siret": "25400330400030",
+        "services": [
+            2
+        ],
+        "departements": [
+            "40"
+        ]
+    },
+    {
+        "id": "9f5624fc-ef99-4d10-ae3f-403a81eb16ef",
+        "nom": "ANCT",
+        "nom_avec_article": "l'ANCT",
+        "statut": null,
+        "url": "https://anct.gouv.fr/",
+        "siret": "13002603200016",
+        "services": [
+            2,
+            3,
+            4,
+            9,
+            12,
+            13,
+            14,
+            47,
+            48,
+            59
+        ],
+        "departements": []
+    },
+    {
+        "id": "3fc433f9-7989-4150-ba47-1c40748f9262",
+        "nom": "AT86",
+        "nom_avec_article": "l'AT86",
+        "statut": "intention",
+        "url": "https://www.at86.fr/",
+        "siret": "25860168100020",
+        "services": [],
+        "departements": [
+            "86"
+        ]
+    },
+    {
+        "id": "69d606b8-c5c5-4bd7-9414-0e2bc020a5c8",
+        "nom": "ATD24",
+        "nom_avec_article": "l'ATD24",
+        "statut": "intention",
+        "url": "https://www.atd24.fr/",
+        "siret": "25240514700080",
+        "services": [
+            2
+        ],
+        "departements": [
+            "24"
+        ]
+    },
+    {
+        "id": "765ab9ea-73d3-424b-80f1-85adaff623dc",
+        "nom": "CDG09",
+        "nom_avec_article": "le CDG09",
+        "statut": "intention",
+        "url": "https://cdg09.fr/",
+        "siret": "28090002800034",
+        "services": [
+            2
+        ],
+        "departements": [
+            "09"
+        ]
+    },
+    {
+        "id": "678b6412-e3a2-4840-abff-0953225ca628",
+        "nom": "CDG48",
+        "nom_avec_article": "le CDG48",
+        "statut": "partenaire",
+        "url": "https://www.cdg48.fr/",
+        "siret": "28480002600023",
+        "services": [
+            2
+        ],
+        "departements": [
+            "48"
+        ]
+    },
+    {
+        "id": "5f512adb-330b-4e53-8f17-14741aea63eb",
+        "nom": "e-Collectivités",
+        "nom_avec_article": "e-Collectivités",
+        "statut": "partenaire_avec_services",
+        "url": "https://ecollectivites.fr/",
+        "siret": "20004311500019",
+        "services": [
+            2,
+            60
+        ],
+        "departements": [
+            "44",
+            "49",
+            "53",
+            "72",
+            "85"
+        ]
+    },
+    {
+        "id": "68e71248-e4ac-408d-83cf-d79e4497cf5b",
+        "nom": "Eure Normandie Numérique",
+        "nom_avec_article": "Eure Normandie Numérique",
+        "statut": "intention",
+        "url": "https://www.eurenormandienumerique.fr/",
+        "siret": "20004503700054",
+        "services": [],
+        "departements": [
+            "27"
+        ]
+    },
+    {
+        "id": "6068aac3-b607-4618-a20a-2b091712d1f8",
+        "nom": "GIP ARNia",
+        "nom_avec_article": "le GIP ARNia",
+        "statut": "intention",
+        "url": "https://www.ternum-bfc.fr/",
+        "siret": "13000493000025",
+        "services": [
+            2,
+            61
+        ],
+        "departements": [
+            "25",
+            "70",
+            "71",
+            "89",
+            "90"
+        ]
+    },
+    {
+        "id": "19da0556-c173-448c-a61e-44b41bbe86ba",
+        "nom": "GIP Recia",
+        "nom_avec_article": "le GIP Recia",
+        "statut": null,
+        "url": "https://www.recia.fr/",
+        "siret": "18450311800046",
+        "services": [
+            2,
+            65
+        ],
+        "departements": [
+            "18",
+            "28",
+            "36",
+            "37",
+            "41",
+            "45"
+        ]
+    },
+    {
+        "id": "23f7a1ac-ac97-4574-a8fa-b11903864cd2",
+        "nom": "Gironde Numérique",
+        "nom_avec_article": "Gironde Numérique",
+        "statut": "partenaire",
+        "url": "https://www.girondenumerique.fr/",
+        "siret": "20001004900076",
+        "services": [
+            2,
+            62
+        ],
+        "departements": [
+            "33"
+        ]
+    },
+    {
+        "id": "22e16890-57bc-409f-9573-d3de95aa7da1",
+        "nom": "Haute Garonne Numérique",
+        "nom_avec_article": "Haute Garonne Numérique",
+        "statut": "intention",
+        "url": "https://hautegaronnenumerique.fr/",
+        "siret": "20006262800017",
+        "services": [],
+        "departements": [
+            "31"
+        ]
+    },
+    {
+        "id": "6c1edecc-03f3-4121-b9b7-9c49aca3801c",
+        "nom": "Haute Saône Numérique",
+        "nom_avec_article": "Haute Saône Numérique",
+        "statut": "intention",
+        "url": "https://www.hautesaonenumerique.fr/",
+        "siret": "20004452700014",
+        "services": [],
+        "departements": [
+            "70"
+        ]
+    },
+    {
+        "id": "323e4aac-a6f8-4390-9917-0a4810b51043",
+        "nom": "La Fibre 64",
+        "nom_avec_article": "La Fibre 64",
+        "statut": "partenaire",
+        "url": "https://lafibre64.fr/",
+        "siret": "20008126300010",
+        "services": [
+            2,
+            59
+        ],
+        "departements": [
+            "64"
+        ]
+    },
+    {
+        "id": "8f630695-8849-40a9-b428-edab6a1577f2",
+        "nom": "La Fibre Numérique 59/62",
+        "nom_avec_article": "La Fibre Numérique 59/62",
+        "statut": null,
+        "url": "https://www.lafibrenumerique5962.fr/",
+        "siret": "20003938600038",
+        "services": [],
+        "departements": [
+            "59",
+            "62"
+        ]
+    },
+    {
+        "id": "7e7ff701-de04-476e-bfca-3db263c7dc33",
+        "nom": "Mégalis Bretagne",
+        "nom_avec_article": "Mégalis Bretagne",
+        "statut": "partenaire",
+        "url": "https://www.megalis.bretagne.bzh/",
+        "siret": "25351449100047",
+        "services": [
+            2,
+            3,
+            49,
+            63
+        ],
+        "departements": [
+            "22",
+            "29",
+            "35",
+            "56"
+        ]
+    },
+    {
+        "id": "edaf3153-3a25-496f-8ce2-a278a4ad17c4",
+        "nom": "SIDEC",
+        "nom_avec_article": "le SIDEC",
+        "statut": "partenaire",
+        "url": "https://www.sidec-jura.com/",
+        "siret": "25390109400016",
+        "services": [],
+        "departements": [
+            "39"
+        ]
+    },
+    {
+        "id": "ce2e7031-a7ea-452d-9609-4e9679a78703",
+        "nom": "SIEEEN",
+        "nom_avec_article": "le SIEEEN",
+        "statut": "intention",
+        "url": "https://www.sieeen.fr/",
+        "siret": "25580118500018",
+        "services": [
+            2
+        ],
+        "departements": [
+            "58"
+        ]
+    },
+    {
+        "id": "80da8dd3-31c0-443d-9f3d-63ba1e54fe6f",
+        "nom": "SITIV",
+        "nom_avec_article": "le SITIV",
+        "statut": "partenaire",
+        "url": "https://www.sitiv.fr/",
+        "siret": "25691018300027",
+        "services": [
+            2,
+            64
+        ],
+        "departements": [
+            "42",
+            "69"
+        ]
+    },
+    {
+        "id": "a964b855-2687-4ae0-b4cf-659492570f95",
+        "nom": "SMIC 88",
+        "nom_avec_article": "le SMIC 88",
+        "statut": "intention",
+        "url": "https://www.smic-vosges.fr/",
+        "siret": "25880190100012",
+        "services": [
+            2,
+            59
+        ],
+        "departements": [
+            "88"
+        ]
+    },
+    {
+        "id": "42d8135b-ffc7-45be-bbbb-23be48005d65",
+        "nom": "SMICA",
+        "nom_avec_article": "le SMICA",
+        "statut": "partenaire",
+        "url": "https://www.smica.fr/",
+        "siret": "25120086100036",
+        "services": [],
+        "departements": [
+            "12"
+        ]
+    },
+    {
+        "id": "4231ee78-4cd1-478c-9a0d-5be0e198b4c7",
+        "nom": "SMICO",
+        "nom_avec_article": "le SMICO",
+        "statut": null,
+        "url": "https://www.smico.fr/",
+        "siret": "25610317700034",
+        "services": [],
+        "departements": [
+            "61"
+        ]
+    },
+    {
+        "id": "752b6600-8b96-4a97-9928-53b3c5824c04",
+        "nom": "SMN76",
+        "nom_avec_article": "SMN76",
+        "statut": null,
+        "url": "https://www.smn76.fr/",
+        "siret": "20004506000015",
+        "services": [
+            2
+        ],
+        "departements": [
+            "76"
+        ]
+    },
+    {
+        "id": "ae8b9931-221b-46e5-b6a6-c2dfe494e2a9",
+        "nom": "Soluris",
+        "nom_avec_article": "Soluris",
+        "statut": null,
+        "url": "https://www.soluris.fr/",
+        "siret": "25170232000051",
+        "services": [],
+        "departements": [
+            "17"
+        ]
+    },
+    {
+        "id": "6a1fa05f-bd8f-4807-b5bc-16df57f5a0b0",
+        "nom": "SPL-XDEMAT",
+        "nom_avec_article": "SPL-XDEMAT",
+        "statut": null,
+        "url": "https://www.spl-xdemat.fr/",
+        "siret": "74988814500028",
+        "services": [],
+        "departements": [
+            "51",
+            "52",
+            "54"
+        ]
+    },
+    {
+        "id": "d23b0d53-8150-4023-aea5-8136817daf6b",
+        "nom": "Syane",
+        "nom_avec_article": "Syane",
+        "statut": null,
+        "url": "https://syane.fr/",
+        "siret": "25740008500078",
+        "services": [
+            2
+        ],
+        "departements": [
+            "74"
+        ]
+    },
+    {
+        "id": "f33e9b4b-213f-4db9-8b39-ab17558f2931",
+        "nom": "TEST",
+        "nom_avec_article": null,
+        "statut": null,
+        "url": "",
+        "siret": "21550050500015",
+        "services": [
+            3,
+            49
+        ],
+        "departements": []
+    }
+]

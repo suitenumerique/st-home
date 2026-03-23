@@ -4,7 +4,6 @@ import logging
 import os
 import re
 from collections import defaultdict
-from urllib.parse import urlparse
 
 from sentry_sdk.crons import monitor
 
@@ -17,10 +16,10 @@ from .db import (
     init_db,
     update_rcpnt_stats,
 )
-from .lib import is_safe_url
 from .defs import HARDCODED_COMMUNES, HARDCODED_DILA_SIRETS
 from .dumps import (
     add_dila_issue,
+    dump_adherents,
     dump_dila,
     dump_filtered_sirene,
     dump_groupements_memberships,
@@ -28,6 +27,7 @@ from .dumps import (
     dump_insee_departements,
     dump_insee_population,
     dump_insee_regions,
+    dump_operators,
     dump_perimetre_epci,
     dump_service_usages,
     dump_services,
@@ -37,18 +37,17 @@ from .dumps import (
 from .lib import (
     duplicates,
     get_communes_population_by_insee,
+    is_safe_url,
+    iter_adherents,
     iter_dila,
-    iter_groupements_memberships,
     iter_insee_communes,
     iter_insee_departements,
     iter_insee_regions,
+    iter_operators,
     iter_perimetre_epci,
-    iter_repertoire_collectivites,
-    iter_repertoire_structures,
     iter_sirene,
     normalize,
 )
-from .repertoire import dump_repertoire_collectivites, dump_repertoire_structures
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -84,12 +83,12 @@ def run():
     dump_insee_regions()
     dump_insee_population()
     dump_dila()
-    dump_repertoire_structures()
-    dump_repertoire_collectivites()
     dump_perimetre_epci()
     dump_groupements_memberships()
     dump_services()
     dump_service_usages()
+    dump_operators()
+    dump_adherents()
 
     communes = list_communes()
 
@@ -120,12 +119,7 @@ def run():
 
     associate_dila_to_organizations(orgs)
 
-    # Associate Repertoire data to communes
-    associate_repertoire_to_orgs(orgs)
-
-    associate_structures_to_orgs(orgs)
-
-    associate_memberships_to_orgs(orgs)
+    associate_operators_to_orgs(orgs)
 
     compute_slug_for_communes(orgs)
 
@@ -395,118 +389,60 @@ def associate_dila_to_organizations(orgs: list):
                 if len(dila_match.get("site_internet") or []) > 0
                 else ""
             )
-            org["_st_website"] = raw_website.strip().split("#")[0] if is_safe_url(raw_website) else ""
+            org["_st_website"] = (
+                raw_website.strip().split("#")[0] if is_safe_url(raw_website) else ""
+            )
 
             org["_st_dila"] = dila_match
 
 
-def associate_repertoire_to_orgs(orgs: list):
-    """Associate Grist Repertoire data to orgs"""
+def associate_operators_to_orgs(orgs: list):
+    """Associate operators to orgs based on perimetre (department coverage) and adherent status"""
 
-    communes_by_insee = {
-        x["Code_INSEE_geographique"]: x
-        for x in iter_repertoire_collectivites()
-        if x["Typologie"] == "Commune"
-    }
+    operators = {str(x["id"]): x for x in iter_operators()}
 
-    epcis_by_siren = {
-        x["Numero_SIREN"]: x
-        for x in iter_repertoire_collectivites()
-        if x["Typologie"] == "EPCI à fiscalité propre"
-    }
+    # Build perimetre index: which operators cover which departments
+    operators_by_departement = defaultdict(list)
+    for operator_id, operator in operators.items():
+        for dep in operator.get("departements", []):
+            operators_by_departement[dep].append(operator_id)
 
-    for org in orgs:
-        if org["type"] == "commune" and org["insee_com"] in communes_by_insee:
-            org["_st_repertoire"] = communes_by_insee[org["insee_com"]]
-        elif org["type"] == "epci" and org["siren"] in epcis_by_siren:
-            org["_st_repertoire"] = epcis_by_siren[org["siren"]]
-        elif org["type"] in {"departement", "region", "arrondissement"}:
-            pass
-        else:
-            logger.warning(
-                f"Missing commune INSEE or EPCI SIREN in Repertoire: {org['name']} {org.get('insee_com')} {org['siren']}"
-            )
+    # Build adherent index: (siret, operator_id) pairs from the adherents dataset
+    adherent_pairs = set()
+    for row in iter_adherents():
+        siret = row.get("organisation_siret")
+        operator_id = str(row.get("operateur_id", ""))
+        if siret and operator_id:
+            adherent_pairs.add((siret, operator_id))
 
-
-def associate_structures_to_orgs(orgs: list):
-    """Associate mutualization structures from Repertoire to orgs"""
-
-    colls_by_repertoire_id = {x["id"]: x for x in iter_repertoire_collectivites()}
-
-    structure_mappings = defaultdict(list)
-
-    # "Couverture" is a list of Grist IDs, that can be of any kind.
-    for structure in iter_repertoire_structures():
-        if not structure["Groupe_Pilote"]:
-            continue
-        if not structure["Typologie"] or len(structure["Typologie"]) < 2:
-            continue
-        if len(set(structure["Typologie"][1:]).intersection({"OPSN", "Centre de gestion"})) == 0:
-            continue
-        if structure["Couverture"] and len(structure["Couverture"]) > 1:
-            for couv in structure["Couverture"][1:]:
-                structure_mappings[couv].append(structure["id"])
+    logger.info("Loaded %d adherent pairs", len(adherent_pairs))
 
     for org in orgs:
-        org["_st_structures"] = []
-        if not org.get("_st_repertoire"):
+        org["_st_operators"] = []
+
+        if org["type"] not in {"commune", "epci"}:
             continue
 
-        # Add all structures scoped to this department, single commune and region
-        org["_st_structures"] = (
-            structure_mappings[org["_st_repertoire"]["Code_INSEE_departement"]]
-            + structure_mappings[org["_st_repertoire"]["Code_INSEE_commune"]]
-            + structure_mappings[org["_st_repertoire"]["Code_INSEE_region"]]
-        )
+        siret = org.get("siret")
+        if not siret:
+            continue
 
-        # Scope can also be an EPCI
-        # /!\ Numero_SIREN_EPCI is actually a Grist ID, not a SIREN
-        if org["_st_repertoire"]["Numero_SIREN_EPCI"]:
-            org["_st_structures"].extend(
-                structure_mappings[
-                    colls_by_repertoire_id[org["_st_repertoire"]["Numero_SIREN_EPCI"]]["id"]
-                ]
-            )
+        # Collect all operator links with their flags
+        operator_links = {}
 
-        # Remove duplicates
-        org["_st_structures"] = list(set(org["_st_structures"]))
+        # Perimetre: operators covering this department
+        for operator_id in operators_by_departement.get(org["insee_dep"], []):
+            operator_links[operator_id] = {"is_perimetre": True, "is_adherent": False}
 
+        # Adherent: operators this org is an adherent of
+        for operator_id in operators:
+            if (siret, operator_id) in adherent_pairs:
+                if operator_id in operator_links:
+                    operator_links[operator_id]["is_adherent"] = True
+                else:
+                    operator_links[operator_id] = {"is_perimetre": False, "is_adherent": True}
 
-def associate_memberships_to_orgs(orgs: list):
-    """Associate memberships to orgs"""
-    structures_with_banatic_name = [
-        x for x in iter_repertoire_structures() if x.get("Libelle_BANATIC")
-    ]
-    memberships = []
-    for structure in structures_with_banatic_name:
-        memberships.extend(
-            [
-                {**x, "structure_id": structure.get("id")}
-                for x in iter_groupements_memberships()
-                if x.get("Nom du groupement") == structure.get("Libelle_BANATIC")
-            ]
-        )
-
-    # group by siren membre
-    memberships_by_siren = defaultdict(list)
-    for membership in memberships:
-        memberships_by_siren[membership.get("Siren membre")].append(membership)
-
-    for org in orgs:
-        org["_st_memberships"] = []
-        # If the commune siren is in the memberships, add the memberships structure_id to the commune memberships
-        if org.get("siren") in memberships_by_siren:
-            org["_st_memberships"] = [
-                x.get("structure_id") for x in memberships_by_siren[org.get("siren")]
-            ]
-        elif org.get("_st_epci", {}).get("siren") in memberships_by_siren:
-            org["_st_memberships"] = [
-                x.get("structure_id")
-                for x in memberships_by_siren[org.get("_st_epci", {}).get("siren")]
-            ]
-
-        # Remove duplicates
-        org["_st_memberships"] = list(set(org["_st_memberships"]))
+        org["_st_operators"] = [{"id": op_id, **flags} for op_id, flags in operator_links.items()]
 
 
 def compute_slug_for_communes(orgs: list):
@@ -620,6 +556,19 @@ def associate_conformance_to_orgs(orgs: list):
 def create_new_dumps(orgs: list):
     """Create new dumps of the orgs"""
 
+    # Build siren→siret lookup for resolving epci_siret
+    siren_to_siret = {}
+    # Build dep_code→siret and reg_code→siret lookups
+    dep_to_siret = {}
+    reg_to_siret = {}
+    for org in orgs:
+        if org.get("siret") and org.get("siren"):
+            siren_to_siret[org["siren"]] = org["siret"]
+        if org.get("type") == "departement" and org.get("siret") and org.get("insee_dep"):
+            dep_to_siret[org["insee_dep"]] = org["siret"]
+        if org.get("type") == "region" and org.get("siret") and org.get("insee_reg"):
+            reg_to_siret[org["insee_reg"]] = org["siret"]
+
     # Dump as JSON
     seen_sirets = set()
     final_data = []
@@ -652,7 +601,7 @@ def create_new_dumps(orgs: list):
             org["epci_population"] = int(
                 org.get("_st_epci", {}).get("total_pop_mun", "").replace(" ", "") or 0
             )
-            st_eligible = org["population"] <= 3500 or org["epci_population"] <= 15000
+            st_eligible = org["population"] <= 3500
             slug = org["_st_slug"]
         elif org["type"] == "epci":
             st_eligible = org["population"] <= 15000
@@ -703,12 +652,15 @@ def create_new_dumps(orgs: list):
                 "epci_population": org.get("epci_population"),
                 "epci_name": org.get("_st_epci", {}).get("raison_sociale") or None,
                 "epci_siren": org.get("_st_epci", {}).get("siren") or None,
+                "epci_siret": siren_to_siret.get(org.get("_st_epci", {}).get("siren", "")) or None,
+                "dep_siret": dep_to_siret.get(org.get("insee_dep", "")) or None,
+                "region_siret": reg_to_siret.get(org.get("insee_reg", "")) or None,
                 "service_public_url": url_sp,
                 "service_public_id": id_sp,
                 "st_eligible": st_eligible,
                 "st_active": st_active,
-                "structures": org.get("_st_structures") or [],
-                "memberships": org.get("_st_memberships") or [],
+                "operators": org.get("_st_operators")
+                or [],  # list of {id, is_perimetre, is_adherent}
             }
         )
 
@@ -734,9 +686,12 @@ def create_new_dumps(orgs: list):
                 "code_postal": row["zipcode"],
                 "epci_libelle": row["epci_name"],
                 "epci_siren": row["epci_siren"],
+                "epci_siret": row["epci_siret"],
                 "epci_population": row["epci_population"],
                 "departement_code_insee": row["insee_dep"],
+                "departement_siret": row["dep_siret"],
                 "region_code_insee": row["insee_reg"],
+                "region_siret": row["region_siret"],
                 "adresse_messagerie": row["email_official"],
                 "site_internet": row["website_url"],
                 "telephone": row["phone"],

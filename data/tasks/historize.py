@@ -14,6 +14,9 @@ def run():
     historize_table("st_organizations")
     historize_table("st_services")
     historize_table("st_organizations_to_services")
+    historize_table("st_organizations_to_operators")
+    historize_table("st_operators")
+    historize_table("st_services_to_operators")
     historize_table("data_rcpnt_stats")
     return "ok"
 

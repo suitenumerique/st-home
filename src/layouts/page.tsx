@@ -1,10 +1,10 @@
-import { ReactNode } from "react";
 import { Footer } from "@codegouvfr/react-dsfr/Footer";
 import { Header } from "@codegouvfr/react-dsfr/Header";
 import { SkipLinks } from "@codegouvfr/react-dsfr/SkipLinks";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { ReactNode } from "react";
 
 const brandTop = (
   <>
