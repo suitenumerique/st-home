@@ -62,8 +62,9 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
   };
 
   const sortedServices = useMemo(() => {
-    if (!scopedStats.length) return services;
-    return [...services].sort((a, b) => {
+    const servicesList = Array.isArray(services) ? services : [];
+    if (!scopedStats.length) return servicesList;
+    return [...servicesList].sort((a, b) => {
       const aStats = scopedStats.find(s => s.id === parseInt(a.id));
       const bStats = scopedStats.find(s => s.id === parseInt(b.id));
       return (bStats?.total || 0) - (aStats?.total || 0);
@@ -76,7 +77,8 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     const fetchServices = async () => {
       const response = await fetch("/api/deployment/services");
       const data = await response.json();
-      setServices(data);
+      const normalizedServices = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+      setServices(normalizedServices);
     };
     fetchServices();
   }, []);
@@ -172,7 +174,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     </div>
   );
 
-  const serviceDetails = (service, stats, compact = false) => {
+const serviceDetails = (service, stats, compact = false) => {
     const communes = stats?.communes || 0;
     const epci = stats?.epci || 0;
     const autoheberge = stats?.autoheberge || 0;

@@ -1,8 +1,8 @@
 import { db } from "@/lib/db";
 import {
   organizations,
+  organizationsToOperators,
   organizationsToServices,
-  organizationsToStructures,
   services,
 } from "@/lib/schema";
 import { sql } from "drizzle-orm";
@@ -99,14 +99,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           COUNT(DISTINCT CASE WHEN ${organizationsToServices.active} = true THEN ${organizationsToServices.organizationSiret} END)::int as active,
           COUNT(DISTINCT CASE WHEN ${organizations.type} = 'commune' THEN ${organizationsToServices.organizationSiret} END)::int as communes,
           COUNT(DISTINCT CASE WHEN ${organizations.type} = 'epci' THEN ${organizationsToServices.organizationSiret} END)::int as epci,
-          COUNT(DISTINCT CASE WHEN has_struct.organization_siret IS NULL THEN ${organizationsToServices.organizationSiret} END)::int as autoheberge,
-          COUNT(DISTINCT CASE WHEN has_struct.organization_siret IS NOT NULL THEN ${organizationsToServices.organizationSiret} END)::int as opsn_partenaire
+          COUNT(DISTINCT CASE WHEN has_operator.organization_siret IS NULL THEN ${organizationsToServices.organizationSiret} END)::int as autoheberge,
+          COUNT(DISTINCT CASE WHEN has_operator.organization_siret IS NOT NULL THEN ${organizationsToServices.organizationSiret} END)::int as opsn_partenaire
         FROM ${services}
         INNER JOIN ${organizationsToServices} ON ${services.id} = ${organizationsToServices.serviceId}
         INNER JOIN ${organizations} ON ${organizationsToServices.organizationSiret} = ${organizations.siret}
         LEFT JOIN (
-          SELECT DISTINCT organization_siret FROM ${organizationsToStructures}
-        ) has_struct ON ${organizations.siret} = has_struct.organization_siret
+          SELECT DISTINCT organization_siret FROM ${organizationsToOperators}
+        ) has_operator ON ${organizations.siret} = has_operator.organization_siret
         WHERE 1=1
         ${dep ? sql`AND ${organizations.insee_dep} = ${dep as string}` : sql``}
         ${reg ? sql`AND ${organizations.insee_reg} = ${reg as string}` : sql``}
