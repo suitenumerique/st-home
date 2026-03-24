@@ -110,6 +110,28 @@ const DeploiementMap = () => {
         const filteredCommunes = orgType !== "epci" ? filterList(stats) : [];
         const filteredEpci = orgType !== "commune" ? filterList(epciStats) : [];
 
+        if (level === "epci") {
+          // insee_geo is the EPCI SIREN (set by processGeoJSONEPCI via parentAreas)
+          const epciSiren = insee_geo;
+          const communesInEpci = (orgType !== "epci" ? stats : [])
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .filter((stat: StatRecord) => (stat as any).epci_siren === epciSiren)
+            .filter((stat: StatRecord) =>
+              serviceIds?.length
+                ? stat.all_services?.some((s: string) => serviceIds.includes(Number(s)))
+                : (stat.all_services?.length ?? 0) > 0,
+            );
+          const epciInEpci = (orgType !== "commune" ? epciStats : [])
+            .filter((stat: StatRecord) => stat.id === epciSiren || stat.id.slice(0, 9) === epciSiren)
+            .filter((stat: StatRecord) =>
+              serviceIds?.length
+                ? stat.all_services?.some((s: string) => serviceIds.includes(Number(s)))
+                : (stat.all_services?.length ?? 0) > 0,
+            );
+          const total = communesInEpci.length + epciInEpci.length;
+          return { n_cities: total, score: total > 0 ? 1 : 0 };
+        }
+
         if (level === "city") {
           const city = stats.find((city: { id: string }) => city.id === siret);
           return {
@@ -357,6 +379,7 @@ const DeploiementMap = () => {
 
   const isCityView =
     (mapState.currentLevel === "department" && mapState.departmentView === "city") ||
+    (mapState.currentLevel === "department" && mapState.departmentView === "epci" && mapState.filters.org_type === "epci") ||
     mapState.currentLevel === "epci" ||
     mapState.currentLevel === "city";
 
@@ -449,7 +472,7 @@ const DeploiementMap = () => {
 
 const CartographieDeploiement = () => {
   return (
-    <MapProvider initialFilters={{ service_ids: null }} initialDepartmentView="city">
+    <MapProvider initialFilters={{ service_ids: null }} initialDepartmentView="epci">
       <MapLayoutProvider>
         <DeploiementMap />
       </MapLayoutProvider>
