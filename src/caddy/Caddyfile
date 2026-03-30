@@ -12,7 +12,7 @@
 	}
 
 	# IP Blocklist from $BLOCKLIST env var (space-separated IPs/CIDRs)
-	@blocked remote_ip {$BLOCKLIST:}
+	@blocked client_ip {$BLOCKLIST:}
 	abort @blocked
 
 	# Geo-blocking from $GEO_BLOCKED_COUNTRIES env var (space-separated country codes)
@@ -27,7 +27,7 @@
 	# Rate limiting - general: 100 req / 10s per IP
 	rate_limit {
 		zone general {
-			key {client_ip}
+			key {http.request.header.X-Forwarded-For}
 			events 100
 			window 10s
 		}
@@ -37,7 +37,7 @@
 	route /api/* {
 		rate_limit {
 			zone api {
-				key {client_ip}
+				key {http.request.header.X-Forwarded-For}
 				events 20
 				window 10s
 			}
