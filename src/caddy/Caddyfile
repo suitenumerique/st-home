@@ -1,0 +1,52 @@
+{
+	auto_https off
+	admin off
+	servers {
+		trusted_proxies static private_ranges
+	}
+}
+
+:{$PORT} {
+	log {
+		output discard
+	}
+
+	# IP Blocklist from $BLOCKLIST env var (space-separated IPs/CIDRs)
+	@blocked remote_ip {$BLOCKLIST:}
+	abort @blocked
+
+	# Geo-blocking from $GEO_BLOCKED_COUNTRIES env var (space-separated country codes)
+	@geoblocked {
+		maxmind_geolocation {
+			db_path ./dumps/geoip-country.mmdb
+			allow_countries {$GEO_ALLOWED_COUNTRIES:}
+		}
+	}
+	abort @geoblocked
+
+	# Rate limiting - general: 100 req / 10s per IP
+	rate_limit {
+		zone general {
+			key {client_ip}
+			events 100
+			window 10s
+		}
+	}
+
+	# Rate limiting - API: 20 req / 10s per IP
+	route /api/* {
+		rate_limit {
+			zone api {
+				key {client_ip}
+				events 20
+				window 10s
+			}
+		}
+	}
+
+	# Reverse proxy to Next.js
+	reverse_proxy localhost:3000 {
+		header_up X-Forwarded-Proto https
+		header_up X-Forwarded-For {client_ip}
+	}
+}

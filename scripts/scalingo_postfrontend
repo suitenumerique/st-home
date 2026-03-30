@@ -8,6 +8,11 @@ echo "-----> Running post-frontend script"
 make data-geoip-download
 
 mv data/* .
-mv src/nginx/* .
+mv src/caddy/* .
+
+echo "-----> Downloading Caddy with plugins"
+mkdir -p bin
+curl -LSs -o bin/caddy "https://caddyserver.com/api/download?os=linux&arch=amd64&p=github.com/mholt/caddy-ratelimit&p=github.com/porech/caddy-maxmind-geolocation"
+chmod +x bin/caddy
 
 echo "3.13" > .python-version
