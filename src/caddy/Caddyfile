@@ -13,16 +13,16 @@
 
 	# IP Blocklist from $BLOCKLIST env var (space-separated IPs/CIDRs)
 	@blocked client_ip {$BLOCKLIST:}
-	abort @blocked
+	respond @blocked 403
 
-	# Geo-blocking from $GEO_BLOCKED_COUNTRIES env var (space-separated country codes)
-	@geoblocked {
+	# Geo-blocking from $GEO_ALLOWED_COUNTRIES env var (space-separated country codes)
+	@geoblocked not {
 		maxmind_geolocation {
 			db_path ./dumps/geoip-country.mmdb
 			allow_countries {$GEO_ALLOWED_COUNTRIES:}
 		}
 	}
-	abort @geoblocked
+	respond @geoblocked 403
 
 	# Rate limiting - general: 100 req / 10s per IP
 	rate_limit {
