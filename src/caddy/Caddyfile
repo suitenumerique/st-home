@@ -11,18 +11,11 @@
 		output discard
 	}
 
-	# IP Blocklist from $BLOCKLIST env var (space-separated IPs/CIDRs)
-	@blocked client_ip {$BLOCKLIST:}
-	respond @blocked 403
+	# IP Blocklist (generated from $BLOCKLIST, comma-separated IPs/CIDRs)
+	import blocklist.caddy
 
-	# Geo-blocking from $GEO_ALLOWED_COUNTRIES env var (space-separated country codes)
-	@geoblocked not {
-		maxmind_geolocation {
-			db_path ./dumps/geoip-country.mmdb
-			allow_countries {$GEO_ALLOWED_COUNTRIES:}
-		}
-	}
-	respond @geoblocked 403
+	# Geo-blocking (generated from $GEO_ALLOWED_COUNTRIES, comma-separated country codes)
+	import geoblocking.caddy
 
 	# Rate limiting - general: 100 req / 10s per IP
 	rate_limit {

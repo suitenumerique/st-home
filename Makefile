@@ -156,8 +156,14 @@ data-lint-check:  ## Check data code linting without fixing
 	$(COMPOSE_RUN) -T data_tests sh -c 'ruff check . && ruff format --check .'
 .PHONY: data-lint-check
 
-data-geoip-download:  ## Download the GeoIP database from https://db-ip.com/db/download/ip-to-country-lite
-	mkdir -p data/dumps && curl -LSs -o data/dumps/geoip-country.mmdb.gz "https://download.db-ip.com/free/dbip-country-lite-$$(date +%Y-%m).mmdb.gz" && gunzip -f data/dumps/geoip-country.mmdb.gz
+data-geoip-download:  ## Download the GeoLite2-Country database from Elastic's GeoIP service
+	mkdir -p data/dumps && \
+	curl -LSs 'https://geoip.elastic.co/v1/database?elastic_geoip_service_tos=agree' | \
+	python3 -c "import json,sys;print(next(d['url'] for d in json.load(sys.stdin) if d['name']=='GeoLite2-Country.tgz'))" | \
+	xargs curl -LSs -o /tmp/GeoLite2-Country.tgz && \
+	tar -xzf /tmp/GeoLite2-Country.tgz -C data/dumps GeoLite2-Country.mmdb && \
+	mv data/dumps/GeoLite2-Country.mmdb data/dumps/geoip-country.mmdb && \
+	rm -f /tmp/GeoLite2-Country.tgz
 .PHONY: data-geoip-download
 
 # ==============================================================================
