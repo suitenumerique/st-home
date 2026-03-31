@@ -20,7 +20,7 @@
 	# Rate limiting - general
 	rate_limit {
 		zone general {
-			key {http.request.header.X-Forwarded-For}
+			key {client_ip}
 			events {$RATE_LIMIT_GENERAL_EVENTS:100}
 			window {$RATE_LIMIT_GENERAL_WINDOW:10s}
 		}
@@ -30,7 +30,7 @@
 	route /api/* {
 		rate_limit {
 			zone api {
-				key {http.request.header.X-Forwarded-For}
+				key {client_ip}
 				events {$RATE_LIMIT_API_EVENTS:20}
 				window {$RATE_LIMIT_API_WINDOW:10s}
 			}
