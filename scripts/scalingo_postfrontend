@@ -10,9 +10,10 @@ make data-geoip-download
 mv data/* .
 mv src/caddy/* .
 
-echo "-----> Downloading Caddy with plugins"
+CADDY_VERSION="v2.11.2"
+echo "-----> Downloading Caddy ${CADDY_VERSION} with plugins"
 mkdir -p bin
-curl -LSs -o bin/caddy "https://caddyserver.com/api/download?os=linux&arch=amd64&p=github.com/mholt/caddy-ratelimit&p=github.com/porech/caddy-maxmind-geolocation"
+curl -LSs -o bin/caddy "https://caddyserver.com/api/download?os=linux&arch=amd64&version=${CADDY_VERSION}&p=github.com/mholt/caddy-ratelimit&p=github.com/porech/caddy-maxmind-geolocation"
 chmod +x bin/caddy
 
 echo "3.13" > .python-version

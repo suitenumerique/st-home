@@ -159,7 +159,7 @@ data-lint-check:  ## Check data code linting without fixing
 data-geoip-download:  ## Download the GeoLite2-Country database from Elastic's GeoIP service
 	mkdir -p data/dumps && \
 	curl -LSs 'https://geoip.elastic.co/v1/database?elastic_geoip_service_tos=agree' | \
-	python3 -c "import json,sys;print(next(d['url'] for d in json.load(sys.stdin) if d['name']=='GeoLite2-Country.tgz'))" | \
+	python3 -c "import json,sys;urls=[d['url'] for d in json.load(sys.stdin) if d['name']=='GeoLite2-Country.tgz'];assert urls,'GeoLite2-Country.tgz not found';print(urls[0])" | \
 	xargs curl -LSs -o /tmp/GeoLite2-Country.tgz && \
 	tar -xzf /tmp/GeoLite2-Country.tgz -C data/dumps GeoLite2-Country.mmdb && \
 	mv data/dumps/GeoLite2-Country.mmdb data/dumps/geoip-country.mmdb && \
