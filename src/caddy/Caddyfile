@@ -21,7 +21,7 @@
 	rate_limit {
 		zone general {
 			key {client_ip}
-			events {$RATE_LIMIT_GENERAL_EVENTS:100}
+			events {$RATE_LIMIT_GENERAL_EVENTS:200}
 			window {$RATE_LIMIT_GENERAL_WINDOW:10s}
 		}
 	}

@@ -43,4 +43,5 @@ trap "pkill SIGTERM -P $$" SIGTERM
 # wait for a single child to finish,
 wait -n
 # then kill all the other tasks
-pkill -P $$
+pkill -P $$ 2>/dev/null || true
+wait
