@@ -8,7 +8,7 @@
 
 :{$PORT} {
 	log {
-		output discard
+		output stderr
 	}
 
 	# IP Blocklist (generated from $BLOCKLIST, comma-separated IPs/CIDRs)
