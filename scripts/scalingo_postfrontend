@@ -11,9 +11,29 @@ mv data/* .
 mv src/caddy/* .
 
 CADDY_VERSION="v2.11.2"
-echo "-----> Downloading Caddy ${CADDY_VERSION} with plugins"
+GO_VERSION="1.24.2"
+GO_SHA256="68097bd680839cbc9d464a0edce4f7c333975e27a90246890e9f1078c7e702ad"
+XCADDY_VERSION="v0.4.4"
+
+echo "-----> Installing Go ${GO_VERSION}"
+curl -LSs -o /tmp/go.tar.gz "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
+echo "${GO_SHA256}  /tmp/go.tar.gz" | sha256sum -c -
+tar -xzf /tmp/go.tar.gz -C /tmp
+export PATH="/tmp/go/bin:${PATH}"
+export GOPATH="/tmp/gopath"
+
+echo "-----> Installing xcaddy ${XCADDY_VERSION}"
+go install "github.com/caddyserver/xcaddy/cmd/xcaddy@${XCADDY_VERSION}"
+
+echo "-----> Building Caddy ${CADDY_VERSION} with plugins"
 mkdir -p bin
-curl -LSs -o bin/caddy "https://caddyserver.com/api/download?os=linux&arch=amd64&version=${CADDY_VERSION}&p=github.com/mholt/caddy-ratelimit&p=github.com/porech/caddy-maxmind-geolocation"
-chmod +x bin/caddy
+"${GOPATH}/bin/xcaddy" build "${CADDY_VERSION}" \
+  --with github.com/mholt/caddy-ratelimit \
+  --with github.com/porech/caddy-maxmind-geolocation \
+  --output bin/caddy
+
+echo "-----> Cleaning up Go toolchain"
+chmod -R u+w "${GOPATH}" 2>/dev/null || true
+rm -rf /tmp/go /tmp/go.tar.gz "${GOPATH}"
 
 echo "3.13" > .python-version
