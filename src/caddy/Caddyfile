@@ -37,6 +37,11 @@
 		}
 	}
 
+	handle_errors {
+		@ratelimited expression `{err.status_code} == 429`
+		respond @ratelimited "Rate limit exceeded" 429
+	}
+
 	# Reverse proxy to Next.js
 	reverse_proxy localhost:3000 {
 		header_up X-Forwarded-Proto https
