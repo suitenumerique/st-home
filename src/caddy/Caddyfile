@@ -11,10 +11,10 @@
 		output stderr
 	}
 
-	# IP Blocklist (generated from $BLOCKLIST, comma-separated IPs/CIDRs)
+	# IP Blocklist (generated from $ACL_BLOCKED_IPS, comma-separated IPs/CIDRs)
 	import blocklist.caddy
 
-	# Geo-blocking (generated from $GEO_ALLOWED_COUNTRIES, comma-separated country codes)
+	# Geo-blocking (generated from $ACL_ALLOWED_COUNTRIES, comma-separated country codes)
 	import geoblocking.caddy
 
 	# Rate limiting - general: 100 req / 10s per IP

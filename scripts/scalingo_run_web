@@ -4,25 +4,25 @@
 # During an incident, replace "-" with actual values (e.g. "1.2.3.4" or "FR").
 DISABLED="-"
 
-# Generate blocklist snippet from $BLOCKLIST (comma-separated IPs/CIDRs, e.g. "1.2.3.4,5.6.7.0/24")
-if [ -n "$BLOCKLIST" ] && [ "$BLOCKLIST" != "$DISABLED" ]; then
-  BLOCKLIST_SPACED=$(echo "$BLOCKLIST" | tr ',' ' ')
+# Generate blocklist snippet from $ACL_BLOCKED_IPS (comma-separated IPs/CIDRs, e.g. "1.2.3.4,5.6.7.0/24")
+if [ -n "$ACL_BLOCKED_IPS" ] && [ "$ACL_BLOCKED_IPS" != "$DISABLED" ]; then
+  BLOCKED_IPS_SPACED=$(echo "$ACL_BLOCKED_IPS" | tr ',' ' ')
   cat > blocklist.caddy <<EOF
-@blocked client_ip $BLOCKLIST_SPACED
+@blocked client_ip $BLOCKED_IPS_SPACED
 respond @blocked "Access denied" 403
 EOF
 else
   : > blocklist.caddy
 fi
 
-# Generate geo-blocking snippet from $GEO_ALLOWED_COUNTRIES (comma-separated country codes, e.g. "FR,DE")
-if [ -n "$GEO_ALLOWED_COUNTRIES" ] && [ "$GEO_ALLOWED_COUNTRIES" != "$DISABLED" ]; then
-  GEO_SPACED=$(echo "$GEO_ALLOWED_COUNTRIES" | tr ',' ' ')
+# Generate geo-blocking snippet from $ACL_ALLOWED_COUNTRIES (comma-separated country codes, e.g. "FR,DE")
+if [ -n "$ACL_ALLOWED_COUNTRIES" ] && [ "$ACL_ALLOWED_COUNTRIES" != "$DISABLED" ]; then
+  ALLOWED_COUNTRIES_SPACED=$(echo "$ACL_ALLOWED_COUNTRIES" | tr ',' ' ')
   cat > geoblocking.caddy <<EOF
 @geoblocked not {
 	maxmind_geolocation {
 		db_path ./dumps/geoip-country.mmdb
-		allow_countries $GEO_SPACED
+		allow_countries $ALLOWED_COUNTRIES_SPACED
 	}
 }
 respond @geoblocked "Access denied" 403
