@@ -1,3 +1,14 @@
+# Caddy reverse proxy for Next.js with security features.
+#
+# Environment variables:
+#   PORT                  — listening port (required)
+#   ACL_BLOCKED_IPS       — space-separated IPs/CIDRs to block (empty = open)
+#                           e.g. "1.2.3.4 5.6.7.0/24"
+#   ACL_ALLOWED_COUNTRIES — space-separated country codes to allow (empty = open)
+#                           e.g. "FR DE BE"
+#   RATE_LIMIT_EVENTS     — max requests per IP per window (empty = no rate limiting)
+#   RATE_LIMIT_WINDOW     — rate limit window duration (default: 10s)
+
 {
 	auto_https off
 	admin off
@@ -11,31 +22,19 @@
 		output stderr
 	}
 
-	# IP Blocklist (generated from $ACL_BLOCKED_IPS, comma-separated IPs/CIDRs)
-	import blocklist.caddy
+	# IP blocklist — empty = open (space-separated IPs/CIDRs)
+	@blocked client_ip {$ACL_BLOCKED_IPS}
+	respond @blocked "Access denied" 403
 
-	# Geo-blocking (generated from $ACL_ALLOWED_COUNTRIES, comma-separated country codes)
-	import geoblocking.caddy
-
-	# Rate limiting - general
-	rate_limit {
-		zone general {
-			key {client_ip}
-			events {$RATE_LIMIT_GENERAL_EVENTS:200}
-			window {$RATE_LIMIT_GENERAL_WINDOW:10s}
-		}
+	# Geo-blocking — empty = open (space-separated country codes)
+	@geoblocked not maxmind_geolocation {
+		db_path dumps/geoip-country.mmdb
+		allow_countries {$ACL_ALLOWED_COUNTRIES}
 	}
+	respond @geoblocked "Access denied" 403
 
-	# Rate limiting - API
-	route /api/* {
-		rate_limit {
-			zone api {
-				key {client_ip}
-				events {$RATE_LIMIT_API_EVENTS:20}
-				window {$RATE_LIMIT_API_WINDOW:10s}
-			}
-		}
-	}
+	# Rate limiting — empty = disabled
+	import ratelimit.caddy
 
 	handle_errors {
 		@ratelimited expression `{err.status_code} == 429`
