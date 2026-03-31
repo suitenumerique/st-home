@@ -1,9 +1,12 @@
 #!/bin/bash
 
+# Scalingo does not support empty env vars, so we use "-" as a placeholder meaning "disabled".
+# During an incident, replace "-" with actual values (e.g. "1.2.3.4" or "FR").
+DISABLED="-"
+
 # Generate blocklist snippet from $BLOCKLIST (comma-separated IPs/CIDRs, e.g. "1.2.3.4,5.6.7.0/24")
-BLOCKLIST_CLEANED=$(echo "$BLOCKLIST" | tr -d ' ')
-if [ -n "$BLOCKLIST_CLEANED" ]; then
-  BLOCKLIST_SPACED=$(echo "$BLOCKLIST_CLEANED" | tr ',' ' ')
+if [ -n "$BLOCKLIST" ] && [ "$BLOCKLIST" != "$DISABLED" ]; then
+  BLOCKLIST_SPACED=$(echo "$BLOCKLIST" | tr ',' ' ')
   cat > blocklist.caddy <<EOF
 @blocked client_ip $BLOCKLIST_SPACED
 respond @blocked "Access denied" 403
@@ -13,9 +16,8 @@ else
 fi
 
 # Generate geo-blocking snippet from $GEO_ALLOWED_COUNTRIES (comma-separated country codes, e.g. "FR,DE")
-GEO_CLEANED=$(echo "$GEO_ALLOWED_COUNTRIES" | tr -d ' ')
-if [ -n "$GEO_CLEANED" ]; then
-  GEO_SPACED=$(echo "$GEO_CLEANED" | tr ',' ' ')
+if [ -n "$GEO_ALLOWED_COUNTRIES" ] && [ "$GEO_ALLOWED_COUNTRIES" != "$DISABLED" ]; then
+  GEO_SPACED=$(echo "$GEO_ALLOWED_COUNTRIES" | tr ',' ' ')
   cat > geoblocking.caddy <<EOF
 @geoblocked not {
 	maxmind_geolocation {
