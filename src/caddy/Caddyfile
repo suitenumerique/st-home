@@ -17,22 +17,22 @@
 	# Geo-blocking (generated from $ACL_ALLOWED_COUNTRIES, comma-separated country codes)
 	import geoblocking.caddy
 
-	# Rate limiting - general: 100 req / 10s per IP
+	# Rate limiting - general
 	rate_limit {
 		zone general {
 			key {http.request.header.X-Forwarded-For}
-			events 100
-			window 10s
+			events {$RATE_LIMIT_GENERAL_EVENTS:100}
+			window {$RATE_LIMIT_GENERAL_WINDOW:10s}
 		}
 	}
 
-	# Rate limiting - API: 20 req / 10s per IP
+	# Rate limiting - API
 	route /api/* {
 		rate_limit {
 			zone api {
 				key {http.request.header.X-Forwarded-For}
-				events 20
-				window 10s
+				events {$RATE_LIMIT_API_EVENTS:20}
+				window {$RATE_LIMIT_API_WINDOW:10s}
 			}
 		}
 	}
