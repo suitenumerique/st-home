@@ -134,10 +134,11 @@ const DeploiementMap = () => {
 
         if (level === "city") {
           const city = stats.find((city: { id: string }) => city.id === siret);
-          return {
-            n_cities: 1,
-            score: city ? 1 : 0,
-          };
+          if (!city) return { n_cities: 1, score: 0 };
+          const hasService = serviceIds?.length
+            ? city.all_services?.some((s: string) => serviceIds.includes(Number(s)))
+            : (city.all_services?.length ?? 0) > 0;
+          return { n_cities: 1, score: hasService ? 1 : 0 };
         } else {
           let nTotalCities;
           if (level === "country") {

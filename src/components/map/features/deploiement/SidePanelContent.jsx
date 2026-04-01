@@ -61,13 +61,27 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     });
   };
 
+  const HIDDEN_SERVICES = ["Mes Services Cyber", "Toutes et tous connecté·e·s", "Agents en intervention", "Docs", "Visio"];
+
+  const getMergedStats = (mergedIds) => ({
+    communes: mergedIds.reduce((sum, id) => sum + (scopedStats.find(s => s.id === parseInt(id))?.communes || 0), 0),
+    epci: mergedIds.reduce((sum, id) => sum + (scopedStats.find(s => s.id === parseInt(id))?.epci || 0), 0),
+    autoheberge: mergedIds.reduce((sum, id) => sum + (scopedStats.find(s => s.id === parseInt(id))?.autoheberge || 0), 0),
+    opsn_partenaire: mergedIds.reduce((sum, id) => sum + (scopedStats.find(s => s.id === parseInt(id))?.opsn_partenaire || 0), 0),
+    total: mergedIds.reduce((sum, id) => sum + (scopedStats.find(s => s.id === parseInt(id))?.total || 0), 0),
+  });
+
   const sortedServices = useMemo(() => {
     const servicesList = Array.isArray(services) ? services : [];
     if (!scopedStats.length) return servicesList;
     return [...servicesList].sort((a, b) => {
-      const aStats = scopedStats.find(s => s.id === parseInt(a.id));
-      const bStats = scopedStats.find(s => s.id === parseInt(b.id));
-      return (bStats?.total || 0) - (aStats?.total || 0);
+      const aTotal = a._mergedIds
+        ? a._mergedIds.reduce((sum, id) => sum + (scopedStats.find(s => s.id === parseInt(id))?.total || 0), 0)
+        : (scopedStats.find(s => s.id === parseInt(a.id))?.total || 0);
+      const bTotal = b._mergedIds
+        ? b._mergedIds.reduce((sum, id) => sum + (scopedStats.find(s => s.id === parseInt(id))?.total || 0), 0)
+        : (scopedStats.find(s => s.id === parseInt(b.id))?.total || 0);
+      return bTotal - aTotal;
     });
   }, [services, scopedStats]);
 
@@ -77,8 +91,24 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     const fetchServices = async () => {
       const response = await fetch("/api/deployment/services");
       const data = await response.json();
+      console.log(data);
       const normalizedServices = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
-      setServices(normalizedServices);
+      const filtered = normalizedServices.filter((s) => !HIDDEN_SERVICES.includes(s.name));
+
+      const proconnectServices = filtered.filter((s) => s.type === "proconnect");
+      const otherServices = filtered.filter((s) => s.type !== "proconnect");
+
+      if (proconnectServices.length > 1) {
+        const merged = {
+          ...proconnectServices[0],
+          id: "proconnect-merged",
+          name: "ProConnect",
+          _mergedIds: proconnectServices.map((s) => s.id),
+        };
+        setServices([...otherServices, merged]);
+      } else {
+        setServices(filtered);
+      }
     };
     fetchServices();
   }, []);
@@ -202,10 +232,14 @@ const serviceDetails = (service, stats, compact = false) => {
     return (
       <div className={styles.serviceList}>
         {displayedServices.map((service) => {
-          const stats = scopedStats.find(s => s.id === parseInt(service.id));
+          const stats = service._mergedIds
+            ? getMergedStats(service._mergedIds)
+            : scopedStats.find(s => s.id === parseInt(service.id));
           const count = getServiceCount(stats);
           const isExpanded = expandedServices.has(service.id);
-          const isSelected = !!(mapState.filters.service_ids?.includes(service.id));
+          const isSelected = service._mergedIds
+            ? !!(mapState.filters.service_ids?.some(id => service._mergedIds.includes(id)))
+            : !!(mapState.filters.service_ids?.includes(service.id));
           const isDimmed = !!(mapState.filters.service_ids?.length > 0 && !isSelected);
 
           if (singleService) {
@@ -229,7 +263,8 @@ const serviceDetails = (service, stats, compact = false) => {
                       className={`${styles.productCheckbox} ${isSelected ? styles.productCheckboxSelected : ''}`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: isSelected ? null : [service.id] } });
+                        const newIds = isSelected ? null : (service._mergedIds || [service.id]);
+                        setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: newIds } });
                       }}
                       onMouseEnter={() => setHoveredServiceId(service.id)}
                       onMouseLeave={() => setHoveredServiceId(null)}
@@ -264,10 +299,14 @@ const serviceDetails = (service, stats, compact = false) => {
 
   const communeInfo = () => (
     <div>
-      <h3 className={styles.serviceListTitle}>Produits</h3>
+      <h3 className={styles.serviceListTitle}>Services</h3>
       {mapState.selectedAreas?.city?.additionalCityStats?.all_services && (
         services.map((service) => {
-          if (!mapState.selectedAreas.city.additionalCityStats.all_services.includes(service.id)) {
+          const cityServices = mapState.selectedAreas.city.additionalCityStats.all_services;
+          const isUsed = service._mergedIds
+            ? service._mergedIds.some(id => cityServices.includes(id))
+            : cityServices.includes(service.id);
+          if (!isUsed) {
             return null;
           }
           return (
@@ -313,11 +352,6 @@ const serviceDetails = (service, stats, compact = false) => {
         <div className={styles.levelHeader}>
           <div>
             <h2 className={styles.areaTitle}>{currentPageLabel || "France"}</h2>
-            {usageStats?.n_cities != null && (
-              <p className={styles.areaSub}>
-                {formatNumber(usageStats.n_cities)} structure{usageStats.n_cities !== 1 ? 's' : ''} utilisatrice{usageStats.n_cities !== 1 ? 's' : ''}
-              </p>
-            )}
           </div>
           <div className={styles.headerActions}>
             <MapButton
