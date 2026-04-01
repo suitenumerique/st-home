@@ -1,5 +1,10 @@
 import { db } from "@/lib/db";
-import { organizations, organizationsToServices, services } from "@/lib/schema";
+import {
+  organizations,
+  organizationsToOperators,
+  organizationsToServices,
+  services,
+} from "@/lib/schema";
 import { sql } from "drizzle-orm";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -10,7 +15,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(405).json({ error: "Method not allowed" });
     }
 
-    const { scope = "list-commune", service_id, dep, reg, epci, commune } = req.query;
+    const {
+      scope = "list-commune",
+      service_id,
+      dep,
+      reg,
+      epci,
+      commune,
+      org_type = "commune",
+    } = req.query;
 
     // Build query based on scope
     let query;
@@ -62,31 +75,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } else if (scope === "list-commune") {
       // Group by commune - include communes with and without services
       query = sql`
-        SELECT 
+        SELECT
           ${organizations.siret} as id,
           ${organizations.insee_dep} as dep,
           ${organizations.insee_reg} as reg,
+          ${organizations.epci_siren} as epci_siren,
           COALESCE((ARRAY_AGG(DISTINCT ${organizationsToServices.serviceId}) FILTER (WHERE ${organizationsToServices.serviceId} IS NOT NULL))::integer[], ARRAY[]::integer[]) as all_services,
           COALESCE((ARRAY_AGG(DISTINCT ${organizationsToServices.serviceId}) FILTER (WHERE ${organizationsToServices.active} = true AND ${organizationsToServices.serviceId} IS NOT NULL))::integer[], ARRAY[]::integer[]) as active_services
         FROM ${organizations}
         LEFT JOIN ${organizationsToServices} ON ${organizations.siret} = ${organizationsToServices.organizationSiret}
         ${service_id ? sql`LEFT JOIN ${services} ON ${organizationsToServices.serviceId} = ${services.id}` : sql``}
-        WHERE ${organizations.type} = 'commune'
+        WHERE ${organizations.type} = ${org_type as string}
         ${service_id ? sql`AND (${services.id} = ${parseInt(service_id as string, 10)} OR ${organizationsToServices.serviceId} IS NULL)` : sql``}
         ${dep ? sql`AND ${organizations.insee_dep} = ${dep as string}` : sql``}
-        GROUP BY ${organizations.siret}, ${organizations.insee_dep}, ${organizations.insee_reg}
+        GROUP BY ${organizations.siret}, ${organizations.insee_dep}, ${organizations.insee_reg}, ${organizations.epci_siren}
       `;
     } else if (scope === "list-service") {
-      // Group by service - show number of communes using each service
+      // Group by service - show number of structures using each service with breakdown
       query = sql`
-        SELECT 
+        SELECT
           ${services.id}::int as id,
           COUNT(DISTINCT ${organizationsToServices.organizationSiret})::int as total,
-          COUNT(DISTINCT CASE WHEN ${organizationsToServices.active} = true THEN ${organizationsToServices.organizationSiret} END)::int as active
+          COUNT(DISTINCT CASE WHEN ${organizationsToServices.active} = true THEN ${organizationsToServices.organizationSiret} END)::int as active,
+          COUNT(DISTINCT CASE WHEN ${organizations.type} = 'commune' THEN ${organizationsToServices.organizationSiret} END)::int as communes,
+          COUNT(DISTINCT CASE WHEN ${organizations.type} = 'epci' THEN ${organizationsToServices.organizationSiret} END)::int as epci,
+          COUNT(DISTINCT CASE WHEN has_operator.organization_siret IS NULL THEN ${organizationsToServices.organizationSiret} END)::int as autoheberge,
+          COUNT(DISTINCT CASE WHEN has_operator.organization_siret IS NOT NULL THEN ${organizationsToServices.organizationSiret} END)::int as opsn_partenaire
         FROM ${services}
         INNER JOIN ${organizationsToServices} ON ${services.id} = ${organizationsToServices.serviceId}
         INNER JOIN ${organizations} ON ${organizationsToServices.organizationSiret} = ${organizations.siret}
-        WHERE ${organizations.type} = 'commune'
+        LEFT JOIN (
+          SELECT DISTINCT organization_siret FROM ${organizationsToOperators}
+        ) has_operator ON ${organizations.siret} = has_operator.organization_siret
+        WHERE 1=1
         ${dep ? sql`AND ${organizations.insee_dep} = ${dep as string}` : sql``}
         ${reg ? sql`AND ${organizations.insee_reg} = ${reg as string}` : sql``}
         ${epci ? sql`AND ${organizations.epci_siren} = ${epci as string}` : sql``}

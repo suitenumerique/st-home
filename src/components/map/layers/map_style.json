@@ -16,7 +16,7 @@
       "id": "background",
       "type": "background",
       "paint": {
-        "background-color": "#cfd3d4"
+        "background-color": "#e8eaeb"
       },
       "layout": {}
     },
@@ -455,7 +455,7 @@
       "minzoom": 15,
       "layout": {},
       "paint": {
-        "fill-color": "#cfd3d4"
+        "fill-color": "#e8eaeb"
       }
     },
     {
@@ -513,7 +513,7 @@
         "line-join": "round"
       },
       "paint": {
-        "line-color": "#cfd3d4",
+        "line-color": "#e8eaeb",
         "line-width": {
           "base": 1.2,
           "stops": [
@@ -544,7 +544,7 @@
         "line-join": "round"
       },
       "paint": {
-        "line-color": "#cfd3d4",
+        "line-color": "#e8eaeb",
         "line-width": 0.8,
         "line-dasharray": [
           5,
@@ -603,7 +603,7 @@
         "line-join": "round"
       },
       "paint": {
-        "line-color": "#cfd3d4",
+        "line-color": "#e8eaeb",
         "line-width": {
           "base": 1.2,
           "stops": [
@@ -660,7 +660,7 @@
         "line-cap": "round"
       },
       "paint": {
-        "line-color": "#cfd3d4",
+        "line-color": "#e8eaeb",
         "line-width": {
           "base": 1.2,
           "stops": [
@@ -693,7 +693,7 @@
       "minzoom": 11,
       "layout": {},
       "paint": {
-        "line-color": "#cfd3d4",
+        "line-color": "#e8eaeb",
         "line-dasharray": [
           7,
           3
@@ -732,7 +732,7 @@
         "line-cap": "round"
       },
       "paint": {
-        "line-color": "#cfd3d4",
+        "line-color": "#e8eaeb",
         "line-width": {
           "base": 1.2,
           "stops": [
@@ -760,7 +760,7 @@
       "minzoom": 4,
       "layout": {},
       "paint": {
-        "fill-color": "#cfd3d4"
+        "fill-color": "#e8eaeb"
       }
     },
     {
@@ -772,7 +772,7 @@
       "maxzoom": 5,
       "layout": {},
       "paint": {
-        "fill-color": "#cfd3d4"
+        "fill-color": "#e8eaeb"
       }
     },
     {
@@ -806,7 +806,7 @@
       "maxzoom": 7,
       "layout": {},
       "paint": {
-        "fill-color": "#cfd3d4"
+        "fill-color": "#e8eaeb"
       }
     },
     {
@@ -840,7 +840,7 @@
       "maxzoom": 11,
       "layout": {},
       "paint": {
-        "fill-color": "#cfd3d4"
+        "fill-color": "#e8eaeb"
       }
     },
     {
@@ -856,7 +856,7 @@
       "minzoom": 11,
       "layout": {},
       "paint": {
-        "fill-color": "#cfd3d4"
+        "fill-color": "#e8eaeb"
       }
     },
     {

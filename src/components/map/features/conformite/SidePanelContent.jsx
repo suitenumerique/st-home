@@ -1,7 +1,7 @@
 import { Select } from "@codegouvfr/react-dsfr/Select";
 import { fr } from "@codegouvfr/react-dsfr";
 import PropTypes from "prop-types";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import CommuneSearch from "../../../CommuneSearch";
 import CommuneInfo from "../../../onboarding/CommuneInfo";
 import Breadcrumb from "../../ui/Breadcrumb";
@@ -17,6 +17,13 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
 
   const [showCriteriaSelector, setShowCriteriaSelector] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+
+  const handlePeriodChange = useCallback((period) => {
+    setMapState((prev) => ({
+      ...prev,
+      filters: { ...prev.filters, period },
+    }));
+  }, [setMapState]);
 
   const formatNumber = (value) => {
     return new Intl.NumberFormat("fr-FR").format(value);
@@ -529,12 +536,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
                     history={history}
                     selectedRef={mapState.filters.rcpnt_ref}
                     selectedPeriod={mapState.filters.period || "current"}
-                    onPeriodChange={(period) => {
-                      setMapState((prev) => ({
-                        ...prev,
-                        filters: { ...prev.filters, period },
-                      }));
-                    }}
+                    onPeriodChange={handlePeriodChange}
                   />
                   
                 </>

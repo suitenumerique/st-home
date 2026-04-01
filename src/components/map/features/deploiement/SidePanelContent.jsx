@@ -1,22 +1,30 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import PropTypes from "prop-types";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import CommuneSearch from "../../../CommuneSearch";
-// import CommuneInfo from "../../../onboarding/CommuneInfo";
 import Breadcrumb from "../../ui/Breadcrumb";
 import MapButton from "../../ui/MapButton";
-import { RadioButtons } from "@codegouvfr/react-dsfr/RadioButtons";
-import { Button } from "@codegouvfr/react-dsfr/Button";
-import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
-import styles from "../../../../styles/cartographie-deploiement.module.css";
-import { Checkbox } from "@codegouvfr/react-dsfr/Checkbox";
+import styles from "./SidePanelContent.module.css";
 
-const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, setPanelState,  computeAreaStats }) => {
+const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats }) => {
 
   const [linkCopied, setLinkCopied] = useState(false);
   const [services, setServices] = useState([]);
   const [scopedStats, setScopedStats] = useState([]);
+  const [expandedServices, setExpandedServices] = useState(new Set());
   const [hoveredServiceId, setHoveredServiceId] = useState(null);
+  const [openDropdown, setOpenDropdown] = useState(null); // 'structure' | null
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside, true);
+    return () => document.removeEventListener('mousedown', handleClickOutside, true);
+  }, []);
 
   const formatNumber = (value) => {
     return new Intl.NumberFormat("fr-FR").format(value);
@@ -44,68 +52,78 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
     return null;
   }, [mapState.selectedAreas, mapState.currentLevel]);
 
-  const currentLevelLabel = useMemo(() => {
-    if (mapState.currentLevel === "country") {
-      return null;
-    }
-    if (mapState.currentLevel === "department" && ["971", "972", "973", "974", "976"].includes(mapState.selectedAreas.department.insee_geo)) {
-      return "DROM";
-    }
-    return {
-      region: "Région",
-      department: "Département",
-      epci: "EPCI",
-    }[mapState.currentLevel];
-  }, [mapState.currentLevel, mapState.selectedAreas]);
+  const toggleService = (serviceId) => {
+    setExpandedServices(prev => {
+      const next = new Set(prev);
+      if (next.has(serviceId)) next.delete(serviceId);
+      else next.add(serviceId);
+      return next;
+    });
+  };
 
-  const levelStatsDisplay = useMemo(() => {
-    if (mapState.selectedAreas.city  || !mapState.selectedAreas[mapState.currentLevel]) {
-      return null;
-    }
+  const HIDDEN_SERVICES = ["Mes Services Cyber", "Toutes et tous connecté·e·s", "Agents en intervention", "Docs", "Visio"];
 
-    const usageStats = computeAreaStats(
-      mapState.currentLevel,
-      mapState.selectedAreas[mapState.currentLevel]?.insee_geo || "",
-      mapState.selectedAreas.department,
-    );
+  const getMergedStats = (mergedIds) => ({
+    communes: mergedIds.reduce((sum, id) => sum + (scopedStats.find(s => s.id === parseInt(id))?.communes || 0), 0),
+    epci: mergedIds.reduce((sum, id) => sum + (scopedStats.find(s => s.id === parseInt(id))?.epci || 0), 0),
+    autoheberge: mergedIds.reduce((sum, id) => sum + (scopedStats.find(s => s.id === parseInt(id))?.autoheberge || 0), 0),
+    opsn_partenaire: mergedIds.reduce((sum, id) => sum + (scopedStats.find(s => s.id === parseInt(id))?.opsn_partenaire || 0), 0),
+    total: mergedIds.reduce((sum, id) => sum + (scopedStats.find(s => s.id === parseInt(id))?.total || 0), 0),
+  });
 
-    const servicesStats = services.map((service) => {
-      const serviceStats = scopedStats.find((data) => data.id === parseInt(service.id));
+  const sortedServices = useMemo(() => {
+    const servicesList = Array.isArray(services) ? services : [];
+    if (!scopedStats.length) return servicesList;
+    return [...servicesList].sort((a, b) => {
+      const aTotal = a._mergedIds
+        ? a._mergedIds.reduce((sum, id) => sum + (scopedStats.find(s => s.id === parseInt(id))?.total || 0), 0)
+        : (scopedStats.find(s => s.id === parseInt(a.id))?.total || 0);
+      const bTotal = b._mergedIds
+        ? b._mergedIds.reduce((sum, id) => sum + (scopedStats.find(s => s.id === parseInt(id))?.total || 0), 0)
+        : (scopedStats.find(s => s.id === parseInt(b.id))?.total || 0);
+      return bTotal - aTotal;
+    });
+  }, [services, scopedStats]);
 
-      return {
-        ...service,
-        value: serviceStats?.total || 0,
-      }
-    }).sort((a, b) => b.value - a.value);
-    
-    return {
-      n_cities: usageStats?.n_cities,
-      n_total_cities: usageStats?.n_total_cities,
-      services: servicesStats,
-    }
-
-  }, [mapState.selectedAreas, mapState.currentLevel, computeAreaStats, services, scopedStats]);
+  const displayedServices = sortedServices;
 
   useEffect(() => {
     const fetchServices = async () => {
       const response = await fetch("/api/deployment/services");
       const data = await response.json();
-      setServices(data);
-    }
+      console.log(data);
+      const normalizedServices = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+      const filtered = normalizedServices.filter((s) => !HIDDEN_SERVICES.includes(s.name));
+
+      const proconnectServices = filtered.filter((s) => s.type === "proconnect");
+      const otherServices = filtered.filter((s) => s.type !== "proconnect");
+
+      if (proconnectServices.length > 1) {
+        const merged = {
+          ...proconnectServices[0],
+          id: "proconnect-merged",
+          name: "ProConnect",
+          _mergedIds: proconnectServices.map((s) => s.id),
+        };
+        setServices([...otherServices, merged]);
+      } else {
+        setServices(filtered);
+      }
+    };
     fetchServices();
   }, []);
 
   useEffect(() => {
     const fetchScopedStats = async () => {
-      if (mapState.selectedAreas.city || !mapState.selectedAreas[mapState.currentLevel]) {
+      if (mapState.selectedAreas.city) {
         setScopedStats([]);
         return;
       }
 
       let filter = '';
-      if (mapState.currentLevel === 'region') {
+      if (mapState.currentLevel === 'region' && mapState.selectedAreas.region) {
         filter = `&reg=${mapState.selectedAreas.region.insee_geo.replace("r", "")}`;
-      } else if (mapState.currentLevel === 'department') {
+      } else if (mapState.currentLevel === 'department' && mapState.selectedAreas.department) {
         filter = `&dep=${mapState.selectedAreas.department.insee_geo}`;
       }
 
@@ -122,239 +140,251 @@ const SidePanelContent = ({ container, rcpntRefs, getColor, mapState, selectLeve
     fetchScopedStats();
   }, [mapState.selectedAreas, mapState.currentLevel]);
 
-  const breadcrumbs = () => {
-    return (
-      <div>
-        <Breadcrumb
-          segments={breadcrumbSegments}
-          currentPageLabel={
-            mapState.currentLevel === "city"
+  const usageStats = useMemo(() => {
+    if (mapState.selectedAreas.city) return null;
+    return computeAreaStats(
+      mapState.currentLevel,
+      mapState.selectedAreas[mapState.currentLevel]?.insee_geo || "",
+      "",
+    );
+  }, [mapState.currentLevel, mapState.selectedAreas, mapState.filters, computeAreaStats]);
+
+  const orgType = mapState.filters.org_type ?? 'all';
+
+  const getServiceCount = (stats) => {
+    if (!stats) return 0;
+    if (orgType === 'commune') return stats.communes || 0;
+    if (orgType === 'epci') return stats.epci || 0;
+    return stats.total || 0;
+  };
+
+  const breadcrumbs = () => (
+    <div>
+      <Breadcrumb
+        segments={breadcrumbSegments}
+        currentPageLabel={
+          mapState.currentLevel === "city"
             ? mapState.selectedAreas.city.name + " (" + mapState.selectedAreas.city.zipcode + ")"
             : currentPageLabel
-          } />
-      </div>
-    )
-  }
+        }
+      />
+    </div>
+  );
 
-  const levelHeader = () => {
-    return (
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-        <div>
-          <h3 className={fr.cx("fr-mb-0")} style={{ color: "var(--text-title-blue-france)" }}>
-            {currentPageLabel}
-          </h3>
-          {!mapState.selectedAreas.city && levelStatsDisplay && (
-            <p className={fr.cx("fr-text--lg fr-mb-0")} style={{ color: "var(--text-title-blue-france)" }}>
-              {[
-                currentLevelLabel,
-                `${formatNumber(levelStatsDisplay.n_total_cities)} collectivités`,
-              ]
-                .filter(Boolean)
-                .join(" - ")}
-            </p>
-          )}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "8px" }}>
-          <MapButton
-            onClick={() => {
-              navigator.clipboard.writeText(window.location.href);
-              setLinkCopied(true);
-              setTimeout(() => {
-                setLinkCopied(false);
-              }, 2000);
-            }}
-            aria-label="Copier l'URL de cette vue"
-            tooltip={linkCopied ? "URL copiée" : "Copier l'URL de cette vue"}
-          >
-            {linkCopied ? (
-              <span aria-hidden="true" className={fr.cx("fr-icon-check-line")}></span>
-            ) : (
-              <span className={fr.cx("fr-icon-links-line")} aria-hidden="true"></span>
-            )}
-          </MapButton>
-        </div>
-      </div>
-    )
-  }
+  const orgTypeLabel = { all: 'Toutes structures', commune: 'Communes', epci: 'EPCI' }[orgType];
 
-  const levelStats = () => {
-    return (
-      <div>
-        {/* <div style={{ marginBottom: "1.5rem" }}>
-          <ToggleSwitch
-            // checked={mapState.selectedAreas[mapState.currentLevel].conformityStats.n_cities_active}
-            // onChange={() => setMapState({ ...mapState, selectedAreas: { ...mapState.selectedAreas, [mapState.currentLevel]: { ...mapState.selectedAreas[mapState.currentLevel], conformityStats: { ...mapState.selectedAreas[mapState.currentLevel].conformityStats, n_cities_active: !mapState.selectedAreas[mapState.currentLevel].conformityStats.n_cities_active } } } })}
-            showCheckedHint={false}
-            containerWidth="100%"
-            label="Actives sur les 12 derniers mois"
-          />
-        </div> */}
-        <h3 style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "0.75rem" }}>
-          Produits
-        </h3>
-        <div className={styles.productItemsContainer}>
-          {levelStatsDisplay && levelStatsDisplay.services && levelStatsDisplay.services.map(({ id, name, logo_url, maturity, value }) => {
-            const isSelected = mapState.filters.service_ids && mapState.filters.service_ids.includes(id) || false;
-            const isDimmed = mapState.filters.service_ids && mapState.filters.service_ids.length > 0 && !mapState.filters.service_ids.includes(id);
-            
-            return (
-              <div
-                key={id}
-                className={`${styles.productItem} ${isSelected ? styles.selected : ''} ${isDimmed ? styles.dimmed : ''}`}
+  const filters = () => (
+    <div className={styles.filtersContainer} ref={dropdownRef}>
+      <div className={styles.filterDropdown}>
+        <button
+          className={styles.filterDropdownButton}
+          onClick={() => setOpenDropdown(openDropdown === 'structure' ? null : 'structure')}
+          aria-expanded={openDropdown === 'structure'}
+        >
+          {orgTypeLabel}
+          <span className={fr.cx("fr-icon-arrow-down-s-line fr-icon--sm")} aria-hidden="true"></span>
+        </button>
+        {openDropdown === 'structure' && (
+          <ul className={styles.filterDropdownMenu}>
+            {[['all', 'Toutes structures'], ['commune', 'Communes'], ['epci', 'EPCI']].map(([val, label]) => (
+              <li
+                key={val}
+                className={`${styles.filterDropdownOption} ${orgType === val ? styles.filterDropdownOptionActive : ''}`}
                 onClick={() => {
-                  const currentServiceIds = mapState.filters.service_ids || [];
-                  let newServiceIds;
-                  
-                  if (currentServiceIds.includes(id)) {
-                    newServiceIds = currentServiceIds.filter(serviceId => serviceId !== id);
-                  } else {
-                    newServiceIds = [...currentServiceIds, id];
-                  }
-                  const finalServiceIds = newServiceIds.length > 0 ? newServiceIds : null;
-                  
-                  setMapState({ 
-                    ...mapState, 
-                    filters: { 
-                      ...mapState.filters, 
-                      service_ids: finalServiceIds 
-                    } 
-                  });
-                }}
-                onMouseEnter={() => {
-                  setHoveredServiceId(id);
-                }}
-                onMouseLeave={() => {
-                  setHoveredServiceId(null);
+                  setMapState({ ...mapState, filters: { ...mapState.filters, org_type: val === 'all' ? null : val } });
+                  setOpenDropdown(null);
                 }}
               >
-                <div className={styles.productCheckbox}>
-                  {hoveredServiceId === id || isSelected ? (
-                    <span className={fr.cx("fr-icon-check-line")}></span>
-                  ) : (
-                    logo_url && (
-                      <img className={styles.productCheckboxImage} src={logo_url} alt={name} />
-                    )
-                  )}
-                </div>
-                <div className={styles.productItemContent}>
-                  <p className={styles.productItemName}>
-                    {name}  
-                    {
-                      maturity !== 'stable' && <span className={fr.cx("fr-badge fr-badge--sm fr-badge--info fr-badge--no-icon")} style={{ marginLeft: "0.4rem" }}>{maturity.toUpperCase()}</span>
-                    }
-                  </p>
-                  <div className={styles.productItemProgressBar}>
-                    <div style={{ width: 'calc(100% - 50px)', position: "relative" }}>
-                      <div
-                        style={{
-                          position: "absolute",
-                          left: "0",
-                          top: "0",
-                          zIndex: "1",
-                          opacity: levelStatsDisplay && (value / levelStatsDisplay.n_total_cities * 100 > 100) ? 0 : 1,
-                          width: `${levelStatsDisplay ? value / levelStatsDisplay.n_total_cities * 100 : 0}%`,
-                          height: "12px",
-                          backgroundColor: "#2A3C84",
-                          borderRadius: "4px",
-                          border: "1px solid rgba(255, 255, 255, 0.2)",
-                          boxSizing: "border-box",
-                          marginRight: "0.5rem",
-                        }}
-                      ></div>
-                      <div style={{ width: "100%", height: "12px", backgroundColor: "var(--background-alt-blue-france)", borderRadius: "4px" }}></div>
-                    </div>
-                    <span style={{ fontSize: "0.875rem", fontWeight: "bold", width: "50px", textAlign: "right", marginRight: "4px" }}>{formatNumber(value)}</span>
-                  </div>
-                </div>
+                {label}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+
+const serviceDetails = (service, stats, compact = false) => {
+    const communes = stats?.communes || 0;
+    const epci = stats?.epci || 0;
+    const autoheberge = stats?.autoheberge || 0;
+    const opsn = stats?.opsn_partenaire || 0;
+    return (
+      <div className={compact ? styles.serviceDetailsCompact : styles.serviceDetails}>
+        <ul className={styles.serviceDetailsList}>
+          {(orgType === 'all' || orgType === 'commune') && (
+            <li>Communes : <strong>{formatNumber(communes)}</strong></li>
+          )}
+          {(orgType === 'all' || orgType === 'epci') && (
+            <li>EPCI : <strong>{formatNumber(epci)}</strong></li>
+          )}
+        </ul>
+        <ul className={styles.serviceDetailsList}>
+          <li>Autohébergé : <strong>{formatNumber(autoheberge)}</strong></li>
+          <li>OPSN partenaire : <strong>{formatNumber(opsn)}</strong></li>
+        </ul>
+      </div>
+    );
+  };
+
+  const serviceList = () => {
+    const singleService = displayedServices.length === 1;
+    return (
+      <div className={styles.serviceList}>
+        {displayedServices.map((service) => {
+          const stats = service._mergedIds
+            ? getMergedStats(service._mergedIds)
+            : scopedStats.find(s => s.id === parseInt(service.id));
+          const count = getServiceCount(stats);
+          const isExpanded = expandedServices.has(service.id);
+          const isSelected = service._mergedIds
+            ? !!(mapState.filters.service_ids?.some(id => service._mergedIds.includes(id)))
+            : !!(mapState.filters.service_ids?.includes(service.id));
+          const isDimmed = !!(mapState.filters.service_ids?.length > 0 && !isSelected);
+
+          if (singleService) {
+            return (
+              <div key={service.id}>
+                {serviceDetails(service, stats, true)}
               </div>
             );
-          })}
-        </div>
-      </div>
-    )
-  }
+          }
 
-  const communeInfo = () => {
-    return (
-      <div>
-        <h3 style={{ fontSize: "1.25rem", fontWeight: "bold", marginBottom: "0.75rem" }}>
-          Produits
-        </h3>
-        {mapState.selectedAreas?.city?.additionalCityStats?.all_services && (
-          services
-          .map((service) => {
-            if (!mapState.selectedAreas.city.additionalCityStats.all_services.includes(service.id)) {
-              return null;
-            } else {
-              return (
-                <div
-                key={service.id}
-                className={`${styles.productItemNoHover}`}
+          return (
+            <div key={service.id} className={`${styles.serviceAccordion} ${isDimmed ? styles.dimmed : ''}`}>
+              <button
+                className={styles.serviceHeader}
+                onClick={() => toggleService(service.id)}
+                aria-expanded={isExpanded}
               >
-                <div style={{ display: "flex", alignItems: "center", marginBottom: "7px" }}>
-                  <img src={service.logo_url} alt={service.name} style={{ width: "18px", height: "18px", marginRight: "0.4rem" }} />
-                  <span style={{ fontSize: "0.875rem"}}>{service.name}&nbsp;</span>
-                  {
-                    service.maturity !== 'stable' && <span className={fr.cx("fr-badge fr-badge--sm fr-badge--info fr-badge--no-icon")}>{service.maturity.toUpperCase()}</span>
-                  }
+                <div className={styles.serviceHeaderLeft}>
+                  {service.logo_url && (
+                    <div
+                      className={`${styles.productCheckbox} ${isSelected ? styles.productCheckboxSelected : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const newIds = isSelected ? null : (service._mergedIds || [service.id]);
+                        setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: newIds } });
+                      }}
+                      onMouseEnter={() => setHoveredServiceId(service.id)}
+                      onMouseLeave={() => setHoveredServiceId(null)}
+                    >
+                      {hoveredServiceId === service.id || isSelected ? (
+                        <span className={fr.cx("fr-icon-check-line")} aria-hidden="true" />
+                      ) : (
+                        <img className={styles.productCheckboxImage} src={service.logo_url} alt={service.name} />
+                      )}
+                    </div>
+                  )}
+                  <span className={styles.serviceName}>{service.name}</span>
+                  {service.maturity !== 'stable' && (
+                    <span className={fr.cx("fr-badge fr-badge--sm fr-badge--info fr-badge--no-icon")}>
+                      {service.maturity.toUpperCase()}
+                    </span>
+                  )}
+                  <span className={styles.serviceCount}>{formatNumber(count)} structure{count !== 1 ? 's' : ''}</span>
                 </div>
-              </div>
-              )
-            }
-          })
-        )}
+                <span
+                  className={fr.cx(isExpanded ? "fr-icon-arrow-up-s-line" : "fr-icon-arrow-down-s-line")}
+                  aria-hidden="true"
+                ></span>
+              </button>
+              {isExpanded && serviceDetails(service, stats)}
+            </div>
+          );
+        })}
       </div>
-    )
-  }
+    );
+  };
+
+  const communeInfo = () => (
+    <div>
+      <h3 className={styles.serviceListTitle}>Services</h3>
+      {mapState.selectedAreas?.city?.additionalCityStats?.all_services && (
+        services.map((service) => {
+          const cityServices = mapState.selectedAreas.city.additionalCityStats.all_services;
+          const isUsed = service._mergedIds
+            ? service._mergedIds.some(id => cityServices.includes(id))
+            : cityServices.includes(service.id);
+          if (!isUsed) {
+            return null;
+          }
+          return (
+            <div key={service.id} className={styles.cityServiceItem}>
+              <img src={service.logo_url} alt={service.name} style={{ width: "18px", height: "18px", marginRight: "0.4rem" }} />
+              <span style={{ fontSize: "0.875rem" }}>{service.name}&nbsp;</span>
+              {service.maturity !== 'stable' && (
+                <span className={fr.cx("fr-badge fr-badge--sm fr-badge--info fr-badge--no-icon")}>
+                  {service.maturity.toUpperCase()}
+                </span>
+              )}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+
   return (
     <div>
-      {
-        !isMobile && (
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            {mapState.currentLevel !== "country" && (
-              <MapButton
-                onClick={() => goBack()}
-                aria-label="Retour"
-                tooltip="Retour"
-              >
-                <span aria-hidden="true" className={fr.cx("fr-icon-arrow-go-back-line")}></span>
-              </MapButton>
-            )}
-            <CommuneSearch
-              container={container}
-              onSelect={handleQuickNav}
-              placeholder="Rechercher une commune ou un EPCI"
-              smallButton={true}
-              includeRegionsAndDepartments={true}
-            />
+      {!isMobile && (
+        <div className={styles.searchContainer}>
+          {mapState.currentLevel !== "country" && (
+            <MapButton onClick={() => goBack()} aria-label="Retour" tooltip="Retour">
+              <span aria-hidden="true" className={fr.cx("fr-icon-arrow-go-back-line")}></span>
+            </MapButton>
+          )}
+          <CommuneSearch
+            container={container}
+            onSelect={handleQuickNav}
+            placeholder="Rechercher une collectivité"
+            smallButton={true}
+            includeRegionsAndDepartments={true}
+          />
+        </div>
+      )}
+
+      {filters()}
+
+      {mapState.currentLevel !== "country" && !isMobile && breadcrumbs()}
+
+      {(panelState === 'open' || panelState === 'partial') && (
+        <div className={styles.levelHeader}>
+          <div>
+            <h2 className={styles.areaTitle}>{currentPageLabel || "France"}</h2>
           </div>
-        )
-      }
-      {mapState.currentLevel !== "country" && !isMobile ? (
-        breadcrumbs()
-       ) : <div style={{ marginTop: "1rem" }}></div>}
-      <>
-        {mapState.selectedAreas["country"] && mapState.selectedAreas[mapState.currentLevel] && (panelState === 'open' || panelState === 'partial') && (
-          levelHeader()
-        )}
-        {panelState === 'open' && (
-          <div style={{ marginTop: "1rem" }}>
-            {!mapState.selectedAreas.city && mapState.selectedAreas[mapState.currentLevel] && (
-              levelStats()
-            )}
-            {mapState.selectedAreas.city && (
-              communeInfo()
-            )}
+          <div className={styles.headerActions}>
+            <MapButton
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                setLinkCopied(true);
+                setTimeout(() => setLinkCopied(false), 2000);
+              }}
+              aria-label="Copier l'URL de cette vue"
+              tooltip={linkCopied ? "URL copiée" : "Copier l'URL de cette vue"}
+            >
+              {linkCopied ? (
+                <span aria-hidden="true" className={fr.cx("fr-icon-check-line")}></span>
+              ) : (
+                <span className={fr.cx("fr-icon-links-line")} aria-hidden="true"></span>
+              )}
+            </MapButton>
           </div>
-        )}
-      </>
+        </div>
+      )}
+
+      {panelState === 'open' && (
+        <div>
+          {!mapState.selectedAreas.city && serviceList()}
+          {mapState.selectedAreas.city && communeInfo()}
+        </div>
+      )}
     </div>
   );
 };
 
 SidePanelContent.propTypes = {
   container: PropTypes.object,
-  rcpntRefs: PropTypes.array.isRequired,
   mapState: PropTypes.object.isRequired,
   selectLevel: PropTypes.func.isRequired,
   getColor: PropTypes.func.isRequired,
@@ -363,7 +393,7 @@ SidePanelContent.propTypes = {
   handleQuickNav: PropTypes.func.isRequired,
   isMobile: PropTypes.bool.isRequired,
   panelState: PropTypes.string.isRequired,
-  setPanelState: PropTypes.func.isRequired,
+  computeAreaStats: PropTypes.func.isRequired,
 };
 
 export default SidePanelContent;

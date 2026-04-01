@@ -2,13 +2,12 @@
 
 import { MapProvider, useMapContext } from "@/components/map/context/MapContext";
 import { MapLayoutProvider, useMapLayoutContext } from "@/components/map/context/MapLayoutContext";
-import { InteractiveMap } from "@/components/map/core/InteractiveMap";
+import { customMapStyle, InteractiveMap } from "@/components/map/core/InteractiveMap";
 import { MapLayout } from "@/components/map/core/MapLayout";
 import { useDisplayedGeoJSON } from "@/components/map/hooks/useDisplayedGeoJSON";
 import * as d3 from "d3";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import parentAreas from "../../../../../public/parent_areas.json";
-import HexbinLayer from "../../layers/HexbinLayer";
 import { FeatureProperties, SelectedArea } from "../../types";
 import SidePanelContent from "./SidePanelContent";
 import { StatRecord } from "./types";
@@ -18,10 +17,10 @@ const DeploiementMap = () => {
   const { panelState, isMobile } = useMapLayoutContext();
 
   const [stats, setStats] = useState<StatRecord[]>([]);
+  const [epciStats, setEpciStats] = useState<StatRecord[]>([]);
   const [coordMap, setCoordMap] = useState<Record<string, { longitude: number; latitude: number }>>(
     {},
   );
-  const [services, setServices] = useState([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [customLayers, setCustomLayers] = useState<any[]>([]);
 
@@ -46,14 +45,6 @@ const DeploiementMap = () => {
     [colorsConfig],
   );
 
-  // Hex size in meters (Web Mercator). Use same size at all latitudes to avoid distortion
-  const HEXBIN_SIZE_COUNTRY = 15000; // ~15 km across-flats
-  const HEXBIN_SIZE_REGION = 12000; // ~12 km across-flats
-
-  const hexbinSize = useMemo(() => {
-    return mapState.currentLevel === "country" ? HEXBIN_SIZE_COUNTRY : HEXBIN_SIZE_REGION;
-  }, [mapState.currentLevel]);
-
   const loadSirenCoordinatesMapping = useCallback(async (): Promise<void> => {
     const response = await fetch("/siren_coordinates.json");
     const data = await response.json();
@@ -76,6 +67,19 @@ const DeploiementMap = () => {
     }
   }, []);
 
+  const loadEpciStats = useCallback(async (): Promise<void> => {
+    try {
+      const response = await fetch("/api/deployment/stats?scope=list-commune&org_type=epci");
+      if (!response.ok) throw new Error(`API request failed: ${response.status}`);
+      const result = await response.json();
+      if (!result.data || !Array.isArray(result.data))
+        throw new Error("Invalid API response format");
+      setEpciStats(result.data);
+    } catch (error) {
+      console.error("Error loading EPCI stats:", error);
+    }
+  }, []);
+
   const computeAreaStats = useCallback(
     (
       level: "country" | "region" | "department" | "epci" | "city",
@@ -83,30 +87,58 @@ const DeploiementMap = () => {
       siret: string,
     ) => {
       try {
-        let filteredStats = stats;
-        if (level === "region") {
-          filteredStats = filteredStats.filter(
-            (stat: StatRecord) => stat.reg === insee_geo.replace("r", ""),
-          );
-        } else if (level === "department") {
-          filteredStats = filteredStats.filter((stat: StatRecord) => stat.dep === insee_geo);
-        }
-        if (mapState.filters.service_ids && (mapState.filters.service_ids as number[]).length > 0) {
-          filteredStats = filteredStats.filter((stat: StatRecord) => {
-            return stat.all_services?.some((service: string) =>
-              (mapState.filters.service_ids as number[]).includes(Number(service)),
+        const orgType = mapState.filters.org_type as string | null;
+
+        const serviceIds = mapState.filters.service_ids as number[] | null;
+
+        const filterList = (list: StatRecord[]) => {
+          let filtered = list;
+          if (level === "region") {
+            filtered = filtered.filter((stat) => stat.reg === insee_geo.replace("r", ""));
+          } else if (level === "department") {
+            filtered = filtered.filter((stat) => stat.dep === insee_geo);
+          }
+          if (serviceIds?.length) {
+            return filtered.filter((stat) =>
+              stat.all_services?.some((s: string) => serviceIds.includes(Number(s))),
             );
-          });
-        } else {
+          }
           // @ts-expect-error not typed
-          filteredStats = filteredStats.filter((stat: StatRecord) => stat.all_services.length > 0);
+          return filtered.filter((stat) => stat.all_services.length > 0);
+        };
+
+        const filteredCommunes = orgType !== "epci" ? filterList(stats) : [];
+        const filteredEpci = orgType !== "commune" ? filterList(epciStats) : [];
+
+        if (level === "epci") {
+          // insee_geo is the EPCI SIREN (set by processGeoJSONEPCI via parentAreas)
+          const epciSiren = insee_geo;
+          const communesInEpci = (orgType !== "epci" ? stats : [])
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .filter((stat: StatRecord) => (stat as any).epci_siren === epciSiren)
+            .filter((stat: StatRecord) =>
+              serviceIds?.length
+                ? stat.all_services?.some((s: string) => serviceIds.includes(Number(s)))
+                : (stat.all_services?.length ?? 0) > 0,
+            );
+          const epciInEpci = (orgType !== "commune" ? epciStats : [])
+            .filter((stat: StatRecord) => stat.id === epciSiren || stat.id.slice(0, 9) === epciSiren)
+            .filter((stat: StatRecord) =>
+              serviceIds?.length
+                ? stat.all_services?.some((s: string) => serviceIds.includes(Number(s)))
+                : (stat.all_services?.length ?? 0) > 0,
+            );
+          const total = communesInEpci.length + epciInEpci.length;
+          return { n_cities: total, score: total > 0 ? 1 : 0 };
         }
+
         if (level === "city") {
-          const city = filteredStats.find((city: { id: string }) => city.id === siret);
-          return {
-            n_cities: 1,
-            score: city ? 1 : 0,
-          };
+          const city = stats.find((city: { id: string }) => city.id === siret);
+          if (!city) return { n_cities: 1, score: 0 };
+          const hasService = serviceIds?.length
+            ? city.all_services?.some((s: string) => serviceIds.includes(Number(s)))
+            : (city.all_services?.length ?? 0) > 0;
+          return { n_cities: 1, score: hasService ? 1 : 0 };
         } else {
           let nTotalCities;
           if (level === "country") {
@@ -117,10 +149,16 @@ const DeploiementMap = () => {
           } else {
             nTotalCities = parentAreas.find((area) => area.insee_geo === insee_geo)?.n_cities || 0;
           }
+          const total = filteredCommunes.length + filteredEpci.length;
           return {
-            n_cities: filteredStats.length,
+            n_cities: total,
             n_total_cities: nTotalCities,
-            score: null,
+            score:
+              orgType === "epci"
+                ? null
+                : nTotalCities > 0
+                  ? filteredCommunes.length / nTotalCities
+                  : null,
           };
         }
       } catch {
@@ -130,187 +168,186 @@ const DeploiementMap = () => {
         };
       }
     },
-    [stats, mapState.filters],
-  );
-
-  // Web Mercator helpers (meters)
-  const EARTH_RADIUS = 6378137;
-  const toMercator = (lat: number, lon: number): { x: number; y: number } => {
-    const lambda = (lon * Math.PI) / 180;
-    const phi = (lat * Math.PI) / 180;
-    const x = EARTH_RADIUS * lambda;
-    const y = EARTH_RADIUS * Math.log(Math.tan(Math.PI / 4 + phi / 2));
-    return { x, y };
-  };
-  const fromMercator = useCallback(
-    (x: number, y: number): { lat: number; lon: number } => {
-      const lon = (x / EARTH_RADIUS) * (180 / Math.PI);
-      const lat = (2 * Math.atan(Math.exp(y / EARTH_RADIUS)) - Math.PI / 2) * (180 / Math.PI);
-      return { lat, lon };
-    },
-    [EARTH_RADIUS],
-  );
-
-  // Build a hex polygon around a Mercator center using a radius in meters, return lon/lat ring
-  const createHexagon = useCallback(
-    (centerX: number, centerY: number, acrossFlats: number): number[][] => {
-      const coordinates: number[][] = [];
-      // Convert across-flats to circumradius (center to vertex) for a regular hexagon
-      const radius = acrossFlats / Math.sqrt(3);
-      for (let i = 0; i < 6; i++) {
-        const angle = (Math.PI / 180) * (60 * i + 30); // flat-topped hex
-        const vx = centerX + radius * Math.cos(angle);
-        const vy = centerY + radius * Math.sin(angle);
-        const { lat, lon } = fromMercator(vx, vy);
-        coordinates.push([lon, lat]);
-      }
-      coordinates.push(coordinates[0]);
-      return coordinates;
-    },
-    [fromMercator],
-  );
-
-  const processDataToHexbin = useCallback(
-    (
-      apiData: StatRecord[],
-      coordinatesMap: Record<string, { longitude: number; latitude: number }>,
-    ): GeoJSON.FeatureCollection => {
-      const hexCells = new Map();
-
-      const filteredServices = (mapState.filters.service_ids as number[])?.length
-        ? (mapState.filters.service_ids as number[])
-        : services.map((service: { id: number }) => service.id);
-
-      apiData.forEach((entry) => {
-        const coords = coordinatesMap[entry.id.slice(0, 9)];
-
-        if (!coords || !coords.longitude || !coords.latitude) {
-          return;
-        }
-
-        // Project to Web Mercator meters
-        const { x, y } = toMercator(coords.latitude, coords.longitude);
-
-        // Hex grid dimensions (flat-topped)
-        const hexWidth = hexbinSize; // across flats (meters)
-        const hexHeight = Math.sqrt(3) * (hexWidth / 2); // vertical spacing between rows
-
-        // Compute row/col indices for an offset grid (odd-r horizontal layout)
-        const row = Math.round(y / hexHeight);
-        const col = Math.round((x - (row % 2 ? hexWidth / 2 : 0)) / hexWidth);
-
-        const gridX = col * hexWidth + (row % 2 ? hexWidth / 2 : 0);
-        const gridY = row * hexHeight;
-
-        const hexKey = `${gridX},${gridY}`;
-
-        // Aggregate in hex cell
-        if (!hexCells.has(hexKey)) {
-          hexCells.set(hexKey, {
-            x: gridX,
-            y: gridY,
-            used_products: 0,
-            total_cities: 0,
-          });
-        }
-
-        const cell = hexCells.get(hexKey);
-        cell.total_cities++;
-
-        if (
-          // @ts-expect-error not typed
-          entry.all_services.some((service: string) => filteredServices.includes(Number(service)))
-        ) {
-          // @ts-expect-error not typed
-          cell.used_products += entry.all_services.filter((service: string) =>
-            filteredServices.includes(Number(service)),
-          ).length;
-        }
-      });
-
-      // Convert to GeoJSON with hexagon polygons
-      const features: GeoJSON.Feature<GeoJSON.Polygon>[] = [];
-      hexCells.forEach((cell) => {
-        if (cell.total_cities === 0 || cell.used_products === 0) {
-          return;
-        }
-
-        const hexagonCoords = createHexagon(cell.x, cell.y, hexbinSize);
-        const score = cell.used_products / (filteredServices.length * cell.total_cities);
-
-        features.push({
-          type: "Feature",
-          properties: {
-            score: score,
-            // Keep center for potential debugging (lon/lat)
-            centerLon: fromMercator(cell.x, cell.y).lon,
-            centerLat: fromMercator(cell.x, cell.y).lat,
-          },
-          geometry: {
-            type: "Polygon",
-            coordinates: [hexagonCoords],
-          },
-        });
-      });
-
-      return {
-        type: "FeatureCollection" as const,
-        features: features,
-      };
-    },
-    [hexbinSize, mapState.filters.service_ids, services, createHexagon, fromMercator],
+    [stats, epciStats, mapState.filters],
   );
 
   useEffect(() => {
     if (!stats || !coordMap || stats.length === 0) return;
 
-    if (["department", "epci", "city"].includes(mapState.currentLevel)) {
-      setCustomLayers([]);
-      return;
+    const filterByServiceIds = (list: StatRecord[]) => {
+      if (mapState.filters.service_ids && (mapState.filters.service_ids as number[]).length > 0) {
+        return list.filter((stat: StatRecord) =>
+          stat.all_services?.some((service: string) =>
+            (mapState.filters.service_ids as number[]).includes(Number(service)),
+          ),
+        );
+      }
+      // @ts-expect-error not typed
+      return list.filter((stat: StatRecord) => stat.all_services.length > 0);
+    };
+
+    const toPointFeatures = (list: StatRecord[]): GeoJSON.Feature[] =>
+      list
+        .map((stat: StatRecord) => {
+          const coords = coordMap[stat.id.slice(0, 9)];
+          if (!coords?.longitude || !coords?.latitude) return null;
+          return {
+            type: "Feature" as const,
+            geometry: { type: "Point" as const, coordinates: [coords.longitude, coords.latitude] },
+            properties: { id: stat.id, reg: stat.reg ?? null, dep: stat.dep ?? null },
+          };
+        })
+        .filter(Boolean) as GeoJSON.Feature[];
+
+    const orgTypeFilter = mapState.filters.org_type as string | null;
+
+    const cityPointsGeoJSON: GeoJSON.FeatureCollection = {
+      type: "FeatureCollection",
+      features:
+        !orgTypeFilter || orgTypeFilter === "commune"
+          ? toPointFeatures(filterByServiceIds(stats))
+          : [],
+    };
+
+    // Compute EPCI centroids by averaging member commune coordinates
+    const epciCentroidAccum: Record<string, { lon: number; lat: number; count: number }> = {};
+    for (const stat of stats) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const epciSiren = (stat as any).epci_siren as string | null;
+      if (!epciSiren) continue;
+      const coords = coordMap[stat.id.slice(0, 9)];
+      if (!coords?.longitude || !coords?.latitude) continue;
+      if (!epciCentroidAccum[epciSiren]) {
+        epciCentroidAccum[epciSiren] = { lon: 0, lat: 0, count: 0 };
+      }
+      epciCentroidAccum[epciSiren].lon += coords.longitude;
+      epciCentroidAccum[epciSiren].lat += coords.latitude;
+      epciCentroidAccum[epciSiren].count++;
+    }
+    const epciCentroidMap: Record<string, { longitude: number; latitude: number }> = {};
+    for (const [siren, accum] of Object.entries(epciCentroidAccum)) {
+      epciCentroidMap[siren] = {
+        longitude: accum.lon / accum.count,
+        latitude: accum.lat / accum.count,
+      };
     }
 
-    let filteredStats = stats;
-    if (mapState.currentLevel === "region") {
-      filteredStats = filteredStats.filter(
-        (stat: StatRecord) =>
-          stat.reg === (mapState.selectedAreas.region as SelectedArea).insee_geo.replace("r", ""),
-      );
-    } else if (mapState.currentLevel === "department") {
-      filteredStats = filteredStats.filter(
-        (stat: StatRecord) =>
-          stat.dep === (mapState.selectedAreas.department as SelectedArea).insee_geo,
-      );
-    }
+    const filteredEpciStats = filterByServiceIds(epciStats);
 
-    const hexbinData = processDataToHexbin(filteredStats, coordMap);
+    const toEpciPointFeatures = (list: StatRecord[]): GeoJSON.Feature[] =>
+      list
+        .map((stat: StatRecord) => {
+          const coords = epciCentroidMap[stat.id.slice(0, 9)];
+          if (!coords) return null;
+          return {
+            type: "Feature" as const,
+            geometry: { type: "Point" as const, coordinates: [coords.longitude, coords.latitude] },
+            properties: { id: stat.id, reg: stat.reg ?? null, dep: stat.dep ?? null },
+          };
+        })
+        .filter(Boolean) as GeoJSON.Feature[];
+
+    const epciPointsGeoJSON: GeoJSON.FeatureCollection = {
+      type: "FeatureCollection",
+      features:
+        !orgTypeFilter || orgTypeFilter === "epci" ? toEpciPointFeatures(filteredEpciStats) : [],
+    };
+
+    const selectedRegion =
+      (mapState.selectedAreas.region as SelectedArea)?.insee_geo?.replace("r", "") ?? null;
+    const selectedDep = (mapState.selectedAreas.department as SelectedArea)?.insee_geo ?? null;
+
+    const communeColor = (() => {
+      if (mapState.currentLevel === "region" && selectedRegion) {
+        return ["case", ["==", ["get", "reg"], selectedRegion], "#2A3C84", "#CCCCCC"];
+      }
+      if (["department", "epci", "city"].includes(mapState.currentLevel) && selectedDep) {
+        return ["case", ["==", ["get", "dep"], selectedDep], "#2A3C84", "#CCCCCC"];
+      }
+      return "#2A3C84";
+    })();
+
+    const epciGeoJSON = (mapState.selectedAreas.department as SelectedArea)?.geoJSONEPCI;
+    const epciOutlineLayer = epciGeoJSON
+      ? [
+          {
+            id: "epci-layer",
+            source: {
+              id: "epci-outlines",
+              type: "geojson" as const,
+              data: {
+                type: "FeatureCollection" as const,
+                features: epciGeoJSON as GeoJSON.Feature[],
+              },
+            },
+            layers: [
+              {
+                id: "epci-stroke",
+                type: "line",
+                paint: {
+                  "line-color": "#2A3C84",
+                  "line-width": 2,
+                  "line-opacity": 0.6,
+                },
+              } as import("react-map-gl/maplibre").LayerProps,
+            ],
+          },
+        ]
+      : [];
 
     setCustomLayers([
       {
-        id: "hexbin-layer",
-        component: HexbinLayer,
-        props: {
-          data: hexbinData,
-          id: "deployment-hexbin",
-          showLabels: false,
-        },
+        id: "city-points-layer",
+        source: { id: "city-points", type: "geojson", data: cityPointsGeoJSON },
+        layers: [
+          {
+            id: "city-dots",
+            type: "circle",
+            beforeId: "polygon-stroke",
+            paint: {
+              "circle-radius": ["interpolate", ["linear"], ["zoom"], 4, 1.5, 8, 3, 12, 5, 16, 8],
+              "circle-color": communeColor,
+              "circle-opacity": 0.8,
+            },
+          } as import("react-map-gl/maplibre").LayerProps,
+        ],
       },
+      {
+        id: "epci-points-layer",
+        source: { id: "epci-points", type: "geojson", data: epciPointsGeoJSON },
+        layers: [
+          {
+            id: "epci-dots",
+            type: "circle",
+            beforeId: "polygon-stroke",
+            paint: {
+              "circle-radius": ["interpolate", ["linear"], ["zoom"], 4, 1.5, 8, 3, 12, 5, 16, 8],
+              "circle-color": communeColor,
+              "circle-opacity": 0.8,
+            },
+          } as import("react-map-gl/maplibre").LayerProps,
+        ],
+      },
+      ...epciOutlineLayer,
     ]);
   }, [
     stats,
+    epciStats,
     coordMap,
-    processDataToHexbin,
+    mapState.filters.org_type,
+    mapState.filters.service_ids,
     mapState.currentLevel,
     mapState.selectedAreas,
-    mapState.filters,
   ]);
 
   useEffect(() => {
     const loadData = async () => {
       await loadSirenCoordinatesMapping();
       await loadStats();
+      await loadEpciStats();
     };
     loadData();
-  }, [loadSirenCoordinatesMapping, loadStats]);
+  }, [loadSirenCoordinatesMapping, loadStats, loadEpciStats]);
 
   useEffect(() => {
     if (
@@ -339,16 +376,13 @@ const DeploiementMap = () => {
     }
   }, [stats, mapState.selectedAreas.city, setMapState, mapState]);
 
-  useEffect(() => {
-    const fetchServices = async () => {
-      const response = await fetch("/api/deployment/services");
-      const data = await response.json();
-      setServices(data);
-    };
-    fetchServices();
-  }, []);
-
   const geoJSON = useDisplayedGeoJSON(mapState);
+
+  const isCityView =
+    (mapState.currentLevel === "department" && mapState.departmentView === "city") ||
+    (mapState.currentLevel === "department" && mapState.departmentView === "epci" && mapState.filters.org_type === "epci") ||
+    mapState.currentLevel === "epci" ||
+    mapState.currentLevel === "city";
 
   const mapData = useMemo(() => {
     if (!geoJSON || stats.length === 0) return {};
@@ -381,13 +415,25 @@ const DeploiementMap = () => {
         data[code] = {
           value: result.n_cities ?? undefined,
           score: result.score ?? undefined,
-          color: getColor(result.score),
+          color: isCityView
+            ? result.score === 1
+              ? "#2A3C84"
+              : "transparent"
+            : getColor(result.score),
         };
       }
     });
 
     return data;
-  }, [geoJSON, stats, mapState.currentLevel, mapState.departmentView, computeAreaStats, getColor]);
+  }, [
+    geoJSON,
+    stats,
+    mapState.currentLevel,
+    mapState.departmentView,
+    computeAreaStats,
+    getColor,
+    isCityView,
+  ]);
 
   return stats ? (
     <MapLayout
@@ -410,13 +456,11 @@ const DeploiementMap = () => {
           data={mapData}
           gradientColors={gradientColors}
           showGradientLegend={false}
-          displayCircleValue={false}
-          fillOpacity={
-            mapState.currentLevel === "city" ||
-            (mapState.currentLevel === "department" && mapState.departmentView === "city")
-              ? 1
-              : 0
-          }
+          displayCircleValue={!isCityView}
+          fillOpacity={isCityView ? 1 : 0}
+          hoverFill={!isCityView}
+          mapStyle={customMapStyle}
+          strokeColor="#2A3C84"
           hoverStrokeColor="#000091"
           customLayers={customLayers}
         />
@@ -429,7 +473,7 @@ const DeploiementMap = () => {
 
 const CartographieDeploiement = () => {
   return (
-    <MapProvider initialFilters={{ service_ids: null }} initialDepartmentView="city">
+    <MapProvider initialFilters={{ service_ids: null }} initialDepartmentView="epci">
       <MapLayoutProvider>
         <DeploiementMap />
       </MapLayoutProvider>
