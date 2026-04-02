@@ -28,7 +28,7 @@
 
 	# Geo-blocking — empty = open (space-separated country codes)
 	@geoblocked not maxmind_geolocation {
-		db_path dumps/geolite2-country.mmdb
+		db_path dumps/geoip-country.mmdb
 		allow_countries {$ACL_ALLOWED_COUNTRIES}
 	}
 	respond @geoblocked "Access denied" 403

@@ -10,14 +10,6 @@ make data-geoip-download
 mv data/* .
 mv src/caddy/* .
 
-echo "-----> Downloading GeoLite2-Country database for Caddy"
-curl -LSs 'https://geoip.elastic.co/v1/database?elastic_geoip_service_tos=agree' | \
-python3 -c "import json,sys;urls=[d['url'] for d in json.load(sys.stdin) if d['name']=='GeoLite2-Country.tgz'];assert urls,'GeoLite2-Country.tgz not found';print(urls[0])" | \
-xargs curl -LSs -o /tmp/GeoLite2-Country.tgz && \
-tar -xzf /tmp/GeoLite2-Country.tgz -C dumps GeoLite2-Country.mmdb && \
-mv dumps/GeoLite2-Country.mmdb dumps/geolite2-country.mmdb && \
-rm -f /tmp/GeoLite2-Country.tgz
-
 CADDY_VERSION="v2.11.2"
 GO_VERSION="1.24.2"
 GO_SHA256="68097bd680839cbc9d464a0edce4f7c333975e27a90246890e9f1078c7e702ad"
