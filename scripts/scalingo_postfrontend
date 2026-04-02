@@ -33,7 +33,7 @@ mkdir -p bin
   --output bin/caddy
 
 echo "-----> Cleaning up Go toolchain"
-chmod -R u+w "${GOPATH}" 2>/dev/null || true
+chmod -R u+w "${GOPATH}"
 rm -rf /tmp/go /tmp/go.tar.gz "${GOPATH}"
 
 echo "3.13" > .python-version
