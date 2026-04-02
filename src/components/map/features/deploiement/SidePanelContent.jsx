@@ -125,6 +125,8 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
         filter = `&reg=${mapState.selectedAreas.region.insee_geo.replace("r", "")}`;
       } else if (mapState.currentLevel === 'department' && mapState.selectedAreas.department) {
         filter = `&dep=${mapState.selectedAreas.department.insee_geo}`;
+      } else if (mapState.currentLevel === 'epci' && mapState.selectedAreas.epci) {
+        filter = `&epci=${mapState.selectedAreas.epci.insee_geo}`;
       }
 
       try {
