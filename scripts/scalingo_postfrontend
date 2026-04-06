@@ -71,7 +71,7 @@ EOF
 cat > "${CADDY_BUILD}/go.mod" << EOF
 module caddy-custom
 
-go ${GO_VERSION}
+go ${GO_VERSION%.*}
 
 require (
 	github.com/caddyserver/caddy/v2 v${CADDY_VERSION}
