@@ -9,11 +9,10 @@ make data-geoip-download
 mv data/* .
 mv src/caddy/* .
 
-CADDY_VERSION="v2.11.2"
+CADDY_VERSION="2.11.2"
+CADDY_SHA256="ee12f7b5f97308708de5067deebb3d3322fc24f6d54f906a47a0a4e8db799122"
 GO_VERSION="1.24.2"
 GO_SHA256="68097bd680839cbc9d464a0edce4f7c333975e27a90246890e9f1078c7e702ad"
-XCADDY_VERSION="0.4.4"
-XCADDY_SHA256="ae36b87c7edf8008479726efd739efbc20d95968086cdf176e78e1a4a8195e23"
 CADDY_PLUGIN_RATELIMIT_VERSION="0.1.0"
 CADDY_PLUGIN_RATELIMIT_SHA256="f628f416a1bcae69ec42aa669642830f4dbea368fc4f90ecd57096eedf525565"
 CADDY_PLUGIN_GEOLOCATION_VERSION="1.0.3"
@@ -26,36 +25,75 @@ tar -xzf /tmp/go.tar.gz -C /tmp
 export PATH="/tmp/go/bin:${PATH}"
 export GOPATH="/tmp/gopath"
 
-echo "-----> Installing xcaddy ${XCADDY_VERSION}"
-curl -LSs -o /tmp/xcaddy.tar.gz "https://github.com/caddyserver/xcaddy/releases/download/v${XCADDY_VERSION}/xcaddy_${XCADDY_VERSION}_linux_amd64.tar.gz"
-echo "${XCADDY_SHA256}  /tmp/xcaddy.tar.gz" | sha256sum -c -
-tar -xzf /tmp/xcaddy.tar.gz -C /tmp xcaddy
-rm -f /tmp/xcaddy.tar.gz
+echo "-----> Downloading and verifying Caddy sources"
+# Download sources from GitHub, verify checksums, then extract
+# so go build uses the exact verified source via replace directives.
+CADDY_SOURCES="/tmp/caddy-sources"
+mkdir -p "${CADDY_SOURCES}"
 
-echo "-----> Downloading and verifying Caddy plugins"
-# Download plugin sources from GitHub, verify checksums,
-# then extract so xcaddy builds with the exact verified source.
-CADDY_PLUGINS="/tmp/caddy-plugins"
+# Caddy
+curl -LSs -o /tmp/caddy.tar.gz "https://github.com/caddyserver/caddy/archive/refs/tags/v${CADDY_VERSION}.tar.gz"
+echo "${CADDY_SHA256}  /tmp/caddy.tar.gz" | sha256sum -c -
+tar -xzf /tmp/caddy.tar.gz -C "${CADDY_SOURCES}"
+rm -f /tmp/caddy.tar.gz
 
+# Caddy ratelimit
 curl -LSs -o /tmp/caddy-ratelimit.tar.gz "https://github.com/mholt/caddy-ratelimit/archive/refs/tags/v${CADDY_PLUGIN_RATELIMIT_VERSION}.tar.gz"
 echo "${CADDY_PLUGIN_RATELIMIT_SHA256}  /tmp/caddy-ratelimit.tar.gz" | sha256sum -c -
-mkdir -p "${CADDY_PLUGINS}" && tar -xzf /tmp/caddy-ratelimit.tar.gz -C "${CADDY_PLUGINS}"
+tar -xzf /tmp/caddy-ratelimit.tar.gz -C "${CADDY_SOURCES}"
 
+# Caddy maxmind geolocation
 curl -LSs -o /tmp/caddy-geolocation.tar.gz "https://github.com/porech/caddy-maxmind-geolocation/archive/refs/tags/v${CADDY_PLUGIN_GEOLOCATION_VERSION}.tar.gz"
 echo "${CADDY_PLUGIN_GEOLOCATION_SHA256}  /tmp/caddy-geolocation.tar.gz" | sha256sum -c -
-tar -xzf /tmp/caddy-geolocation.tar.gz -C "${CADDY_PLUGINS}"
+tar -xzf /tmp/caddy-geolocation.tar.gz -C "${CADDY_SOURCES}"
 
 rm -f /tmp/caddy-ratelimit.tar.gz /tmp/caddy-geolocation.tar.gz
 
 echo "-----> Building Caddy ${CADDY_VERSION} with plugins"
-mkdir -p bin
-/tmp/xcaddy build "${CADDY_VERSION}" \
-  --with "github.com/mholt/caddy-ratelimit=${CADDY_PLUGINS}/caddy-ratelimit-${CADDY_PLUGIN_RATELIMIT_VERSION}" \
-  --with "github.com/porech/caddy-maxmind-geolocation=${CADDY_PLUGINS}/caddy-maxmind-geolocation-${CADDY_PLUGIN_GEOLOCATION_VERSION}" \
-  --output bin/caddy
+CADDY_BUILD="/tmp/caddy-build"
+mkdir -p "${CADDY_BUILD}" bin
+
+cat > "${CADDY_BUILD}/main.go" << 'EOF'
+package main
+
+import (
+	caddycmd "github.com/caddyserver/caddy/v2/cmd"
+	_ "github.com/caddyserver/caddy/v2/modules/standard"
+	_ "github.com/mholt/caddy-ratelimit"
+	_ "github.com/porech/caddy-maxmind-geolocation"
+)
+
+func main() {
+	caddycmd.Main()
+}
+EOF
+
+cat > "${CADDY_BUILD}/go.mod" << EOF
+module caddy-custom
+
+go ${GO_VERSION}
+
+require (
+	github.com/caddyserver/caddy/v2 v${CADDY_VERSION}
+	github.com/mholt/caddy-ratelimit v${CADDY_PLUGIN_RATELIMIT_VERSION}
+	github.com/porech/caddy-maxmind-geolocation v${CADDY_PLUGIN_GEOLOCATION_VERSION}
+)
+
+replace (
+	github.com/caddyserver/caddy/v2 => ${CADDY_SOURCES}/caddy-${CADDY_VERSION}
+	github.com/mholt/caddy-ratelimit => ${CADDY_SOURCES}/caddy-ratelimit-${CADDY_PLUGIN_RATELIMIT_VERSION}
+	github.com/porech/caddy-maxmind-geolocation => ${CADDY_SOURCES}/caddy-maxmind-geolocation-${CADDY_PLUGIN_GEOLOCATION_VERSION}
+)
+EOF
+
+WORKDIR="$(pwd)"
+cd "${CADDY_BUILD}"
+go mod tidy
+go build -o "${WORKDIR}/bin/caddy" .
+cd "${WORKDIR}"
 
 echo "-----> Cleaning up Go toolchain"
 chmod -R u+w "${GOPATH}"
-rm -rf /tmp/go /tmp/go.tar.gz /tmp/xcaddy "${GOPATH}" "${CADDY_PLUGINS}"
+rm -rf /tmp/go /tmp/go.tar.gz "${GOPATH}" "${CADDY_SOURCES}" "${CADDY_BUILD}"
 
 echo "3.13" > .python-version
