@@ -157,7 +157,7 @@ data-lint-check:  ## Check data code linting without fixing
 .PHONY: data-lint-check
 
 data-geoip-download:  ## Download the GeoIP database from https://db-ip.com/db/download/ip-to-country-lite
-	mkdir -p data/dumps && curl -LSs -o /tmp/dbip-country-lite.mmdb.gz "https://download.db-ip.com/free/dbip-country-lite-$$(date +%Y-%m).mmdb.gz" && gunzip -f /tmp/dbip-country-lite.mmdb.gz && mv /tmp/dbip-country-lite.mmdb data/dumps/geoip-country.mmdb
+	mkdir -p data/dumps && curl -fLSs -o /tmp/dbip-country-lite.mmdb.gz "https://download.db-ip.com/free/dbip-country-lite-$$(date +%Y-%m).mmdb.gz" && gunzip -f /tmp/dbip-country-lite.mmdb.gz && mv /tmp/dbip-country-lite.mmdb data/dumps/geoip-country.mmdb
 .PHONY: data-geoip-download
 
 # ==============================================================================
