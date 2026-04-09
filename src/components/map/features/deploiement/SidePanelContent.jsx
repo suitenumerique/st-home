@@ -270,6 +270,7 @@ const serviceDetails = (service, stats, compact = false) => {
                         const remaining = currentIds.filter(id => !idsToToggle.includes(id));
                         const newIds = isSelected ? (remaining.length > 0 ? remaining : null) : [...currentIds, ...idsToToggle];
                         setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: newIds } });
+                        if (!isSelected) setExpandedServices(prev => new Set(prev).add(service.id));
                       }}
                       onMouseEnter={() => setHoveredServiceId(service.id)}
                       onMouseLeave={() => setHoveredServiceId(null)}
