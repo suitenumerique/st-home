@@ -6,6 +6,7 @@ import { useSmallScreen } from "@/lib/hooks";
 import { Commune } from "@/types";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion";
+import { Alert as AlertDSFR } from "@codegouvfr/react-dsfr/Alert";
 import { Tooltip } from "@codegouvfr/react-dsfr/Tooltip";
 import { NextPage } from "next";
 import { NextSeo } from "next-seo";
@@ -864,14 +865,6 @@ export const ReferentielConformite: ReferentielSection[] = [
                 personnelles des administrés&nbsp;;
               </li>
               <li>
-                Préserver la souveraineté numérique de la collectivité en évitant
-                l&rsquo;application de législations étrangères comme le{" "}
-                <Link href="https://fr.wikipedia.org/wiki/CLOUD_Act" target="_blank">
-                  CLOUD Act
-                </Link>{" "}
-                américain&nbsp;;
-              </li>
-              <li>
                 S&rsquo;aligner avec les recommandations{" "}
                 <Link
                   href="https://cyber.gouv.fr/secnumcloud-pour-les-fournisseurs-de-services-cloud"
@@ -883,6 +876,21 @@ export const ReferentielConformite: ReferentielSection[] = [
                 hébergés sur le territoire européen.
               </li>
             </ul>
+            <AlertDSFR
+              severity="info"
+              small={true}
+              description=<p>
+                La localisation des serveurs est une condition nécessaire mais{" "}
+                <strong>pas suffisante</strong> à la souveraineté numérique. En effet, vous devez
+                également vous assurer que l'exploitant n'est pas soumis aux lois
+                extra-territoriales comme le{" "}
+                <Link href="https://fr.wikipedia.org/wiki/CLOUD_Act" target="_blank">
+                  CLOUD Act
+                </Link>
+                , notamment parce qu'il est français ou européen. Ce critère pourra être intégré
+                dans une future version du référentiel.
+              </p>
+            />
           </>
         ),
         howToFix: (

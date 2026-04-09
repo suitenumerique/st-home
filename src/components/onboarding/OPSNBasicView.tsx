@@ -52,7 +52,7 @@ export default function OPSNBasicView({ operator, commune, reversed = false }: O
             )}
           </div>
           <p className={fr.cx("fr-text--sm")}>
-            Si la structure proposée ne vous convient pas,{" "}
+            Si vous avez une question concernant ce partenaire,{" "}
             <Link href={`/bienvenue/${commune.siret}/contact`}>contactez-nous</Link>.
           </p>
         </div>

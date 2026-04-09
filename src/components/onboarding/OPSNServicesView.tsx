@@ -72,7 +72,7 @@ export default function OPSNServicesView({
               </Button>
             </div>
             <p className={fr.cx("fr-text--sm")}>
-              Si la structure proposée ne vous convient pas,{" "}
+              Si vous avez une question concernant ce partenaire,{" "}
               <Link href={`/bienvenue/${commune.siret}/contact`}>contactez-nous</Link>.
             </p>
           </div>
