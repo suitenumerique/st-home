@@ -61,7 +61,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     });
   };
 
-  const HIDDEN_SERVICES = ["Mes Services Cyber", "Toutes et tous connecté·e·s", "Agents en intervention", "Docs", "Visio"];
+  const HIDDEN_SERVICES = ["Mes Services Cyber", "Toutes et tous connecté·e·s", "Agents en intervention", "Docs", "Visio", "Mon Service Sécurisé"];
 
   const getMergedStats = (mergedIds) => ({
     communes: mergedIds.reduce((sum, id) => sum + (scopedStats.find(s => s.id === parseInt(id))?.communes || 0), 0),
@@ -265,7 +265,10 @@ const serviceDetails = (service, stats, compact = false) => {
                       className={`${styles.productCheckbox} ${isSelected ? styles.productCheckboxSelected : ''}`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        const newIds = isSelected ? null : (service._mergedIds || [service.id]);
+                        const currentIds = mapState.filters.service_ids || [];
+                        const idsToToggle = service._mergedIds || [service.id];
+                        const remaining = currentIds.filter(id => !idsToToggle.includes(id));
+                        const newIds = isSelected ? (remaining.length > 0 ? remaining : null) : [...currentIds, ...idsToToggle];
                         setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: newIds } });
                       }}
                       onMouseEnter={() => setHoveredServiceId(service.id)}
