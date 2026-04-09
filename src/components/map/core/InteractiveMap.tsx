@@ -233,10 +233,9 @@ export const InteractiveMap = ({
             }
           }
           setHoveredFeatureScore(null);
-          const center = turf.center(feature as GeoJSON.Feature);
           setPopupInfo({
-            longitude: center.geometry.coordinates[0] as number,
-            latitude: center.geometry.coordinates[1] as number,
+            longitude: event.lngLat.lng,
+            latitude: event.lngLat.lat,
             properties: feature.properties as FeatureProperties,
           });
           return;
@@ -262,10 +261,9 @@ export const InteractiveMap = ({
             }
           }
           setHoveredFeatureScore(feature.properties.SCORE as number);
-          const center = turf.center(feature as GeoJSON.Feature);
           setPopupInfo({
-            longitude: center.geometry.coordinates[0] as number,
-            latitude: center.geometry.coordinates[1] as number,
+            longitude: event.lngLat.lng,
+            latitude: event.lngLat.lat,
             properties: feature.properties as FeatureProperties,
           });
         }
@@ -560,7 +558,7 @@ export const InteractiveMap = ({
             latitude={popupInfo.latitude}
             closeButton={false}
             closeOnClick={false}
-            anchor="top"
+            anchor="bottom"
             style={{ padding: 0, pointerEvents: "none" }}
           >
             <div className="map-tooltip-content">
