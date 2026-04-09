@@ -55,6 +55,9 @@ export const customMapStyle = {
     if (layer.type === "fill" && layer.id?.toLowerCase().includes("hydro")) {
       return { ...layer, paint: { ...layer.paint, "fill-color": WATER_COLOR } };
     }
+    if (layer.type === "symbol" && layer.id?.toLowerCase().includes("localite")) {
+      return { ...layer, minzoom: 11 };
+    }
     return layer;
   }),
 } as unknown as StyleSpecification;
