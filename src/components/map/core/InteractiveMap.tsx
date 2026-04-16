@@ -207,8 +207,13 @@ export const InteractiveMap = ({
   const clearHoverState = useCallback((map: maplibregl.Map) => {
     if (hoveredDeptIdRef.current !== null && map.getSource("operators-depts")) {
       try {
-        map.setFeatureState({ source: "operators-depts", id: hoveredDeptIdRef.current }, { hover: false });
-      } catch { /* source may have been removed */ }
+        map.setFeatureState(
+          { source: "operators-depts", id: hoveredDeptIdRef.current },
+          { hover: false },
+        );
+      } catch {
+        /* source may have been removed */
+      }
       hoveredDeptIdRef.current = null;
     }
     if (hoveredFeatureIdRef.current !== null && map.getSource("interactive-polygons")) {
@@ -257,13 +262,20 @@ export const InteractiveMap = ({
           if (featureId !== undefined && map && map.getSource("operators-depts")) {
             if (hoveredDeptIdRef.current !== null && hoveredDeptIdRef.current !== featureId) {
               try {
-                map.setFeatureState({ source: "operators-depts", id: hoveredDeptIdRef.current }, { hover: false });
-              } catch { /* ignore */ }
+                map.setFeatureState(
+                  { source: "operators-depts", id: hoveredDeptIdRef.current },
+                  { hover: false },
+                );
+              } catch {
+                /* ignore */
+              }
             }
             hoveredDeptIdRef.current = featureId;
             try {
               map.setFeatureState({ source: "operators-depts", id: featureId }, { hover: true });
-            } catch { /* ignore */ }
+            } catch {
+              /* ignore */
+            }
           }
           setHoveredFeatureScore(null);
           setPopupInfo({
@@ -316,10 +328,7 @@ export const InteractiveMap = ({
             }
             if (map.getSource("feature-points")) {
               try {
-                map.setFeatureState(
-                  { source: "feature-points", id: featureId },
-                  { hover: true },
-                );
+                map.setFeatureState({ source: "feature-points", id: featureId }, { hover: true });
               } catch {
                 // Source may have been removed
               }
@@ -465,12 +474,7 @@ export const InteractiveMap = ({
         "rgba(0, 0, 145, 0.4)",
         "rgba(0, 0, 145, 0.2)",
       ],
-      "circle-stroke-width": [
-        "case",
-        ["boolean", ["feature-state", "hover"], false],
-        6,
-        3,
-      ],
+      "circle-stroke-width": ["case", ["boolean", ["feature-state", "hover"], false], 6, 3],
       "circle-opacity": 1,
     },
   };
@@ -607,11 +611,15 @@ export const InteractiveMap = ({
         ref={mapRef}
         mapStyle={mapStyle}
         projection="mercator"
-        interactiveLayerIds={disableInteraction ? [] : [
-          "polygon-fill",
-          ...(neighbourGeoJSON ? ["neighbour-polygon-fill"] : []),
-          ...additionalInteractiveLayerIds,
-        ]}
+        interactiveLayerIds={
+          disableInteraction
+            ? []
+            : [
+                "polygon-fill",
+                ...(neighbourGeoJSON ? ["neighbour-polygon-fill"] : []),
+                ...additionalInteractiveLayerIds,
+              ]
+        }
         onClick={disableInteraction ? undefined : handleAreaClick}
         onMouseLeave={disableInteraction ? undefined : onMouseLeave}
         onMouseMove={disableInteraction ? undefined : onMouseMove}

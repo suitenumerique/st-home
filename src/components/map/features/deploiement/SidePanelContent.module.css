@@ -19,7 +19,6 @@
   white-space: nowrap;
 }
 
-
 .headerDescription {
   font-size: 16px;
   color: var(--text-default-grey);
@@ -89,7 +88,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  border: 2px solid #6060DC;
+  border: 2px solid #6060dc;
   border-radius: 4px;
   padding: 0.2rem 0.5rem;
   background: var(--background-alt-blue-france);
@@ -227,7 +226,6 @@
   gap: 0.25rem;
   flex-shrink: 0;
 }
-
 
 .servicelogo {
   width: 24px;

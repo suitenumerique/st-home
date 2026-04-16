@@ -479,7 +479,7 @@ const serviceDetails = (service, stats, compact = false) => {
                     </div>
                   )}
                   <div className={styles.operatorActions}>
-                    <button className={fr.cx("fr-btn fr-btn--sm")}>Contacter</button>
+                    {/* <button className={fr.cx("fr-btn fr-btn--sm")}>Contacter</button> */}
                     {op.website && (
                       <a href={op.website} className={fr.cx("fr-btn fr-btn--sm fr-btn--secondary")} target="_blank" rel="noopener noreferrer">
                         Voir l'offre de service

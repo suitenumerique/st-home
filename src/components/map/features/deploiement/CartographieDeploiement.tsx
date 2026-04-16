@@ -6,19 +6,39 @@ import { customMapStyle, InteractiveMap } from "@/components/map/core/Interactiv
 import { MapLayout } from "@/components/map/core/MapLayout";
 import { useDisplayedGeoJSON } from "@/components/map/hooks/useDisplayedGeoJSON";
 import * as d3 from "d3";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import parentAreas from "../../../../../public/parent_areas.json";
 import { FeatureProperties, SelectedArea } from "../../types";
 import SidePanelContent from "./SidePanelContent";
 import { StatRecord } from "./types";
 
-const REGION_CODES = ["01","02","03","04","06","11","24","27","28","32","44","52","53","75","76","84","93","94"];
+const REGION_CODES = [
+  "01",
+  "02",
+  "03",
+  "04",
+  "06",
+  "11",
+  "24",
+  "27",
+  "28",
+  "32",
+  "44",
+  "52",
+  "53",
+  "75",
+  "76",
+  "84",
+  "93",
+  "94",
+];
 
 const DeploiementMap = () => {
   const { mapState, setMapState, selectLevel, goBack, handleQuickNav } = useMapContext();
   const { panelState, isMobile } = useMapLayoutContext();
 
-  const activeTab = (mapState.filters.active_tab as "utilisateurs" | "partenaires") ?? "utilisateurs";
+  const activeTab =
+    (mapState.filters.active_tab as "utilisateurs" | "partenaires") ?? "utilisateurs";
   const setActiveTab = (tab: "utilisateurs" | "partenaires") =>
     setMapState({ ...mapState, filters: { ...mapState.filters, active_tab: tab } });
 
@@ -49,9 +69,13 @@ const DeploiementMap = () => {
 
   useEffect(() => {
     if (operators.length > 0) return;
-    fetch("/api/deployment/operators").then((r) => r.json()).then((data) => {
-      setOperators(data.data || []);
-    });
+    fetch("/api/deployment/operators")
+      .then((r) => r.json())
+      .then((data) => {
+        setOperators(data.data || []);
+      });
+    // operators.length is intentionally omitted to fetch only once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const gradientColors = useMemo(() => ["#EEEEEE", "#2A3C84"], []);
@@ -152,7 +176,9 @@ const DeploiementMap = () => {
                 : (stat.all_services?.length ?? 0) > 0,
             );
           const epciInEpci = (orgType !== "commune" ? epciStats : [])
-            .filter((stat: StatRecord) => stat.id === epciSiren || stat.id.slice(0, 9) === epciSiren)
+            .filter(
+              (stat: StatRecord) => stat.id === epciSiren || stat.id.slice(0, 9) === epciSiren,
+            )
             .filter((stat: StatRecord) =>
               serviceIds?.length
                 ? stat.all_services?.some((s: string) => serviceIds.includes(Number(s)))
@@ -410,7 +436,9 @@ const DeploiementMap = () => {
 
   const isCityView =
     (mapState.currentLevel === "department" && mapState.departmentView === "city") ||
-    (mapState.currentLevel === "department" && mapState.departmentView === "epci" && mapState.filters.org_type === "epci") ||
+    (mapState.currentLevel === "department" &&
+      mapState.departmentView === "epci" &&
+      mapState.filters.org_type === "epci") ||
     mapState.currentLevel === "epci" ||
     mapState.currentLevel === "city";
 
@@ -470,7 +498,7 @@ const DeploiementMap = () => {
 
     if (selectedServiceFilter) {
       result = result.filter((op) =>
-        op.services?.some((s: { id: number }) => s.id === selectedServiceFilter)
+        op.services?.some((s: { id: number }) => s.id === selectedServiceFilter),
       );
     }
 
@@ -482,15 +510,13 @@ const DeploiementMap = () => {
       const deptsInRegion = new Set(
         allDeptsGeoJSON.features
           .filter((f) => (f.properties as { INSEE_REG: string }).INSEE_REG === selectedRegionCode)
-          .map((f) => (f.properties as { INSEE_GEO: string }).INSEE_GEO)
+          .map((f) => (f.properties as { INSEE_GEO: string }).INSEE_GEO),
       );
       result = result.filter((op) =>
-        (op.departments || []).some((dept: string) => deptsInRegion.has(dept))
+        (op.departments || []).some((dept: string) => deptsInRegion.has(dept)),
       );
     } else if (["department", "epci", "city"].includes(currentLevel) && selectedDepCode) {
-      result = result.filter((op) =>
-        (op.departments || []).includes(selectedDepCode)
-      );
+      result = result.filter((op) => (op.departments || []).includes(selectedDepCode));
     }
 
     return result;
@@ -539,58 +565,69 @@ const DeploiementMap = () => {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const layers: any[] = [{
-      id: "operators-depts-layer",
-      source: { id: "operators-depts", type: "geojson" as const, data: coloredGeoJSON },
-      layers: [
-        {
-          id: "operators-depts-fill",
-          type: "fill",
-          paint: {
-            "fill-color": [
-              "case",
-              ["==", ["get", "operator_status"], "partenaire"], "#B8FEC9",
-              ["==", ["get", "operator_status"], "partenaire_avec_services"], "#B8FEC9",
-              ["==", ["get", "operator_status"], "intention"], "#FEECC2",
-              "#EEEEEE",
-            ],
-            "fill-opacity": 0.8,
-          },
-        } as import("react-map-gl/maplibre").LayerProps,
-        {
-          id: "operators-depts-stroke",
-          type: "line",
-          paint: {
-            "line-color": [
-              "case",
-              ["boolean", ["get", "highlighted"], false], "#000091",
-              "#ffffff",
-            ],
-            "line-width": 1.5,
-            "line-opacity": 1,
-          },
-        } as import("react-map-gl/maplibre").LayerProps,
-        {
-          id: "operators-depts-hover-stroke",
-          type: "line",
-          paint: {
-            "line-color": [
-              "case",
-              ["==", ["get", "operator_status"], "partenaire"], "#18753C",
-              ["==", ["get", "operator_status"], "partenaire_avec_services"], "#18753C",
-              ["==", ["get", "operator_status"], "intention"], "#716043",
-              "#999999",
-            ],
-            "line-width": 2,
-            "line-opacity": ["case", ["boolean", ["feature-state", "hover"], false], 1, 0],
-          },
-        } as import("react-map-gl/maplibre").LayerProps,
-      ],
-    }];
+    const layers: any[] = [
+      {
+        id: "operators-depts-layer",
+        source: { id: "operators-depts", type: "geojson" as const, data: coloredGeoJSON },
+        layers: [
+          {
+            id: "operators-depts-fill",
+            type: "fill",
+            paint: {
+              "fill-color": [
+                "case",
+                ["==", ["get", "operator_status"], "partenaire"],
+                "#B8FEC9",
+                ["==", ["get", "operator_status"], "partenaire_avec_services"],
+                "#B8FEC9",
+                ["==", ["get", "operator_status"], "intention"],
+                "#FEECC2",
+                "#EEEEEE",
+              ],
+              "fill-opacity": 0.8,
+            },
+          } as import("react-map-gl/maplibre").LayerProps,
+          {
+            id: "operators-depts-stroke",
+            type: "line",
+            paint: {
+              "line-color": [
+                "case",
+                ["boolean", ["get", "highlighted"], false],
+                "#000091",
+                "#ffffff",
+              ],
+              "line-width": 1.5,
+              "line-opacity": 1,
+            },
+          } as import("react-map-gl/maplibre").LayerProps,
+          {
+            id: "operators-depts-hover-stroke",
+            type: "line",
+            paint: {
+              "line-color": [
+                "case",
+                ["==", ["get", "operator_status"], "partenaire"],
+                "#18753C",
+                ["==", ["get", "operator_status"], "partenaire_avec_services"],
+                "#18753C",
+                ["==", ["get", "operator_status"], "intention"],
+                "#716043",
+                "#999999",
+              ],
+              "line-width": 2,
+              "line-opacity": ["case", ["boolean", ["feature-state", "hover"], false], 1, 0],
+            },
+          } as import("react-map-gl/maplibre").LayerProps,
+        ],
+      },
+    ];
 
     // EPCI borders overlay when an EPCI or city is selected
     // geoJSONEPCI is typed as Feature[] but processGeoJSONEPCI returns a FeatureCollection
-    const epciGeoJSON = (selectedAreas.department as SelectedArea)?.geoJSONEPCI as unknown as GeoJSON.FeatureCollection | undefined;
+    const epciGeoJSON = (selectedAreas.department as SelectedArea)?.geoJSONEPCI as unknown as
+      | GeoJSON.FeatureCollection
+      | undefined;
     const selectedEpciCode = (selectedAreas.epci as SelectedArea)?.insee_geo;
     if (currentLevel === "epci" && epciGeoJSON && selectedEpciCode) {
       const selectedEpciFeature = epciGeoJSON.features.find(
@@ -666,24 +703,29 @@ const DeploiementMap = () => {
   return stats ? (
     <MapLayout
       sidebar={
-        // @ts-expect-error to be checked not typed
-        <SidePanelContent
-          getColor={getColor}
-          mapState={mapState}
-          selectLevel={selectLevel}
-          setMapState={setMapState}
-          computeAreaStats={computeAreaStats}
-          goBack={goBack}
-          handleQuickNav={handleQuickNav}
-          panelState={panelState}
-          isMobile={isMobile}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          operators={filteredOperators}
-          allServices={operators.flatMap((op) => op.services || []).filter((s, i, arr) => arr.findIndex((x) => x.id === s.id) === i)}
-          selectedServiceFilter={selectedServiceFilter}
-          setSelectedServiceFilter={setSelectedServiceFilter}
-        />
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        React.createElement(SidePanelContent as React.ComponentType<any>, {
+          getColor,
+          mapState,
+          selectLevel,
+          setMapState,
+          computeAreaStats,
+          goBack,
+          handleQuickNav,
+          panelState,
+          isMobile,
+          activeTab,
+          setActiveTab,
+          operators: filteredOperators,
+          allServices: operators
+            .flatMap((op) => op.services || [])
+            .filter(
+              (s: { id: number }, i: number, arr: { id: number }[]) =>
+                arr.findIndex((x) => x.id === s.id) === i,
+            ),
+          selectedServiceFilter,
+          setSelectedServiceFilter,
+        })
       }
       map={
         <InteractiveMap
@@ -698,7 +740,9 @@ const DeploiementMap = () => {
           hoverStrokeColor="#000091"
           hideBaseLayer={activeTab === "partenaires"}
           neighbourClickOnly={activeTab === "partenaires"}
-          additionalInteractiveLayerIds={activeTab === "partenaires" ? ["operators-depts-fill"] : []}
+          additionalInteractiveLayerIds={
+            activeTab === "partenaires" ? ["operators-depts-fill"] : []
+          }
           customLayers={[...partenairesLayer, ...(activeTab === "partenaires" ? [] : customLayers)]}
         />
       }
@@ -710,7 +754,10 @@ const DeploiementMap = () => {
 
 const CartographieDeploiement = () => {
   return (
-    <MapProvider initialFilters={{ service_ids: null, active_tab: null }} initialDepartmentView="epci">
+    <MapProvider
+      initialFilters={{ service_ids: null, active_tab: null }}
+      initialDepartmentView="epci"
+    >
       <MapLayoutProvider>
         <DeploiementMap />
       </MapLayoutProvider>
