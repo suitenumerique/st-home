@@ -71,6 +71,7 @@ const DeploiementMap = () => {
     fetch("/api/deployment/operators")
       .then((r) => r.json())
       .then((data) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setOperators((data.data || []).filter((op: any) => op.status && op.name !== "ANCT"));
       });
     // operators.length is intentionally omitted to fetch only once on mount
