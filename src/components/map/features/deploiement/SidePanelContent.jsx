@@ -16,6 +16,14 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
   const [hoveredServiceId, setHoveredServiceId] = useState(null);
   const [openDropdown, setOpenDropdown] = useState(null); // 'structure' | 'service-filter' | null
   const [expandedOperatorId, setExpandedOperatorId] = useState(null);
+
+  useEffect(() => {
+    if (operators.length === 1) {
+      setExpandedOperatorId(operators[0].id);
+    } else {
+      setExpandedOperatorId(null);
+    }
+  }, [operators]);
   const dropdownRef = useRef(null);
 
   useEffect(() => {

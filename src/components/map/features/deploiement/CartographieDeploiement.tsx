@@ -591,12 +591,7 @@ const DeploiementMap = () => {
             id: "operators-depts-stroke",
             type: "line",
             paint: {
-              "line-color": [
-                "case",
-                ["boolean", ["get", "highlighted"], false],
-                "#000091",
-                "#ffffff",
-              ],
+              "line-color": "#ffffff",
               "line-width": 1.5,
               "line-opacity": 1,
             },
@@ -607,16 +602,40 @@ const DeploiementMap = () => {
             paint: {
               "line-color": [
                 "case",
-                ["==", ["get", "operator_status"], "partenaire"],
-                "#18753C",
-                ["==", ["get", "operator_status"], "partenaire_avec_services"],
-                "#18753C",
-                ["==", ["get", "operator_status"], "intention"],
-                "#716043",
+                ["==", ["get", "operator_status"], "partenaire"], "#18753C",
+                ["==", ["get", "operator_status"], "partenaire_avec_services"], "#18753C",
+                ["==", ["get", "operator_status"], "intention"], "#716043",
                 "#999999",
               ],
               "line-width": 2,
-              "line-opacity": ["case", ["boolean", ["feature-state", "hover"], false], 1, 0],
+              "line-opacity": [
+                "case",
+                ["all", ["boolean", ["feature-state", "hover"], false], ["!", ["boolean", ["get", "highlighted"], false]]], 1,
+                0,
+              ],
+            },
+          } as import("react-map-gl/maplibre").LayerProps,
+          {
+            id: "operators-depts-highlighted-fill",
+            type: "fill",
+            paint: {
+              "fill-color": [
+                "case",
+                ["==", ["get", "operator_status"], "partenaire"], "#B8FEC9",
+                ["==", ["get", "operator_status"], "partenaire_avec_services"], "#B8FEC9",
+                ["==", ["get", "operator_status"], "intention"], "#FEECC2",
+                "#EEEEEE",
+              ],
+              "fill-opacity": ["case", ["boolean", ["get", "highlighted"], false], 0.8, 0],
+            },
+          } as import("react-map-gl/maplibre").LayerProps,
+          {
+            id: "operators-depts-highlighted-stroke",
+            type: "line",
+            paint: {
+              "line-color": "#000091",
+              "line-width": 2,
+              "line-opacity": ["case", ["boolean", ["get", "highlighted"], false], 1, 0],
             },
           } as import("react-map-gl/maplibre").LayerProps,
         ],
