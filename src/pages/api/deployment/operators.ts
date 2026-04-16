@@ -3,8 +3,8 @@ import {
   operators,
   organizations,
   organizationsToOperators,
-  organizationsToServices,
   services,
+  servicesToOperators,
 } from "@/lib/schema";
 import { sql } from "drizzle-orm";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -34,8 +34,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       FROM ${operators} o
       INNER JOIN ${organizationsToOperators} oto ON o.id = oto.operator_id
       INNER JOIN ${organizations} org ON oto.organization_siret = org.siret
-      INNER JOIN ${organizationsToServices} ots ON org.siret = ots.organization_siret
-      INNER JOIN ${services} s ON ots.service_id = s.id
+      LEFT JOIN ${servicesToOperators} sto ON o.id = sto.operator_id
+      LEFT JOIN ${services} s ON sto.service_id = s.id
       GROUP BY o.id, o.name, o.shortname, o.name_with_article, o.type, o.status, o.website, o.siret
       ORDER BY o.name ASC
     `);
