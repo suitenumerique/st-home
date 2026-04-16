@@ -7,6 +7,9 @@ echo "-----> Running post-frontend script"
 
 make data-geoip-download
 
+echo "-----> Downloading GeoIP database for Caddy"
+curl -fLSs -o /tmp/caddy-geoip.mmdb.gz "${CADDY_GEOIP_DB_URL}" && gunzip -f /tmp/caddy-geoip.mmdb.gz && mv /tmp/caddy-geoip.mmdb "data/${CADDY_GEOIP_DB_PATH}"
+
 mv data/* .
 mv src/caddy/* .
 

@@ -99,10 +99,7 @@ def iter_sirene():
 
 def geoip_country_by_ip(ip):
     with maxminddb.open_database("dumps/geoip-country.mmdb") as reader:
-        record = reader.get(ip)
-        if record is None:
-            return None
-        return record.get("country", {}).get("iso_code")
+        return reader.get(ip).get("country_code")
 
 
 geoip_cache = TTLCache(maxsize=1000, ttl=3600)

@@ -6,6 +6,7 @@
 #                           e.g. "1.2.3.4 5.6.7.0/24"
 #   ACL_ALLOWED_COUNTRIES — space-separated country codes to allow (empty = open)
 #                           e.g. "FR DE BE"
+#   CADDY_GEOIP_DB_PATH   — path to the MaxMind/DB-IP mmdb file (required for geo-blocking)
 #   RATE_LIMIT_EVENTS     — max requests per IP per window (empty = no rate limiting)
 #   RATE_LIMIT_WINDOW     — rate limit window duration (default: 10s)
 
@@ -28,7 +29,7 @@
 
 	# Geo-blocking — empty = open (space-separated country codes)
 	@geoblocked not maxmind_geolocation {
-		db_path dumps/geoip-country.mmdb
+		db_path {$CADDY_GEOIP_DB_PATH}
 		allow_countries {$ACL_ALLOWED_COUNTRIES}
 	}
 	respond @geoblocked "Access denied" 403
