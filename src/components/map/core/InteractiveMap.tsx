@@ -31,6 +31,10 @@ export interface InteractiveMapProps {
   mapStyle?: StyleSpecification;
   strokeColor?: string;
   hoverStrokeColor?: string;
+  disableInteraction?: boolean;
+  neighbourClickOnly?: boolean;
+  additionalInteractiveLayerIds?: string[];
+  hideBaseLayer?: boolean;
   customLayers?: Array<{
     id: string;
     source?: {
@@ -56,7 +60,8 @@ export const customMapStyle = {
       return { ...layer, paint: { ...layer.paint, "fill-color": WATER_COLOR } };
     }
     if (layer.type === "symbol" && layer.id?.toLowerCase().includes("localite")) {
-      return { ...layer, minzoom: 11 };
+      const newMinZoom = layer.minzoom <= 6 ? 6 : layer.minzoom;
+      return { ...layer, minzoom: newMinZoom };
     }
     return layer;
   }),
@@ -72,6 +77,10 @@ export const InteractiveMap = ({
   mapStyle = mapStyles.desaturated as unknown as StyleSpecification,
   strokeColor = "#ffffff",
   hoverStrokeColor,
+  disableInteraction = false,
+  neighbourClickOnly = false,
+  additionalInteractiveLayerIds = [],
+  hideBaseLayer = false,
   customLayers,
 }: InteractiveMapProps) => {
   const { mapState, selectLevel, goBack, handleQuickNav, nextLevel } = useMapContext();
@@ -90,6 +99,7 @@ export const InteractiveMap = ({
   const [hoveredFeatureScore, setHoveredFeatureScore] = useState<number | null>(null);
   const hoveredFeatureIdRef = useRef<string | number | null>(null);
   const hoveredNeighbourIdRef = useRef<string | number | null>(null);
+  const hoveredDeptIdRef = useRef<string | number | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const originalDotColorRef = useRef<any>(null);
   const [isMapUpdating, setIsMapUpdating] = useState(false);
@@ -153,6 +163,13 @@ export const InteractiveMap = ({
       const feature = event.features[0];
       const layerId = (feature as { layer?: { id?: string } }).layer?.id;
 
+      if (layerId === "operators-depts-fill" && feature.properties?.INSEE_GEO) {
+        await selectLevel("department", feature.properties.INSEE_GEO as string, "areaClick");
+        return;
+      }
+
+      if (neighbourClickOnly && layerId !== "neighbour-polygon-fill") return;
+
       // Click on neighbour layer: select that region (at region level) or department (at department/epci/city level)
       if (layerId === "neighbour-polygon-fill" && feature.properties?.INSEE_GEO) {
         const code = feature.properties.INSEE_GEO as string;
@@ -188,6 +205,12 @@ export const InteractiveMap = ({
   };
 
   const clearHoverState = useCallback((map: maplibregl.Map) => {
+    if (hoveredDeptIdRef.current !== null && map.getSource("operators-depts")) {
+      try {
+        map.setFeatureState({ source: "operators-depts", id: hoveredDeptIdRef.current }, { hover: false });
+      } catch { /* source may have been removed */ }
+      hoveredDeptIdRef.current = null;
+    }
     if (hoveredFeatureIdRef.current !== null && map.getSource("interactive-polygons")) {
       try {
         map.setFeatureState(
@@ -196,6 +219,16 @@ export const InteractiveMap = ({
         );
       } catch {
         // Source may have been removed
+      }
+      if (map.getSource("feature-points")) {
+        try {
+          map.setFeatureState(
+            { source: "feature-points", id: hoveredFeatureIdRef.current },
+            { hover: false },
+          );
+        } catch {
+          // Source may have been removed
+        }
       }
       hoveredFeatureIdRef.current = null;
     }
@@ -218,6 +251,28 @@ export const InteractiveMap = ({
         const map = mapRef.current?.getMap();
         const feature = event.features[0];
         const layerId = (feature as { layer?: { id?: string } }).layer?.id;
+
+        if (layerId === "operators-depts-fill") {
+          const featureId = feature.id;
+          if (featureId !== undefined && map && map.getSource("operators-depts")) {
+            if (hoveredDeptIdRef.current !== null && hoveredDeptIdRef.current !== featureId) {
+              try {
+                map.setFeatureState({ source: "operators-depts", id: hoveredDeptIdRef.current }, { hover: false });
+              } catch { /* ignore */ }
+            }
+            hoveredDeptIdRef.current = featureId;
+            try {
+              map.setFeatureState({ source: "operators-depts", id: featureId }, { hover: true });
+            } catch { /* ignore */ }
+          }
+          setHoveredFeatureScore(null);
+          setPopupInfo({
+            longitude: event.lngLat.lng,
+            latitude: event.lngLat.lat,
+            properties: feature.properties as FeatureProperties,
+          });
+          return;
+        }
 
         if (layerId === "neighbour-polygon-fill" && map?.getSource("neighbour-polygons")) {
           const featureId = feature.id;
@@ -258,6 +313,16 @@ export const InteractiveMap = ({
               );
             } catch {
               // Source may have been removed
+            }
+            if (map.getSource("feature-points")) {
+              try {
+                map.setFeatureState(
+                  { source: "feature-points", id: featureId },
+                  { hover: true },
+                );
+              } catch {
+                // Source may have been removed
+              }
             }
           }
           setHoveredFeatureScore(feature.properties.SCORE as number);
@@ -350,10 +415,10 @@ export const InteractiveMap = ({
     type: "fill",
     paint: {
       "fill-color": hoverFill
-        ? ["case", ["boolean", ["feature-state", "hover"], false], "#A1A9CB", ["get", "color"]]
+        ? ["case", ["boolean", ["feature-state", "hover"], false], "#000091", ["get", "color"]]
         : ["get", "color"],
       "fill-opacity": hoverFill
-        ? ["case", ["boolean", ["feature-state", "hover"], false], 0.5, fillOpacity]
+        ? ["case", ["boolean", ["feature-state", "hover"], false], 0.2, fillOpacity]
         : fillOpacity,
     },
   };
@@ -372,7 +437,7 @@ export const InteractiveMap = ({
     type: "line",
     paint: {
       "line-color": hoverStrokeColor ?? ["get", "color_dark"],
-      "line-width": ["interpolate", ["linear"], ["zoom"], 4, 1.2, 8, 1.8, 10, 2.5, 15, 3],
+      "line-width": 2,
       "line-opacity": ["case", ["boolean", ["feature-state", "hover"], false], 1, 0],
     },
   };
@@ -392,11 +457,21 @@ export const InteractiveMap = ({
     id: "feature-circles",
     type: "circle",
     paint: {
-      "circle-radius": 20,
-      "circle-color": "#ffffff",
-      "circle-stroke-color": "#000000",
-      "circle-stroke-width": 2,
-      "circle-opacity": 0.9,
+      "circle-radius": 22,
+      "circle-color": "#ECECFE",
+      "circle-stroke-color": [
+        "case",
+        ["boolean", ["feature-state", "hover"], false],
+        "rgba(0, 0, 145, 0.4)",
+        "rgba(0, 0, 145, 0.2)",
+      ],
+      "circle-stroke-width": [
+        "case",
+        ["boolean", ["feature-state", "hover"], false],
+        6,
+        3,
+      ],
+      "circle-opacity": 1,
     },
   };
 
@@ -405,14 +480,14 @@ export const InteractiveMap = ({
     type: "symbol",
     layout: {
       "text-field": ["get", "circleValue"],
-      "text-font": ["Arial Unicode MS Regular"],
+      "text-font": ["Arial Unicode MS Bold"],
       "text-size": 14,
       "text-anchor": "center",
       "text-allow-overlap": true,
     },
     paint: {
-      "text-color": "#000000",
-      "text-halo-color": "#ffffff",
+      "text-color": "#000091",
+      "text-halo-color": "#ECECFE",
       "text-halo-width": 1,
     },
   };
@@ -532,13 +607,14 @@ export const InteractiveMap = ({
         ref={mapRef}
         mapStyle={mapStyle}
         projection="mercator"
-        interactiveLayerIds={[
+        interactiveLayerIds={disableInteraction ? [] : [
           "polygon-fill",
           ...(neighbourGeoJSON ? ["neighbour-polygon-fill"] : []),
+          ...additionalInteractiveLayerIds,
         ]}
-        onClick={handleAreaClick}
-        onMouseLeave={onMouseLeave}
-        onMouseMove={onMouseMove}
+        onClick={disableInteraction ? undefined : handleAreaClick}
+        onMouseLeave={disableInteraction ? undefined : onMouseLeave}
+        onMouseMove={disableInteraction ? undefined : onMouseMove}
         minZoom={4.5}
         cursor="pointer"
         onLoad={() => setIsMapLoaded(true)}
@@ -575,7 +651,7 @@ export const InteractiveMap = ({
         <ScaleControl position="bottom-left" />
 
         {/* Coloured layer first so it is always above the neighbour layer (beforeId places neighbour below it) */}
-        {currentGeoJSON && (
+        {currentGeoJSON && !hideBaseLayer && (
           <Source id="interactive-polygons" type="geojson" data={currentGeoJSON} generateId={true}>
             <Layer
               {...(fillLayerStyle as LayerProps)}

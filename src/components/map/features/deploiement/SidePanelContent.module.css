@@ -1,3 +1,31 @@
+.header {
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border-default-grey);
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.headerTitle {
+  color: var(--text-title-blue-france);
+  font-size: 1.5rem !important;
+  font-weight: bold !important;
+  margin: 0;
+  white-space: nowrap;
+}
+
+
+.headerDescription {
+  font-size: 16px;
+  color: var(--text-default-grey);
+  margin: 0 0 0.5rem;
+}
+
 .searchContainer {
   display: flex;
   align-items: center;
@@ -61,19 +89,33 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  border: 2px solid var(--border-action-high-blue-france);
-  border-radius: 0.5rem;
-  padding: 0.35rem 0.875rem;
-  background: white;
-  color: var(--text-action-high-blue-france);
-  font-size: 0.875rem;
-  font-weight: 600;
+  border: 2px solid #6060DC;
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  background: var(--background-alt-blue-france);
+  font-size: 14px;
   cursor: pointer;
   white-space: nowrap;
 }
 
-.filterDropdownButton:hover {
-  background-color: var(--background-alt-blue-france);
+.filterDropdownButtonUnselected {
+  font-weight: 400;
+  color: var(--text-mention-grey);
+  background: var(--background-default-grey-hover);
+  border: 1px solid var(--border-contrast-grey);
+}
+
+.filterDropdownButtonUnselected:hover {
+  background: var(--background-default-grey-hover);
+}
+
+.filterDropdownButtonSelected {
+  font-weight: 500;
+  color: var(--text-action-high-blue-france);
+}
+
+.filterDropdownButton.filterDropdownButtonSelected:hover {
+  background: var(--background-alt-blue-france) !important;
 }
 
 .filterDropdownMenu {
@@ -82,12 +124,12 @@
   left: 0;
   background: white;
   border: 1px solid var(--border-default-grey);
-  border-radius: 0.5rem;
+  border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   z-index: 100;
-  min-width: 100%;
+  min-width: 250px;
   list-style: none;
-  padding: 0.25rem 0;
+  padding: 0;
   margin: 0;
   max-height: 240px;
   overflow-y: auto;
@@ -96,32 +138,25 @@
 .filterDropdownOption {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.25rem;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
   cursor: pointer;
   font-size: 0.875rem;
   white-space: nowrap;
+  color: var(--text-default-grey);
 }
 
-.filterDropdownLogo {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-  flex-shrink: 0;
+.filterDropdownOptionFirst {
+  border-bottom: 1px solid var(--border-default-grey);
 }
 
 .filterDropdownOption:hover {
   background-color: var(--background-alt-grey);
 }
 
-.filterDropdownOptionActive {
-  font-weight: bold;
-  color: var(--text-action-high-blue-france);
-}
-
 .areaTitle {
   color: var(--text-title-blue-france);
-  font-size: 2rem !important;
+  font-size: 28px !important;
   font-weight: bold !important;
   margin-bottom: 0.25rem;
 }
@@ -136,8 +171,25 @@
   margin-top: 0.5rem;
 }
 
+.serviceGroupTitle {
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--text-default-grey);
+  padding: 0.75rem 0.5rem 16px !important;
+  margin: 0 !important;
+  border-bottom: 1px solid var(--border-default-grey);
+}
+
+.serviceGroupTitleSecond {
+  margin-top: 1rem !important;
+}
+
 .serviceAccordion {
   border-bottom: 1px solid var(--border-default-grey);
+}
+
+.serviceAccordionSelected .serviceHeader {
+  background-color: var(--background-open-blue-france);
 }
 
 .serviceHeader {
@@ -147,7 +199,7 @@
   width: 100%;
   background: none;
   border: none;
-  padding: 1rem 0.5rem;
+  padding: 16px 0.5rem;
   cursor: pointer;
   text-align: left;
   border-radius: 4px;
@@ -155,6 +207,10 @@
 
 .serviceHeader:hover {
   background-color: var(--background-alt-grey);
+}
+
+.serviceAccordionSelected .serviceHeader:hover {
+  background-color: var(--background-open-blue-france) !important;
 }
 
 .serviceHeaderLeft {
@@ -165,32 +221,46 @@
   flex-wrap: wrap;
 }
 
-.productCheckbox {
+.serviceHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+
+.servicelogo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.serviceCheckbox {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #f6f6f6;
+  border: 1.5px solid var(--border-action-high-blue-france);
   border-radius: 4px;
-  padding: 0.3rem;
-  width: 32px;
-  height: 32px;
+  width: 16px;
+  height: 16px;
   cursor: pointer;
   flex-shrink: 0;
-  overflow: hidden;
+  color: white;
+  font-size: 8px;
 }
 
-.productCheckboxSelected {
-  border-color: #2a3c84;
+.serviceCheckbox span {
+  transform: scale(0.5);
 }
 
-.productCheckboxImage {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+.serviceCheckboxSelected {
+  background-color: var(--background-action-high-blue-france);
+  border-color: var(--background-action-high-blue-france);
 }
 
 .dimmed {
-  opacity: 0.4;
+  opacity: 1;
 }
 
 .serviceName {
@@ -200,29 +270,28 @@
 }
 
 .serviceCount {
-  color: var(--text-mention-grey);
-  font-size: 0.875rem;
-  font-weight: bold;
+  color: var(--text-default-grey);
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .serviceDetails {
-  padding: 0.75rem 0 0.25rem 2rem;
+  padding: 16px 24px;
+  background: white;
+  font-size: 14px;
 }
 
-.serviceDetailsCompact {
-  padding: 0.75rem 0 0.25rem 0.25rem;
+.serviceDetailsTitle {
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 0.5rem;
 }
 
-.serviceDetailsList {
-  list-style: disc;
-  padding-left: 1.25rem;
-  margin-bottom: 0.75rem;
-}
-
-.serviceDetailsList li {
-  font-size: 0.875rem;
-  margin-bottom: 0.25rem;
-  color: var(--text-default-grey);
+.serviceDetailsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem 1rem;
+  font-size: 14px;
 }
 
 .serviceListTitle {
@@ -235,4 +304,134 @@
   display: flex;
   align-items: center;
   margin-bottom: 7px;
+}
+
+.selectionBadgeWrapper {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.selectionBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--background-action-high-blue-france);
+  color: white;
+  padding: 0.25rem 0.5rem 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.selectionBadgeClear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.25);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 0.75rem;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.selectionBadgeClear:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+/* Operator list */
+.operatorCount {
+  font-size: 20px;
+  font-weight: normal;
+  color: var(--text-action-high-blue-france);
+  margin: 0 0 0.5rem;
+}
+
+.operatorName {
+  font-weight: bold;
+  font-size: 1rem;
+  color: var(--text-default-grey);
+}
+
+.operatorDept {
+  font-size: 0.875rem;
+  color: var(--text-mention-grey);
+}
+
+.operatorBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badgePartenaire {
+  background: var(--background-alt-blue-france);
+  color: var(--text-action-high-blue-france);
+}
+
+.badgeAvenir {
+  background: #feecc2;
+  color: #716043;
+}
+
+.operatorServiceBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  background: var(--background-alt-blue-france);
+  color: var(--text-action-high-blue-france);
+}
+
+.operatorDetails {
+  padding: 16px 24px;
+  background: white;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.operatorDepts {
+  font-weight: bold;
+  font-size: 14px;
+  margin: 0;
+  color: var(--text-default-grey);
+}
+
+.operatorServices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.operatorServiceItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 14px;
+  color: var(--text-default-grey);
+}
+
+.operatorServiceIcon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.operatorActions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
 }

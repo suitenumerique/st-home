@@ -99,6 +99,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           COUNT(DISTINCT CASE WHEN ${organizationsToServices.active} = true THEN ${organizationsToServices.organizationSiret} END)::int as active,
           COUNT(DISTINCT CASE WHEN ${organizations.type} = 'commune' THEN ${organizationsToServices.organizationSiret} END)::int as communes,
           COUNT(DISTINCT CASE WHEN ${organizations.type} = 'epci' THEN ${organizationsToServices.organizationSiret} END)::int as epci,
+          COUNT(DISTINCT CASE WHEN ${organizations.type} = 'departement' THEN ${organizationsToServices.organizationSiret} END)::int as departement,
+          COUNT(DISTINCT CASE WHEN ${organizations.type} = 'region' THEN ${organizationsToServices.organizationSiret} END)::int as region,
           COUNT(DISTINCT CASE WHEN has_operator.organization_siret IS NULL THEN ${organizationsToServices.organizationSiret} END)::int as autoheberge,
           COUNT(DISTINCT CASE WHEN has_operator.organization_siret IS NOT NULL THEN ${organizationsToServices.organizationSiret} END)::int as opsn_partenaire
         FROM ${services}

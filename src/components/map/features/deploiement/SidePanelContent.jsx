@@ -1,4 +1,5 @@
 import { fr } from "@codegouvfr/react-dsfr";
+import { SegmentedControl } from "@codegouvfr/react-dsfr/SegmentedControl";
 import PropTypes from "prop-types";
 import { useMemo, useState, useEffect, useRef } from "react";
 import CommuneSearch from "../../../CommuneSearch";
@@ -6,14 +7,15 @@ import Breadcrumb from "../../ui/Breadcrumb";
 import MapButton from "../../ui/MapButton";
 import styles from "./SidePanelContent.module.css";
 
-const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats }) => {
+const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats, activeTab, setActiveTab, operators = [], allServices = [], selectedServiceFilter, setSelectedServiceFilter }) => {
 
   const [linkCopied, setLinkCopied] = useState(false);
   const [services, setServices] = useState([]);
   const [scopedStats, setScopedStats] = useState([]);
   const [expandedServices, setExpandedServices] = useState(new Set());
   const [hoveredServiceId, setHoveredServiceId] = useState(null);
-  const [openDropdown, setOpenDropdown] = useState(null); // 'structure' | null
+  const [openDropdown, setOpenDropdown] = useState(null); // 'structure' | 'service-filter' | null
+  const [expandedOperatorId, setExpandedOperatorId] = useState(null);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -86,6 +88,12 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
   }, [services, scopedStats]);
 
   const displayedServices = sortedServices;
+
+  const selectedServiceCount = displayedServices.filter(service =>
+    service._mergedIds
+      ? service._mergedIds.some(id => mapState.filters.service_ids?.includes(id))
+      : mapState.filters.service_ids?.includes(service.id)
+  ).length;
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -175,65 +183,102 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
 
   const orgTypeLabel = { all: 'Toutes structures', commune: 'Communes', epci: 'EPCI' }[orgType];
 
-  const filters = () => (
-    <div className={styles.filtersContainer} ref={dropdownRef}>
-      <div className={styles.filterDropdown}>
-        <button
-          className={styles.filterDropdownButton}
-          onClick={() => setOpenDropdown(openDropdown === 'structure' ? null : 'structure')}
-          aria-expanded={openDropdown === 'structure'}
-        >
-          {orgTypeLabel}
-          <span className={fr.cx("fr-icon-arrow-down-s-line fr-icon--sm")} aria-hidden="true"></span>
-        </button>
-        {openDropdown === 'structure' && (
-          <ul className={styles.filterDropdownMenu}>
-            {[['all', 'Toutes structures'], ['commune', 'Communes'], ['epci', 'EPCI']].map(([val, label]) => (
-              <li
-                key={val}
-                className={`${styles.filterDropdownOption} ${orgType === val ? styles.filterDropdownOptionActive : ''}`}
-                onClick={() => {
-                  setMapState({ ...mapState, filters: { ...mapState.filters, org_type: val === 'all' ? null : val } });
-                  setOpenDropdown(null);
-                }}
-              >
-                {label}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
-  );
+  const filters = () => {
+    if (activeTab === 'partenaires') {
+      const selectedService = allServices.find((s) => s.id === selectedServiceFilter);
+      const label = selectedService ? selectedService.name : 'Tous les services';
+      const isSelected = !!selectedServiceFilter;
+      return (
+        <div className={styles.filtersContainer} ref={dropdownRef}>
+          <div className={styles.filterDropdown}>
+            <button
+              className={`${styles.filterDropdownButton} ${!isSelected ? styles.filterDropdownButtonUnselected : styles.filterDropdownButtonSelected}`}
+              onClick={() => setOpenDropdown(openDropdown === 'service-filter' ? null : 'service-filter')}
+              aria-expanded={openDropdown === 'service-filter'}
+            >
+              {label}
+              <span className={fr.cx("fr-icon-arrow-down-s-line fr-icon--sm")} aria-hidden="true"></span>
+            </button>
+            {openDropdown === 'service-filter' && (
+              <ul className={styles.filterDropdownMenu}>
+                <li
+                  className={`${styles.filterDropdownOption} ${styles.filterDropdownOptionFirst}`}
+                  onClick={() => { setSelectedServiceFilter(null); setOpenDropdown(null); }}
+                >
+                  <span>Tous les services</span>
+                  <span className={fr.cx("fr-icon-check-line fr-icon--sm")} aria-hidden="true" style={{ visibility: !isSelected ? 'visible' : 'hidden' }} />
+                </li>
+                {allServices.map((s) => (
+                  <li
+                    key={s.id}
+                    className={styles.filterDropdownOption}
+                    onClick={() => { setSelectedServiceFilter(s.id); setOpenDropdown(null); }}
+                  >
+                    <span>{s.name}</span>
+                    <span className={fr.cx("fr-icon-check-line fr-icon--sm")} aria-hidden="true" style={{ visibility: selectedServiceFilter === s.id ? 'visible' : 'hidden' }} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      );
+    }
 
-const serviceDetails = (service, stats, compact = false) => {
-    const communes = stats?.communes || 0;
-    const epci = stats?.epci || 0;
-    const autoheberge = stats?.autoheberge || 0;
-    const opsn = stats?.opsn_partenaire || 0;
     return (
-      <div className={compact ? styles.serviceDetailsCompact : styles.serviceDetails}>
-        <ul className={styles.serviceDetailsList}>
-          {(orgType === 'all' || orgType === 'commune') && (
-            <li>Communes : <strong>{formatNumber(communes)}</strong></li>
+      <div className={styles.filtersContainer} ref={dropdownRef}>
+        <div className={styles.filterDropdown}>
+          <button
+            className={`${styles.filterDropdownButton} ${orgType === 'all' ? styles.filterDropdownButtonUnselected : styles.filterDropdownButtonSelected}`}
+            onClick={() => setOpenDropdown(openDropdown === 'structure' ? null : 'structure')}
+            aria-expanded={openDropdown === 'structure'}
+          >
+            {orgTypeLabel}
+            <span className={fr.cx("fr-icon-arrow-down-s-line fr-icon--sm")} aria-hidden="true"></span>
+          </button>
+          {openDropdown === 'structure' && (
+            <ul className={styles.filterDropdownMenu}>
+              {[['all', 'Toutes structures'], ['commune', 'Communes'], ['epci', 'EPCI']].map(([val, label], index) => (
+                <li
+                  key={val}
+                  className={`${styles.filterDropdownOption} ${index === 0 ? styles.filterDropdownOptionFirst : ''}`}
+                  onClick={() => {
+                    setMapState({ ...mapState, filters: { ...mapState.filters, org_type: val === 'all' ? null : val } });
+                    setOpenDropdown(null);
+                  }}
+                >
+                  <span>{label}</span>
+                  <span className={fr.cx("fr-icon-check-line fr-icon--sm")} aria-hidden="true" style={{ visibility: orgType === val ? 'visible' : 'hidden' }} />
+                </li>
+              ))}
+            </ul>
           )}
-          {(orgType === 'all' || orgType === 'epci') && (
-            <li>EPCI : <strong>{formatNumber(epci)}</strong></li>
-          )}
-        </ul>
-        <ul className={styles.serviceDetailsList}>
-          <li>Autohébergé : <strong>{formatNumber(autoheberge)}</strong></li>
-          <li>OPSN partenaire : <strong>{formatNumber(opsn)}</strong></li>
-        </ul>
+        </div>
       </div>
     );
   };
 
-  const serviceList = () => {
-    const singleService = displayedServices.length === 1;
+const serviceDetails = (service, stats, compact = false) => {
+    const communes = stats?.communes || 0;
+    const epci = stats?.epci || 0;
+    const departements = stats?.departement || 0;
+    const regions = stats?.region || 0;
     return (
-      <div className={styles.serviceList}>
-        {displayedServices.map((service) => {
+      <div className={styles.serviceDetails}>
+        <p className={styles.serviceDetailsTitle}>Structures qui utilisent le service</p>
+        <div className={styles.serviceDetailsGrid}>
+          <span>Communes : <strong>{formatNumber(communes)}</strong></span>
+          <span>EPCI : <strong>{formatNumber(epci)}</strong></span>
+          <span>Départements : <strong>{formatNumber(departements)}</strong></span>
+          <span>Régions : <strong>{formatNumber(regions)}</strong></span>
+        </div>
+      </div>
+    );
+  };
+
+  const OTHER_SERVICES = ['Accompagnement numérique sur mesure', 'Administration +'];
+
+  const renderServiceItem = (service, singleService) => {
           const stats = service._mergedIds
             ? getMergedStats(service._mergedIds)
             : scopedStats.find(s => s.id === parseInt(service.id));
@@ -253,7 +298,7 @@ const serviceDetails = (service, stats, compact = false) => {
           }
 
           return (
-            <div key={service.id} className={`${styles.serviceAccordion} ${isDimmed ? styles.dimmed : ''}`}>
+            <div key={service.id} className={`${styles.serviceAccordion} ${isDimmed ? styles.dimmed : ''} ${isSelected ? styles.serviceAccordionSelected : ''}`}>
               <button
                 className={styles.serviceHeader}
                 onClick={() => toggleService(service.id)}
@@ -261,26 +306,7 @@ const serviceDetails = (service, stats, compact = false) => {
               >
                 <div className={styles.serviceHeaderLeft}>
                   {service.logo_url && (
-                    <div
-                      className={`${styles.productCheckbox} ${isSelected ? styles.productCheckboxSelected : ''}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const currentIds = mapState.filters.service_ids || [];
-                        const idsToToggle = service._mergedIds || [service.id];
-                        const remaining = currentIds.filter(id => !idsToToggle.includes(id));
-                        const newIds = isSelected ? (remaining.length > 0 ? remaining : null) : [...currentIds, ...idsToToggle];
-                        setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: newIds } });
-                        if (!isSelected) setExpandedServices(prev => new Set(prev).add(service.id));
-                      }}
-                      onMouseEnter={() => setHoveredServiceId(service.id)}
-                      onMouseLeave={() => setHoveredServiceId(null)}
-                    >
-                      {hoveredServiceId === service.id || isSelected ? (
-                        <span className={fr.cx("fr-icon-check-line")} aria-hidden="true" />
-                      ) : (
-                        <img className={styles.productCheckboxImage} src={service.logo_url} alt={service.name} />
-                      )}
-                    </div>
+                    <img className={styles.servicelogo} src={service.logo_url} alt={service.name} />
                   )}
                   <span className={styles.serviceName}>{service.name}</span>
                   {service.maturity !== 'stable' && (
@@ -290,15 +316,46 @@ const serviceDetails = (service, stats, compact = false) => {
                   )}
                   <span className={styles.serviceCount}>{formatNumber(count)} structure{count !== 1 ? 's' : ''}</span>
                 </div>
-                <span
-                  className={fr.cx(isExpanded ? "fr-icon-arrow-up-s-line" : "fr-icon-arrow-down-s-line")}
-                  aria-hidden="true"
-                ></span>
+                <div className={styles.serviceHeaderRight}>
+                  <div
+                    className={`${styles.serviceCheckbox} ${isSelected ? styles.serviceCheckboxSelected : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const currentIds = mapState.filters.service_ids || [];
+                      const idsToToggle = service._mergedIds || [service.id];
+                      const remaining = currentIds.filter(id => !idsToToggle.includes(id));
+                      const newIds = isSelected ? (remaining.length > 0 ? remaining : null) : [...currentIds, ...idsToToggle];
+                      setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: newIds } });
+                      if (!isSelected) setExpandedServices(prev => new Set(prev).add(service.id));
+                    }}
+                  >
+                    {isSelected && <span className={fr.cx("fr-icon-check-line")} aria-hidden="true" />}
+                  </div>
+                  <span
+                    className={fr.cx(isExpanded ? "fr-icon-arrow-up-s-line" : "fr-icon-arrow-down-s-line")}
+                    aria-hidden="true"
+                  ></span>
+                </div>
               </button>
               {isExpanded && serviceDetails(service, stats)}
             </div>
           );
-        })}
+  };
+
+  const serviceList = () => {
+    const singleService = displayedServices.length === 1;
+    const suiteServices = displayedServices.filter(s => !OTHER_SERVICES.includes(s.name));
+    const autresServices = displayedServices.filter(s => OTHER_SERVICES.includes(s.name));
+    return (
+      <div className={styles.serviceList}>
+        <h4 className={styles.serviceGroupTitle}>La Suite territoriale</h4>
+        {suiteServices.map((service) => renderServiceItem(service, singleService))}
+        {autresServices.length > 0 && (
+          <>
+            <h4 className={`${styles.serviceGroupTitle} ${styles.serviceGroupTitleSecond}`}>Les autres services</h4>
+            {autresServices.map((service) => renderServiceItem(service, singleService))}
+          </>
+        )}
       </div>
     );
   };
@@ -331,6 +388,113 @@ const serviceDetails = (service, stats, compact = false) => {
     </div>
   );
 
+  const header = () => (
+    <div className={styles.header}>
+      <div className={styles.headerTop}>
+        <h4 className={styles.headerTitle}>Cartographie</h4>
+        <SegmentedControl
+          hideLegend
+          small
+          segments={[
+            {
+              label: 'Utilisateurs',
+              nativeInputProps: {
+                checked: activeTab === 'utilisateurs',
+                onChange: () => setActiveTab('utilisateurs'),
+              },
+            },
+            {
+              label: 'Partenaires',
+              nativeInputProps: {
+                checked: activeTab === 'partenaires',
+                onChange: () => setActiveTab('partenaires'),
+              },
+            },
+          ]}
+        />
+      </div>
+      <p className={styles.headerDescription}>
+        {activeTab === 'utilisateurs'
+          ? "Cette carte permet d'identifier les structures qui utilisent les services de la suite territoriale."
+          : "Voici les structures qui déploient les services de la suite territoriale. Vous souhaitez les distribuer ?"}
+      </p>
+      {activeTab === 'partenaires' && (
+        <a href="mailto:contact@suite.anct.gouv.fr" className={fr.cx("fr-link")}>
+          Devenir partenaire
+        </a>
+      )}
+    </div>
+  );
+
+  const operatorList = () => {
+    const statusLabel = { partenaire: 'Partenaire', partenaire_avec_services: 'Partenaire', intention: 'À venir' };
+    const statusModifier = { partenaire: 'fr-badge--success', partenaire_avec_services: 'fr-badge--success', intention: 'fr-badge--new' };
+    const statusStyle = { intention: { background: '#feecc2', color: '#716043' } };
+
+    const byName = (a, b) => a.name.localeCompare(b.name, 'fr');
+    const sortedOperators = [
+      ...operators.filter(op => op.status === 'partenaire' || op.status === 'partenaire_avec_services').sort(byName),
+      ...operators.filter(op => op.status === 'intention').sort(byName),
+      ...operators.filter(op => !op.status).sort(byName),
+    ];
+
+    return (
+      <div className={styles.serviceList}>
+        {sortedOperators.map((op) => {
+          const isExpanded = expandedOperatorId === op.id;
+          const depts = op.departments || [];
+          const singleDept = depts.length === 1 ? depts[0] : null;
+          return (
+            <div key={op.id} className={`${styles.serviceAccordion} ${isExpanded ? styles.serviceAccordionSelected : ''}`}>
+              <button
+                className={styles.serviceHeader}
+                onClick={() => setExpandedOperatorId(isExpanded ? null : op.id)}
+                aria-expanded={isExpanded}
+              >
+                <div className={styles.serviceHeaderLeft}>
+                  <span className={styles.operatorName}>{op.name}</span>
+                  {op.status && (
+                    <span className={fr.cx("fr-badge", "fr-badge--sm", "fr-badge--no-icon", statusModifier[op.status] || "fr-badge--success")} style={{ textTransform: 'none', ...(statusStyle[op.status] || {}) }}>
+                      {statusLabel[op.status] || op.status}
+                    </span>
+                  )}
+                </div>
+                <span className={fr.cx(isExpanded ? "fr-icon-arrow-up-s-line" : "fr-icon-arrow-down-s-line")} aria-hidden="true"></span>
+              </button>
+              {isExpanded && (
+                <div className={styles.operatorDetails}>
+                  {depts.length > 0 && (
+                    <p className={styles.operatorDepts}>
+                      {depts.map((d) => `Département (${d})`).join(' · ')}
+                    </p>
+                  )}
+                  {(op.services || []).length > 0 && (
+                    <div className={styles.operatorServices}>
+                      {(op.services || []).map((s) => (
+                        <span key={s.id} className={styles.operatorServiceItem}>
+                          {s.logo_url && <img src={s.logo_url} alt={s.name} className={styles.operatorServiceIcon} />}
+                          {s.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <div className={styles.operatorActions}>
+                    <button className={fr.cx("fr-btn fr-btn--sm")}>Contacter</button>
+                    {op.website && (
+                      <a href={op.website} className={fr.cx("fr-btn fr-btn--sm fr-btn--secondary")} target="_blank" rel="noopener noreferrer">
+                        Voir l'offre de service
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div>
       {!isMobile && (
@@ -350,6 +514,8 @@ const serviceDetails = (service, stats, compact = false) => {
         </div>
       )}
 
+      {header()}
+
       {filters()}
 
       {mapState.currentLevel !== "country" && !isMobile && breadcrumbs()}
@@ -357,7 +523,12 @@ const serviceDetails = (service, stats, compact = false) => {
       {(panelState === 'open' || panelState === 'partial') && (
         <div className={styles.levelHeader}>
           <div>
-            <h2 className={styles.areaTitle}>{currentPageLabel || "France"}</h2>
+            <h3 className={styles.areaTitle}>{currentPageLabel || "France"}</h3>
+            {activeTab === 'partenaires' && (
+              <p className={styles.operatorCount}>
+                {operators.length} opérateur{operators.length !== 1 ? 's' : ''} partenaire{operators.length !== 1 ? 's' : ''}
+              </p>
+            )}
           </div>
           <div className={styles.headerActions}>
             <MapButton
@@ -381,8 +552,24 @@ const serviceDetails = (service, stats, compact = false) => {
 
       {panelState === 'open' && (
         <div>
-          {!mapState.selectedAreas.city && serviceList()}
-          {mapState.selectedAreas.city && communeInfo()}
+          {activeTab === 'partenaires' && operatorList()}
+          {activeTab !== 'partenaires' && !mapState.selectedAreas.city && serviceList()}
+          {activeTab !== 'partenaires' && mapState.selectedAreas.city && communeInfo()}
+        </div>
+      )}
+
+      {selectedServiceCount > 0 && (
+        <div className={styles.selectionBadgeWrapper}>
+        <div className={styles.selectionBadge}>
+          <span>{selectedServiceCount} service{selectedServiceCount > 1 ? 's' : ''} sélectionné{selectedServiceCount > 1 ? 's' : ''}</span>
+          <button
+            className={styles.selectionBadgeClear}
+            onClick={() => setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: null } })}
+            aria-label="Effacer la sélection"
+          >
+            ×
+          </button>
+        </div>
         </div>
       )}
     </div>
@@ -391,6 +578,8 @@ const serviceDetails = (service, stats, compact = false) => {
 
 SidePanelContent.propTypes = {
   container: PropTypes.object,
+  activeTab: PropTypes.string.isRequired,
+  setActiveTab: PropTypes.func.isRequired,
   mapState: PropTypes.object.isRequired,
   selectLevel: PropTypes.func.isRequired,
   getColor: PropTypes.func.isRequired,
