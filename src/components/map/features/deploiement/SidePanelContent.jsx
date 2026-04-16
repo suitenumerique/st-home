@@ -1,5 +1,6 @@
 import { fr } from "@codegouvfr/react-dsfr";
 import { SegmentedControl } from "@codegouvfr/react-dsfr/SegmentedControl";
+import { ToggleSwitch } from "@codegouvfr/react-dsfr/ToggleSwitch";
 import PropTypes from "prop-types";
 import { useMemo, useState, useEffect, useRef } from "react";
 import parentAreas from "../../../../../public/parent_areas.json";
@@ -12,7 +13,7 @@ const DEPT_NAMES = Object.fromEntries(
   parentAreas.filter(a => a.type === 'department').map(a => [a.insee_geo, a.name])
 );
 
-const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats, activeTab, setActiveTab, operators = [], allServices = [], selectedServiceFilter, setSelectedServiceFilter }) => {
+const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats, activeTab, setActiveTab, operators = [], allServices = [], selectedServiceFilter, setSelectedServiceFilter, selectedAreaOwnServices = new Set() }) => {
 
   const [linkCopied, setLinkCopied] = useState(false);
   const [services, setServices] = useState([]);
@@ -21,6 +22,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
   const [hoveredServiceId, setHoveredServiceId] = useState(null);
   const [openDropdown, setOpenDropdown] = useState(null); // 'structure' | 'service-filter' | null
   const [expandedOperatorId, setExpandedOperatorId] = useState(null);
+  const [showTerritoireServices, setShowTerritoireServices] = useState(false);
 
   useEffect(() => {
     if (operators.length === 1) {
@@ -29,6 +31,10 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
       setExpandedOperatorId(null);
     }
   }, [operators]);
+
+  useEffect(() => {
+    setShowTerritoireServices(false);
+  }, [mapState.currentLevel, mapState.selectedAreas]);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -402,6 +408,37 @@ const serviceDetails = (service, stats, compact = false) => {
     </div>
   );
 
+  const areaOrgServices = () => (
+    <div>
+      <h3 className={styles.serviceListTitle}>Services</h3>
+      {services.filter(service =>
+        service._mergedIds
+          ? service._mergedIds.some(id => selectedAreaOwnServices.has(id))
+          : selectedAreaOwnServices.has(service.id)
+      ).length === 0 ? (
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-mention-grey)' }}>Aucun service utilisé par cette structure.</p>
+      ) : (
+        services.map((service) => {
+          const isUsed = service._mergedIds
+            ? service._mergedIds.some(id => selectedAreaOwnServices.has(id))
+            : selectedAreaOwnServices.has(service.id);
+          if (!isUsed) return null;
+          return (
+            <div key={service.id} className={styles.cityServiceItem}>
+              {service.logo_url && <img src={service.logo_url} alt={service.name} style={{ width: "18px", height: "18px", marginRight: "0.4rem" }} />}
+              <span style={{ fontSize: "0.875rem" }}>{service.name}&nbsp;</span>
+              {service.maturity !== 'stable' && (
+                <span className={fr.cx("fr-badge fr-badge--sm fr-badge--info fr-badge--no-icon")}>
+                  {service.maturity.toUpperCase()}
+                </span>
+              )}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+
   const header = () => (
     <div className={styles.header}>
       <div className={styles.headerTop}>
@@ -435,7 +472,7 @@ const serviceDetails = (service, stats, compact = false) => {
       {activeTab === 'partenaires' && (
         <a href="mailto:contact@suite.anct.gouv.fr" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-action-high-blue-france)', fontWeight: '400', fontSize: '16px', textDecoration: 'none' }}>
           Devenez partenaire
-          <span className={fr.cx("fr-icon-arrow-right-up-line")} aria-hidden="true" style={{ fontSize: '0.75rem' }} />
+          <span className={fr.cx("fr-icon-arrow-right-up-line", "fr-icon--sm")} aria-hidden="true" />
         </a>
       )}
     </div>
@@ -450,6 +487,7 @@ const serviceDetails = (service, stats, compact = false) => {
     const sortedOperators = [
       ...operators.filter(op => op.status === 'partenaire' || op.status === 'partenaire_avec_services').sort(byName),
       ...operators.filter(op => op.status === 'intention').sort(byName),
+      ...operators.filter(op => op.status && op.status !== 'partenaire' && op.status !== 'partenaire_avec_services' && op.status !== 'intention').sort(byName),
     ];
 
     return (
@@ -536,12 +574,23 @@ const serviceDetails = (service, stats, compact = false) => {
 
       {(panelState === 'open' || panelState === 'partial') && (
         <div className={styles.levelHeader}>
-          <div>
+          <div style={{ flex: 1 }}>
             <h3 className={styles.areaTitle}>{currentPageLabel || "France"}</h3>
             {activeTab === 'partenaires' && (
               <p className={styles.operatorCount}>
-                {operators.length} opérateur{operators.length !== 1 ? 's' : ''} partenaire{operators.length !== 1 ? 's' : ''}
+                {operators.length} opérateur{operators.length > 1 ? 's' : ''} partenaire{operators.length > 1 ? 's' : ''}
               </p>
+            )}
+            {activeTab !== 'partenaires' && ['region', 'department', 'epci'].includes(mapState.currentLevel) && (
+              <ToggleSwitch
+                label="Voir les services utilisés par ce territoire"
+                checked={showTerritoireServices}
+                onChange={setShowTerritoireServices}
+                inputTitle="Voir les services utilisés par ce territoire"
+                showCheckedHint={false}
+                labelPosition="left"
+                style={{ marginTop: '0.25rem' }}
+              />
             )}
           </div>
           <div className={styles.headerActions}>
@@ -567,7 +616,8 @@ const serviceDetails = (service, stats, compact = false) => {
       {panelState === 'open' && (
         <div>
           {activeTab === 'partenaires' && operatorList()}
-          {activeTab !== 'partenaires' && mapState.currentLevel !== 'city' && serviceList()}
+          {activeTab !== 'partenaires' && mapState.currentLevel !== 'city' && !showTerritoireServices && serviceList()}
+          {activeTab !== 'partenaires' && mapState.currentLevel !== 'city' && showTerritoireServices && areaOrgServices()}
           {activeTab !== 'partenaires' && mapState.currentLevel === 'city' && communeInfo()}
         </div>
       )}

@@ -71,7 +71,7 @@ const DeploiementMap = () => {
     fetch("/api/deployment/operators")
       .then((r) => r.json())
       .then((data) => {
-        setOperators(data.data || []);
+        setOperators((data.data || []).filter((op: any) => op.status && op.name !== "ANCT"));
       });
     // operators.length is intentionally omitted to fetch only once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -506,6 +506,32 @@ const DeploiementMap = () => {
     return result;
   }, [operators, selectedServiceFilter, mapState, allDeptsGeoJSON]);
 
+  const selectedAreaOwnServices = useMemo(() => {
+    const { currentLevel, selectedAreas } = mapState;
+    const selectedRegion = (selectedAreas.region as SelectedArea)?.insee_geo?.replace("r", "");
+    const selectedDep = (selectedAreas.department as SelectedArea)?.insee_geo;
+    const selectedEpci = (selectedAreas.epci as SelectedArea)?.insee_geo;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let orgs: any[] = [];
+    if (currentLevel === "region" && selectedRegion) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      orgs = stats.filter((s: any) => s.type === "region" && s.reg === selectedRegion);
+    } else if (currentLevel === "department" && selectedDep) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      orgs = stats.filter((s: any) => s.type === "departement" && s.dep === selectedDep);
+    } else if (currentLevel === "epci" && selectedEpci) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      orgs = stats.filter((s: any) => s.type === "epci" && s.id?.slice(0, 9) === selectedEpci);
+    }
+
+    const allServiceIds = new Set<number>(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      orgs.flatMap((o: any) => (o.all_services || []).map(Number)),
+    );
+    return allServiceIds;
+  }, [stats, mapState]);
+
   const partenairesLayer = useMemo(() => {
     if (activeTab !== "partenaires" || !allDeptsGeoJSON) return [];
 
@@ -739,6 +765,7 @@ const DeploiementMap = () => {
             ),
           selectedServiceFilter,
           setSelectedServiceFilter,
+          selectedAreaOwnServices,
         })
       }
       map={
