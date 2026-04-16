@@ -77,6 +77,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       query = sql`
         SELECT
           ${organizations.siret} as id,
+          ${organizations.type} as type,
           ${organizations.insee_dep} as dep,
           ${organizations.insee_reg} as reg,
           ${organizations.epci_siren} as epci_siren,
@@ -85,10 +86,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         FROM ${organizations}
         LEFT JOIN ${organizationsToServices} ON ${organizations.siret} = ${organizationsToServices.organizationSiret}
         ${service_id ? sql`LEFT JOIN ${services} ON ${organizationsToServices.serviceId} = ${services.id}` : sql``}
-        WHERE ${organizations.type} = ${org_type as string}
+        WHERE (${org_type as string} = 'all' OR ${organizations.type} = ${org_type as string})
         ${service_id ? sql`AND (${services.id} = ${parseInt(service_id as string, 10)} OR ${organizationsToServices.serviceId} IS NULL)` : sql``}
         ${dep ? sql`AND ${organizations.insee_dep} = ${dep as string}` : sql``}
-        GROUP BY ${organizations.siret}, ${organizations.insee_dep}, ${organizations.insee_reg}, ${organizations.epci_siren}
+        GROUP BY ${organizations.siret}, ${organizations.type}, ${organizations.insee_dep}, ${organizations.insee_reg}, ${organizations.epci_siren}
       `;
     } else if (scope === "list-service") {
       // Group by service - show number of structures using each service with breakdown

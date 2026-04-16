@@ -2,10 +2,15 @@ import { fr } from "@codegouvfr/react-dsfr";
 import { SegmentedControl } from "@codegouvfr/react-dsfr/SegmentedControl";
 import PropTypes from "prop-types";
 import { useMemo, useState, useEffect, useRef } from "react";
+import parentAreas from "../../../../../public/parent_areas.json";
 import CommuneSearch from "../../../CommuneSearch";
 import Breadcrumb from "../../ui/Breadcrumb";
 import MapButton from "../../ui/MapButton";
 import styles from "./SidePanelContent.module.css";
+
+const DEPT_NAMES = Object.fromEntries(
+  parentAreas.filter(a => a.type === 'department').map(a => [a.insee_geo, a.name])
+);
 
 const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats, activeTab, setActiveTab, operators = [], allServices = [], selectedServiceFilter, setSelectedServiceFilter }) => {
 
@@ -97,11 +102,6 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
 
   const displayedServices = sortedServices;
 
-  const selectedServiceCount = displayedServices.filter(service =>
-    service._mergedIds
-      ? service._mergedIds.some(id => mapState.filters.service_ids?.includes(id))
-      : mapState.filters.service_ids?.includes(service.id)
-  ).length;
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -189,7 +189,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     </div>
   );
 
-  const orgTypeLabel = { all: 'Toutes structures', commune: 'Communes', epci: 'EPCI' }[orgType];
+  const orgTypeLabel = { all: 'Toutes structures', commune: 'Communes', epci: 'Intercommunalités', department: 'Départements', region: 'Région' }[orgType];
 
   const filters = () => {
     if (activeTab === 'partenaires') {
@@ -246,7 +246,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
           </button>
           {openDropdown === 'structure' && (
             <ul className={styles.filterDropdownMenu}>
-              {[['all', 'Toutes structures'], ['commune', 'Communes'], ['epci', 'EPCI']].map(([val, label], index) => (
+              {[['all', 'Toutes structures'], ['commune', 'Communes'], ['epci', 'Intercommunalités'], ['department', 'Départements'], ['region', 'Région']].map(([val, label], index) => (
                 <li
                   key={val}
                   className={`${styles.filterDropdownOption} ${index === 0 ? styles.filterDropdownOptionFirst : ''}`}
@@ -267,18 +267,22 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
   };
 
 const serviceDetails = (service, stats, compact = false) => {
+    const level = mapState.currentLevel;
     const communes = stats?.communes || 0;
     const epci = stats?.epci || 0;
     const departements = stats?.departement || 0;
     const regions = stats?.region || 0;
+    const showEpci = level !== 'epci';
+    const showDepartement = level !== 'epci' && level !== 'department';
+    const showRegion = level !== 'epci' && level !== 'department' && level !== 'region';
     return (
       <div className={styles.serviceDetails}>
         <p className={styles.serviceDetailsTitle}>Structures qui utilisent le service</p>
         <div className={styles.serviceDetailsGrid}>
           <span>Communes : <strong>{formatNumber(communes)}</strong></span>
-          <span>EPCI : <strong>{formatNumber(epci)}</strong></span>
-          <span>Départements : <strong>{formatNumber(departements)}</strong></span>
-          <span>Régions : <strong>{formatNumber(regions)}</strong></span>
+          {showEpci && <span>EPCI : <strong>{formatNumber(epci)}</strong></span>}
+          {showDepartement && <span>Départements : <strong>{formatNumber(departements)}</strong></span>}
+          {showRegion && <span>Régions : <strong>{formatNumber(regions)}</strong></span>}
         </div>
       </div>
     );
@@ -329,12 +333,14 @@ const serviceDetails = (service, stats, compact = false) => {
                     className={`${styles.serviceCheckbox} ${isSelected ? styles.serviceCheckboxSelected : ''}`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      const currentIds = mapState.filters.service_ids || [];
                       const idsToToggle = service._mergedIds || [service.id];
-                      const remaining = currentIds.filter(id => !idsToToggle.includes(id));
-                      const newIds = isSelected ? (remaining.length > 0 ? remaining : null) : [...currentIds, ...idsToToggle];
-                      setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: newIds } });
-                      if (!isSelected) setExpandedServices(prev => new Set(prev).add(service.id));
+                      if (isSelected) {
+                        setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: null } });
+                        setExpandedServices(prev => { const next = new Set(prev); next.delete(service.id); return next; });
+                      } else {
+                        setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: idsToToggle } });
+                        setExpandedServices(new Set([service.id]));
+                      }
                     }}
                   >
                     {isSelected && <span className={fr.cx("fr-icon-check-line")} aria-hidden="true" />}
@@ -427,8 +433,9 @@ const serviceDetails = (service, stats, compact = false) => {
           : "Voici les structures qui déploient les services de la suite territoriale. Vous souhaitez les distribuer ?"}
       </p>
       {activeTab === 'partenaires' && (
-        <a href="mailto:contact@suite.anct.gouv.fr" className={fr.cx("fr-link")}>
-          Devenir partenaire
+        <a href="mailto:contact@suite.anct.gouv.fr" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-action-high-blue-france)', fontWeight: '400', fontSize: '16px', textDecoration: 'none' }}>
+          Devenez partenaire
+          <span className={fr.cx("fr-icon-arrow-right-up-line")} aria-hidden="true" style={{ fontSize: '0.75rem' }} />
         </a>
       )}
     </div>
@@ -443,7 +450,6 @@ const serviceDetails = (service, stats, compact = false) => {
     const sortedOperators = [
       ...operators.filter(op => op.status === 'partenaire' || op.status === 'partenaire_avec_services').sort(byName),
       ...operators.filter(op => op.status === 'intention').sort(byName),
-      ...operators.filter(op => !op.status).sort(byName),
     ];
 
     return (
@@ -473,7 +479,7 @@ const serviceDetails = (service, stats, compact = false) => {
                 <div className={styles.operatorDetails}>
                   {depts.length > 0 && (
                     <p className={styles.operatorDepts}>
-                      {depts.map((d) => `Département (${d})`).join(' · ')}
+                      {depts.map((d) => `${DEPT_NAMES[d] || 'Département'} (${d})`).join(' · ')}
                     </p>
                   )}
                   {(op.services || []).length > 0 && (
@@ -489,7 +495,7 @@ const serviceDetails = (service, stats, compact = false) => {
                   <div className={styles.operatorActions}>
                     {/* <button className={fr.cx("fr-btn fr-btn--sm")}>Contacter</button> */}
                     {op.website && (
-                      <a href={op.website} className={fr.cx("fr-btn fr-btn--sm fr-btn--secondary")} target="_blank" rel="noopener noreferrer">
+                      <a href={op.website} className={fr.cx("fr-btn fr-btn--sm fr-btn--primary")} target="_blank" rel="noopener noreferrer">
                         Voir l'offre de service
                       </a>
                     )}
@@ -524,7 +530,7 @@ const serviceDetails = (service, stats, compact = false) => {
 
       {header()}
 
-      {filters()}
+      {activeTab !== 'partenaires' && filters()}
 
       {mapState.currentLevel !== "country" && !isMobile && breadcrumbs()}
 
@@ -561,25 +567,11 @@ const serviceDetails = (service, stats, compact = false) => {
       {panelState === 'open' && (
         <div>
           {activeTab === 'partenaires' && operatorList()}
-          {activeTab !== 'partenaires' && !mapState.selectedAreas.city && serviceList()}
-          {activeTab !== 'partenaires' && mapState.selectedAreas.city && communeInfo()}
+          {activeTab !== 'partenaires' && mapState.currentLevel !== 'city' && serviceList()}
+          {activeTab !== 'partenaires' && mapState.currentLevel === 'city' && communeInfo()}
         </div>
       )}
 
-      {selectedServiceCount > 0 && (
-        <div className={styles.selectionBadgeWrapper}>
-        <div className={styles.selectionBadge}>
-          <span>{selectedServiceCount} service{selectedServiceCount > 1 ? 's' : ''} sélectionné{selectedServiceCount > 1 ? 's' : ''}</span>
-          <button
-            className={styles.selectionBadgeClear}
-            onClick={() => setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: null } })}
-            aria-label="Effacer la sélection"
-          >
-            ×
-          </button>
-        </div>
-        </div>
-      )}
     </div>
   );
 };

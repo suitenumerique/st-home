@@ -138,17 +138,19 @@ export const InteractiveMap = ({
   // Point Features for Circle Values
   const pointFeatures = useMemo(() => {
     if (!currentGeoJSON) return null;
-    const features = currentGeoJSON.features.map((feature) => {
-      const centroid = turf.centroid(feature as GeoJSON.Feature);
-      return {
-        type: "Feature" as const,
-        geometry: centroid.geometry,
-        properties: {
-          ...feature.properties,
-          circleValue: feature.properties?.VALUE,
-        },
-      };
-    });
+    const features = currentGeoJSON.features
+      .filter((feature) => (feature.properties?.VALUE ?? 0) > 0)
+      .map((feature) => {
+        const centroid = turf.centroid(feature as GeoJSON.Feature);
+        return {
+          type: "Feature" as const,
+          geometry: centroid.geometry,
+          properties: {
+            ...feature.properties,
+            circleValue: feature.properties?.VALUE,
+          },
+        };
+      });
     return {
       type: "FeatureCollection" as const,
       features,
@@ -465,6 +467,7 @@ export const InteractiveMap = ({
   const circleLayerStyle = {
     id: "feature-circles",
     type: "circle",
+    filter: [">", ["coalesce", ["get", "circleValue"], 0], 0],
     paint: {
       "circle-radius": 22,
       "circle-color": "#ECECFE",
@@ -482,6 +485,7 @@ export const InteractiveMap = ({
   const textLayerStyle = {
     id: "feature-labels",
     type: "symbol",
+    filter: [">", ["coalesce", ["get", "circleValue"], 0], 0],
     layout: {
       "text-field": ["get", "circleValue"],
       "text-font": ["Arial Unicode MS Bold"],

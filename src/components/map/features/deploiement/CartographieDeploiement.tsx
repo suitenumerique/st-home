@@ -48,7 +48,6 @@ const DeploiementMap = () => {
   const [selectedServiceFilter, setSelectedServiceFilter] = useState<number | null>(null);
 
   const [stats, setStats] = useState<StatRecord[]>([]);
-  const [epciStats, setEpciStats] = useState<StatRecord[]>([]);
   const [coordMap, setCoordMap] = useState<Record<string, { longitude: number; latitude: number }>>(
     {},
   );
@@ -107,30 +106,14 @@ const DeploiementMap = () => {
 
   const loadStats = useCallback(async (): Promise<void> => {
     try {
-      const response = await fetch("/api/deployment/stats?scope=list-commune");
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
-      }
-      const result = await response.json();
-      if (!result.data || !Array.isArray(result.data)) {
-        throw new Error("Invalid API response format");
-      }
-      setStats(result.data);
-    } catch (error) {
-      console.error("Error loading stats:", error);
-    }
-  }, []);
-
-  const loadEpciStats = useCallback(async (): Promise<void> => {
-    try {
-      const response = await fetch("/api/deployment/stats?scope=list-commune&org_type=epci");
+      const response = await fetch("/api/deployment/stats?scope=list-commune&org_type=all");
       if (!response.ok) throw new Error(`API request failed: ${response.status}`);
       const result = await response.json();
       if (!result.data || !Array.isArray(result.data))
         throw new Error("Invalid API response format");
-      setEpciStats(result.data);
+      setStats(result.data);
     } catch (error) {
-      console.error("Error loading EPCI stats:", error);
+      console.error("Error loading stats:", error);
     }
   }, []);
 
@@ -161,13 +144,18 @@ const DeploiementMap = () => {
           return filtered.filter((stat) => stat.all_services.length > 0);
         };
 
-        const filteredCommunes = orgType !== "epci" ? filterList(stats) : [];
-        const filteredEpci = orgType !== "commune" ? filterList(epciStats) : [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const byType = (type: string) => stats.filter((s: any) => s.type === type);
+        const activeTypes =
+          !orgType || orgType === "all"
+            ? ["commune", "epci", "departement", "region"]
+            : [orgType === "department" ? "departement" : orgType];
+
+        const filteredByType = activeTypes.flatMap((t) => filterList(byType(t)));
 
         if (level === "epci") {
-          // insee_geo is the EPCI SIREN (set by processGeoJSONEPCI via parentAreas)
           const epciSiren = insee_geo;
-          const communesInEpci = (orgType !== "epci" ? stats : [])
+          const communesInEpci = byType("commune")
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .filter((stat: StatRecord) => (stat as any).epci_siren === epciSiren)
             .filter((stat: StatRecord) =>
@@ -175,7 +163,7 @@ const DeploiementMap = () => {
                 ? stat.all_services?.some((s: string) => serviceIds.includes(Number(s)))
                 : (stat.all_services?.length ?? 0) > 0,
             );
-          const epciInEpci = (orgType !== "commune" ? epciStats : [])
+          const epciInEpci = (activeTypes.includes("epci") ? byType("epci") : [])
             .filter(
               (stat: StatRecord) => stat.id === epciSiren || stat.id.slice(0, 9) === epciSiren,
             )
@@ -189,7 +177,7 @@ const DeploiementMap = () => {
         }
 
         if (level === "city") {
-          const city = stats.find((city: { id: string }) => city.id === siret);
+          const city = stats.find((s: StatRecord) => s.id === siret);
           if (!city) return { n_cities: 1, score: 0 };
           const hasService = serviceIds?.length
             ? city.all_services?.some((s: string) => serviceIds.includes(Number(s)))
@@ -205,26 +193,23 @@ const DeploiementMap = () => {
           } else {
             nTotalCities = parentAreas.find((area) => area.insee_geo === insee_geo)?.n_cities || 0;
           }
-          const total = filteredCommunes.length + filteredEpci.length;
+          const communeCount = filterList(byType("commune")).length;
           return {
-            n_cities: total,
+            n_cities: filteredByType.length,
             n_total_cities: nTotalCities,
             score:
-              orgType === "epci"
+              orgType === "epci" || orgType === "department" || orgType === "region"
                 ? null
                 : nTotalCities > 0
-                  ? filteredCommunes.length / nTotalCities
+                  ? communeCount / nTotalCities
                   : null,
           };
         }
       } catch {
-        return {
-          n_cities: 0,
-          score: null,
-        };
+        return { n_cities: 0, score: null };
       }
     },
-    [stats, epciStats, mapState.filters],
+    [stats, mapState.filters],
   );
 
   useEffect(() => {
@@ -288,7 +273,8 @@ const DeploiementMap = () => {
       };
     }
 
-    const filteredEpciStats = filterByServiceIds(epciStats);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const filteredEpciStats = filterByServiceIds(stats.filter((s: any) => s.type === "epci"));
 
     const toEpciPointFeatures = (list: StatRecord[]): GeoJSON.Feature[] =>
       list
@@ -388,7 +374,6 @@ const DeploiementMap = () => {
     ]);
   }, [
     stats,
-    epciStats,
     coordMap,
     mapState.filters.org_type,
     mapState.filters.service_ids,
@@ -400,10 +385,9 @@ const DeploiementMap = () => {
     const loadData = async () => {
       await loadSirenCoordinatesMapping();
       await loadStats();
-      await loadEpciStats();
     };
     loadData();
-  }, [loadSirenCoordinatesMapping, loadStats, loadEpciStats]);
+  }, [loadSirenCoordinatesMapping, loadStats]);
 
   useEffect(() => {
     if (
@@ -602,15 +586,23 @@ const DeploiementMap = () => {
             paint: {
               "line-color": [
                 "case",
-                ["==", ["get", "operator_status"], "partenaire"], "#18753C",
-                ["==", ["get", "operator_status"], "partenaire_avec_services"], "#18753C",
-                ["==", ["get", "operator_status"], "intention"], "#716043",
+                ["==", ["get", "operator_status"], "partenaire"],
+                "#18753C",
+                ["==", ["get", "operator_status"], "partenaire_avec_services"],
+                "#18753C",
+                ["==", ["get", "operator_status"], "intention"],
+                "#716043",
                 "#999999",
               ],
               "line-width": 2,
               "line-opacity": [
                 "case",
-                ["all", ["boolean", ["feature-state", "hover"], false], ["!", ["boolean", ["get", "highlighted"], false]]], 1,
+                [
+                  "all",
+                  ["boolean", ["feature-state", "hover"], false],
+                  ["!", ["boolean", ["get", "highlighted"], false]],
+                ],
+                1,
                 0,
               ],
             },
@@ -621,9 +613,12 @@ const DeploiementMap = () => {
             paint: {
               "fill-color": [
                 "case",
-                ["==", ["get", "operator_status"], "partenaire"], "#B8FEC9",
-                ["==", ["get", "operator_status"], "partenaire_avec_services"], "#B8FEC9",
-                ["==", ["get", "operator_status"], "intention"], "#FEECC2",
+                ["==", ["get", "operator_status"], "partenaire"],
+                "#B8FEC9",
+                ["==", ["get", "operator_status"], "partenaire_avec_services"],
+                "#B8FEC9",
+                ["==", ["get", "operator_status"], "intention"],
+                "#FEECC2",
                 "#EEEEEE",
               ],
               "fill-opacity": ["case", ["boolean", ["get", "highlighted"], false], 0.8, 0],
