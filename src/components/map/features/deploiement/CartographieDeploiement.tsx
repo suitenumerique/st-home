@@ -10,6 +10,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import parentAreas from "../../../../../public/parent_areas.json";
 import { FeatureProperties, SelectedArea } from "../../types";
 import SidePanelContent from "./SidePanelContent";
+import servicesConfig from "./servicesConfig";
 import { StatRecord } from "./types";
 
 const REGION_CODES = [
@@ -78,6 +79,21 @@ const DeploiementMap = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const anctThreshold = useMemo(() => {
+    const serviceIds = mapState.filters.service_ids as number[] | null;
+    if (!serviceIds?.length || operators.length === 0) return false;
+    const allServices = operators
+      .flatMap((op) => op.services || [])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .filter((s: any, i: number, arr: any[]) => arr.findIndex((x) => x.id === s.id) === i);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return serviceIds.some((id) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const service = allServices.find((s: any) => s.id === id);
+      return service && servicesConfig[service.name]?.anct_threshold_active;
+    });
+  }, [operators, mapState.filters.service_ids]);
+
   const gradientColors = useMemo(() => ["#EEEEEE", "#2A3C84"], []);
   const gradientDomain = useMemo(() => [0, 1], []);
 
@@ -127,7 +143,6 @@ const DeploiementMap = () => {
       try {
         const orgType = mapState.filters.org_type as string | null;
         const serviceIds = mapState.filters.service_ids as number[] | null;
-        const anctThreshold = !!(mapState.filters.anct_threshold_active as boolean);
 
         const applyPopulationThreshold = (stat: StatRecord) => {
           if (!anctThreshold) return true;
@@ -165,7 +180,6 @@ const DeploiementMap = () => {
             : [orgType === "department" ? "departement" : orgType];
 
         const filteredByType = activeTypes.flatMap((t) => filterList(byType(t)));
-
 
         if (level === "epci") {
           if (orgType === "department" || orgType === "region") {
@@ -241,7 +255,7 @@ const DeploiementMap = () => {
         return { n_cities: 0, score: null };
       }
     },
-    [stats, mapState.filters],
+    [stats, mapState.filters, anctThreshold],
   );
 
   useEffect(() => {
@@ -305,7 +319,6 @@ const DeploiementMap = () => {
       };
     }
 
-    const anctThreshold = !!(mapState.filters.anct_threshold_active as boolean);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const applyThreshold = (stat: StatRecord) => {
       if (!anctThreshold) return true;
@@ -319,9 +332,10 @@ const DeploiementMap = () => {
       return true;
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const filteredEpciStats = filterByServiceIds(stats.filter((s: any) => s.type === "epci").filter(applyThreshold));
-
+    const filteredEpciStats = filterByServiceIds(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      stats.filter((s: any) => s.type === "epci").filter(applyThreshold),
+    );
 
     const toEpciPointFeatures = (list: StatRecord[]): GeoJSON.Feature[] =>
       list
@@ -424,7 +438,7 @@ const DeploiementMap = () => {
     coordMap,
     mapState.filters.org_type,
     mapState.filters.service_ids,
-    mapState.filters.anct_threshold_active,
+    anctThreshold,
     mapState.currentLevel,
     mapState.selectedAreas,
   ]);
