@@ -173,6 +173,7 @@ const DeploiementMap = () => {
           }
           const epciSiren = insee_geo;
           const communesInEpci = (activeTypes.includes("commune") ? byType("commune") : [])
+            .filter(applyPopulationThreshold)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .filter((stat: StatRecord) => (stat as any).epci_siren === epciSiren)
             .filter((stat: StatRecord) =>
@@ -181,6 +182,7 @@ const DeploiementMap = () => {
                 : (stat.all_services?.length ?? 0) > 0,
             );
           const epciInEpci = (activeTypes.includes("epci") ? byType("epci") : [])
+            .filter(applyPopulationThreshold)
             .filter(
               (stat: StatRecord) => stat.id === epciSiren || stat.id.slice(0, 9) === epciSiren,
             )
