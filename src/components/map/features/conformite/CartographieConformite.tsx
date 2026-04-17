@@ -356,6 +356,7 @@ const ConformiteMap = () => {
           gradientColors={gradientColors}
           showGradientLegend={true}
           displayCircleValue={false}
+          hoverFill={false}
         />
       }
     />
