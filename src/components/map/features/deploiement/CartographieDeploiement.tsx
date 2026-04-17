@@ -506,14 +506,15 @@ const DeploiementMap = () => {
     isCityView,
   ]);
 
-  const filteredOperators = useMemo(() => {
-    let result = operators;
+  const operatorsForMap = useMemo(() => {
+    if (!selectedServiceFilter) return operators;
+    return operators.filter((op) =>
+      op.services?.some((s: { id: number }) => s.id === selectedServiceFilter),
+    );
+  }, [operators, selectedServiceFilter]);
 
-    if (selectedServiceFilter) {
-      result = result.filter((op) =>
-        op.services?.some((s: { id: number }) => s.id === selectedServiceFilter),
-      );
-    }
+  const filteredOperators = useMemo(() => {
+    let result = operatorsForMap;
 
     const { currentLevel, selectedAreas } = mapState;
     const selectedRegionCode = (selectedAreas.region as SelectedArea)?.insee_geo?.replace("r", "");
@@ -533,7 +534,7 @@ const DeploiementMap = () => {
     }
 
     return result;
-  }, [operators, selectedServiceFilter, mapState, allDeptsGeoJSON]);
+  }, [operatorsForMap, mapState, allDeptsGeoJSON]);
 
   const selectedAreaOwnServices = useMemo(() => {
     const { currentLevel, selectedAreas } = mapState;
@@ -566,7 +567,7 @@ const DeploiementMap = () => {
 
     // Build dept -> status map: "partenaire" takes priority over "intention"
     const deptStatus: Record<string, string> = {};
-    for (const op of filteredOperators) {
+    for (const op of operatorsForMap) {
       if (!op.status) continue;
       for (const dept of op.departments || []) {
         const current = deptStatus[dept];
@@ -767,7 +768,7 @@ const DeploiementMap = () => {
     }
 
     return layers;
-  }, [activeTab, allDeptsGeoJSON, filteredOperators, mapState, coordMap]);
+  }, [activeTab, allDeptsGeoJSON, operatorsForMap, filteredOperators, mapState, coordMap]);
 
   return stats ? (
     <MapLayout
