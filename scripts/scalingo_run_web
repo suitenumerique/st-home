@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Rate limiting (empty = disabled)
-if [ -n "$RATE_LIMIT_EVENTS" ]; then
+if [ -n "$PROXY_RATE_LIMIT_EVENTS" ]; then
   cat > ratelimit.caddy <<EOF
 rate_limit {
 	zone global {
 		key {client_ip}
-		events $RATE_LIMIT_EVENTS
-		window ${RATE_LIMIT_WINDOW:-10s}
+		events $PROXY_RATE_LIMIT_EVENTS
+		window ${PROXY_RATE_LIMIT_WINDOW:-10s}
 	}
 }
 EOF
