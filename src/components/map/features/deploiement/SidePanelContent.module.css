@@ -57,9 +57,14 @@
 
 .levelHeader {
   display: flex;
+  flex-direction: column;
+  margin-bottom: 1.5rem;
+}
+
+.levelHeaderTop {
+  display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
 }
 
 .subTitle {

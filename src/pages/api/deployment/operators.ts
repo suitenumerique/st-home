@@ -26,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         o.website,
         o.siret,
         COALESCE(
-          JSON_AGG(DISTINCT JSONB_BUILD_OBJECT('id', s.id, 'name', s.name, 'logo_url', s.logo_url))
+          JSON_AGG(DISTINCT JSONB_BUILD_OBJECT('id', s.id, 'name', s.name, 'logo_url', s.logo_url, 'type', s.type))
           FILTER (WHERE s.id IS NOT NULL),
           '[]'
         ) AS services,

@@ -126,11 +126,23 @@ const DeploiementMap = () => {
     ) => {
       try {
         const orgType = mapState.filters.org_type as string | null;
-
         const serviceIds = mapState.filters.service_ids as number[] | null;
+        const anctThreshold = !!(mapState.filters.anct_threshold_active as boolean);
+
+        const applyPopulationThreshold = (stat: StatRecord) => {
+          if (!anctThreshold) return true;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const pop = (stat as any).population as number | null;
+          if (pop == null) return true;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const type = (stat as any).type as string;
+          if (type === "commune") return pop < 3500;
+          if (type === "epci") return pop < 15000;
+          return true;
+        };
 
         const filterList = (list: StatRecord[]) => {
-          let filtered = list;
+          let filtered = list.filter(applyPopulationThreshold);
           if (level === "region") {
             filtered = filtered.filter((stat) => stat.reg === insee_geo.replace("r", ""));
           } else if (level === "department") {
@@ -155,8 +167,11 @@ const DeploiementMap = () => {
         const filteredByType = activeTypes.flatMap((t) => filterList(byType(t)));
 
         if (level === "epci") {
+          if (orgType === "department" || orgType === "region") {
+            return { n_cities: 0, score: null };
+          }
           const epciSiren = insee_geo;
-          const communesInEpci = byType("commune")
+          const communesInEpci = (activeTypes.includes("commune") ? byType("commune") : [])
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .filter((stat: StatRecord) => (stat as any).epci_siren === epciSiren)
             .filter((stat: StatRecord) =>
@@ -194,16 +209,29 @@ const DeploiementMap = () => {
           } else {
             nTotalCities = parentAreas.find((area) => area.insee_geo === insee_geo)?.n_cities || 0;
           }
+          const filterByArea = (list: StatRecord[]) => {
+            if (level === "region") return list.filter((s) => s.reg === insee_geo.replace("r", ""));
+            if (level === "department") return list.filter((s) => s.dep === insee_geo);
+            return list;
+          };
+
           const communeCount = filterList(byType("commune")).length;
+
+          let score: number | null;
+          if (orgType === "epci") {
+            score = null;
+          } else if (orgType === "department" || orgType === "region") {
+            const dbType = orgType === "department" ? "departement" : "region";
+            const totalInArea = filterByArea(byType(dbType)).length;
+            score = totalInArea > 0 ? filteredByType.length / totalInArea : 0;
+          } else {
+            score = nTotalCities > 0 ? communeCount / nTotalCities : null;
+          }
+
           return {
             n_cities: filteredByType.length,
             n_total_cities: nTotalCities,
-            score:
-              orgType === "epci" || orgType === "department" || orgType === "region"
-                ? null
-                : nTotalCities > 0
-                  ? communeCount / nTotalCities
-                  : null,
+            score,
           };
         }
       } catch {
@@ -588,11 +616,11 @@ const DeploiementMap = () => {
               "fill-color": [
                 "case",
                 ["==", ["get", "operator_status"], "partenaire"],
-                "#B8FEC9",
+                "#009081",
                 ["==", ["get", "operator_status"], "partenaire_avec_services"],
-                "#B8FEC9",
+                "#009081",
                 ["==", ["get", "operator_status"], "intention"],
-                "#FEECC2",
+                "#E7AC2E",
                 "#EEEEEE",
               ],
               "fill-opacity": 0.8,
@@ -614,9 +642,9 @@ const DeploiementMap = () => {
               "line-color": [
                 "case",
                 ["==", ["get", "operator_status"], "partenaire"],
-                "#18753C",
+                "#003D36",
                 ["==", ["get", "operator_status"], "partenaire_avec_services"],
-                "#18753C",
+                "#003D36",
                 ["==", ["get", "operator_status"], "intention"],
                 "#716043",
                 "#999999",
@@ -641,11 +669,11 @@ const DeploiementMap = () => {
               "fill-color": [
                 "case",
                 ["==", ["get", "operator_status"], "partenaire"],
-                "#B8FEC9",
+                "#009081",
                 ["==", ["get", "operator_status"], "partenaire_avec_services"],
-                "#B8FEC9",
+                "#009081",
                 ["==", ["get", "operator_status"], "intention"],
-                "#FEECC2",
+                "#E7AC2E",
                 "#EEEEEE",
               ],
               "fill-opacity": ["case", ["boolean", ["get", "highlighted"], false], 0.8, 0],

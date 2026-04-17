@@ -81,6 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ${organizations.insee_dep} as dep,
           ${organizations.insee_reg} as reg,
           ${organizations.epci_siren} as epci_siren,
+          ${organizations.population} as population,
           COALESCE((ARRAY_AGG(DISTINCT ${organizationsToServices.serviceId}) FILTER (WHERE ${organizationsToServices.serviceId} IS NOT NULL))::integer[], ARRAY[]::integer[]) as all_services,
           COALESCE((ARRAY_AGG(DISTINCT ${organizationsToServices.serviceId}) FILTER (WHERE ${organizationsToServices.active} = true AND ${organizationsToServices.serviceId} IS NOT NULL))::integer[], ARRAY[]::integer[]) as active_services
         FROM ${organizations}
@@ -99,7 +100,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           COUNT(DISTINCT ${organizationsToServices.organizationSiret})::int as total,
           COUNT(DISTINCT CASE WHEN ${organizationsToServices.active} = true THEN ${organizationsToServices.organizationSiret} END)::int as active,
           COUNT(DISTINCT CASE WHEN ${organizations.type} = 'commune' THEN ${organizationsToServices.organizationSiret} END)::int as communes,
+          COUNT(DISTINCT CASE WHEN ${organizations.type} = 'commune' AND ${organizations.population} < 3500 THEN ${organizationsToServices.organizationSiret} END)::int as communes_anct,
           COUNT(DISTINCT CASE WHEN ${organizations.type} = 'epci' THEN ${organizationsToServices.organizationSiret} END)::int as epci,
+          COUNT(DISTINCT CASE WHEN ${organizations.type} = 'epci' AND ${organizations.population} < 15000 THEN ${organizationsToServices.organizationSiret} END)::int as epci_anct,
           COUNT(DISTINCT CASE WHEN ${organizations.type} = 'departement' THEN ${organizationsToServices.organizationSiret} END)::int as departement,
           COUNT(DISTINCT CASE WHEN ${organizations.type} = 'region' THEN ${organizationsToServices.organizationSiret} END)::int as region,
           COUNT(DISTINCT CASE WHEN has_operator.organization_siret IS NULL THEN ${organizationsToServices.organizationSiret} END)::int as autoheberge,

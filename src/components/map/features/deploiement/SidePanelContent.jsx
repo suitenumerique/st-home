@@ -8,6 +8,7 @@ import CommuneSearch from "../../../CommuneSearch";
 import Breadcrumb from "../../ui/Breadcrumb";
 import MapButton from "../../ui/MapButton";
 import styles from "./SidePanelContent.module.css";
+import servicesConfig from "./servicesConfig";
 
 const DEPT_NAMES = Object.fromEntries(
   parentAreas.filter(a => a.type === 'department').map(a => [a.insee_geo, a.name])
@@ -82,7 +83,6 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     });
   };
 
-  const HIDDEN_SERVICES = ["Mes Services Cyber", "Toutes et tous connecté·e·s", "Agents en intervention", "Docs", "Visio", "Mon Service Sécurisé"];
 
   const getMergedStats = (mergedIds) => ({
     communes: mergedIds.reduce((sum, id) => sum + (scopedStats.find(s => s.id === parseInt(id))?.communes || 0), 0),
@@ -96,6 +96,9 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     const servicesList = Array.isArray(services) ? services : [];
     if (!scopedStats.length) return servicesList;
     return [...servicesList].sort((a, b) => {
+      const aOrder = servicesConfig[a.name]?.order ?? 0;
+      const bOrder = servicesConfig[b.name]?.order ?? 0;
+      if (aOrder !== bOrder) return aOrder - bOrder;
       const aTotal = a._mergedIds
         ? a._mergedIds.reduce((sum, id) => sum + (scopedStats.find(s => s.id === parseInt(id))?.total || 0), 0)
         : (scopedStats.find(s => s.id === parseInt(a.id))?.total || 0);
@@ -106,16 +109,13 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     });
   }, [services, scopedStats]);
 
-  const displayedServices = sortedServices;
-
-
   useEffect(() => {
     const fetchServices = async () => {
       const response = await fetch("/api/deployment/services");
       const data = await response.json();
       console.log(data);
       const normalizedServices = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
-      const filtered = normalizedServices.filter((s) => !HIDDEN_SERVICES.includes(s.name));
+      const filtered = normalizedServices.filter((s) => servicesConfig[s.name]?.visible !== false);
 
       const proconnectServices = filtered.filter((s) => s.type === "proconnect");
       const otherServices = filtered.filter((s) => s.type !== "proconnect");
@@ -175,10 +175,21 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
 
   const orgType = mapState.filters.org_type ?? 'all';
 
-  const getServiceCount = (stats) => {
+  const displayedServices = sortedServices.filter((s) => {
+    const config = servicesConfig[s.name];
+    if (!config?.available_for?.length) return true;
+    if (orgType === 'all') return true;
+    return config.available_for.includes(orgType);
+  });
+
+  const getServiceCount = (stats, service) => {
     if (!stats) return 0;
-    if (orgType === 'commune') return stats.communes || 0;
-    if (orgType === 'epci') return stats.epci || 0;
+    const threshold = servicesConfig[service?.name]?.anct_threshold_active;
+    if (orgType === 'commune') return threshold ? (stats.communes_anct || 0) : (stats.communes || 0);
+    if (orgType === 'epci') return threshold ? (stats.epci_anct || 0) : (stats.epci || 0);
+    if (orgType === 'department') return stats.departement || 0;
+    if (orgType === 'region') return stats.region || 0;
+    if (threshold) return (stats.communes_anct || 0) + (stats.epci_anct || 0);
     return stats.total || 0;
   };
 
@@ -274,8 +285,9 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
 
 const serviceDetails = (service, stats, compact = false) => {
     const level = mapState.currentLevel;
-    const communes = stats?.communes || 0;
-    const epci = stats?.epci || 0;
+    const threshold = servicesConfig[service?.name]?.anct_threshold_active;
+    const communes = threshold ? (stats?.communes_anct || 0) : (stats?.communes || 0);
+    const epci = threshold ? (stats?.epci_anct || 0) : (stats?.epci || 0);
     const departements = stats?.departement || 0;
     const regions = stats?.region || 0;
     const showEpci = level !== 'epci';
@@ -283,7 +295,9 @@ const serviceDetails = (service, stats, compact = false) => {
     const showRegion = level !== 'epci' && level !== 'department' && level !== 'region';
     return (
       <div className={styles.serviceDetails}>
-        <p className={styles.serviceDetailsTitle}>Structures qui utilisent le service</p>
+        {servicesConfig[service.name]?.definition && (
+          <p className={styles.serviceDetailsTitle}>{servicesConfig[service.name].definition}</p>
+        )}
         <div className={styles.serviceDetailsGrid}>
           <span>Communes : <strong>{formatNumber(communes)}</strong></span>
           {showEpci && <span>EPCI : <strong>{formatNumber(epci)}</strong></span>}
@@ -294,13 +308,11 @@ const serviceDetails = (service, stats, compact = false) => {
     );
   };
 
-  const OTHER_SERVICES = ['Accompagnement numérique sur mesure', 'Administration +'];
-
   const renderServiceItem = (service, singleService) => {
           const stats = service._mergedIds
             ? getMergedStats(service._mergedIds)
             : scopedStats.find(s => s.id === parseInt(service.id));
-          const count = getServiceCount(stats);
+          const count = getServiceCount(stats, service);
           const isExpanded = expandedServices.has(service.id);
           const isSelected = service._mergedIds
             ? !!(mapState.filters.service_ids?.some(id => service._mergedIds.includes(id)))
@@ -326,7 +338,7 @@ const serviceDetails = (service, stats, compact = false) => {
                   {service.logo_url && (
                     <img className={styles.servicelogo} src={service.logo_url} alt={service.name} />
                   )}
-                  <span className={styles.serviceName}>{service.name}</span>
+                  <span className={styles.serviceName}>{servicesConfig[service.name]?.shortname ?? service.name}</span>
                   {service.maturity !== 'stable' && (
                     <span className={fr.cx("fr-badge fr-badge--sm fr-badge--info fr-badge--no-icon")}>
                       {service.maturity.toUpperCase()}
@@ -341,10 +353,11 @@ const serviceDetails = (service, stats, compact = false) => {
                       e.stopPropagation();
                       const idsToToggle = service._mergedIds || [service.id];
                       if (isSelected) {
-                        setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: null } });
+                        setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: null, anct_threshold_active: false } });
                         setExpandedServices(prev => { const next = new Set(prev); next.delete(service.id); return next; });
                       } else {
-                        setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: idsToToggle } });
+                        const thresholdActive = !!servicesConfig[service.name]?.anct_threshold_active;
+                        setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: idsToToggle, anct_threshold_active: thresholdActive } });
                         setExpandedServices(new Set([service.id]));
                       }
                     }}
@@ -364,8 +377,8 @@ const serviceDetails = (service, stats, compact = false) => {
 
   const serviceList = () => {
     const singleService = displayedServices.length === 1;
-    const suiteServices = displayedServices.filter(s => !OTHER_SERVICES.includes(s.name));
-    const autresServices = displayedServices.filter(s => OTHER_SERVICES.includes(s.name));
+    const suiteServices = displayedServices.filter(s => servicesConfig[s.name]?.category !== 'other');
+    const autresServices = displayedServices.filter(s => servicesConfig[s.name]?.category === 'other');
     return (
       <div className={styles.serviceList}>
         <h4 className={styles.serviceGroupTitle}>La Suite territoriale</h4>
@@ -480,8 +493,12 @@ const serviceDetails = (service, stats, compact = false) => {
 
   const operatorList = () => {
     const statusLabel = { partenaire: 'Partenaire', partenaire_avec_services: 'Partenaire', intention: 'À venir' };
-    const statusModifier = { partenaire: 'fr-badge--success', partenaire_avec_services: 'fr-badge--success', intention: 'fr-badge--new' };
-    const statusStyle = { intention: { background: '#feecc2', color: '#716043' } };
+    const statusModifier = { partenaire: 'fr-badge--no-icon', partenaire_avec_services: 'fr-badge--no-icon', intention: 'fr-badge--no-icon' };
+    const statusStyle = {
+      partenaire:            { background: '#DFFEED', color: '#0A6C62' },
+      partenaire_avec_services: { background: '#DFFEED', color: '#0A6C62' },
+      intention:             { background: 'var(--yellow-tournesol-950-100)', color: 'var(--yellow-tournesol-sun-407-moon-922)' },
+    };
 
     const byName = (a, b) => a.name.localeCompare(b.name, 'fr');
     const sortedOperators = [
@@ -508,6 +525,11 @@ const serviceDetails = (service, stats, compact = false) => {
                   {op.status && (
                     <span className={fr.cx("fr-badge", "fr-badge--sm", "fr-badge--no-icon", statusModifier[op.status] || "fr-badge--success")} style={{ textTransform: 'none', ...(statusStyle[op.status] || {}) }}>
                       {statusLabel[op.status] || op.status}
+                    </span>
+                  )}
+                  {(op.services || []).some(s => s.type === 'proconnect') && (
+                    <span className={fr.cx("fr-badge", "fr-badge--sm", "fr-badge--no-icon")} style={{ textTransform: 'none', background: '#e8edff', color: '#3558a2' }}>
+                      ProConnect
                     </span>
                   )}
                 </div>
@@ -574,14 +596,34 @@ const serviceDetails = (service, stats, compact = false) => {
 
       {(panelState === 'open' || panelState === 'partial') && (
         <div className={styles.levelHeader}>
-          <div style={{ flex: 1 }}>
+          <div className={styles.levelHeaderTop}>
             <h3 className={styles.areaTitle}>{currentPageLabel || "France"}</h3>
-            {activeTab === 'partenaires' && (
-              <p className={styles.operatorCount}>
-                {operators.length} opérateur{operators.length > 1 ? 's' : ''} partenaire{operators.length > 1 ? 's' : ''}
-              </p>
-            )}
-            {activeTab !== 'partenaires' && ['region', 'department', 'epci'].includes(mapState.currentLevel) && (
+            <div className={styles.headerActions}>
+              <MapButton
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href);
+                  setLinkCopied(true);
+                  setTimeout(() => setLinkCopied(false), 2000);
+                }}
+                aria-label="Copier l'URL de cette vue"
+                tooltip={linkCopied ? "URL copiée" : "Copier l'URL de cette vue"}
+                customStyle={{ width: '32px', height: '32px', padding: '6px' }}
+              >
+                {linkCopied ? (
+                  <span aria-hidden="true" className={fr.cx("fr-icon-check-line", "fr-icon--sm")}></span>
+                ) : (
+                  <span className={fr.cx("fr-icon-links-line", "fr-icon--sm")} aria-hidden="true"></span>
+                )}
+              </MapButton>
+            </div>
+          </div>
+          {activeTab === 'partenaires' && (
+            <p className={styles.operatorCount}>
+              {operators.length} opérateur{operators.length > 1 ? 's' : ''} partenaire{operators.length > 1 ? 's' : ''}
+            </p>
+          )}
+          {activeTab !== 'partenaires' && ['region', 'department', 'epci'].includes(mapState.currentLevel) && (
+            <div style={{ marginTop: '0.5rem', fontSize: '14px' }}>
               <ToggleSwitch
                 label="Voir les services utilisés par ce territoire"
                 checked={showTerritoireServices}
@@ -589,27 +631,9 @@ const serviceDetails = (service, stats, compact = false) => {
                 inputTitle="Voir les services utilisés par ce territoire"
                 showCheckedHint={false}
                 labelPosition="left"
-                style={{ marginTop: '0.25rem' }}
               />
-            )}
-          </div>
-          <div className={styles.headerActions}>
-            <MapButton
-              onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-                setLinkCopied(true);
-                setTimeout(() => setLinkCopied(false), 2000);
-              }}
-              aria-label="Copier l'URL de cette vue"
-              tooltip={linkCopied ? "URL copiée" : "Copier l'URL de cette vue"}
-            >
-              {linkCopied ? (
-                <span aria-hidden="true" className={fr.cx("fr-icon-check-line")}></span>
-              ) : (
-                <span className={fr.cx("fr-icon-links-line")} aria-hidden="true"></span>
-              )}
-            </MapButton>
-          </div>
+            </div>
+          )}
         </div>
       )}
 
