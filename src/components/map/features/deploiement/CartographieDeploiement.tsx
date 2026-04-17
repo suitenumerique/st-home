@@ -166,6 +166,7 @@ const DeploiementMap = () => {
 
         const filteredByType = activeTypes.flatMap((t) => filterList(byType(t)));
 
+
         if (level === "epci") {
           if (orgType === "department" || orgType === "region") {
             return { n_cities: 0, score: null };
@@ -302,8 +303,23 @@ const DeploiementMap = () => {
       };
     }
 
+    const anctThreshold = !!(mapState.filters.anct_threshold_active as boolean);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const filteredEpciStats = filterByServiceIds(stats.filter((s: any) => s.type === "epci"));
+    const applyThreshold = (stat: StatRecord) => {
+      if (!anctThreshold) return true;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const pop = (stat as any).population as number | null;
+      if (pop == null) return true;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const type = (stat as any).type as string;
+      if (type === "commune") return pop < 3500;
+      if (type === "epci") return pop < 15000;
+      return true;
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const filteredEpciStats = filterByServiceIds(stats.filter((s: any) => s.type === "epci").filter(applyThreshold));
+
 
     const toEpciPointFeatures = (list: StatRecord[]): GeoJSON.Feature[] =>
       list
@@ -406,6 +422,7 @@ const DeploiementMap = () => {
     coordMap,
     mapState.filters.org_type,
     mapState.filters.service_ids,
+    mapState.filters.anct_threshold_active,
     mapState.currentLevel,
     mapState.selectedAreas,
   ]);
