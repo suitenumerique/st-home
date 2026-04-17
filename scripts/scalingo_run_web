@@ -1,15 +1,31 @@
 #!/bin/bash
 
+# Rate limiting (empty = disabled)
+if [ -n "$PROXY_RATE_LIMIT_EVENTS" ]; then
+  cat > ratelimit.caddy <<EOF
+rate_limit {
+	zone global {
+		key {client_ip}
+		events $PROXY_RATE_LIMIT_EVENTS
+		window ${PROXY_RATE_LIMIT_WINDOW:-10s}
+	}
+}
+EOF
+else
+  : > ratelimit.caddy
+fi
+
 # Start the NextJS server
 npm run start &
 
-# Start the Nginx server
-bin/run &
+# Start the Caddy server
+bin/caddy run --config Caddyfile &
 
 # if the current shell is killed, also terminate all its children
-trap "pkill SIGTERM -P $$" SIGTERM
+trap "pkill -SIGTERM -P $$" SIGTERM
 
 # wait for a single child to finish,
 wait -n
 # then kill all the other tasks
-pkill -P $$
+pkill -P $$ 2>/dev/null || true
+wait

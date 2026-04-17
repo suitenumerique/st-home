@@ -7,7 +7,42 @@ echo "-----> Running post-frontend script"
 
 make data-geoip-download
 
+echo "-----> Downloading GeoIP database for Caddy"
+curl -fLSs -o /tmp/caddy-geoip.mmdb.gz "${PROXY_GEOIP_DB_URL}" && gunzip -f /tmp/caddy-geoip.mmdb.gz && mv /tmp/caddy-geoip.mmdb "data/${PROXY_GEOIP_DB_PATH}"
+
 mv data/* .
-mv src/nginx/* .
+mv src/caddy/* .
+
+CADDY_VERSION="v2.11.2"
+GO_VERSION="1.24.2"
+GO_SHA256="68097bd680839cbc9d464a0edce4f7c333975e27a90246890e9f1078c7e702ad"
+XCADDY_VERSION="0.4.4"
+XCADDY_SHA256="ae36b87c7edf8008479726efd739efbc20d95968086cdf176e78e1a4a8195e23"
+CADDY_PLUGIN_RATELIMIT_VERSION="v0.1.0"
+CADDY_PLUGIN_GEOLOCATION_VERSION="v1.0.3"
+
+echo "-----> Installing Go ${GO_VERSION}"
+curl -fLSs -o /tmp/go.tar.gz "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
+echo "${GO_SHA256}  /tmp/go.tar.gz" | sha256sum -c -
+tar -xzf /tmp/go.tar.gz -C /tmp
+export PATH="/tmp/go/bin:${PATH}"
+export GOPATH="/tmp/gopath"
+
+echo "-----> Installing xcaddy ${XCADDY_VERSION}"
+curl -fLSs -o /tmp/xcaddy.tar.gz "https://github.com/caddyserver/xcaddy/releases/download/v${XCADDY_VERSION}/xcaddy_${XCADDY_VERSION}_linux_amd64.tar.gz"
+echo "${XCADDY_SHA256}  /tmp/xcaddy.tar.gz" | sha256sum -c -
+tar -xzf /tmp/xcaddy.tar.gz -C /tmp xcaddy
+rm -f /tmp/xcaddy.tar.gz
+
+echo "-----> Building Caddy ${CADDY_VERSION} with plugins"
+mkdir -p bin
+/tmp/xcaddy build "${CADDY_VERSION}" \
+  --with "github.com/mholt/caddy-ratelimit@${CADDY_PLUGIN_RATELIMIT_VERSION}" \
+  --with "github.com/porech/caddy-maxmind-geolocation@${CADDY_PLUGIN_GEOLOCATION_VERSION}" \
+  --output bin/caddy
+
+echo "-----> Cleaning up Go toolchain"
+chmod -R u+w "${GOPATH}" 2>/dev/null || true
+rm -rf /tmp/go /tmp/go.tar.gz /tmp/xcaddy "${GOPATH}"
 
 echo "3.13" > .python-version

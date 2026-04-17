@@ -1,0 +1,50 @@
+# Caddy reverse proxy for Next.js with security features.
+#
+# Environment variables:
+#   PORT                  — listening port (required)
+#   PROXY_BLOCKED_IPS       — space-separated IPs/CIDRs to block (empty = open)
+#                           e.g. "1.2.3.4 5.6.7.0/24"
+#   PROXY_ALLOWED_COUNTRIES — space-separated country codes to allow (empty = open)
+#                           e.g. "FR DE BE"
+#   PROXY_GEOIP_DB_PATH   — path to the MaxMind/DB-IP mmdb file (required for geo-blocking)
+#   PROXY_RATE_LIMIT_EVENTS     — max requests per IP per window (empty = no rate limiting)
+#   PROXY_RATE_LIMIT_WINDOW     — rate limit window duration (default: 10s)
+
+{
+	auto_https off
+	admin off
+	servers {
+		trusted_proxies static private_ranges
+	}
+}
+
+:{$PORT} {
+	log {
+		output stderr
+	}
+
+	# IP blocklist — empty = open (space-separated IPs/CIDRs)
+	@blocked client_ip {$PROXY_BLOCKED_IPS}
+	respond @blocked "Access denied" 403
+
+	# Geo-blocking — empty = open (space-separated country codes)
+	@geoblocked not maxmind_geolocation {
+		db_path {$PROXY_GEOIP_DB_PATH}
+		allow_countries {$PROXY_ALLOWED_COUNTRIES}
+	}
+	respond @geoblocked "Access denied" 403
+
+	# Rate limiting — empty = disabled
+	import ratelimit.caddy
+
+	handle_errors {
+		@ratelimited expression `{err.status_code} == 429`
+		respond @ratelimited "Rate limit exceeded" 429
+	}
+
+	# Reverse proxy to Next.js
+	reverse_proxy localhost:3000 {
+		header_up X-Forwarded-Proto https
+		header_up X-Forwarded-For {client_ip}
+	}
+}
