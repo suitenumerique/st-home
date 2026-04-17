@@ -188,27 +188,41 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } else if (format === "csv") {
       res.setHeader("Content-Type", "text/plain; charset=utf-8");
 
-      // Map each sub-RCPNT section to a CSV column
-      const csvColumns: string[] = ["aa", "a"];
-      ReferentielConformite.forEach((section, index) => {
-        csvColumns.push(String(index + 1) + ".a");
-        csvColumns.push(String(index + 1) + ".aa");
-        section.items.forEach((item) => {
-          csvColumns.push(item.num);
-        });
-      });
-
-      // Expand the "RCPNT" column into multiple columns
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (stats as any[]).forEach((stat) => {
-        csvColumns.forEach((column) => {
-          stat["rcpnt_" + column] = stat.rcpnt.includes(column) ? 1 : 0;
-        });
-        delete stat.rcpnt;
-      });
+      let csvRows: any[];
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return res.status(200).send(csvStringify(stats as any[], { header: true, delimiter: "," }));
+      if (Array.isArray(stats)) {
+        // list-commune / list-epci scopes return an array with rcpnt field
+        csvRows = stats;
+
+        // Map each sub-RCPNT section to a CSV column
+        const csvColumns: string[] = ["aa", "a"];
+        ReferentielConformite.forEach((section, index) => {
+          csvColumns.push(String(index + 1) + ".a");
+          csvColumns.push(String(index + 1) + ".aa");
+          section.items.forEach((item) => {
+            csvColumns.push(item.num);
+          });
+        });
+
+        // Expand the "RCPNT" column into multiple columns
+        csvRows.forEach((stat) => {
+          csvColumns.forEach((column) => {
+            stat["rcpnt_" + column] = stat.rcpnt.includes(column) ? 1 : 0;
+          });
+          delete stat.rcpnt;
+        });
+      } else {
+        // Grouped stats (dep, reg, etc.) - flatten to rows with scope_id
+        csvRows = [];
+        for (const [scopeId, entries] of Object.entries(stats)) {
+          for (const entry of entries as object[]) {
+            csvRows.push({ scope_id: scopeId, ...entry });
+          }
+        }
+      }
+
+      return res.status(200).send(csvStringify(csvRows, { header: true, delimiter: "," }));
     } else {
       return res.status(400).json({ error: "Invalid format" });
     }
