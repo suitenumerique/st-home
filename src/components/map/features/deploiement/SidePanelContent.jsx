@@ -268,7 +268,21 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
                   key={val}
                   className={`${styles.filterDropdownOption} ${index === 0 ? styles.filterDropdownOptionFirst : ''}`}
                   onClick={() => {
-                    setMapState({ ...mapState, filters: { ...mapState.filters, org_type: val === 'all' ? null : val } });
+                    const newOrgType = val === 'all' ? null : val;
+                    const selectedIds = mapState.filters.service_ids;
+                    const selectedService = selectedIds?.length
+                      ? services.find(s => (s._mergedIds || [s.id]).some(id => selectedIds.includes(id)))
+                      : null;
+                    const serviceAvailable = !selectedService || !newOrgType
+                      || (servicesConfig[selectedService.name]?.available_for ?? []).includes(newOrgType);
+                    setMapState({
+                      ...mapState,
+                      filters: {
+                        ...mapState.filters,
+                        org_type: newOrgType,
+                        ...(serviceAvailable ? {} : { service_ids: null, anct_threshold_active: false }),
+                      },
+                    });
                     setOpenDropdown(null);
                   }}
                 >
