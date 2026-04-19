@@ -32,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ) AS services,
         ARRAY_REMOVE(ARRAY_AGG(DISTINCT org.insee_dep), NULL) AS departments
       FROM ${operators} o
-      INNER JOIN ${organizationsToOperators} oto ON o.id = oto.operator_id
+      INNER JOIN ${organizationsToOperators} oto ON o.id = oto.operator_id AND oto.is_perimetre = true
       INNER JOIN ${organizations} org ON oto.organization_siret = org.siret
       LEFT JOIN ${servicesToOperators} sto ON o.id = sto.operator_id
       LEFT JOIN ${services} s ON sto.service_id = s.id
