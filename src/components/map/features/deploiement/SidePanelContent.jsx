@@ -556,7 +556,7 @@ const serviceDetails = (service, stats, compact = false) => {
                       {depts.map((d) => `${DEPT_NAMES[d] || 'Département'} (${d})`).join(' · ')}
                     </p>
                   )}
-                  {(op.services || []).length > 0 && (
+                  {op.status === 'partenaire_avec_services' && (op.services || []).length > 0 && (
                     <div className={styles.operatorServices}>
                       {(op.services || []).map((s) => (
                         <span key={s.id} className={styles.operatorServiceItem}>

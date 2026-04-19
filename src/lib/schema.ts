@@ -76,6 +76,7 @@ export const operators = pgTable(
     type: text("type").notNull(),
     website: text("website"),
     siret: text("siret"),
+    departments: text("departments").array(),
   },
   (table) => [
     index("st_operators_name_search_index").using(

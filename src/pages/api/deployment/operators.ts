@@ -1,11 +1,5 @@
 import { db } from "@/lib/db";
-import {
-  operators,
-  organizations,
-  organizationsToOperators,
-  services,
-  servicesToOperators,
-} from "@/lib/schema";
+import { operators, services, servicesToOperators } from "@/lib/schema";
 import { sql } from "drizzle-orm";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -25,18 +19,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         o.status,
         o.website,
         o.siret,
+        o.departments,
         COALESCE(
           JSON_AGG(DISTINCT JSONB_BUILD_OBJECT('id', s.id, 'name', s.name, 'logo_url', s.logo_url, 'type', s.type))
           FILTER (WHERE s.id IS NOT NULL),
           '[]'
-        ) AS services,
-        ARRAY_REMOVE(ARRAY_AGG(DISTINCT org.insee_dep), NULL) AS departments
+        ) AS services
       FROM ${operators} o
-      INNER JOIN ${organizationsToOperators} oto ON o.id = oto.operator_id
-      INNER JOIN ${organizations} org ON oto.organization_siret = org.siret
       LEFT JOIN ${servicesToOperators} sto ON o.id = sto.operator_id
       LEFT JOIN ${services} s ON sto.service_id = s.id
-      GROUP BY o.id, o.name, o.shortname, o.name_with_article, o.type, o.status, o.website, o.siret
+      GROUP BY o.id, o.name, o.shortname, o.name_with_article, o.type, o.status, o.website, o.siret, o.departments
       ORDER BY o.name ASC
     `);
 

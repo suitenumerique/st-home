@@ -132,6 +132,7 @@ async function importOrganizations(dumpsDir: string) {
       type: "operator",
       website: operator.url,
       siret: operator.siret,
+      departments: operator.departements || [],
     }));
 
     // Keep track of valid organizations and operators

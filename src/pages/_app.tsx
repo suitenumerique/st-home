@@ -5,6 +5,7 @@ import type { AppProps } from "next/app";
 import { useEffect } from "react";
 
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 import { createNextDsfrIntegrationApi } from "@codegouvfr/react-dsfr/next-pagesdir";
 import { createEmotionSsrAdvancedApproach } from "tss-react/next";
@@ -43,6 +44,11 @@ const { withAppEmotionCache, augmentDocumentWithEmotionCache } = createEmotionSs
 export { augmentDocumentWithEmotionCache };
 
 function App({ Component, pageProps }: AppProps) {
+  const router = useRouter();
+  const hideFeedback =
+    router.pathname === "/cartographie-deploiement" ||
+    router.pathname === "/conformite/cartographie";
+
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_MATOMO_SITE_ID) return;
     init({
@@ -50,6 +56,20 @@ function App({ Component, pageProps }: AppProps) {
       siteId: process.env.NEXT_PUBLIC_MATOMO_SITE_ID ?? "",
     });
   }, []);
+
+  useEffect(() => {
+    const apply = () => {
+      const el = document.getElementById("stmsg-widget-loader-shadow");
+      if (el) el.style.display = hideFeedback ? "none" : "";
+      return !!el;
+    };
+    if (apply()) return;
+    const observer = new MutationObserver(() => {
+      if (apply()) observer.disconnect();
+    });
+    observer.observe(document.body, { childList: true });
+    return () => observer.disconnect();
+  }, [hideFeedback]);
 
   return (
     <>
