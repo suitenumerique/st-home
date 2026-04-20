@@ -24,7 +24,7 @@ const REF_INTRO = (
       L'Agence nationale de la cohésion des territoires est partenaire des opérateurs publics de services numériques (OPSN) du réseau <Link href="https://www.asso-declic.fr/" target="_blank">Déclic</Link> pour le déploiement de la Suite territoriale auprès des communes de moins de 3 500 habitants et des intercommunalités de moins de 15 000 habitants. 
     </p>
     <p>
-      Vous êtes une structure publique qui offre des services numériques essentiels ? <br />
+    Cette page évolutive recense l’ensemble de nos partenaires au local. Vous êtes une structure publique (opérateurs publics de services numériques, centre de gestion, intercommunalités, etc.) qui offre des services numériques essentiels ?<br />
       <Link href="mailto:contact@suite.anct.gouv.fr" className={fr.cx("fr-link")} target="_blank" rel="noopener noreferrer">
         Contactez-nous pour être référencé
       </Link>
@@ -227,8 +227,8 @@ const PartenairesPage: NextPage = () => {
   return (
     <>
       <NextSeo
-        title="Les structures de mutualisation dans votre territoire"
-        description="L'Agence nationale de la cohésion des territoires est partenaire des opérateurs publics de services numériques (OPSN) du réseau Déclic pour le déploiement de la Suite territoriale auprès des communes de moins de 3 500 habitants et des intercommunalités de moins de 15 000 habitants. "
+        title="Les partenaires publics de la Suite territoriale"
+        description="L'Agence nationale de la cohésion des territoires est partenaire des opérateurs publics de services numériques (OPSN) du réseau Déclic pour le déploiement de la Suite territoriale auprès des communes de moins de 3 500 habitants et des intercommunalités de moins de 15 000 habitants."
       />
 
       {/* <HeroSection>
@@ -283,13 +283,13 @@ const PartenairesPage: NextPage = () => {
           >
             <div id="about">
               <h1
-                className={fr.cx("fr-h1", "fr-pt-12v", "fr-mb-15v")}
+                className={fr.cx("fr-h1", "fr-pt-10v", "fr-mb-15v")}
                 style={{
                   textAlign: "center",
-                  fontSize: "2.2rem !important",
+                  fontSize: "3rem",
                 }}
               >
-                Les structures de mutualisation dans votre territoire
+                Les partenaires publics<br />de la Suite territoriale
               </h1>
               <div className={fr.cx("fr-text--lg", "fr-mb-15v")}>{REF_INTRO}</div>
               <p
