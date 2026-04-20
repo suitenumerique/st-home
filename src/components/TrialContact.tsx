@@ -5,7 +5,7 @@ export default function TrialContact({
   signupUrl,
   priority,
 }: {
-  signupUrl: string;
+  signupUrl?: string;
   priority?: "primary" | "secondary";
 }) {
   return (
