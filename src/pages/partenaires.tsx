@@ -3,9 +3,12 @@ import FaqList from "@/components/FaqList";
 import { fetchPartenairesRegions } from "@/lib/db";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion";
+import { Button } from "@codegouvfr/react-dsfr/Button";
+
 import { GetServerSideProps, NextPage } from "next";
 import { NextSeo } from "next-seo";
 import Link from "next/link";
+import Image from "next/image";
 
 type RegionItem = {
   name: string;
@@ -52,154 +55,118 @@ const REF_INTRO = (
 
 const FAQS = [
   {
-    question: <>Comment savoir si ma collectivité est conforme ?</>,
+    question: <>Qui peut devenir partenaire ?</>,
     answer: (
       <>
-        <p>Pour vérifier la conformité de votre collectivité :</p>
+        <p>
+          <strong>Toute structure publiques de mutualisation</strong> qui accompagne les collectivités dans leur transformation numérique est invitée à devenir partenaire de l'ANCT pour déployer les services de la Suite territoriale :
+        </p>
+        <ul>
+          <li>
+            Opérateurs Publics de Services Numériques (OPSN)
+          </li>
+          <li>Intercommunalités</li>
+          <li>Centres de gestion de la fonction publique territoriale (CDG)</li>
+          <li>Syndicats mixtes informatiques</li>
+          <li>Agences techniques départementales</li>
+          <li>Groupements d'intérêt public (GIP)</li>
+          <li>Associations et associations d'élus</li>
+          <li>etc...</li>
+        </ul>
+        <p>
+          Ancrées dans les territoires, ces partenaires sont les relais de proximité essentiels pour déployer les services numériques souverains auprès des communes, en particulier les plus vulnérables, selon le principe de subsidiarité.
+        </p>
+      </>
+    ),
+  },
+  {
+    question: <>Les acteurs privés peuvent-ils devenir partenaires ?</>,
+    answer: (
+      <>
+        <p>
+          <strong>Oui, tous les acteurs de la filière du numérique française </strong> (hébergeurs, intégrateurs, éditeurs...) sont également des partenaires de l'ANCT, mobilisés pour concevoir, faire évoluer et déployer des services numériques souverains et interopérables auprès des territoires.
+        </p>
+        <p>
+          <strong>Cette coopération public/privé permet la pleine complémentarité</strong> entre les offres privées et les services numériques proposés par l'Etat. Elle se matérialise par exemple par :
+        </p>
+        <ul>
+          <li><strong>le raccordement des fournisseurs de services</strong> à la fédération ProConnect permettant d'authentifier les utilisateurs professionnels de manière sécurisée ;</li>
+          <li><strong>le référencement et la valorisation des services</strong> privés auprès des collectivités territoriales ;</li>
+          <li><strong>l'hébergement et l'intégration des logiciels libres</strong> pour le compte des structures publiques de mutualisation ;</li>
+          <li><strong>la contribution des équipes de développement aux mêmes logiciels libres ;</strong></li>
+          <li><strong>etc...</strong></li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    question: <>Quelles sont les étapes pour devenir partenaire ?</>,
+    answer: (
+      <>
+        <p>Pour devenir partenaire de la Suite territoriale, les structures de mutualisation sont invitées à :</p>
         <ol>
-          <li>
-            Utilisez la barre de recherche en haut de la page pour trouver votre collectivité&nbsp;;
-          </li>
-          <li>Consultez le rapport détaillé qui s&rsquo;affiche&nbsp;;</li>
-          <li>Pour chaque critère non conforme, suivez les recommandations de correction.</li>
+          <li>Contacter l'équipe à l'adresse <Link href="mailto:contact@suite.anct.gouv.fr" className={fr.cx("fr-link")} target="_blank" rel="noopener noreferrer">contact@suite.anct.gouv.fr</Link></li>
+          <li>Formaliser leur volonté à travers un courrier d'intention ;</li>
+          <li>Signer un contrat de partenariat public-public avec l'ANCT.</li>
         </ol>
-        <p>Les vérifications sont effectuées quotidiennement.</p>
       </>
     ),
   },
   {
-    question: <>Que faire si je ne peux pas corriger une non-conformité ?</>,
+    question: <>Quelle garanties concernant la pérennité de la Suite territoriale ?</>,
     answer: (
       <>
-        <p>Si vous rencontrez des difficultés pour corriger une non-conformité, vous pouvez :</p>
-        <ul>
-          <li>Contacter votre prestataire informatique habituel&nbsp;;</li>
-          <li>Vous rapprocher de votre structure de mutualisation&nbsp;;</li>
-          <li>Utiliser le formulaire de contact en bas de page pour obtenir de l&rsquo;aide.</li>
-        </ul>
         <p>
-          Les services de la Suite territoriale permettent de répondre à l&rsquo;ensemble des
-          critères du référentiel.
+          <strong>L'ANCT et ses partenaires publics s'engagent mutuellement pour une durée de trois ans à travers un contrat de partenariat public-public</strong> renouvelable. Ces contrats permettent la mutualisation des ressources en vue d'atteindre un objectif commun : sécuriser durablement les systèmes d'information et usages numériques des plus petites collectivités.
+        </p>
+        <p>
+          <strong>La démultiplication des partenaires publics, associés au sein d'une gouvernance commune, garantit la résilience du modèle.</strong> La coopération entre un opérateur de l'Etat et les opérateurs des territoires autour d'un objet commun est la principale garantie de maintien en condition opérationnelle et de pérennité des services numériques de la Suite territoriale.
+        </p>
+        <p>
+          <strong>L'architecture technique décentralisée de la Suite territoriale</strong> et son déploiement par une fédération de partenaires est la principale garantie de sécurisation selon les critères de l'Agence nationale de la sécurité des systèmes d'information (ANSSI), partenaire du projet. Elle assure également l'indépendance des collectivités locales dans leurs propres choix techniques.
+        </p>
+        <p>
+          <strong>Les logiciels sont développés en open source, garantissant non seulement la transparence</strong> des investissements de l'Etat dans les services de la Suite territoriale, mais également leur libre appropriation et contribution par l'ensemble de l'écosystème : collectivités, structures de mutualisation, filière privée, états européens etc.
         </p>
       </>
     ),
   },
   {
-    question: <>Les critères vont-ils évoluer ?</>,
+    question: <>Quelle est la différence entre la Suite numérique et la Suite territoriale ?</>,
     answer: (
       <>
-        <p>Le référentiel est voué à évoluer selon :</p>
-        <ul>
-          <li>l&rsquo;évolution des menaces et des bonnes pratiques de sécurité&nbsp;;</li>
-          <li>les retours d&rsquo;expérience des collectivités&nbsp;;</li>
-          <li>les nouvelles obligations réglementaires.</li>
-        </ul>
-        <p>Voici son historique :</p>
-        <ul>
-          <li>
-            <strong>Version 0.2</strong> (16 Août 2025) : Ajout du critère 2.8
-          </li>
-          <li>
-            <strong>Version 0.1</strong> (10 Avril 2025) : Première version publique
-          </li>
-        </ul>
+        <p>
+          <strong>La Suite territoriale et LaSuite numérique proposent toutes les deux des communs numériques simples et interopérables</strong>, mis à la disposition des professionnels de la sphère publique et accessibles via une authentification unique sécurisée ProConnect.
+        </p>
+        <p>
+          <strong>La Suite territoriale</strong> est un ensemble de services numériques opérés par l'Agence Nationale de Cohésion des Territoires (ANCT) et les partenaires des territoires. Elle s'adresse aux élus et agents publics des plus petites collectivités territoriales.
+        </p>
+        <p>
+          <Link href="https://lasuite.numerique.gouv.fr/" target="_blank" rel="noopener noreferrer">La suite</Link> numérique est un ensemble de services numériques mis à disposition par la Direction Interministérielle du Numérique (DINUM) aux agents de la fonction publique d'Etat.
+        </p>
       </>
     ),
   },
   {
-    question: <>Pourquoi certains critères sont-ils essentiels et d&rsquo;autres recommandés ?</>,
+    question: <>Puis-je uniquement déployer une fédération d'identité ProConnect ?</>,
     answer: (
       <>
-        <p>Cette distinction reflète deux niveaux d&rsquo;exigence :</p>
+        <p>
+          Le raccordement à la fédération d'identités numériques professionnelles ProConnect peut être réalisé en autonomie par tous les partenaires, publics comme privés. L'Espace Partenaires ProConnect permet de guider le raccordement :
+        </p>
         <ul>
           <li>
-            <strong>les critères essentiels</strong> correspondent au niveau minimal de sécurité
-            attendu d&rsquo;une collectivité&nbsp;;
+            <Link href="https://partenaires.proconnect.gouv.fr/docs/fournisseur-identite" target="_blank" rel="noopener noreferrer">En tant que Fournisseurs d'Identité</Link> pour les structures publiques de mutualisation qui disposent de leur propre annuaire d'utilisateurs professionnels ;
           </li>
           <li>
-            <strong>les critères recommandés</strong> permettent d&rsquo;atteindre un niveau de
-            sécurité optimal, mais peuvent nécessiter plus de ressources ou de compétences
-            techniques.
+            <Link href="https://partenaires.proconnect.gouv.fr/docs/fournisseur-service" target="_blank" rel="noopener noreferrer">En tant que Fournisseurs de services</Link> pour les partenaires publics ou privés qui souhaitent intégrer ProConnect comme moyen d'authentification unique sécurisé.
           </li>
         </ul>
         <p>
-          L&rsquo;ANCT encourage toutes les collectivités à viser la conformité avec
-          l&rsquo;ensemble des critères, essentiels comme recommandés.
-        </p>
-      </>
-    ),
-  },
-  {
-    question: <>Pourquoi l&rsquo;utilisation de DKIM ne fait-elle pas partie du référentiel ?</>,
-    answer: (
-      <>
-        <p>
-          L&rsquo;utilisation de{" "}
-          <Link
-            href="https://fr.wikipedia.org/wiki/DomainKeys_Identified_Mail"
-            target="_blank"
-            rel="noopener"
-          >
-            DKIM
-          </Link>{" "}
-          est effectivement très fortement recommandée pour toutes les collectivités. Cependant,
-          elle n&rsquo;est malheureusement pas encore testable automatiquement, car elle dépend
-          d&rsquo;un <i>sélecteur</i> qui peut être arbitrairement choisi par l&rsquo;expéditeur.
-          Nous utilisons uniquement des critères automatiquement vérifiables dans le Référentiel.
+          <strong>ProConnect est une fédération opérée par l'Etat et la DINUM</strong> qui valide les demandes de raccordement <Link href="https://datapass.api.gouv.fr/demandes/pro_connect_identity_provider/nouveau" target="_blank" rel="noopener noreferrer">via Datapass</Link> et garantit le support technique.
         </p>
         <p>
-          Une future version de ce Référentiel pourra s&rsquo;appuyer sur l&rsquo;envoi régulier
-          d&rsquo;emails depuis les adresses de messagerie de la collectivité pour vérifier la
-          configuration de DKIM et la délivrabilité des emails en général.
-        </p>
-      </>
-    ),
-  },
-  {
-    question: <>Suis-je obligé(e) d&rsquo;utiliser la Suite territoriale pour être conforme ?</>,
-    answer: (
-      <>
-        <p>
-          Non, vous n&rsquo;êtes pas obligé(e) d&rsquo;utiliser la Suite territoriale pour être
-          conforme. Vous pouvez utiliser l&rsquo;outil ou la solution de votre choix. Cependant, la
-          Suite territoriale propose des services faciles à utiliser pour vous aider à être conforme
-          et vous accompagner dans cette démarche.
-        </p>
-      </>
-    ),
-  },
-  {
-    question: <>Le référentiel relève-t-il d&rsquo;une obligation légale ?</>,
-    answer: (
-      <>
-        <p>
-          Non, le référentiel n&rsquo;est pour l&rsquo;instant adossé à aucune loi et ne constitue
-          par conséquent pas une obligation réglementaire. Il synthétise toutefois les
-          recommandations et retours d&rsquo;expérience de plusieurs administrations d&rsquo;État
-          (ANCT, ANSSI, DILA), de partenaires (associations d&rsquo;élus, opérateurs publics de
-          services numériques) et des collectivités territoriales qui entendent répondre au besoin
-          d&rsquo;élever le niveau de sécurité numérique des collectivités.
-        </p>
-      </>
-    ),
-  },
-  {
-    question: <>Que faire si mon site internet est signalé injoignable par erreur ?</>,
-    answer: (
-      <>
-        <p>
-          Les vérifications quotidiennes du RPNT sont effectuées par des robots qui peuvent être
-          bloqués par certaines configurations ou services tiers.
-          <br />
-          Veuillez vous assurer que votre site est accessible depuis toutes nos adresses IP
-          publiques, listées sur{" "}
-          <Link
-            href="https://docs.outscale.com/en/userguide/OUTSCALE-Public-IPs.html"
-            target="_blank"
-          >
-            cette page
-          </Link>{" "}
-          dans la ligne "cloudgouv-eu-west-1".
+          <strong>Dans le cadre de la Suite territoriale, l'ANCT déploie ProConnect</strong> auprès des collectivités en accompagnant le raccordement et la sécurisation des fournisseurs d'identité territoriaux.
         </p>
       </>
     ),
@@ -243,7 +210,7 @@ const PartenairesPage: NextPage<PartenairesProps> = ({ regions }) => {
               </p>
             </div>
 
-            <div id="referentiel">
+            <div id="regions">
               {regions.map((region) => (
                 <div
                   key={region.id}
@@ -339,9 +306,24 @@ const PartenairesPage: NextPage<PartenairesProps> = ({ regions }) => {
                 </div>
               ))}
             </div>
+            <div id="declic" className={fr.cx("fr-p-4w", "fr-mt-10w")} style={{
+              border: "1px solid var(--border-default-grey)",
+              borderRadius: "16px",
+              backgroundColor: "#F5F5FE80",
+            }}>
+              <Image src="/images/logo-declic.svg" alt="Déclic" width={275} height={53} />
+              <p className={fr.cx("fr-mt-4w", "fr-mb-2w")}>
+                Déclic est la fédération des Opérateurs Publics de Services Numériques (OPSN). Ce réseau, exclusivement dévoué à l’intérêt général des collectivités, consiste à mutualiser l’information, les expériences, la veille technologique et réglementaire, par une mise en commun d’outils et de moyens.
+              </p>
+              <Button
+                linkProps={{ href: "https://www.asso-declic.fr/" }}
+              >
+                Voir l'intégralité du réseau
+              </Button>
+            </div>
 
             <div id="faq" className={fr.cx("fr-my-8w") + " rcpnt-section"}>
-              <h2 className={fr.cx("fr-h2", "fr-mb-3w")}>Foire aux questions</h2>
+              <h2 className={fr.cx("fr-h2", "fr-mb-3w")}>Questions générales</h2>
               <FaqList faqs={FAQS} />
             </div>
 
