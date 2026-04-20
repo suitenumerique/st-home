@@ -109,6 +109,35 @@ body {
   }
 }
 
+/* DSFR Accordion: disable top/bottom borders (shadow) */
+.partenaires-accordion--no-borders::before {
+  box-shadow: none !important;
+}
+
+@media (forced-colors: active) {
+  .partenaires-accordion--no-borders {
+    border-top: 0 !important;
+    border-bottom: 0 !important;
+  }
+}
+
+/* Partenaires page: links list styling */
+.partenaires-links-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.partenaires-links-item {
+  list-style: none;
+  padding: 12px;
+  border-bottom: 1px solid var(--border-default-grey);
+}
+
+.partenaires-links-item:last-child {
+  border-bottom: 0;
+}
+
 /* Bienvenue page */
 .st-bienvenue-page {
   padding-top: 0 !important;
