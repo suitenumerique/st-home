@@ -5,18 +5,49 @@ import { Accordion } from "@codegouvfr/react-dsfr/Accordion";
 import { NextPage } from "next";
 import { NextSeo } from "next-seo";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 type RegionItem = {
-  title: string;
-  url: string;
-  tags: ("partenaire" | "wip" | "pro-connect")[] | null;
+  name: string;
+  website?: string | null;
+  status: ("partenaire" | "partenaire_avec_services" | "intention")[] | null;
 };
 
 type RegionSection = {
   id: string;
-  title: string;
+  name: string;
   items: RegionItem[];
 };
+
+type PartenairesApiRegion = {
+  name: string;
+  numDpt: string[];
+  count: number;
+  data: {
+    name: string;
+    status: "partenaire" | "intention" | null;
+    hasProConnect: boolean | null;
+    website?: string | null;
+  }[];
+};
+
+type PartenairesApiResponse = {
+  count: number;
+  regionsCount: number;
+  data: PartenairesApiRegion[];
+};
+
+function slugifyId(value: unknown) {
+  if (typeof value !== "string") return "";
+
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/['’]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
 
 const REF_INTRO = (
   <>
@@ -32,40 +63,7 @@ const REF_INTRO = (
   </>
 );
 
-export const Regions: RegionSection[] = [
-  {
-    id: "auvergne-rhone-alpes",
-    title: "Auvergne-Rhône-Alpes",
-    items: [
-      {
-        title: "Mégalise Bretagne",
-        url: "https://www.megalise-bretagne.fr/",
-        tags: ['partenaire', 'pro-connect'],
-      },
-      {
-        title: "Centre de gestion de la fonction publique territoriale du Finistère (29)",
-        url: "https://cdg29.fr/",
-        tags: ["wip"],
-      },
-      {
-        title: "Centre de gestion de la fonction publique territoriale des Côtes-d'Armor (22)",
-        url: "https://cdg22.fr/",
-        tags: null,
-      },
-    ],
-  },
-  {
-    id: "bourgogne-franche-comte",
-    title: "Bourgogne-Franche-Comté",
-    items: [
-      {
-        title: "Centre de gestion de la fonction publique territoriale du Doubs (25)",
-        url: "https://cdg25.fr/",
-        tags: null,
-      },
-    ],
-  },
-];
+const DEFAULT_REGIONS: RegionSection[] = [];
 
 const FAQS = [
   {
@@ -224,52 +222,50 @@ const FAQS = [
 ];
 
 const PartenairesPage: NextPage = () => {
+  const [regions, setRegions] = useState<RegionSection[]>(DEFAULT_REGIONS);
+
+  useEffect(() => {
+    fetch("/api/partenaires")
+      .then((r) => r.json())
+      .then((payload: PartenairesApiResponse | PartenairesApiRegion[] | { error?: string }) => {
+        const regionsPayload: unknown =
+          payload && typeof payload === "object" && "data" in payload ? (payload as PartenairesApiResponse).data : payload;
+
+        if (!Array.isArray(regionsPayload)) {
+          console.error("GET /api/partenaires unexpected payload shape", payload);
+          setRegions(DEFAULT_REGIONS);
+          return;
+        }
+
+        const mapped: RegionSection[] = regionsPayload.map((region: PartenairesApiRegion, idx: number) => ({
+          id: slugifyId(region?.name) || `region-${idx}`,
+          name: region?.name || `Région ${idx + 1}`,
+          items: (region?.data ?? []).map((item) => {
+            const status: RegionItem["status"] = [];
+            if (item.status) status.push(item.status);
+            if (item.hasProConnect) status.push("partenaire_avec_services");
+
+            return {
+              name: item.name,
+              website: item.website ?? null,
+              status: status.length ? status : null,
+            };
+          }),
+        }));
+
+        setRegions(mapped);
+      })
+      .catch((error) => {
+        console.error("GET /api/partenaires failed", error);
+      });
+  }, []);
+
   return (
     <>
       <NextSeo
         title="Les partenaires publics de la Suite territoriale"
         description="L'Agence nationale de la cohésion des territoires est partenaire des opérateurs publics de services numériques (OPSN) du réseau Déclic pour le déploiement de la Suite territoriale auprès des communes de moins de 3 500 habitants et des intercommunalités de moins de 15 000 habitants."
       />
-
-      {/* <HeroSection>
-        <div className={fr.cx("fr-container", "fr-pt-5w")}>
-          <div style={{ textAlign: "center" }}>
-            <h1
-              className={fr.cx("fr-h1", "fr-mb-2w")}
-              style={{ color: "var(--text-title-blue-france)", fontSize: "2.2rem !important" }}
-            >
-              Référentiel de la Présence Numérique des Territoires
-            </h1>
-            <h2
-              className={fr.cx("fr-text--lg", "fr-pt-1w", "fr-mb-2w", "fr-text--bold")}
-              style={{
-                textAlign: "center",
-                color: "var(--text-title-blue-france)",
-              }}
-            >
-              Ma collectivité est-elle conforme ?
-            </h2>
-
-            <div className={fr.cx("fr-grid-row", "fr-grid-row--center", "fr-mb-4w")}>
-              <div className={fr.cx("fr-col-12", "fr-col-md-8")}>
-                <div className={fr.cx("fr-search-bar")} style={{ width: "100%" }}>
-                  <CommuneSearch
-                    onSelect={handleCommuneSelect}
-                    placeholder={
-                      isSmallScreen
-                        ? "Nom ou code postal"
-                        : "Renseignez le nom ou le code postal de votre collectivité"
-                    }
-                    style={{
-                      backgroundColor: "white",
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </HeroSection> */}
 
       <div className={fr.cx("fr-container", "fr-py-6w")}>
         <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
@@ -301,7 +297,7 @@ const PartenairesPage: NextPage = () => {
             </div>
 
             <div id="referentiel">
-              {Regions.map((region) => (
+              {regions.map((region) => (
                 <div
                   key={region.id}
                   id={region.id}
@@ -324,13 +320,13 @@ const PartenairesPage: NextPage = () => {
                             gap: "0.3rem",
                           }}
                         >
-                          <h2 style={{ flex: 1, color: "var(--text-title-blue-france)" }}>{region.title}</h2>
+                          <h2 style={{ flex: 1, color: "var(--text-title-blue-france)" }}>{region.name}</h2>
                         </div>
                       }
                     >
                       <ul className={fr.cx("fr-links-group", "fr-mb-0") + " partenaires-links-list"}>
                         {region.items.map((item) => (
-                          <li key={item.url} className="partenaires-links-item">
+                          <li key={`${region.id}-${item.name}`} className="partenaires-links-item">
                             <div
                               style={{
                                 display: "flex",
@@ -340,17 +336,21 @@ const PartenairesPage: NextPage = () => {
                               }}
                             >
                               <div style={{ flex: "1 1 auto", minWidth: 0 }}>
-                                <Link
-                                  href={item.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className={fr.cx("fr-link")}
-                                  style={{ display: "inline-flex", width: "fit-content" }}
-                                >
-                                  {item.title}
-                                </Link>
+                                {item.website ? (
+                                  <Link
+                                    href={item.website}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={fr.cx("fr-link")}
+                                    style={{ display: "inline-flex", width: "fit-content" }}
+                                  >
+                                    {item.name}
+                                  </Link>
+                                ) : (
+                                  <span>{item.name}</span>
+                                )}
                               </div>
-                              {item.tags?.length ? (
+                              {item.status?.length ? (
                                 <div
                                   style={{
                                     display: "flex",
@@ -361,24 +361,24 @@ const PartenairesPage: NextPage = () => {
                                     flex: "0 0 auto",
                                   }}
                                 >
-                                  {item.tags.map((tag) => (
+                                  {item.status.map((status) => (
                                     <span
-                                      key={tag}
+                                      key={status}
                                       className={fr.cx(
                                         "fr-badge",
                                         "fr-badge--sm",
                                         "fr-badge--no-icon",
-                                        tag === "partenaire"
+                                        status === "partenaire"
                                           ? "fr-badge--success"
-                                          : tag === "wip"
-                                            ? "fr-badge--warning"
+                                          : status === "intention"
+                                            ? "fr-badge--new"
                                             : "fr-badge--info",
                                       )}
                                     >
-                                      {tag === "partenaire"
+                                      {status === "partenaire" || status === "partenaire_avec_services"
                                         ? "Partenaire"
-                                        : tag === "wip"
-                                          ? "En cours"
+                                        : status === "intention"
+                                          ? "À venir"
                                           : "ProConnect"}
                                     </span>
                                   ))}
