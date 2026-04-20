@@ -4,8 +4,10 @@ import { fetchPartenairesRegions } from "@/lib/db";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion";
 import { Button } from "@codegouvfr/react-dsfr/Button";
+import TrialContact from "@/components/TrialContact";
 
 import { GetServerSideProps, NextPage } from "next";
+
 import { NextSeo } from "next-seo";
 import Link from "next/link";
 import Image from "next/image";
@@ -224,6 +226,7 @@ const PartenairesPage: NextPage<PartenairesProps> = ({ regions }) => {
                   <div>
                     <Accordion
                       className="partenaires-accordion--no-borders"
+                      defaultExpanded={region.items.length === 1}
                       label={
                         <div
                           id={region.id.toLowerCase()}
@@ -327,7 +330,9 @@ const PartenairesPage: NextPage<PartenairesProps> = ({ regions }) => {
               <FaqList faqs={FAQS} />
             </div>
 
-            <ContactUs />
+            <section className={fr.cx("fr-mt-15w")}>
+              <TrialContact priority="primary" />
+            </section>
           </div>
         </div>
       </div>
