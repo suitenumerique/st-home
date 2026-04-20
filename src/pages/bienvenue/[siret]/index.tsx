@@ -81,7 +81,7 @@ export default function Bienvenue(props: PageProps) {
     // Split operators by status
     const opsnWithServices = opsnOperators.filter((op) => op.status === "partenaire_avec_services");
     const opsnWithoutServices = opsnOperators.filter(
-      (op) => op.status !== "partenaire_avec_services",
+      (op) => op.status == "intention" || op.status == "partenaire",
     );
 
     return (
