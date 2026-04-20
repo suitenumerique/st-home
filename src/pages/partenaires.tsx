@@ -1,16 +1,17 @@
 import ContactUs from "@/components/ContactUs";
 import FaqList from "@/components/FaqList";
+import { fetchPartenairesRegions } from "@/lib/db";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion";
-import { NextPage } from "next";
+import { GetServerSideProps, NextPage } from "next";
 import { NextSeo } from "next-seo";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 type RegionItem = {
   name: string;
   website?: string | null;
-  status: ("partenaire" | "partenaire_avec_services" | "intention")[] | null;
+  status: "partenaire" | "partenaire_avec_services" | "intention" | null;
+  hasProConnect: boolean | null;
 };
 
 type RegionSection = {
@@ -19,22 +20,8 @@ type RegionSection = {
   items: RegionItem[];
 };
 
-type PartenairesApiRegion = {
-  name: string;
-  numDpt: string[];
-  count: number;
-  data: {
-    name: string;
-    status: "partenaire" | "intention" | null;
-    hasProConnect: boolean | null;
-    website?: string | null;
-  }[];
-};
-
-type PartenairesApiResponse = {
-  count: number;
-  regionsCount: number;
-  data: PartenairesApiRegion[];
+type PartenairesProps = {
+  regions: RegionSection[];
 };
 
 function slugifyId(value: unknown) {
@@ -62,8 +49,6 @@ const REF_INTRO = (
     </p>
   </>
 );
-
-const DEFAULT_REGIONS: RegionSection[] = [];
 
 const FAQS = [
   {
@@ -221,45 +206,7 @@ const FAQS = [
   },
 ];
 
-const PartenairesPage: NextPage = () => {
-  const [regions, setRegions] = useState<RegionSection[]>(DEFAULT_REGIONS);
-
-  useEffect(() => {
-    fetch("/api/partenaires")
-      .then((r) => r.json())
-      .then((payload: PartenairesApiResponse | PartenairesApiRegion[] | { error?: string }) => {
-        const regionsPayload: unknown =
-          payload && typeof payload === "object" && "data" in payload ? (payload as PartenairesApiResponse).data : payload;
-
-        if (!Array.isArray(regionsPayload)) {
-          console.error("GET /api/partenaires unexpected payload shape", payload);
-          setRegions(DEFAULT_REGIONS);
-          return;
-        }
-
-        const mapped: RegionSection[] = regionsPayload.map((region: PartenairesApiRegion, idx: number) => ({
-          id: slugifyId(region?.name) || `region-${idx}`,
-          name: region?.name || `Région ${idx + 1}`,
-          items: (region?.data ?? []).map((item) => {
-            const status: RegionItem["status"] = [];
-            if (item.status) status.push(item.status);
-            if (item.hasProConnect) status.push("partenaire_avec_services");
-
-            return {
-              name: item.name,
-              website: item.website ?? null,
-              status: status.length ? status : null,
-            };
-          }),
-        }));
-
-        setRegions(mapped);
-      })
-      .catch((error) => {
-        console.error("GET /api/partenaires failed", error);
-      });
-  }, []);
-
+const PartenairesPage: NextPage<PartenairesProps> = ({ regions }) => {
   return (
     <>
       <NextSeo
@@ -350,40 +297,39 @@ const PartenairesPage: NextPage = () => {
                                   <span>{item.name}</span>
                                 )}
                               </div>
-                              {item.status?.length ? (
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    gap: "0.5rem",
-                                    flexWrap: "wrap",
-                                    justifyContent: "flex-end",
-                                    alignItems: "center",
-                                    flex: "0 0 auto",
-                                  }}
-                                >
-                                  {item.status.map((status) => (
-                                    <span
-                                      key={status}
-                                      className={fr.cx(
-                                        "fr-badge",
-                                        "fr-badge--sm",
-                                        "fr-badge--no-icon",
-                                        status === "partenaire"
-                                          ? "fr-badge--success"
-                                          : status === "intention"
-                                            ? "fr-badge--new"
-                                            : "fr-badge--info",
-                                      )}
-                                    >
-                                      {status === "partenaire" || status === "partenaire_avec_services"
-                                        ? "Partenaire"
-                                        : status === "intention"
-                                          ? "À venir"
-                                          : "ProConnect"}
-                                    </span>
-                                  ))}
-                                </div>
-                              ) : null}
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: "0.5rem",
+                                  flexWrap: "wrap",
+                                  justifyContent: "flex-end",
+                                  alignItems: "center",
+                                  flex: "0 0 auto",
+                                }}
+                              >
+                                {item.status ? (
+                                  <span
+                                    className={fr.cx(
+                                      "fr-badge",
+                                      "fr-badge--sm",
+                                      "fr-badge--no-icon",
+                                      item.status === "partenaire" || item.status === "partenaire_avec_services"
+                                        ? "fr-badge--success"
+                                        : "fr-badge--new"
+                                    )}
+                                  >
+                                    {item.status === "partenaire" || item.status === "partenaire_avec_services"
+                                      ? "Partenaire"
+                                      : "À venir"
+                                    }
+                                  </span>
+                                ) : null}
+                                {item.hasProConnect ? (
+                                  <span className={fr.cx("fr-badge", "fr-badge--sm", "fr-badge--no-icon", "fr-badge--info")}>
+                                    ProConnect
+                                  </span>
+                                ) : null}
+                              </div>
                             </div>
                           </li>
                         ))}
@@ -405,6 +351,28 @@ const PartenairesPage: NextPage = () => {
       </div>
     </>
   );
+};
+
+export const getServerSideProps: GetServerSideProps<PartenairesProps> = async () => {
+  try {
+    const apiRegions = await fetchPartenairesRegions();
+
+    const regions: RegionSection[] = apiRegions.map((region, idx) => ({
+      id: slugifyId(region.name) || `region-${idx}`,
+      name: region.name,
+      items: region.data.map((r) => ({
+        name: r.name,
+        website: r.website ?? null,
+        status: r.status,
+        hasProConnect: r.hasProConnect ?? null,
+      })),
+    }));
+
+    return { props: { regions } };
+  } catch (error) {
+    console.error("Error fetching partenaires:", error);
+    return { props: { regions: [] } };
+  }
 };
 
 export default PartenairesPage;

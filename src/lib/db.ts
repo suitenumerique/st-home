@@ -2,6 +2,7 @@ import { and, asc, desc, eq, inArray, like, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import type { Commune } from "./schema";
+import { departmentsRegion } from "./departmentsRegion";
 import * as schema from "./schema";
 import {
   operators,
@@ -223,3 +224,58 @@ export async function findServicesByOperatorIds(operatorIds: string[]) {
 
   return results;
 }
+
+export type PartenairesRegionRow = {
+  name: string;
+  website: string | null;
+  status: "partenaire" | "intention" | null;
+  hasProConnect: boolean | null;
+};
+
+export type PartenairesRegionResult = {
+  name: string;
+  numDpt: string[];
+  count: number;
+  data: PartenairesRegionRow[];
+};
+
+export async function fetchPartenairesRegions(): Promise<PartenairesRegionResult[]> {
+  const results: PartenairesRegionResult[] = [];
+
+  for (const region of departmentsRegion) {
+    const regionDepartments = sql.join(
+      region.numDpt.map((dpt: string) => sql`${dpt}`),
+      sql`, `,
+    );
+
+    const { rows } = await db.execute<PartenairesRegionRow>(sql`
+      SELECT
+        o.name,
+        o.website,
+        o.status,
+        s."hasProConnect"
+      FROM ${operators} o
+      JOIN (
+        SELECT
+          operator_id,
+          BOOL_OR(service_id BETWEEN 58 AND 65) AS "hasProConnect"
+        FROM ${servicesToOperators}
+        GROUP BY operator_id
+      ) s ON o.id = s.operator_id
+      WHERE
+        o.type = 'operator'
+        AND o.status IS NOT NULL
+        AND o.departments && ARRAY[${regionDepartments}]::text[];
+    `);
+
+    results.push({
+      name: region.name,
+      numDpt: region.numDpt,
+      count: rows.length,
+      data: rows,
+    });
+  }
+
+  return results;
+}
+
