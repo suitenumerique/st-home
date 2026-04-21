@@ -260,10 +260,11 @@ const PartenairesPage: NextPage<PartenairesProps> = ({ regions, regionsDromSecti
           >
             <div id="about">
               <h1
-                className={fr.cx("fr-h1", "fr-pt-10v", "fr-mb-15v")}
+                className={fr.cx("fr-pt-10v", "fr-mb-15v")}
                 style={{
                   textAlign: "center",
-                  fontSize: "3rem",
+                  fontSize: "3rem !important",
+                  lineHeight: "3.5rem !important",
                 }}
               >
                 Les partenaires publics<br />de la Suite territoriale
