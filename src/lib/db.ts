@@ -255,7 +255,7 @@ export async function fetchPartenairesRegions(): Promise<PartenairesRegionResult
         o.status,
         s."hasProConnect"
       FROM ${operators} o
-      JOIN (
+      LEFT JOIN (
         SELECT
           operator_id,
           BOOL_OR(service_id BETWEEN 58 AND 65) AS "hasProConnect"
@@ -265,7 +265,8 @@ export async function fetchPartenairesRegions(): Promise<PartenairesRegionResult
       WHERE
         o.type = 'operator'
         AND o.status IS NOT NULL
-        AND o.departments && ARRAY[${regionDepartments}]::text[];
+        AND o.departments && ARRAY[${regionDepartments}]::text[]
+      ORDER BY o.name ASC;
     `);
 
     results.push({
