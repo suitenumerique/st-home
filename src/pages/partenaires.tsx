@@ -1,10 +1,10 @@
-import ContactUs from "@/components/ContactUs";
 import FaqList from "@/components/FaqList";
 import { fetchPartenairesRegions } from "@/lib/db";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import TrialContact from "@/components/TrialContact";
+import { departmentsRegion } from "@/lib/departmentsRegion";
 
 import { GetServerSideProps, NextPage } from "next";
 
@@ -27,18 +27,83 @@ type RegionSection = {
 
 type PartenairesProps = {
   regions: RegionSection[];
+  regionsDromSections: RegionSection[];
 };
 
-function slugifyId(value: unknown) {
-  if (typeof value !== "string") return "";
+function OpsnItem({ item }: { item: RegionItem }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "1rem",
+      }}
+    >
+      <div style={{ flex: "1 1 auto", minWidth: 0 }}>
+        {item.website ? (
+          <Link
+            href={item.website}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={fr.cx("fr-link")}
+            style={{ display: "inline-flex", width: "fit-content" }}
+          >
+            {item.name}
+          </Link>
+        ) : (
+          <span>{item.name}</span>
+        )}
+      </div>
+      <div
+        style={{
+          display: "flex",
+          gap: "0.5rem",
+          flexWrap: "wrap",
+          justifyContent: "flex-end",
+          alignItems: "center",
+          flex: "0 0 auto",
+        }}
+      >
+        {item.status ? (
+          <span
+            className={fr.cx(
+              "fr-badge",
+              "fr-badge--sm",
+              "fr-badge--no-icon",
+              item.status === "partenaire" || item.status === "partenaire_avec_services"
+                ? "fr-badge--success"
+                : "fr-badge--new"
+            )}
+          >
+            {item.status === "partenaire" || item.status === "partenaire_avec_services" ? "Partenaire" : "À venir"}
+          </span>
+        ) : null}
+        {item.hasProConnect ? (
+          <span className={fr.cx("fr-badge", "fr-badge--sm", "fr-badge--no-icon", "fr-badge--info")}>
+            ProConnect
+          </span>
+        ) : null}
+      </div>
+    </div>
+  );
+}
 
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/['’]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
+function NoOpsnItem({ isDrom }: { isDrom: boolean }) {
+  return (
+    <div style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "1rem",
+    }}>
+      <p className={fr.cx("fr-mb-0", isDrom ? "fr-pl-2w" : "fr-pl-0")}
+         style={{ color: "var(--text-mention-grey)" }}>
+        <em>Aucun partenaire trouvé</em>
+      </p>
+      <Link href="mailto:contact@suite.anct.gouv.fr" className={fr.cx("fr-link")} target="_blank" rel="noopener noreferrer">Devenez partenaire</Link>
+    </div>
+  );
 }
 
 const REF_INTRO = (
@@ -175,7 +240,7 @@ const FAQS = [
   },
 ];
 
-const PartenairesPage: NextPage<PartenairesProps> = ({ regions }) => {
+const PartenairesPage: NextPage<PartenairesProps> = ({ regions, regionsDromSections }) => {
   return (
     <>
       <NextSeo
@@ -220,7 +285,11 @@ const PartenairesPage: NextPage<PartenairesProps> = ({ regions }) => {
                   <div>
                     <Accordion
                       className="partenaires-accordion--no-borders"
-                      defaultExpanded={region.items.length === 1}
+                      defaultExpanded={
+                        region.id === "drom-region"
+                          ? regionsDromSections.length === 1
+                          : region.items.length === 1
+                      }
                       label={
                         <div
                           id={region.id.toLowerCase()}
@@ -236,74 +305,44 @@ const PartenairesPage: NextPage<PartenairesProps> = ({ regions }) => {
                       }
                     >
                       <ul className={fr.cx("fr-links-group", "fr-mb-0") + " partenaires-links-list"}>
-                        {region.items.map((item) => (
-                          <li key={`${region.id}-${item.name}`} className="partenaires-links-item">
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                gap: "1rem",
-                              }}
-                            >
-                              <div style={{ flex: "1 1 auto", minWidth: 0 }}>
-                                {item.website ? (
-                                  <Link
-                                    href={item.website}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className={fr.cx("fr-link")}
-                                    style={{ display: "inline-flex", width: "fit-content" }}
-                                  >
-                                    {item.name}
-                                  </Link>
-                                ) : (
-                                  <span>{item.name}</span>
-                                )}
-                              </div>
-                              <div
-                                style={{
-                                  display: "flex",
-                                  gap: "0.5rem",
-                                  flexWrap: "wrap",
-                                  justifyContent: "flex-end",
-                                  alignItems: "center",
-                                  flex: "0 0 auto",
-                                }}
+                        {region.id === "drom-region"
+                          ? regionsDromSections.map((dromRegion) => (
+                              <li
+                                key={`drom-${dromRegion.id}`}
+                                className="partenaires-drom-links-item"
                               >
-                                {item.status ? (
-                                  <span
-                                    className={fr.cx(
-                                      "fr-badge",
-                                      "fr-badge--sm",
-                                      "fr-badge--no-icon",
-                                      item.status === "partenaire" || item.status === "partenaire_avec_services"
-                                        ? "fr-badge--success"
-                                        : "fr-badge--new"
-                                    )}
-                                  >
-                                    {item.status === "partenaire" || item.status === "partenaire_avec_services"
-                                      ? "Partenaire"
-                                      : "À venir"
-                                    }
-                                  </span>
-                                ) : null}
-                                {item.hasProConnect ? (
-                                  <span className={fr.cx("fr-badge", "fr-badge--sm", "fr-badge--no-icon", "fr-badge--info")}>
-                                    ProConnect
-                                  </span>
-                                ) : null}
-                              </div>
-                            </div>
-                          </li>
-                        ))}
+                                <span><strong>{dromRegion.name}</strong></span>
+                                {dromRegion.items.length > 0 ? (
+                                  <ul className={fr.cx("fr-links-group", "fr-mb-0") + " partenaires-drom-links-list"}>
+                                    {dromRegion.items.map((item) => (
+                                      <li key={`${dromRegion.id}-${item.name}`} className="partenaires-drom-links-item">
+                                        <OpsnItem item={item} />
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <NoOpsnItem isDrom={true} />
+                                )}
+                              </li>
+                            ))
+                          : region.items.length > 0 ? (
+                              region.items.map((item) => (
+                                <li key={`${region.id}-${item.name}`} className="partenaires-links-item">
+                                  <OpsnItem item={item} />
+                                </li>
+                              ))
+                            ) : (
+                              <li className="partenaires-links-item">
+                                <NoOpsnItem isDrom={false} />
+                              </li>
+                            )}
                       </ul>
                     </Accordion>
                   </div>
                 </div>
               ))}
             </div>
-            <div id="declic" className={fr.cx("fr-p-4w", "fr-mt-10w")} style={{
+            <div id="declic" className={fr.cx("fr-p-4w", "fr-mt-9w")} style={{
               border: "1px solid var(--border-default-grey)",
               borderRadius: "16px",
               backgroundColor: "#F5F5FE80",
@@ -338,8 +377,21 @@ export const getServerSideProps: GetServerSideProps<PartenairesProps> = async ()
   try {
     const apiRegions = await fetchPartenairesRegions();
 
-    const regions: RegionSection[] = apiRegions.map((region, idx) => ({
-      id: slugifyId(region.name) || `region-${idx}`,
+    const getIsDrom = (regionName: unknown) =>
+      typeof regionName === "string"
+        ? (departmentsRegion.find((r) => r.name === regionName)?.isDrom ?? false)
+        : false;
+
+    const regionsMetropolitaines = apiRegions.filter((region) => !getIsDrom(region.name));
+    const dromSection = {
+      id: `drom-region`,
+      name: 'Départements et régions d\'outre-mer',
+      data: [],
+    }
+    const regionsDrom = apiRegions.filter((region) => getIsDrom(region.name));
+    
+    const regions: RegionSection[] = [...regionsMetropolitaines, dromSection].map((region, idx) => ({
+      id: (region as { id?: string }).id ?? `region-${idx}`,
       name: region.name,
       items: region.data.map((r) => ({
         name: r.name,
@@ -349,10 +401,21 @@ export const getServerSideProps: GetServerSideProps<PartenairesProps> = async ()
       })),
     }));
 
-    return { props: { regions } };
+    const regionsDromSections: RegionSection[] = regionsDrom.map((region, idx) => ({
+      id: `drom-region-${idx}`,
+      name: region.name,
+      items: region.data.map((r) => ({
+        name: r.name,
+        website: r.website ?? null,
+        status: r.status,
+        hasProConnect: r.hasProConnect ?? null,
+      })),
+    }));
+
+    return { props: { regions, regionsDromSections } };
   } catch (error) {
     console.error("Error fetching partenaires:", error);
-    return { props: { regions: [] } };
+    return { props: { regions: [], regionsDromSections: [] } };
   }
 };
 

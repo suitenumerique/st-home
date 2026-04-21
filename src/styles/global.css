@@ -138,6 +138,12 @@ body {
   border-bottom: 0;
 }
 
+.partenaires-drom-links-item {
+  list-style: none;
+  padding: 12px;
+  border-bottom: none;
+}
+
 /* Bienvenue page */
 .st-bienvenue-page {
   padding-top: 0 !important;
