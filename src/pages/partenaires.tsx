@@ -34,20 +34,20 @@ function OpsnItem({ item }: { item: RegionItem }) {
   return (
     <div
       style={{
-        display: "inflex",
+        display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         gap: "1rem",
       }}
     >
-      <div style={{ flex: "1 1 auto", minWidth: 0 }}>
+      <div style={{ flex: "1 1 auto", minWidth: 0, display: "flex", alignItems: "center" }}>
         {item.website ? (
           <Link
             href={item.website}
             target="_blank"
             rel="noopener noreferrer"
-            className={fr.cx("fr-link")}
-            style={{ display: "inline-flex", width: "fit-content" }}
+            className={fr.cx("fr-link") + " no-underline opsn-item__link"}
+            style={{ display: "inline-flex", width: "fit-content", alignItems: "center" }}
           >
             {item.name}
           </Link>
