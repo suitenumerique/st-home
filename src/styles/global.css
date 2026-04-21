@@ -433,6 +433,23 @@ body {
   }
 }
 
+/* Partenaires */
+.partenaires-title {
+  padding-top: 2.5rem;
+  margin-bottom: 3.75rem;
+  font-size: 3rem;
+  line-height: 3.5rem;
+}
+
+@media (max-width: 768px) {
+  .partenaires-title {
+    padding-top: 0;
+    margin-bottom: 1.25rem;
+    font-size: 2rem;
+    line-height: 2rem;
+  }
+}
+
 /* Info section after FAQ */
 .services-section section.fr-accordion ~ p {
   font-size: 0.85em;
