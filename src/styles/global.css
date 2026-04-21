@@ -441,6 +441,17 @@ body {
   line-height: 3.5rem;
 }
 
+.no-underline,
+.no-underline:hover,
+.no-underline:focus {
+  text-decoration: none !important;
+  background-image: none !important;
+}
+
+.opsn-item__link {
+  line-height: 1.5;
+}
+
 @media (max-width: 768px) {
   .partenaires-title {
     padding-top: 0;
