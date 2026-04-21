@@ -33,6 +33,7 @@ type PartenairesProps = {
 function OpsnItem({ item }: { item: RegionItem }) {
   return (
     <div
+      className="opsn-item"
       style={{
         display: "flex",
         alignItems: "center",
@@ -91,17 +92,26 @@ function OpsnItem({ item }: { item: RegionItem }) {
 
 function NoOpsnItem({ isDrom }: { isDrom: boolean }) {
   return (
-    <div style={{
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      gap: "1rem",
-    }}>
+    <div
+      className="no-opsn-item"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "1rem",
+      }}
+    >
       <p className={fr.cx("fr-mb-0", isDrom ? "fr-pl-2w" : "fr-pl-0")}
          style={{ color: "var(--text-mention-grey)" }}>
         <em>Aucun partenaire trouvé</em>
       </p>
-      <Link href="mailto:contact@suite.anct.gouv.fr" className={fr.cx("fr-link")} target="_blank" rel="noopener noreferrer">Devenez partenaire</Link>
+      <Link href="mailto:contact@suite.anct.gouv.fr" 
+            className={fr.cx("fr-link") + " no-underline opsn-item__link no-opsn-item__link"}
+            style={{ display: "inline-flex", width: "fit-content", alignItems: "center" }}
+            target="_blank" 
+            rel="noopener noreferrer">
+              Devenez partenaire
+      </Link>
     </div>
   );
 }
