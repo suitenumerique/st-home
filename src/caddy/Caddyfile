@@ -19,9 +19,9 @@
 }
 
 :{$PORT} {
-	log {
-		output stderr
-	}
+  # INFO: We don't enable any sort of caddy logs here and
+  # rely only on the default runtime logs (rate limit/geoblock)
+  # + Scalingo router logs (access logs)
 
 	# IP blocklist — empty = open (space-separated IPs/CIDRs)
 	@blocked client_ip {$PROXY_BLOCKED_IPS}
