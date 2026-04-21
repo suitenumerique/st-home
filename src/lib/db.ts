@@ -247,6 +247,8 @@ export async function fetchPartenairesRegions(): Promise<PartenairesRegionResult
       region.numDpt.map((dpt: string) => sql`${dpt}`),
       sql`, `,
     );
+    const minProConnectId = 58;
+    const maxProConnectId = 65;
 
     const { rows } = await db.execute<PartenairesRegionRow>(sql`
       SELECT
@@ -258,7 +260,7 @@ export async function fetchPartenairesRegions(): Promise<PartenairesRegionResult
       LEFT JOIN (
         SELECT
           operator_id,
-          BOOL_OR(service_id BETWEEN 58 AND 65) AS "hasProConnect"
+          BOOL_OR(service_id BETWEEN ${minProConnectId} AND ${maxProConnectId}) AS "hasProConnect"
         FROM ${servicesToOperators}
         GROUP BY operator_id
       ) s ON o.id = s.operator_id
