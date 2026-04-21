@@ -414,6 +414,12 @@ body {
   justify-content: center;
   gap: 1rem;
 
+  .trial-contact__image {
+    max-width: 580px;
+    width: 100%;
+    height: auto;
+  }
+
   .buttons {
     display: flex;
     flex-direction: row;

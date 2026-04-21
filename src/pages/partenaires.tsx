@@ -204,12 +204,6 @@ const PartenairesPage: NextPage<PartenairesProps> = ({ regions }) => {
                 Les partenaires publics<br />de la Suite territoriale
               </h1>
               <div className={fr.cx("fr-text--lg", "fr-mb-15v")}>{REF_INTRO}</div>
-              <p
-                className={fr.cx("fr-mb-3w", "fr-text--md")}
-                style={{ textAlign: "right" }}
-              >
-                Dernière mise à jour le 16 avril 2026
-              </p>
             </div>
 
             <div id="regions">
@@ -330,7 +324,7 @@ const PartenairesPage: NextPage<PartenairesProps> = ({ regions }) => {
               <FaqList faqs={FAQS} />
             </div>
 
-            <section className={fr.cx("fr-mt-15w")}>
+            <section className={fr.cx("fr-my-15w")}>
               <TrialContact priority="primary" />
             </section>
           </div>
