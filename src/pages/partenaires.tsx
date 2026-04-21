@@ -34,7 +34,7 @@ function OpsnItem({ item }: { item: RegionItem }) {
   return (
     <div
       style={{
-        display: "flex",
+        display: "inflex",
         alignItems: "center",
         justifyContent: "space-between",
         gap: "1rem",
@@ -260,11 +260,9 @@ const PartenairesPage: NextPage<PartenairesProps> = ({ regions, regionsDromSecti
           >
             <div id="about">
               <h1
-                className={fr.cx("fr-pt-10v", "fr-mb-15v")}
+                className={fr.cx("fr-h1") + " partenaires-title"}
                 style={{
                   textAlign: "center",
-                  fontSize: "3rem !important",
-                  lineHeight: "3.5rem !important",
                 }}
               >
                 Les partenaires publics<br />de la Suite territoriale
