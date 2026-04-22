@@ -103,7 +103,7 @@ function NoOpsnItem({ isDrom }: { isDrom: boolean }) {
     >
       <p className={fr.cx("fr-mb-0", isDrom ? "fr-pl-2w" : "fr-pl-0")}
          style={{ color: "var(--text-mention-grey)" }}>
-        <em>Aucun partenaire trouvé</em>
+        <em>Aucun partenaire pour le moment</em>
       </p>
       <Link href="mailto:contact@suite.anct.gouv.fr" 
             className={fr.cx("fr-link") + " no-underline opsn-item__link no-opsn-item__link"}
@@ -294,11 +294,7 @@ const PartenairesPage: NextPage<PartenairesProps> = ({ regions, regionsDromSecti
                   <div>
                     <Accordion
                       className="partenaires-accordion--no-borders"
-                      defaultExpanded={
-                        region.id === "drom-region"
-                          ? regionsDromSections.length === 1
-                          : region.items.length === 1
-                      }
+                      defaultExpanded={false}
                       label={
                         <div
                           id={region.id.toLowerCase()}
