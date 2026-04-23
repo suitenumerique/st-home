@@ -16,7 +16,10 @@ const DEPT_NAMES = Object.fromEntries(
 
 const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats, activeTab, setActiveTab, operators = [], allServices = [], selectedServiceFilter, setSelectedServiceFilter, selectedAreaOwnServices = new Set() }) => {
 
-  const isLSTMode = new URLSearchParams(window.location.search).get('services') !== 'all';
+  const [isLSTMode, setIsLSTMode] = useState(true);
+  useEffect(() => {
+    setIsLSTMode(new URLSearchParams(window.location.search).get('services') !== 'all');
+  }, []);
 
   const [linkCopied, setLinkCopied] = useState(false);
   const [services, setServices] = useState([]);
