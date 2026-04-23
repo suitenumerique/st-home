@@ -16,6 +16,8 @@ const DEPT_NAMES = Object.fromEntries(
 
 const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats, activeTab, setActiveTab, operators = [], allServices = [], selectedServiceFilter, setSelectedServiceFilter, selectedAreaOwnServices = new Set() }) => {
 
+  const isLSTMode = new URLSearchParams(window.location.search).get('services') !== 'all';
+
   const [linkCopied, setLinkCopied] = useState(false);
   const [services, setServices] = useState([]);
   const [scopedStats, setScopedStats] = useState([]);
@@ -115,7 +117,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
       const data = await response.json();
       console.log(data);
       const normalizedServices = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
-      const filtered = normalizedServices.filter((s) => servicesConfig[s.name]?.visible !== false);
+      const filtered = normalizedServices.filter((s) => servicesConfig[s.name] !== undefined);
 
       const proconnectServices = filtered.filter((s) => s.type === "proconnect");
       const otherServices = filtered.filter((s) => s.type !== "proconnect");
@@ -175,8 +177,15 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
 
   const orgType = mapState.filters.org_type ?? 'all';
 
+  const resolveVisible = (config) => {
+    if (!config) return true;
+    if (typeof config.visible === 'boolean') return config.visible;
+    return isLSTMode ? config.visible.default : config.visible.incub;
+  };
+
   const displayedServices = sortedServices.filter((s) => {
     const config = servicesConfig[s.name];
+    if (!resolveVisible(config)) return false;
     if (!config?.available_for?.length) return true;
     if (orgType === 'all') return true;
     return config.available_for.includes(orgType);
@@ -393,9 +402,10 @@ const serviceDetails = (service, stats, compact = false) => {
     const singleService = displayedServices.length === 1;
     const suiteServices = displayedServices.filter(s => servicesConfig[s.name]?.category !== 'other');
     const autresServices = displayedServices.filter(s => servicesConfig[s.name]?.category === 'other');
+    const groupTitle = isLSTMode ? "Le socle de la Suite territoriale" : "La Suite territoriale";
     return (
       <div className={styles.serviceList}>
-        <h4 className={styles.serviceGroupTitle}>La Suite territoriale</h4>
+        <h4 className={styles.serviceGroupTitle}>{groupTitle}</h4>
         {suiteServices.map((service) => renderServiceItem(service, singleService))}
         {autresServices.length > 0 && (
           <>
