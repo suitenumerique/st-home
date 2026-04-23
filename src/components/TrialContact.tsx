@@ -5,12 +5,21 @@ export default function TrialContact({
   signupUrl,
   priority,
 }: {
-  signupUrl: string;
+  signupUrl?: string;
   priority?: "primary" | "secondary";
 }) {
   return (
     <div className="trial-contact">
-      <Image src="/images/interest-test.svg" alt="" role="presentation" width={580} height={105} />
+      <Image
+        className="trial-contact__image"
+        src="/images/interest-test.svg"
+        alt=""
+        role="presentation"
+        width={580}
+        height={105}
+        sizes="(max-width: 768px) 100vw, 580px"
+        style={{ width: "100%", maxWidth: 580, height: "auto" }}
+      />
       <div className="buttons">
         {signupUrl ? (
           <Button priority={priority || "secondary"} linkProps={{ href: signupUrl }}>
