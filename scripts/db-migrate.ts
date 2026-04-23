@@ -117,12 +117,6 @@ async function migrate() {
       ALTER TABLE st_services_to_operators ADD COLUMN IF NOT EXISTS position integer NOT NULL DEFAULT 0;
     `);
 
-     // Add name_with_article and status columns to operators
-     await db.execute(sql`
-      ALTER TABLE st_operators ADD COLUMN IF NOT EXISTS departments TEXT[];
-    `);
-
-
     console.log("Migration successful.");
     process.exit(0);
   } catch (error) {

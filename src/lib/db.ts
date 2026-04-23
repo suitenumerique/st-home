@@ -242,13 +242,20 @@ export type PartenairesRegionResult = {
 export async function fetchPartenairesRegions(): Promise<PartenairesRegionResult[]> {
   const results: PartenairesRegionResult[] = [];
 
+  const proConnectServiceIds = (
+    await db.select({ id: services.id }).from(services).where(eq(services.type, "proconnect"))
+  ).map(({ id }) => id);
+  
+  const proConnectServiceIdsSql = sql.join(
+    proConnectServiceIds.map((id) => sql`${id}`),
+    sql`, `,
+  );
+
   for (const region of departmentsRegion) {
     const regionDepartments = sql.join(
       region.numDpt.map((dpt: string) => sql`${dpt}`),
       sql`, `,
     );
-    const minProConnectId = 58;
-    const maxProConnectId = 65;
 
     const { rows } = await db.execute<PartenairesRegionRow>(sql`
       SELECT
@@ -260,7 +267,7 @@ export async function fetchPartenairesRegions(): Promise<PartenairesRegionResult
       LEFT JOIN (
         SELECT
           operator_id,
-          BOOL_OR(service_id BETWEEN ${minProConnectId} AND ${maxProConnectId}) AS "hasProConnect"
+          BOOL_OR(service_id IN (${proConnectServiceIdsSql})) AS "hasProConnect"
         FROM ${servicesToOperators}
         GROUP BY operator_id
       ) s ON o.id = s.operator_id
