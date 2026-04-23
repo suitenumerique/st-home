@@ -102,6 +102,26 @@ export function PageLayout({ children }: LayoutProps) {
       ],
     },
     {
+      text: "Déploiement",
+      isActive:
+        router.asPath.startsWith("/partenaires") ||
+        router.asPath.startsWith("/cartographie-deploiement"),
+      menuLinks: [
+        {
+          text: "Partenaires",
+          linkProps: {
+            href: "/partenaires",
+          },
+        },
+        {
+          text: "Cartographie",
+          linkProps: {
+            href: "/cartographie-deploiement",
+          },
+        },
+      ],
+    },
+    {
       text: "Actualités",
       linkProps: {
         href: "/actualites",
