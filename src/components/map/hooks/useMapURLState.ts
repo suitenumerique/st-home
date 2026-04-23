@@ -4,7 +4,7 @@ import { useCallback } from "react";
 export const useMapURLState = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const servicesParam = searchParams.get('services');
+  const servicesParam = searchParams.get("services");
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getURLState = useCallback((filters: { [key: string]: any }): { [key: string]: any } => {
@@ -53,7 +53,7 @@ export const useMapURLState = () => {
       regionView?: string,
     ) => {
       const params = new URLSearchParams();
-      if (servicesParam) params.set('services', servicesParam);
+      if (servicesParam) params.set("services", servicesParam);
       if (currentLevel !== "country") {
         params.set("level", currentLevel);
       }
