@@ -8,6 +8,16 @@
   z-index: 200;
 }
 
+.mapContainerEmbed {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  height: 100%;
+  z-index: 200;
+}
+
 .productItemsContainer {
   display: flex;
   flex-direction: column;
