@@ -113,7 +113,6 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     const fetchServices = async () => {
       const response = await fetch("/api/deployment/services");
       const data = await response.json();
-      console.log(data);
       const normalizedServices = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
       const filtered = normalizedServices.filter((s) => servicesConfig[s.name]?.visible !== false);
 
