@@ -2,7 +2,7 @@ export type StructureType = "commune" | "epci" | "department" | "region";
 export type ServiceCategory = "lst" | "other";
 
 export type ServiceConfig = {
-  visible: boolean;
+  visible: boolean | { default: boolean; incub: boolean };
   definition: string;
   available_for: StructureType[];
   category: ServiceCategory;
@@ -13,7 +13,7 @@ export type ServiceConfig = {
 
 const servicesConfig: Record<string, ServiceConfig> = {
   "Accompagnement Numérique Sur Mesure": {
-    visible: true,
+    visible: { default: false, incub: true },
     definition: "Collectivités accompagnées. Lancé en 2022",
     available_for: ["commune", "epci"],
     category: "other",
@@ -22,7 +22,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   "Administration +": {
-    visible: true,
+    visible: { default: false, incub: true },
     definition: "Commune où un utilisateur est actif",
     available_for: ["commune"],
     category: "other",
@@ -40,7 +40,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   "Aides-territoires": {
-    visible: true,
+    visible: { default: false, incub: true },
     definition: "Communes qui utilisent le service. Lancé en 2018",
     available_for: ["commune", "epci"],
     category: "other",
@@ -67,7 +67,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   Deveco: {
-    visible: true,
+    visible: { default: false, incub: true },
     definition: "Structures qui utilisent le service. Lancé en 2021",
     available_for: ["commune", "epci", "department", "region"],
     category: "lst",
@@ -85,7 +85,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   "Espace sur Demande": {
-    visible: true,
+    visible: { default: false, incub: true },
     definition: "Collectivités qui mettent à disposition un espace public. Lancé en 2017",
     available_for: ["commune", "epci"],
     category: "lst",
@@ -103,7 +103,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   Grist: {
-    visible: true,
+    visible: { default: false, incub: true },
     definition: "Collectivités qui utilisent le service. Lancé en 2021",
     available_for: ["commune", "epci"],
     category: "lst",
@@ -139,7 +139,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   "Mon Espace Collectivité": {
-    visible: true,
+    visible: { default: false, incub: true },
     definition: "Communes qui utilisent le service. Lancé en 2023",
     available_for: ["commune", "epci"],
     category: "other",
@@ -157,7 +157,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   "Mon Suivi Social": {
-    visible: true,
+    visible: { default: false, incub: true },
     definition: "Structures qui utilisent le service. Lancé en 2021",
     available_for: ["commune", "epci"],
     category: "lst",
@@ -175,7 +175,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   Projets: {
-    visible: true,
+    visible: { default: false, incub: true },
     definition: "Collectivités qui utilisent le service. Lancé en 2026",
     available_for: ["commune", "epci"],
     category: "lst",

@@ -14,7 +14,7 @@ const DEPT_NAMES = Object.fromEntries(
   parentAreas.filter(a => a.type === 'department').map(a => [a.insee_geo, a.name])
 );
 
-const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats, activeTab, setActiveTab, operators = [], allServices = [], selectedServiceFilter, setSelectedServiceFilter, selectedAreaOwnServices = new Set() }) => {
+const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats, activeTab, setActiveTab, operators = [], allServices = [], selectedServiceFilter, setSelectedServiceFilter, selectedAreaOwnServices = new Set(), isLSTMode = true }) => {
 
   const [linkCopied, setLinkCopied] = useState(false);
   const [services, setServices] = useState([]);
@@ -114,7 +114,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
       const response = await fetch("/api/deployment/services");
       const data = await response.json();
       const normalizedServices = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
-      const filtered = normalizedServices.filter((s) => servicesConfig[s.name]?.visible !== false);
+      const filtered = normalizedServices.filter((s) => servicesConfig[s.name] !== undefined);
 
       const proconnectServices = filtered.filter((s) => s.type === "proconnect");
       const otherServices = filtered.filter((s) => s.type !== "proconnect");
@@ -174,8 +174,15 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
 
   const orgType = mapState.filters.org_type ?? 'all';
 
+  const resolveVisible = (config) => {
+    if (!config) return true;
+    if (typeof config.visible === 'boolean') return config.visible;
+    return isLSTMode ? config.visible.default : config.visible.incub;
+  };
+
   const displayedServices = sortedServices.filter((s) => {
     const config = servicesConfig[s.name];
+    if (!resolveVisible(config)) return false;
     if (!config?.available_for?.length) return true;
     if (orgType === 'all') return true;
     return config.available_for.includes(orgType);
@@ -209,9 +216,10 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
 
   const filters = () => {
     if (activeTab === 'partenaires') {
-      const selectedService = allServices.find((s) => s.id === selectedServiceFilter);
+      const visibleAllServices = allServices.filter(s => resolveVisible(servicesConfig[s.name]));
+      const selectedService = visibleAllServices.find((s) => s.id === selectedServiceFilter);
       const label = selectedService ? selectedService.name : 'Tous les services';
-      const isSelected = !!selectedServiceFilter;
+      const isSelected = !!selectedService;
       return (
         <div className={styles.filtersContainer} ref={dropdownRef}>
           <div className={styles.filterDropdown}>
@@ -232,7 +240,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
                   <span>Tous les services</span>
                   <span className={fr.cx("fr-icon-check-line fr-icon--sm")} aria-hidden="true" style={{ visibility: !isSelected ? 'visible' : 'hidden' }} />
                 </li>
-                {allServices.map((s) => (
+                {visibleAllServices.map((s) => (
                   <li
                     key={s.id}
                     className={styles.filterDropdownOption}
@@ -392,9 +400,10 @@ const serviceDetails = (service, stats, compact = false) => {
     const singleService = displayedServices.length === 1;
     const suiteServices = displayedServices.filter(s => servicesConfig[s.name]?.category !== 'other');
     const autresServices = displayedServices.filter(s => servicesConfig[s.name]?.category === 'other');
+    const groupTitle = isLSTMode ? "Le socle de la Suite territoriale" : "La Suite territoriale";
     return (
       <div className={styles.serviceList}>
-        <h4 className={styles.serviceGroupTitle}>La Suite territoriale</h4>
+        <h4 className={styles.serviceGroupTitle}>{groupTitle}</h4>
         {suiteServices.map((service) => renderServiceItem(service, singleService))}
         {autresServices.length > 0 && (
           <>

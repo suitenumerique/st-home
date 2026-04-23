@@ -1,8 +1,10 @@
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 
 export const useMapURLState = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const servicesParam = searchParams.get("services");
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getURLState = useCallback((filters: { [key: string]: any }): { [key: string]: any } => {
@@ -51,6 +53,7 @@ export const useMapURLState = () => {
       regionView?: string,
     ) => {
       const params = new URLSearchParams();
+      if (servicesParam) params.set("services", servicesParam);
       if (currentLevel !== "country") {
         params.set("level", currentLevel);
       }
@@ -76,7 +79,7 @@ export const useMapURLState = () => {
       const newURL = params.toString() ? `?${params.toString()}` : window.location.pathname;
       router.replace(newURL, { scroll: false });
     },
-    [router],
+    [router, servicesParam],
   );
 
   return { getURLState, updateURLState };

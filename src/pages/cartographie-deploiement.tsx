@@ -26,7 +26,7 @@ export default function CartographieDeploiementPage() {
     <>
       <NextSeo title="Cartographie de déploiement" description="Cartographie de déploiement" />
       <div className={styles.mapContainer}>
-        <CartographieDeploiement />
+        <CartographieDeploiement isLSTMode={true} />
       </div>
     </>
   );
