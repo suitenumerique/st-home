@@ -14,12 +14,7 @@ const DEPT_NAMES = Object.fromEntries(
   parentAreas.filter(a => a.type === 'department').map(a => [a.insee_geo, a.name])
 );
 
-const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats, activeTab, setActiveTab, operators = [], allServices = [], selectedServiceFilter, setSelectedServiceFilter, selectedAreaOwnServices = new Set() }) => {
-
-  const [isLSTMode, setIsLSTMode] = useState(true);
-  useEffect(() => {
-    setIsLSTMode(new URLSearchParams(window.location.search).get('services') !== 'all');
-  }, []);
+const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats, activeTab, setActiveTab, operators = [], allServices = [], selectedServiceFilter, setSelectedServiceFilter, selectedAreaOwnServices = new Set(), isLSTMode = true }) => {
 
   const [linkCopied, setLinkCopied] = useState(false);
   const [services, setServices] = useState([]);
@@ -222,9 +217,10 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
 
   const filters = () => {
     if (activeTab === 'partenaires') {
-      const selectedService = allServices.find((s) => s.id === selectedServiceFilter);
+      const visibleAllServices = allServices.filter(s => resolveVisible(servicesConfig[s.name]));
+      const selectedService = visibleAllServices.find((s) => s.id === selectedServiceFilter);
       const label = selectedService ? selectedService.name : 'Tous les services';
-      const isSelected = !!selectedServiceFilter;
+      const isSelected = !!selectedService;
       return (
         <div className={styles.filtersContainer} ref={dropdownRef}>
           <div className={styles.filterDropdown}>
@@ -245,7 +241,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
                   <span>Tous les services</span>
                   <span className={fr.cx("fr-icon-check-line fr-icon--sm")} aria-hidden="true" style={{ visibility: !isSelected ? 'visible' : 'hidden' }} />
                 </li>
-                {allServices.map((s) => (
+                {visibleAllServices.map((s) => (
                   <li
                     key={s.id}
                     className={styles.filterDropdownOption}

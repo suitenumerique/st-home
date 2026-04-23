@@ -10,7 +10,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import parentAreas from "../../../../../public/parent_areas.json";
 import { FeatureProperties, SelectedArea } from "../../types";
 import SidePanelContent from "./SidePanelContent";
-import servicesConfig from "./servicesConfig";
+import servicesConfig, { ServiceConfig } from "./servicesConfig";
 import { StatRecord } from "./types";
 
 const REGION_CODES = [
@@ -34,7 +34,7 @@ const REGION_CODES = [
   "94",
 ];
 
-const DeploiementMap = () => {
+const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
   const { mapState, setMapState, selectLevel, goBack, handleQuickNav } = useMapContext();
   const { panelState, isMobile } = useMapLayoutContext();
 
@@ -47,6 +47,7 @@ const DeploiementMap = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [operators, setOperators] = useState<any[]>([]);
   const [selectedServiceFilter, setSelectedServiceFilter] = useState<number | null>(null);
+  const [allServicesList, setAllServicesList] = useState<{ id: number; name: string }[]>([]);
 
   const [stats, setStats] = useState<StatRecord[]>([]);
   const [coordMap, setCoordMap] = useState<Record<string, { longitude: number; latitude: number }>>(
@@ -78,6 +79,30 @@ const DeploiementMap = () => {
     // operators.length is intentionally omitted to fetch only once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    fetch("/api/deployment/services")
+      .then((r) => r.json())
+      .then((data) => {
+        const normalized: { id: number; name: string }[] = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.data)
+            ? data.data
+            : [];
+        setAllServicesList(normalized.filter((s) => servicesConfig[s.name] !== undefined));
+      });
+  }, []);
+
+  const defaultServiceIds = useMemo<number[]>(() => {
+    return allServicesList
+      .filter((s) => {
+        const config: ServiceConfig | undefined = servicesConfig[s.name];
+        if (!config) return true;
+        if (typeof config.visible === "boolean") return config.visible;
+        return isLSTMode ? config.visible.default : config.visible.incub;
+      })
+      .map((s) => s.id);
+  }, [allServicesList, isLSTMode]);
 
   const anctThreshold = useMemo(() => {
     const serviceIds = mapState.filters.service_ids as number[] | null;
@@ -142,7 +167,8 @@ const DeploiementMap = () => {
     ) => {
       try {
         const orgType = mapState.filters.org_type as string | null;
-        const serviceIds = mapState.filters.service_ids as number[] | null;
+        const explicitServiceIds = mapState.filters.service_ids as number[] | null;
+        const serviceIds = explicitServiceIds?.length ? explicitServiceIds : defaultServiceIds;
 
         const applyPopulationThreshold = (stat: StatRecord) => {
           if (!anctThreshold) return true;
@@ -163,7 +189,7 @@ const DeploiementMap = () => {
           } else if (level === "department") {
             filtered = filtered.filter((stat) => stat.dep === insee_geo);
           }
-          if (serviceIds?.length) {
+          if (serviceIds.length) {
             return filtered.filter((stat) =>
               stat.all_services?.some((s: string) => serviceIds.includes(Number(s))),
             );
@@ -191,7 +217,7 @@ const DeploiementMap = () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .filter((stat: StatRecord) => (stat as any).epci_siren === epciSiren)
             .filter((stat: StatRecord) =>
-              serviceIds?.length
+              serviceIds.length
                 ? stat.all_services?.some((s: string) => serviceIds.includes(Number(s)))
                 : (stat.all_services?.length ?? 0) > 0,
             );
@@ -201,7 +227,7 @@ const DeploiementMap = () => {
               (stat: StatRecord) => stat.id === epciSiren || stat.id.slice(0, 9) === epciSiren,
             )
             .filter((stat: StatRecord) =>
-              serviceIds?.length
+              serviceIds.length
                 ? stat.all_services?.some((s: string) => serviceIds.includes(Number(s)))
                 : (stat.all_services?.length ?? 0) > 0,
             );
@@ -212,7 +238,7 @@ const DeploiementMap = () => {
         if (level === "city") {
           const city = stats.find((s: StatRecord) => s.id === siret);
           if (!city) return { n_cities: 1, score: 0 };
-          const hasService = serviceIds?.length
+          const hasService = serviceIds.length
             ? city.all_services?.some((s: string) => serviceIds.includes(Number(s)))
             : (city.all_services?.length ?? 0) > 0;
           return { n_cities: 1, score: hasService ? 1 : 0 };
@@ -255,18 +281,18 @@ const DeploiementMap = () => {
         return { n_cities: 0, score: null };
       }
     },
-    [stats, mapState.filters, anctThreshold],
+    [stats, mapState.filters, anctThreshold, defaultServiceIds],
   );
 
   useEffect(() => {
     if (!stats || !coordMap || stats.length === 0) return;
 
     const filterByServiceIds = (list: StatRecord[]) => {
-      if (mapState.filters.service_ids && (mapState.filters.service_ids as number[]).length > 0) {
+      const explicitIds = mapState.filters.service_ids as number[] | null;
+      const effectiveIds = explicitIds?.length ? explicitIds : defaultServiceIds;
+      if (effectiveIds.length > 0) {
         return list.filter((stat: StatRecord) =>
-          stat.all_services?.some((service: string) =>
-            (mapState.filters.service_ids as number[]).includes(Number(service)),
-          ),
+          stat.all_services?.some((service: string) => effectiveIds.includes(Number(service))),
         );
       }
       // @ts-expect-error not typed
@@ -439,6 +465,7 @@ const DeploiementMap = () => {
     mapState.filters.org_type,
     mapState.filters.service_ids,
     anctThreshold,
+    defaultServiceIds,
     mapState.currentLevel,
     mapState.selectedAreas,
   ]);
@@ -829,6 +856,7 @@ const DeploiementMap = () => {
           selectedServiceFilter,
           setSelectedServiceFilter,
           selectedAreaOwnServices,
+          isLSTMode,
         })
       }
       map={
@@ -856,14 +884,14 @@ const DeploiementMap = () => {
   );
 };
 
-const CartographieDeploiement = () => {
+const CartographieDeploiement = ({ isLSTMode = true }: { isLSTMode?: boolean }) => {
   return (
     <MapProvider
       initialFilters={{ service_ids: null, active_tab: null }}
       initialDepartmentView="epci"
     >
       <MapLayoutProvider>
-        <DeploiementMap />
+        <DeploiementMap isLSTMode={isLSTMode} />
       </MapLayoutProvider>
     </MapProvider>
   );
