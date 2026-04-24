@@ -218,6 +218,16 @@ db-restore:  ## Restore a database from db-backup.tar.gz (runs entirely in Docke
 	@echo "$(GREEN)Database restored successfully from db-backup.tar.gz!$(RESET)"
 .PHONY: db-restore
 
+db-restore-remote:  ## Restore db-backup.tar.gz to a remote PostgreSQL URL (e.g. Scalingo). Usage: make db-restore-remote URL='postgresql://user:pass@host:port/dbname'
+	@test -f db-backup.tar.gz || (echo "Error: db-backup.tar.gz not found in project root" && exit 1)
+	@test -n "$(URL)" || (echo "Error: URL is required. Usage: make db-restore-remote URL='postgresql://user:pass@host:port/dbname'" && exit 1)
+	@echo "$(BOLD)WARNING: this will DROP and restore objects on the remote database.$(RESET)"
+	@read -p "Type 'yes' to continue: " confirm && [ "$$confirm" = "yes" ] || (echo "Aborted." && exit 1)
+	docker run --rm -e DATABASE_URL="$(URL)" -v "$(PWD)/db-backup.tar.gz:/backup/db-backup.tar.gz:ro" postgres:16.6 sh -c \
+		'mkdir -p /tmp/restore && tar xzf /backup/db-backup.tar.gz -C /tmp/restore && pg_restore --clean --if-exists --no-owner --no-privileges --no-comments --dbname "$$DATABASE_URL" /tmp/restore/*.pgsql'
+	@echo "$(GREEN)Database restored successfully on remote URL!$(RESET)"
+.PHONY: db-restore-remote
+
 db-reset:  ## Reset the local database
 db-reset: \
 	db-drop \

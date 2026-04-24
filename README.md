@@ -95,6 +95,32 @@ make db-browse
 make db-restore
 ```
 
+#### Restauration vers une base distante (Scalingo)
+
+Pour restaurer le fichier `db-backup.tar.gz` présent à la racine du projet vers une base PostgreSQL distante (typiquement une base Scalingo dédiée), utiliser :
+
+```bash
+make db-restore-remote URL='postgresql://user:pass@host:port/dbname'
+```
+
+La commande :
+
+- s'exécute dans un conteneur `postgres:16.6` (aucun binaire `pg_restore` requis sur la machine hôte) ;
+- applique les options recommandées par [la documentation Scalingo](https://doc.scalingo.com/databases/postgresql/dedicated-resources/guides/restoring) : `--clean --if-exists --no-owner --no-privileges --no-comments` ;
+- demande une confirmation interactive avant de lancer la restauration, car elle écrase les objets existants sur la base cible.
+
+Prérequis côté Scalingo (à effectuer en amont, non gérés par la commande) :
+
+1. Autoriser l'IP de la machine dans le pare-feu de la base :
+   ```bash
+   scalingo --app <app> database-firewall-rules-add <addon-id> --cidr <your-ip>/32 --label "Workstation"
+   ```
+2. Récupérer l'URL de connexion :
+   ```bash
+   scalingo --app <app> env-get SCALINGO_POSTGRESQL_URL
+   ```
+3. La restauration impose un arrêt complet de la base durant l'opération (downtime inévitable).
+
 #### Ajout de colonnes dans la base de données
 
 En cas d'ajout de colonnes gérées par Drizzle dans la base de données Postgres, voici la procédure à suivre :
