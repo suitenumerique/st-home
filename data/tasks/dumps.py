@@ -1,4 +1,3 @@
-import bz2
 import csv
 import gzip
 import io
@@ -6,7 +5,6 @@ import json
 import logging
 import os
 import subprocess
-import tarfile
 import zipfile
 from pathlib import Path
 
@@ -17,33 +15,36 @@ def dump_dila():
     if Path("dumps/dila.json").exists():
         return
 
-    # https://www.data.gouv.fr/fr/datasets/service-public-fr-annuaire-de-l-administration-base-de-donnees-locales/
-    url = "https://www.data.gouv.fr/fr/datasets/r/73302880-e4df-4d4c-8676-1a61bb997f3d"
+    # The data.gouv archive (all_latest.tar.bz2) now ships only the geographic-scope
+    # index (commune -> organism UUIDs); the organism records themselves live in this
+    # Opendatasoft export of the api-lannuaire-administration dataset.
+    url = "https://api-lannuaire.service-public.gouv.fr/api/explore/v2.1/catalog/datasets/api-lannuaire-administration/exports/json"
 
-    # Stream download
-    response = requests.get(url, stream=True, timeout=120)
+    response = requests.get(url, timeout=600)
     response.raise_for_status()
+    records = response.json()
 
-    # Decompress bz2 and extract tar in memory
-    decompressor = bz2.BZ2Decompressor()
-    tar_stream = io.BytesIO()
+    # The export stores nested fields (pivot, site_internet, telephone) as JSON-encoded
+    # strings, adresse_courriel as a single ;-joined string, and uses None where the old
+    # tar.bz2 format used "" / []. Normalize back to the structured shape that iter_dila /
+    # associate_dila_to_organizations expect (siret sliced as string, list-of-dicts for
+    # contact fields, individual emails per list entry).
+    services = []
+    for r in records:
+        pivot = json.loads(r["pivot"]) if r.get("pivot") else []
+        if not pivot:
+            continue
+        r["pivot"] = pivot
+        r["siret"] = r.get("siret") or ""
+        r["site_internet"] = json.loads(r["site_internet"]) if r.get("site_internet") else []
+        r["telephone"] = json.loads(r["telephone"]) if r.get("telephone") else []
+        ac = r.get("adresse_courriel")
+        r["adresse_courriel"] = [e.strip() for e in ac.split(";") if e.strip()] if ac else []
+        services.append(r)
 
-    for chunk in response.iter_content(chunk_size=8192):
-        if chunk:
-            tar_stream.write(decompressor.decompress(chunk))
-
-    tar_stream.seek(0)
-
-    # Extract the json file from tar
-    with tarfile.open(fileobj=tar_stream, mode="r:") as tar:
-        for member in tar:
-            if member.name.endswith(".json"):
-                with open("dumps/dila.json", "wb") as f:
-                    for chunk in tar.extractfile(member):
-                        f.write(chunk)
-                return
-
-    raise Exception("No JSON file found in the archive")
+    assert len(services) > 50000, f"Only {len(services)} DILA services"
+    with open("dumps/dila.json", "w") as f:
+        json.dump({"service": services}, f, ensure_ascii=False)
 
 
 def reset_dila_issues():
