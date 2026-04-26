@@ -157,7 +157,7 @@ const FAQS = [
     answer: (
       <>
         <p>
-          <strong>Toute structure publiques de mutualisation</strong> qui accompagne les
+          <strong>Toute structure publique de mutualisation</strong> qui accompagne les
           collectivités dans leur transformation numérique est invitée à devenir partenaire de
           l'ANCT pour déployer les services de la Suite territoriale :
         </p>
