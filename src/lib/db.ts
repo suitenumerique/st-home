@@ -1,8 +1,8 @@
 import { and, asc, desc, eq, inArray, like, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-import type { Commune } from "./schema";
 import { departmentsRegion } from "./departmentsRegion";
+import type { Commune } from "./schema";
 import * as schema from "./schema";
 import {
   operators,
@@ -245,7 +245,7 @@ export async function fetchPartenairesRegions(): Promise<PartenairesRegionResult
   const proConnectServiceIds = (
     await db.select({ id: services.id }).from(services).where(eq(services.type, "proconnect"))
   ).map(({ id }) => id);
-  
+
   const proConnectServiceIdsSql = sql.join(
     proConnectServiceIds.map((id) => sql`${id}`),
     sql`, `,
@@ -288,4 +288,3 @@ export async function fetchPartenairesRegions(): Promise<PartenairesRegionResult
 
   return results;
 }
-

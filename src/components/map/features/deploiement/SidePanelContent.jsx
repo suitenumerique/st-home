@@ -415,50 +415,25 @@ const serviceDetails = (service, stats, compact = false) => {
     );
   };
 
-  const communeInfo = () => (
-    <div>
-      <h3 className={styles.serviceListTitle}>Services</h3>
-      {mapState.selectedAreas?.city?.additionalCityStats?.all_services && (
-        services.map((service) => {
-          const cityServices = mapState.selectedAreas.city.additionalCityStats.all_services;
-          const isUsed = service._mergedIds
+  const communeInfo = () => {
+    const cityServices = mapState.selectedAreas?.city?.additionalCityStats?.all_services;
+    const visibleUsedServices = cityServices
+      ? services.filter((service) => {
+          const config = servicesConfig[service.name];
+          if (!resolveVisible(config)) return false;
+          return service._mergedIds
             ? service._mergedIds.some(id => cityServices.includes(id))
             : cityServices.includes(service.id);
-          if (!isUsed) {
-            return null;
-          }
-          return (
-            <div key={service.id} className={styles.cityServiceItem}>
-              <img src={service.logo_url} alt={service.name} style={{ width: "18px", height: "18px", marginRight: "0.4rem" }} />
-              <span style={{ fontSize: "0.875rem" }}>{service.name}&nbsp;</span>
-              {service.maturity !== 'stable' && (
-                <span className={fr.cx("fr-badge fr-badge--sm fr-badge--info fr-badge--no-icon")}>
-                  {service.maturity.toUpperCase()}
-                </span>
-              )}
-            </div>
-          );
         })
-      )}
-    </div>
-  );
+      : [];
 
-  const areaOrgServices = () => (
-    <div>
-      <h3 className={styles.serviceListTitle}>Services</h3>
-      {services.filter(service =>
-        service._mergedIds
-          ? service._mergedIds.some(id => selectedAreaOwnServices.has(id))
-          : selectedAreaOwnServices.has(service.id)
-      ).length === 0 ? (
-        <p style={{ fontSize: '0.875rem', color: 'var(--text-mention-grey)' }}>Aucun service utilisé par cette structure.</p>
-      ) : (
-        services.map((service) => {
-          const isUsed = service._mergedIds
-            ? service._mergedIds.some(id => selectedAreaOwnServices.has(id))
-            : selectedAreaOwnServices.has(service.id);
-          if (!isUsed) return null;
-          return (
+    return (
+      <div>
+        <h3 className={styles.serviceListTitle}>Services</h3>
+        {visibleUsedServices.length === 0 ? (
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-mention-grey)' }}>Aucun service utilisé par cette structure.</p>
+        ) : (
+          visibleUsedServices.map((service) => (
             <div key={service.id} className={styles.cityServiceItem}>
               {service.logo_url && <img src={service.logo_url} alt={service.name} style={{ width: "18px", height: "18px", marginRight: "0.4rem" }} />}
               <span style={{ fontSize: "0.875rem" }}>{service.name}&nbsp;</span>
@@ -468,11 +443,42 @@ const serviceDetails = (service, stats, compact = false) => {
                 </span>
               )}
             </div>
-          );
-        })
-      )}
-    </div>
-  );
+          ))
+        )}
+      </div>
+    );
+  };
+
+  const areaOrgServices = () => {
+    const visibleUsedServices = services.filter((service) => {
+      const config = servicesConfig[service.name];
+      if (!resolveVisible(config)) return false;
+      return service._mergedIds
+        ? service._mergedIds.some(id => selectedAreaOwnServices.has(id))
+        : selectedAreaOwnServices.has(service.id);
+    });
+
+    return (
+      <div>
+        <h3 className={styles.serviceListTitle}>Services</h3>
+        {visibleUsedServices.length === 0 ? (
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-mention-grey)' }}>Aucun service utilisé par cette structure.</p>
+        ) : (
+          visibleUsedServices.map((service) => (
+            <div key={service.id} className={styles.cityServiceItem}>
+              {service.logo_url && <img src={service.logo_url} alt={service.name} style={{ width: "18px", height: "18px", marginRight: "0.4rem" }} />}
+              <span style={{ fontSize: "0.875rem" }}>{service.name}&nbsp;</span>
+              {service.maturity !== 'stable' && (
+                <span className={fr.cx("fr-badge fr-badge--sm fr-badge--info fr-badge--no-icon")}>
+                  {service.maturity.toUpperCase()}
+                </span>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+    );
+  };
 
   const header = () => (
     <div className={styles.header}>
