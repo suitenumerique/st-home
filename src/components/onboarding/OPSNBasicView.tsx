@@ -25,9 +25,7 @@ export default function OPSNBasicView({ operator, commune, reversed = false }: O
             Accédez bientôt aux services avec {operator.name_with_article || operator.name}
           </h2>
           <p>
-            La structure de mutualisation fait évoluer son offre de services pour accompagner
-            prochainement les collectivités adhérentes dans la mise en place d'une sélection
-            d'outils.
+            <strong>{operator.name_with_article || operator.name}</strong> fait évoluer son offre de services pour accompagner prochainement les collectivités adhérentes dans la mise en place d’une sélection d’outils.
           </p>
           <div className="fr-mb-2w" style={{ display: "flex", flexDirection: "row", gap: "1rem" }}>
             <Button
@@ -51,7 +49,8 @@ export default function OPSNBasicView({ operator, commune, reversed = false }: O
               </Button>
             )}
           </div>
-          <p className={fr.cx("fr-text--sm")}>
+          
+          <p className={fr.cx("fr-text--xs")} style={{ color: "var(--text-mention-grey)" }}>
             Si vous avez une question concernant ce partenaire,{" "}
             <Link href={`/bienvenue/${commune.siret}/contact`}>contactez-nous</Link>.
           </p>
