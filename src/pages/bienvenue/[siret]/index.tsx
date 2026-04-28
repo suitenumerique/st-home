@@ -84,7 +84,6 @@ export default function Bienvenue(props: PageProps) {
     const opsnWithoutServices = opsnOperators.filter(
       (op) => op.status == "intention" || op.status == "partenaire",
     );
-
     return (
       <div className={fr.cx("fr-mb-4w")}>
         <h1
@@ -137,6 +136,7 @@ export default function Bienvenue(props: PageProps) {
               <div className={fr.cx("fr-mb-15w")}>
                 {hasOpsnWithServices ? (
                   <SuiteServicesView
+                    operator={opsnWithServices[0]}
                     commune={commune as Commune}
                     services={suiteServices}
                     reversed={blockIndex++ % 2 !== 0}

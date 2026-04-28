@@ -1,4 +1,4 @@
-import type { Commune, Service } from "@/lib/schema";
+import type { Commune, Service, OperatorWithRole } from "@/lib/schema";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { useEffect, useState } from "react";
@@ -6,6 +6,7 @@ import ServiceIllustration, { preloadServiceIllustrations } from "./ServiceIllus
 import ServicePicker from "./ServicePicker";
 
 type SuiteServicesViewProps = {
+  operator: OperatorWithRole;
   services: Service[];
   commune: Commune;
   reversed?: boolean;
@@ -15,6 +16,7 @@ type SuiteServicesViewProps = {
  * View for displaying the services available through the Suite territoriale
  */
 export default function SuiteServicesView({
+  operator,
   services,
   commune,
   reversed = false,
@@ -38,11 +40,11 @@ export default function SuiteServicesView({
         <div className={fr.cx("fr-col-12", "fr-col-md-5")}>
           <div className="suite-services-section">
             <h2 className={fr.cx("fr-h2")}>
-              Utilisez les autres services de la Suite territoriale
+              Accédez à l’écosystème applicatif avec{" "}
+              {operator.name_with_article || operator.name}
             </h2>
             <p>
-              Grâce à l'Incubateur des territoires, la collectivité peut également accéder à ces
-              services :
+              <strong>{operator.name_with_article || operator.name}</strong> intègre à son offre d’autres services complémentaires au socle. Vous y retrouvez également les services de nos partenaires publics et privés.
             </p>
             <ServicePicker
               services={services}
@@ -59,7 +61,7 @@ export default function SuiteServicesView({
                   href: `/bienvenue/${commune.siret}/contact`,
                 }}
               >
-                Contactez-nous
+                Commencer
               </Button>
             </div>
           </div>
