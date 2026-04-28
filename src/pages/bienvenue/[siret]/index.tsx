@@ -4,6 +4,7 @@ import {
   findOrganizationsWithOperators,
   findServicesByOperatorIds,
 } from "@/lib/db";
+import servicesConfig from "@/components/map/features/deploiement/servicesConfig";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
 import { GetServerSideProps } from "next";
@@ -286,6 +287,10 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   const HIDDEN_SERVICE_IDS = new Set([5, 6, 10, 11, 47, 48, 100]);
 
   const allServices = (await findAllServices()).filter((s) => !HIDDEN_SERVICE_IDS.has(s.id));
+  
+  const visibleSocleServices = Object.keys(servicesConfig).filter((s) => servicesConfig[s].visible && servicesConfig[s].socle);
+  const socleServices = allServices.filter((s) => visibleSocleServices.includes(s.name));
+  
   const organizationServices = await findOrganizationServicesBySiret(siret);
   const usedServiceIds = new Set(organizationServices.map((s) => s.id));
 
@@ -309,7 +314,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   const opsnOperators: OpsnOperator[] = perimetreOperators
     .map((op) => ({
       ...op,
-      services: servicesByOperatorId.get(op.id) || [],
+      services: socleServices,
     }))
     .sort((a, b) => {
       const aHasServices = a.status === "partenaire_avec_services" ? 1 : 0;

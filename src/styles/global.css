@@ -200,6 +200,7 @@ body {
     gap: 1rem;
     flex-wrap: wrap;
     cursor: pointer;
+    max-width: 400px;
 
     .service-app-button {
       display: flex;

@@ -3,6 +3,7 @@ export type ServiceCategory = "lst" | "other";
 
 export type ServiceConfig = {
   visible: boolean | { default: boolean; incub: boolean };
+  socle: boolean;
   definition: string;
   available_for: StructureType[];
   category: ServiceCategory;
@@ -14,6 +15,7 @@ export type ServiceConfig = {
 const servicesConfig: Record<string, ServiceConfig> = {
   "Accompagnement Numérique Sur Mesure": {
     visible: { default: false, incub: true },
+    socle: false,
     definition: "Collectivités accompagnées. Lancé en 2022",
     available_for: ["commune", "epci"],
     category: "other",
@@ -23,6 +25,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   "Administration +": {
     visible: { default: false, incub: true },
+    socle: false,
     definition: "Commune où un utilisateur est actif",
     available_for: ["commune"],
     category: "other",
@@ -32,6 +35,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   "Agents en intervention": {
     visible: false,
+    socle: false,
     definition: "",
     available_for: [],
     category: "lst",
@@ -41,6 +45,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   "Aides-territoires": {
     visible: { default: false, incub: true },
+    socle: false,
     definition: "Communes qui utilisent le service. Lancé en 2018",
     available_for: ["commune", "epci"],
     category: "other",
@@ -50,6 +55,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   "Annuaire des Collectivités": {
     visible: true,
+    socle: true,
     definition: "Collectivités ayant certifié leurs informations locales. Lancé en 2022",
     available_for: ["commune"],
     category: "lst",
@@ -59,6 +65,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   Calendriers: {
     visible: false,
+    socle: false,
     definition: "",
     available_for: [],
     category: "lst",
@@ -68,6 +75,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   Deveco: {
     visible: { default: false, incub: true },
+    socle: false,
     definition: "Structures qui utilisent le service. Lancé en 2021",
     available_for: ["commune", "epci", "department", "region"],
     category: "lst",
@@ -77,6 +85,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   Docs: {
     visible: false,
+    socle: false,
     definition: "",
     available_for: [],
     category: "lst",
@@ -86,6 +95,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   "Espace sur Demande": {
     visible: { default: false, incub: true },
+    socle: false,
     definition: "Collectivités qui mettent à disposition un espace public. Lancé en 2017",
     available_for: ["commune", "epci"],
     category: "lst",
@@ -95,6 +105,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   Fichiers: {
     visible: true,
+    socle: true,
     definition: "Collectivités qui utilisent le service. Lancé en 2026",
     available_for: ["commune", "epci"],
     category: "lst",
@@ -104,6 +115,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   Grist: {
     visible: { default: false, incub: true },
+    socle: false,
     definition: "Collectivités qui utilisent le service. Lancé en 2021",
     available_for: ["commune", "epci"],
     category: "lst",
@@ -113,6 +125,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   "Mes Adresses": {
     visible: true,
+    socle: true,
     definition: "Collectivités ayant publié une base adresse locale. Lancé en 2020",
     available_for: ["commune", "epci"],
     category: "lst",
@@ -122,6 +135,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   "Mes Services Cyber": {
     visible: false,
+    socle: false,
     definition: "",
     available_for: [],
     category: "lst",
@@ -131,6 +145,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   Messages: {
     visible: true,
+    socle: true,
     definition: "Collectivités qui utilisent le service. Lancé en 2026",
     available_for: ["commune", "epci"],
     category: "lst",
@@ -140,6 +155,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   "Mon Espace Collectivité": {
     visible: { default: false, incub: true },
+    socle: false,
     definition: "Communes qui utilisent le service. Lancé en 2023",
     available_for: ["commune", "epci"],
     category: "other",
@@ -149,6 +165,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   "Mon Service Sécurisé": {
     visible: false,
+    socle: false,
     definition: "",
     available_for: [],
     category: "lst",
@@ -158,6 +175,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   "Mon Suivi Social": {
     visible: { default: false, incub: true },
+    socle: false,
     definition: "Structures qui utilisent le service. Lancé en 2021",
     available_for: ["commune", "epci"],
     category: "lst",
@@ -167,6 +185,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   ProConnect: {
     visible: true,
+    socle: true,
     definition: "Structures qui utilisent l'identification ProConnect",
     available_for: ["commune", "epci", "department", "region"],
     category: "lst",
@@ -176,6 +195,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   Projets: {
     visible: { default: false, incub: true },
+    socle: false,
     definition: "Collectivités qui utilisent le service. Lancé en 2026",
     available_for: ["commune", "epci"],
     category: "lst",
@@ -185,6 +205,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   "Rendez-vous": {
     visible: true,
+    socle: true,
     definition: "Structures qui utilisent le service. Lancé en 2018",
     available_for: ["commune", "epci", "department", "region"],
     category: "lst",
@@ -194,6 +215,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   "Toutes et tous connecté·e·s": {
     visible: false,
+    socle: false,
     definition: "",
     available_for: [],
     category: "lst",
@@ -203,6 +225,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   Visio: {
     visible: false,
+    socle: false,
     definition: "",
     available_for: [],
     category: "lst",
