@@ -23,7 +23,7 @@ export default function SuiteServicesBasicView({
       >
         <div className={fr.cx("fr-col-12", "fr-col-md-5")}>
           <div className="suite-services-basic-section">
-            <h2 className={fr.cx("fr-h2")}>Accédez aux services de la Suite territoriale </h2>
+            <h2 className={fr.cx("fr-h2")}>Expérimentez les services de la suite territoriale</h2>
             <p>
               Retrouvez tous les services de la Suite territoriale et de nos partenaires publics et
               privés, pour répondre à vos enjeux d’identité pour l’authentification, de
@@ -39,7 +39,7 @@ export default function SuiteServicesBasicView({
                   href: `/bienvenue/${commune.siret}/contact`,
                 }}
               >
-                Nous contacter
+                Contacter
               </Button>
               <Button
                 priority="secondary"
@@ -54,7 +54,7 @@ export default function SuiteServicesBasicView({
         </div>
         <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
           <Image
-            src="/images/bienvenue-illu/suite-basic.jpg"
+            src="/images/bienvenue-illu/suite-ecosystem.svg"
             width={670}
             height={400}
             style={{ width: "100%", height: "auto" }}

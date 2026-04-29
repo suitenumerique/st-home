@@ -38,12 +38,11 @@ export default function OPSNServicesView({
         <div className={fr.cx("fr-col-12", "fr-col-md-5")}>
           <div className="opsn-services-section">
             <h2 className={fr.cx("fr-h2")}>
-              Obtenez les services de la Suite territoriale avec{" "}
+              Obtenez le socle de la Suite territoriale avec{" "}
               {operator.name_with_article || operator.name}
             </h2>
             <p>
-              La structure de mutualisation accompagnera la collectivité à la mise en œuvre des
-              outils de son offre, tels que :
+              La structure de mutualisation accompagnera la collectivité dans la mise en œuvre du socle de la Suite territoriale.
             </p>
             <ServicePicker
               services={services}
@@ -71,7 +70,7 @@ export default function OPSNServicesView({
                 Voir l'offre de service
               </Button>
             </div>
-            <p className={fr.cx("fr-text--sm")}>
+            <p className={fr.cx("fr-text--xs")} style={{ color: "var(--text-mention-grey)" }}>
               Si vous avez une question concernant ce partenaire,{" "}
               <Link href={`/bienvenue/${commune.siret}/contact`}>contactez-nous</Link>.
             </p>

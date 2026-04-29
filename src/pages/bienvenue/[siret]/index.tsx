@@ -4,6 +4,7 @@ import {
   findOrganizationsWithOperators,
   findServicesByOperatorIds,
 } from "@/lib/db";
+import servicesConfig from "@/components/map/features/deploiement/servicesConfig";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
 import { GetServerSideProps } from "next";
@@ -83,7 +84,6 @@ export default function Bienvenue(props: PageProps) {
     const opsnWithoutServices = opsnOperators.filter(
       (op) => op.status == "intention" || op.status == "partenaire",
     );
-
     return (
       <div className={fr.cx("fr-mb-4w")}>
         <h1
@@ -136,6 +136,7 @@ export default function Bienvenue(props: PageProps) {
               <div className={fr.cx("fr-mb-15w")}>
                 {hasOpsnWithServices ? (
                   <SuiteServicesView
+                    operator={opsnWithServices[0]}
                     commune={commune as Commune}
                     services={suiteServices}
                     reversed={blockIndex++ % 2 !== 0}
@@ -286,6 +287,10 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   const HIDDEN_SERVICE_IDS = new Set([5, 6, 10, 11, 47, 48, 100]);
 
   const allServices = (await findAllServices()).filter((s) => !HIDDEN_SERVICE_IDS.has(s.id));
+  
+  const visibleSocleServiceIds = Object.values(servicesConfig).filter((cfg) => cfg.visible === true && cfg.socle).map((cfg) => cfg.id);
+  const socleServices = allServices.filter((s) => visibleSocleServiceIds.includes(s.id));
+  
   const organizationServices = await findOrganizationServicesBySiret(siret);
   const usedServiceIds = new Set(organizationServices.map((s) => s.id));
 
@@ -309,7 +314,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   const opsnOperators: OpsnOperator[] = perimetreOperators
     .map((op) => ({
       ...op,
-      services: servicesByOperatorId.get(op.id) || [],
+      services: socleServices,
     }))
     .sort((a, b) => {
       const aHasServices = a.status === "partenaire_avec_services" ? 1 : 0;
