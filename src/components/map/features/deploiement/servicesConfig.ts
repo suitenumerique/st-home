@@ -2,6 +2,7 @@ export type StructureType = "commune" | "epci" | "department" | "region";
 export type ServiceCategory = "lst" | "other";
 
 export type ServiceConfig = {
+  id: number;
   visible: boolean | { default: boolean; incub: boolean };
   socle: boolean;
   definition: string;
@@ -14,6 +15,7 @@ export type ServiceConfig = {
 
 const servicesConfig: Record<string, ServiceConfig> = {
   "Accompagnement Numérique Sur Mesure": {
+    id:100,
     visible: { default: false, incub: true },
     socle: false,
     definition: "Collectivités accompagnées. Lancé en 2022",
@@ -24,6 +26,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   "Administration +": {
+    id: 5,
     visible: { default: false, incub: true },
     socle: false,
     definition: "Commune où un utilisateur est actif",
@@ -34,6 +37,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   "Agents en intervention": {
+    id: 8,
     visible: false,
     socle: false,
     definition: "",
@@ -44,6 +48,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   "Aides-territoires": {
+    id: 6,
     visible: { default: false, incub: true },
     socle: false,
     definition: "Communes qui utilisent le service. Lancé en 2018",
@@ -54,6 +59,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   "Annuaire des Collectivités": {
+    id: 4,
     visible: true,
     socle: true,
     definition: "Collectivités ayant certifié leurs informations locales. Lancé en 2022",
@@ -64,6 +70,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   Calendriers: {
+    id: 98,
     visible: false,
     socle: false,
     definition: "",
@@ -74,6 +81,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   Deveco: {
+    id: 7,
     visible: { default: false, incub: true },
     socle: false,
     definition: "Structures qui utilisent le service. Lancé en 2021",
@@ -84,6 +92,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   Docs: {
+    id: 0,
     visible: false,
     socle: false,
     definition: "",
@@ -94,6 +103,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   "Espace sur Demande": {
+    id: 3,
     visible: { default: false, incub: true },
     socle: false,
     definition: "Collectivités qui mettent à disposition un espace public. Lancé en 2017",
@@ -104,6 +114,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: true,
   },
   Fichiers: {
+    id: 12,
     visible: true,
     socle: true,
     definition: "Collectivités qui utilisent le service. Lancé en 2026",
@@ -114,6 +125,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   Grist: {
+    id: 9,
     visible: { default: false, incub: true },
     socle: false,
     definition: "Collectivités qui utilisent le service. Lancé en 2021",
@@ -124,6 +136,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   "Mes Adresses": {
+    id: 1,
     visible: true,
     socle: true,
     definition: "Collectivités ayant publié une base adresse locale. Lancé en 2020",
@@ -134,6 +147,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   "Mes Services Cyber": {
+    id: 48,
     visible: false,
     socle: false,
     definition: "",
@@ -144,6 +158,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   Messages: {
+    id: 2,
     visible: true,
     socle: true,
     definition: "Collectivités qui utilisent le service. Lancé en 2026",
@@ -154,6 +169,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   "Mon Espace Collectivité": {
+    id: 11,
     visible: { default: false, incub: true },
     socle: false,
     definition: "Communes qui utilisent le service. Lancé en 2023",
@@ -164,6 +180,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   "Mon Service Sécurisé": {
+    id: 47,
     visible: false,
     socle: false,
     definition: "",
@@ -174,6 +191,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   "Mon Suivi Social": {
+    id: 14,
     visible: { default: false, incub: true },
     socle: false,
     definition: "Structures qui utilisent le service. Lancé en 2021",
@@ -184,6 +202,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   ProConnect: {
+    id: 58,
     visible: true,
     socle: true,
     definition: "Structures qui utilisent l'identification ProConnect",
@@ -194,6 +213,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   Projets: {
+    id: 13,
     visible: { default: false, incub: true },
     socle: false,
     definition: "Collectivités qui utilisent le service. Lancé en 2026",
@@ -204,6 +224,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   "Rendez-vous": {
+    id: 49,
     visible: true,
     socle: true,
     definition: "Structures qui utilisent le service. Lancé en 2018",
@@ -214,6 +235,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: true,
   },
   "Toutes et tous connecté·e·s": {
+    id: 10,
     visible: false,
     socle: false,
     definition: "",
@@ -224,6 +246,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
   Visio: {
+    id: 99,
     visible: false,
     socle: false,
     definition: "",

@@ -288,8 +288,8 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
 
   const allServices = (await findAllServices()).filter((s) => !HIDDEN_SERVICE_IDS.has(s.id));
   
-  const visibleSocleServices = Object.keys(servicesConfig).filter((s) => servicesConfig[s].visible && servicesConfig[s].socle);
-  const socleServices = allServices.filter((s) => visibleSocleServices.includes(s.name));
+  const visibleSocleServiceIds = Object.values(servicesConfig).filter((cfg) => cfg.visible === true && cfg.socle).map((cfg) => cfg.id);
+  const socleServices = allServices.filter((s) => visibleSocleServiceIds.includes(s.id));
   
   const organizationServices = await findOrganizationServicesBySiret(siret);
   const usedServiceIds = new Set(organizationServices.map((s) => s.id));
