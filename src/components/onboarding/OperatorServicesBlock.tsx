@@ -26,12 +26,16 @@ export default function OperatorServicesBlock({
   commune,
   reversed = false,
 }: OperatorServicesBlockProps) {
-  const [selectedService, setSelectedService] = useState<Service | undefined>(undefined);
+  const [selectedService, setSelectedService] = useState<Service | undefined>(services[0]);
 
   useEffect(() => {
-    setSelectedService(services[0]);
     preloadServiceIllustrations();
-  }, [services]);
+  }, []);
+
+  const firstServiceId = services[0]?.id;
+  useEffect(() => {
+    setSelectedService((current) => (current?.id === firstServiceId ? current : services[0]));
+  }, [firstServiceId, services]);
 
   const isAnct = op.id === ANCT_OPERATOR_ID;
   const opName = op.name_with_article || op.name;
@@ -83,7 +87,14 @@ export default function OperatorServicesBlock({
                 Contacter
               </Button>
               {!isAnct && op.website && (
-                <Button priority="secondary" linkProps={{ href: op.website }}>
+                <Button
+                  priority="secondary"
+                  linkProps={{
+                    href: op.website,
+                    target: "_blank",
+                    rel: "noopener noreferrer",
+                  }}
+                >
                   Voir l’offre de service
                 </Button>
               )}

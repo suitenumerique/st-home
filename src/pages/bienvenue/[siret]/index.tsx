@@ -84,53 +84,62 @@ export default function Bienvenue(props: PageProps) {
         </div>
 
         {(() => {
-          let blockIndex = 0;
-          const renderBlock = (block: OpServices) => {
-            const out: React.ReactNode[] = [];
+          type BlockDescriptor =
+            | { kind: "operator"; key: string; block: OpServices; isSocle: boolean }
+            | { kind: "opsn-basic"; key: string; operator: OperatorWithRole };
+
+          const descriptors: BlockDescriptor[] = [];
+          const pushOperator = (block: OpServices) => {
             if (block.socle.length > 0) {
-              out.push(
-                <div key={`${block.op.id}-socle`} className={fr.cx("fr-mb-15w")}>
-                  <OperatorServicesBlock
-                    op={block.op}
-                    services={block.socle}
-                    isSocle
-                    commune={commune as Commune}
-                    reversed={blockIndex++ % 2 !== 0}
-                  />
-                </div>,
-              );
+              descriptors.push({
+                kind: "operator",
+                key: `${block.op.id}-socle`,
+                block,
+                isSocle: true,
+              });
             }
             if (block.nonSocle.length > 0) {
-              out.push(
-                <div key={`${block.op.id}-nonsocle`} className={fr.cx("fr-mb-15w")}>
-                  <OperatorServicesBlock
-                    op={block.op}
-                    services={block.nonSocle}
-                    isSocle={false}
-                    commune={commune as Commune}
-                    reversed={blockIndex++ % 2 !== 0}
-                  />
-                </div>,
-              );
+              descriptors.push({
+                kind: "operator",
+                key: `${block.op.id}-nonsocle`,
+                block,
+                isSocle: false,
+              });
             }
-            return out;
           };
+          for (const b of opsnBlocks) pushOperator(b);
+          for (const op of opsnWithoutServices) {
+            descriptors.push({ kind: "opsn-basic", key: op.id, operator: op });
+          }
+          if (anctBlock) pushOperator(anctBlock);
 
           return (
             <>
-              {opsnBlocks.map((b) => renderBlock(b))}
-
-              {opsnWithoutServices.map((op) => (
-                <div key={op.id} className={fr.cx("fr-mb-15w")}>
-                  <OPSNBasicView
-                    operator={op}
-                    commune={commune as Commune}
-                    reversed={blockIndex++ % 2 !== 0}
-                  />
-                </div>
-              ))}
-
-              {anctBlock && renderBlock(anctBlock)}
+              {descriptors.map((d, idx) => {
+                const reversed = idx % 2 !== 0;
+                if (d.kind === "operator") {
+                  return (
+                    <div key={d.key} className={fr.cx("fr-mb-15w")}>
+                      <OperatorServicesBlock
+                        op={d.block.op}
+                        services={d.isSocle ? d.block.socle : d.block.nonSocle}
+                        isSocle={d.isSocle}
+                        commune={commune as Commune}
+                        reversed={reversed}
+                      />
+                    </div>
+                  );
+                }
+                return (
+                  <div key={d.key} className={fr.cx("fr-mb-15w")}>
+                    <OPSNBasicView
+                      operator={d.operator}
+                      commune={commune as Commune}
+                      reversed={reversed}
+                    />
+                  </div>
+                );
+              })}
             </>
           );
         })()}
