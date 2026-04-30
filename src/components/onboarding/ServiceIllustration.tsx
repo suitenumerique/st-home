@@ -4,7 +4,7 @@ import { fr } from "@codegouvfr/react-dsfr";
 const FALLBACK_IMAGE = "/images/bienvenue-illu/opsn-basic.svg";
 
 // Service IDs that have a dedicated illustration
-const EXISTING_ILLUSTRATION_IDS: number[] = [1, 2, 3, 4, 7, 9, 12, 13, 14, 49, 58, 99];
+const EXISTING_ILLUSTRATION_IDS: number[] = [1, 2, 3, 4, 7, 9, 12, 13, 14, 49, 58];
 type ServiceIllustrationProps = {
   selectedService: Service | undefined;
 };

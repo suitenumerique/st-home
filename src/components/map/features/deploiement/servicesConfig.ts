@@ -11,11 +11,15 @@ export type ServiceConfig = {
   shortname: string | null;
   order: number;
   anct_threshold_active: boolean;
+  // Any service whose `type` equals this value adopts this config and is treated
+  // as if it had this entry's `id` — used to collapse multi-instance types
+  // (e.g. ProConnect rows 58/59/60 all share id 58's config).
+  map_any_from_type_to_this_id?: string;
 };
 
 const servicesConfig: Record<string, ServiceConfig> = {
   "Accompagnement Numérique Sur Mesure": {
-    id:100,
+    id: 100,
     visible: { default: false, incub: true },
     socle: false,
     definition: "Collectivités accompagnées. Lancé en 2022",
@@ -203,6 +207,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
   },
   ProConnect: {
     id: 58,
+    map_any_from_type_to_this_id: "proconnect",
     visible: true,
     socle: true,
     definition: "Structures qui utilisent l'identification ProConnect",
@@ -257,5 +262,19 @@ const servicesConfig: Record<string, ServiceConfig> = {
     anct_threshold_active: false,
   },
 };
+
+// Returns the config matching a service: by `id`, or by `type` when a config
+// declares `map_any_from_type_to_this_id` for that type.
+export function getServiceConfig(service: {
+  id: number;
+  type?: string | null;
+}): ServiceConfig | undefined {
+  return Object.values(servicesConfig).find(
+    (cfg) =>
+      cfg.id === service.id ||
+      (cfg.map_any_from_type_to_this_id != null &&
+        cfg.map_any_from_type_to_this_id === service.type),
+  );
+}
 
 export default servicesConfig;

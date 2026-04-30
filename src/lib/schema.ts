@@ -221,7 +221,7 @@ export type Service = InferSelectModel<typeof services>;
 
 export type OperatorWithRole = Pick<
   Operator,
-  "id" | "name" | "shortname" | "name_with_article" | "type" | "website" | "status"
+  "id" | "name" | "shortname" | "name_with_article" | "type" | "website" | "status" | "departments"
 > & {
   isPerimetre: boolean;
   isAdherent: boolean;

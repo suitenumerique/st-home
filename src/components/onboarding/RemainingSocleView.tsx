@@ -1,27 +1,21 @@
-import type { Commune, OperatorWithRole, Service } from "@/lib/schema";
-import { capitalizeFirst } from "@/lib/string";
+import type { Commune, Service } from "@/lib/schema";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import { useEffect, useState } from "react";
 import ServiceIllustration, { preloadServiceIllustrations } from "./ServiceIllustration";
 import ServicePicker from "./ServicePicker";
 
-type SuiteServicesViewProps = {
-  operator: OperatorWithRole;
+type RemainingSocleViewProps = {
   services: Service[];
   commune: Commune;
   reversed?: boolean;
 };
 
-/**
- * View for displaying the services available through the Suite territoriale
- */
-export default function SuiteServicesView({
-  operator,
+export default function RemainingSocleView({
   services,
   commune,
   reversed = false,
-}: SuiteServicesViewProps) {
+}: RemainingSocleViewProps) {
   const [selectedService, setSelectedService] = useState<Service | undefined>(undefined);
 
   useEffect(() => {
@@ -41,12 +35,11 @@ export default function SuiteServicesView({
         <div className={fr.cx("fr-col-12", "fr-col-md-5")}>
           <div className="suite-services-section">
             <h2 className={fr.cx("fr-h2")}>
-              Accédez à l’écosystème applicatif avec {operator.name_with_article || operator.name}
+              Utilisez les autres services de la Suite territoriale
             </h2>
             <p>
-              <strong>{capitalizeFirst(operator.name_with_article || operator.name)}</strong>{" "}
-              intègre à son offre d’autres services complémentaires au socle. Vous y retrouvez
-              également les services de nos partenaires publics et privés.
+              Grâce à l’Incubateur des territoires, la collectivité peut également accéder à ces
+              services :
             </p>
             <ServicePicker
               services={services}

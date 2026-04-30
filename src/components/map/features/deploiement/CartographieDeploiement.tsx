@@ -10,7 +10,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import parentAreas from "../../../../../public/parent_areas.json";
 import { FeatureProperties, SelectedArea } from "../../types";
 import SidePanelContent from "./SidePanelContent";
-import servicesConfig, { ServiceConfig } from "./servicesConfig";
+import { getServiceConfig, ServiceConfig } from "./servicesConfig";
 import { StatRecord } from "./types";
 
 const REGION_CODES = [
@@ -47,7 +47,9 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [operators, setOperators] = useState<any[]>([]);
   const [selectedServiceFilter, setSelectedServiceFilter] = useState<number | null>(null);
-  const [allServicesList, setAllServicesList] = useState<{ id: number; name: string }[]>([]);
+  const [allServicesList, setAllServicesList] = useState<
+    { id: number; name: string; type?: string | null }[]
+  >([]);
 
   const [stats, setStats] = useState<StatRecord[]>([]);
   const [coordMap, setCoordMap] = useState<Record<string, { longitude: number; latitude: number }>>(
@@ -84,19 +86,19 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
     fetch("/api/deployment/services")
       .then((r) => r.json())
       .then((data) => {
-        const normalized: { id: number; name: string }[] = Array.isArray(data)
+        const normalized: { id: number; name: string; type?: string | null }[] = Array.isArray(data)
           ? data
           : Array.isArray(data?.data)
             ? data.data
             : [];
-        setAllServicesList(normalized.filter((s) => servicesConfig[s.name] !== undefined));
+        setAllServicesList(normalized.filter((s) => getServiceConfig(s) !== undefined));
       });
   }, []);
 
   const defaultServiceIds = useMemo<number[]>(() => {
     return allServicesList
       .filter((s) => {
-        const config: ServiceConfig | undefined = servicesConfig[s.name];
+        const config: ServiceConfig | undefined = getServiceConfig(s);
         if (!config) return true;
         if (typeof config.visible === "boolean") return config.visible;
         return isLSTMode ? config.visible.default : config.visible.incub;
@@ -111,11 +113,10 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
       .flatMap((op) => op.services || [])
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .filter((s: any, i: number, arr: any[]) => arr.findIndex((x) => x.id === s.id) === i);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return serviceIds.some((id) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const service = allServices.find((s: any) => s.id === id);
-      return service && servicesConfig[service.name]?.anct_threshold_active;
+      return service && getServiceConfig(service)?.anct_threshold_active;
     });
   }, [operators, mapState.filters.service_ids]);
 

@@ -1,4 +1,5 @@
 import type { Commune, OperatorWithRole, Service } from "@/lib/schema";
+import { capitalizeFirst } from "@/lib/string";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Button } from "@codegouvfr/react-dsfr/Button";
 import Link from "next/link";
@@ -42,7 +43,8 @@ export default function OPSNServicesView({
               {operator.name_with_article || operator.name}
             </h2>
             <p>
-              La structure de mutualisation accompagnera la collectivité dans la mise en œuvre du socle de la Suite territoriale.
+              <strong>{capitalizeFirst(operator.name_with_article || operator.name)}</strong> peut
+              accompagner la collectivité dans la mise en œuvre du socle de la Suite territoriale.
             </p>
             <ServicePicker
               services={services}

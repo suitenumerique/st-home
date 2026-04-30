@@ -1,10 +1,10 @@
+import { getServiceConfig } from "@/components/map/features/deploiement/servicesConfig";
 import {
   findAllServices,
   findOrganizationServicesBySiret,
   findOrganizationsWithOperators,
   findServicesByOperatorIds,
 } from "@/lib/db";
-import servicesConfig from "@/components/map/features/deploiement/servicesConfig";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Breadcrumb } from "@codegouvfr/react-dsfr/Breadcrumb";
 import { GetServerSideProps } from "next";
@@ -16,6 +16,7 @@ import ErrorView from "@/components/onboarding/ErrorView";
 import OPSNBasicView from "@/components/onboarding/OPSNBasicView";
 import OPSNServicesView from "@/components/onboarding/OPSNServicesView";
 import OrganisationPresenceView from "@/components/onboarding/OrganisationPresenceView";
+import RemainingSocleView from "@/components/onboarding/RemainingSocleView";
 import SuiteServicesBasicView from "@/components/onboarding/SuiteServicesBasicView";
 import SuiteServicesView from "@/components/onboarding/SuiteServicesView";
 import UsedServicesView from "@/components/onboarding/UsedServicesView";
@@ -56,8 +57,10 @@ interface PageProps {
   allServices: Service[];
   // Sorted list of perimetre operators with their services
   opsnOperators: OpsnOperator[];
-  // Services not covered by any OPSN with partenaire_avec_services status
+  // Non-socle ANCT services not covered by any OPSN with partenaire_avec_services status
   suiteServices: Service[];
+  // Visible socle services delivered by ANCT and not covered by any OPSN with services
+  remainingSocleServices: Service[];
   usedServices: Service[];
   // Whether any OPSN has partenaire_avec_services status
   hasOpsnWithServices: boolean;
@@ -70,6 +73,7 @@ export default function Bienvenue(props: PageProps) {
     // allServices is available in props for MutualisationView (currently commented out)
     opsnOperators = [],
     suiteServices = [],
+    remainingSocleServices = [],
     usedServices = [],
     hasOpsnWithServices,
   } = props;
@@ -148,6 +152,17 @@ export default function Bienvenue(props: PageProps) {
                   />
                 )}
               </div>
+
+              {/* Remaining socle services delivered by ANCT */}
+              {hasOpsnWithServices && remainingSocleServices.length > 0 && (
+                <div className={fr.cx("fr-mb-15w")}>
+                  <RemainingSocleView
+                    commune={commune as Commune}
+                    services={remainingSocleServices}
+                    reversed={blockIndex++ % 2 !== 0}
+                  />
+                </div>
+              )}
             </>
           );
         })()}
@@ -264,6 +279,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
     allServices: [],
     opsnOperators: [],
     suiteServices: [],
+    remainingSocleServices: [],
     usedServices: [],
     hasOpsnWithServices: false,
   };
@@ -287,10 +303,12 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   const HIDDEN_SERVICE_IDS = new Set([5, 6, 10, 11, 47, 48, 100]);
 
   const allServices = (await findAllServices()).filter((s) => !HIDDEN_SERVICE_IDS.has(s.id));
-  
-  const visibleSocleServiceIds = Object.values(servicesConfig).filter((cfg) => cfg.visible === true && cfg.socle).map((cfg) => cfg.id);
-  const socleServices = allServices.filter((s) => visibleSocleServiceIds.includes(s.id));
-  
+
+  const isVisibleSocle = (s: Service) => {
+    const cfg = getServiceConfig(s);
+    return cfg?.visible === true && cfg?.socle === true;
+  };
+
   const organizationServices = await findOrganizationServicesBySiret(siret);
   const usedServiceIds = new Set(organizationServices.map((s) => s.id));
 
@@ -299,7 +317,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   const perimetreOperatorIds = perimetreOperators.map((op) => op.id);
   const operatorServicesResult = await findServicesByOperatorIds(perimetreOperatorIds);
 
-  // Build a map of operator ID → services
+  // Build a map of operator ID → services (already ordered by st_services_to_operators.position)
   const servicesByOperatorId = new Map<string, Service[]>();
   for (const row of operatorServicesResult) {
     const existing = servicesByOperatorId.get(row.operatorId) || [];
@@ -308,19 +326,24 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   }
 
   // Enrich operators with their services and sort:
-  // 1. partenaire_avec_services first (then by service count desc)
+  // 1. departments count asc to put dept operators before regional operators
+  // 1. partenaire_avec_services first
   // 2. Other OPSNs
   // 3. Ties broken by ID asc
   const opsnOperators: OpsnOperator[] = perimetreOperators
     .map((op) => ({
       ...op,
-      services: socleServices,
+      services: (servicesByOperatorId.get(op.id) || []).filter(
+        (s) => isVisibleSocle(s) && !HIDDEN_SERVICE_IDS.has(s.id),
+      ),
     }))
     .sort((a, b) => {
+      const aDeptCount = a.departments?.length ?? 0;
+      const bDeptCount = b.departments?.length ?? 0;
+      if (aDeptCount !== bDeptCount) return aDeptCount - bDeptCount;
       const aHasServices = a.status === "partenaire_avec_services" ? 1 : 0;
       const bHasServices = b.status === "partenaire_avec_services" ? 1 : 0;
       if (aHasServices !== bHasServices) return bHasServices - aHasServices;
-      if (a.services.length !== b.services.length) return b.services.length - a.services.length;
       return a.id.localeCompare(b.id);
     });
 
@@ -336,12 +359,17 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
     }
   }
 
-  // Suite services = ANCT operator's services minus OPSN services minus already used
+  // Suite services = ANCT operator's services minus OPSN services minus socle services
   const ANCT_OPERATOR_ID = "9f5624fc-ef99-4d10-ae3f-403a81eb16ef";
   const anctServicesResult = await findServicesByOperatorIds([ANCT_OPERATOR_ID]);
   const anctServiceIds = new Set(anctServicesResult.map((r) => r.service.id));
   const suiteServices = allServices.filter(
-    (s) => anctServiceIds.has(s.id) && !opsnServiceIds.has(s.id),
+    (s) => anctServiceIds.has(s.id) && !opsnServiceIds.has(s.id) && !isVisibleSocle(s),
+  );
+
+  // Visible socle services delivered by ANCT and not covered by any OPSN with services
+  const remainingSocleServices = allServices.filter(
+    (s) => anctServiceIds.has(s.id) && isVisibleSocle(s) && !opsnServiceIds.has(s.id),
   );
 
   const usedServices = allServices.filter((s) => usedServiceIds.has(s.id));
@@ -354,6 +382,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
       allServices: JSON.parse(JSON.stringify(allServices)),
       opsnOperators: JSON.parse(JSON.stringify(opsnOperators)),
       suiteServices: JSON.parse(JSON.stringify(suiteServices)),
+      remainingSocleServices: JSON.parse(JSON.stringify(remainingSocleServices)),
       usedServices: JSON.parse(JSON.stringify(usedServices)),
       hasOpsnWithServices,
     },

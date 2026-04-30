@@ -1,3 +1,5 @@
+export const capitalizeFirst = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+
 export function unaccent(text: string) {
   return text
     .normalize("NFD")

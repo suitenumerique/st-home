@@ -104,6 +104,7 @@ export async function findOrganizationsWithOperators(siret: string): Promise<Com
       type: operators.type,
       website: operators.website,
       status: operators.status,
+      departments: operators.departments,
       isPerimetre: organizationsToOperators.isPerimetre,
       isAdherent: organizationsToOperators.isAdherent,
     })
@@ -188,13 +189,6 @@ export async function findAllServices() {
       seenTypes.add(s.type);
     }
     return true;
-  });
-
-  // ProConnect always first
-  filtered.sort((a, b) => {
-    if (a.type === "proconnect" && b.type !== "proconnect") return -1;
-    if (a.type !== "proconnect" && b.type === "proconnect") return 1;
-    return 0;
   });
 
   return filtered;
