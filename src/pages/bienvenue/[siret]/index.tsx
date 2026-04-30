@@ -1,6 +1,7 @@
 import { getServiceConfig } from "@/components/map/features/deploiement/servicesConfig";
 import {
   findAllServices,
+  findOperatorById,
   findOrganizationServicesBySiret,
   findOrganizationsWithOperators,
   findServicesByOperatorIds,
@@ -13,69 +14,49 @@ import { NextSeo } from "next-seo";
 import Newsletter from "@/components/Newsletter";
 import DepartmentPresenceView from "@/components/onboarding/DepartmentPresenceView";
 import ErrorView from "@/components/onboarding/ErrorView";
+import OperatorServicesBlock, {
+  ANCT_OPERATOR_ID,
+} from "@/components/onboarding/OperatorServicesBlock";
 import OPSNBasicView from "@/components/onboarding/OPSNBasicView";
-import OPSNServicesView from "@/components/onboarding/OPSNServicesView";
 import OrganisationPresenceView from "@/components/onboarding/OrganisationPresenceView";
-import RemainingSocleView from "@/components/onboarding/RemainingSocleView";
-import SuiteServicesBasicView from "@/components/onboarding/SuiteServicesBasicView";
-import SuiteServicesView from "@/components/onboarding/SuiteServicesView";
 import UsedServicesView from "@/components/onboarding/UsedServicesView";
 import TrialContact from "@/components/TrialContact";
 
-import { type Commune, type OperatorWithRole, type Service } from "@/lib/schema";
+import { type Commune, type Operator, type OperatorWithRole, type Service } from "@/lib/schema";
 
 /**
- * OPSN display cases:
- *
- * 1. No OPSN (no perimetre operators):
- *    → SuiteServicesBasicView only
- *
- * 2. OPSN without status "partenaire_avec_services":
- *    → OPSNBasicView (TODO) + SuiteServicesBasicView
- *
- * 3. OPSN with status "partenaire_avec_services":
- *    → OPSNServicesView (with operator's services)
- *    → SuiteServicesView (all services minus OPSN services)
- *
- * Multiple OPSNs are sorted: partenaire_avec_services first (then by service
- * count desc), then other OPSNs. Ties broken by operator ID asc.
- *
- * After the OPSN/Suite blocks, all cases show:
- *    → UsedServicesView (if any)
- *    → MutualisationView
- *    → DepartmentPresenceView
+ * One block per (operator, isSocle) pair. Each operator with services contributes
+ * up to two blocks (socle, non-socle). Services from one operator are never mixed
+ * with services from another. ANCT's blocks contain only ANCT services that are
+ * not already shown in a perimetre operator's block.
  */
 
-// An OPSN operator enriched with its associated services
-interface OpsnOperator extends OperatorWithRole {
-  services: Service[];
-}
+type OpServices = {
+  op: OperatorWithRole | Pick<Operator, "id" | "name" | "name_with_article" | "website">;
+  socle: Service[];
+  nonSocle: Service[];
+};
 
 interface PageProps {
   commune?: Commune;
   error?: string;
-  allServices: Service[];
-  // Sorted list of perimetre operators with their services
-  opsnOperators: OpsnOperator[];
-  // Non-socle ANCT services not covered by any OPSN with partenaire_avec_services status
-  suiteServices: Service[];
-  // Visible socle services delivered by ANCT and not covered by any OPSN with services
-  remainingSocleServices: Service[];
+  // Perimetre operators with status partenaire_avec_services, with their socle/non-socle services
+  opsnBlocks: OpServices[];
+  // Perimetre operators without partenaire_avec_services status (rendered with OPSNBasicView)
+  opsnWithoutServices: OperatorWithRole[];
+  // ANCT block (services not already shown in any opsnBlocks)
+  anctBlock: OpServices | null;
   usedServices: Service[];
-  // Whether any OPSN has partenaire_avec_services status
-  hasOpsnWithServices: boolean;
 }
 
 export default function Bienvenue(props: PageProps) {
   const {
     commune,
     error,
-    // allServices is available in props for MutualisationView (currently commented out)
-    opsnOperators = [],
-    suiteServices = [],
-    remainingSocleServices = [],
+    opsnBlocks = [],
+    opsnWithoutServices = [],
+    anctBlock,
     usedServices = [],
-    hasOpsnWithServices,
   } = props;
 
   const GetMainContent = () => {
@@ -83,11 +64,6 @@ export default function Bienvenue(props: PageProps) {
       return <ErrorView error={error} />;
     }
 
-    // Split operators by status
-    const opsnWithServices = opsnOperators.filter((op) => op.status === "partenaire_avec_services");
-    const opsnWithoutServices = opsnOperators.filter(
-      (op) => op.status == "intention" || op.status == "partenaire",
-    );
     return (
       <div className={fr.cx("fr-mb-4w")}>
         <h1
@@ -107,25 +83,43 @@ export default function Bienvenue(props: PageProps) {
           <OrganisationPresenceView organisation={commune as Commune} />
         </div>
 
-        {/* Alternating two-column blocks: track a counter for left/right swap */}
         {(() => {
           let blockIndex = 0;
-
-          return (
-            <>
-              {/* Case 3: OPSNs with partenaire_avec_services → OPSNServicesView per operator */}
-              {opsnWithServices.map((op) => (
-                <div key={op.id} className={fr.cx("fr-mb-15w")}>
-                  <OPSNServicesView
-                    operator={op}
-                    services={op.services}
+          const renderBlock = (block: OpServices) => {
+            const out: React.ReactNode[] = [];
+            if (block.socle.length > 0) {
+              out.push(
+                <div key={`${block.op.id}-socle`} className={fr.cx("fr-mb-15w")}>
+                  <OperatorServicesBlock
+                    op={block.op}
+                    services={block.socle}
+                    isSocle
                     commune={commune as Commune}
                     reversed={blockIndex++ % 2 !== 0}
                   />
-                </div>
-              ))}
+                </div>,
+              );
+            }
+            if (block.nonSocle.length > 0) {
+              out.push(
+                <div key={`${block.op.id}-nonsocle`} className={fr.cx("fr-mb-15w")}>
+                  <OperatorServicesBlock
+                    op={block.op}
+                    services={block.nonSocle}
+                    isSocle={false}
+                    commune={commune as Commune}
+                    reversed={blockIndex++ % 2 !== 0}
+                  />
+                </div>,
+              );
+            }
+            return out;
+          };
 
-              {/* Case 2: OPSNs without partenaire_avec_services → OPSNBasicView per operator */}
+          return (
+            <>
+              {opsnBlocks.map((b) => renderBlock(b))}
+
               {opsnWithoutServices.map((op) => (
                 <div key={op.id} className={fr.cx("fr-mb-15w")}>
                   <OPSNBasicView
@@ -136,33 +130,7 @@ export default function Bienvenue(props: PageProps) {
                 </div>
               ))}
 
-              {/* Suite services block */}
-              <div className={fr.cx("fr-mb-15w")}>
-                {hasOpsnWithServices ? (
-                  <SuiteServicesView
-                    operator={opsnWithServices[0]}
-                    commune={commune as Commune}
-                    services={suiteServices}
-                    reversed={blockIndex++ % 2 !== 0}
-                  />
-                ) : (
-                  <SuiteServicesBasicView
-                    commune={commune as Commune}
-                    reversed={blockIndex++ % 2 !== 0}
-                  />
-                )}
-              </div>
-
-              {/* Remaining socle services delivered by ANCT */}
-              {hasOpsnWithServices && remainingSocleServices.length > 0 && (
-                <div className={fr.cx("fr-mb-15w")}>
-                  <RemainingSocleView
-                    commune={commune as Commune}
-                    services={remainingSocleServices}
-                    reversed={blockIndex++ % 2 !== 0}
-                  />
-                </div>
-              )}
+              {anctBlock && renderBlock(anctBlock)}
             </>
           );
         })()}
@@ -172,26 +140,6 @@ export default function Bienvenue(props: PageProps) {
             <UsedServicesView services={usedServices} />
           </div>
         )}
-
-        {/*
-        <div className={fr.cx("fr-mb-15w")}>
-          <MutualisationView
-            services={
-              allServices.filter((s) => {
-                return ![
-                  "Aides-territoires",
-                  "Mon Espace Collectivité",
-                  "Administration +",
-                  "Bases Adresses Locales",
-                  "Nom de domaine",
-                ].includes(s.name);
-              })
-            }
-            organisation={commune as Commune}
-            reversed={blockIndex++ % 2 !== 0}
-          />
-        </div>
-        */}
 
         {commune.type === "commune" && (
           <div className={fr.cx("fr-mb-15w")}>
@@ -276,12 +224,10 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   const { siret } = context.query;
 
   const emptyProps: PageProps = {
-    allServices: [],
-    opsnOperators: [],
-    suiteServices: [],
-    remainingSocleServices: [],
+    opsnBlocks: [],
+    opsnWithoutServices: [],
+    anctBlock: null,
     usedServices: [],
-    hasOpsnWithServices: false,
   };
 
   if (!siret || typeof siret !== "string") {
@@ -309,15 +255,25 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
     return cfg?.visible === true && cfg?.socle === true;
   };
 
+  // Stable key across alias rows (e.g. all ProConnect rows share type "proconnect"
+  // and resolve to the same servicesConfig entry).
+  const serviceKey = (s: Service) => getServiceConfig(s)?.id ?? s.id;
+
+  // Pin ProConnect first; otherwise preserve input order (= seed position).
+  const proconnectFirst = (list: Service[]): Service[] => {
+    const pc = list.filter((s) => s.type === "proconnect");
+    const rest = list.filter((s) => s.type !== "proconnect");
+    return [...pc, ...rest];
+  };
+
   const organizationServices = await findOrganizationServicesBySiret(siret);
   const usedServiceIds = new Set(organizationServices.map((s) => s.id));
 
-  // Get perimetre operators and their services
+  // Perimetre operators (the ones rendered as OPSN blocks)
   const perimetreOperators = (commune.operators || []).filter((op) => op.isPerimetre);
   const perimetreOperatorIds = perimetreOperators.map((op) => op.id);
   const operatorServicesResult = await findServicesByOperatorIds(perimetreOperatorIds);
 
-  // Build a map of operator ID → services (already ordered by st_services_to_operators.position)
   const servicesByOperatorId = new Map<string, Service[]>();
   for (const row of operatorServicesResult) {
     const existing = servicesByOperatorId.get(row.operatorId) || [];
@@ -325,52 +281,54 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
     servicesByOperatorId.set(row.operatorId, existing);
   }
 
-  // Enrich operators with their services and sort:
-  // 1. departments count asc to put dept operators before regional operators
-  // 1. partenaire_avec_services first
-  // 2. Other OPSNs
-  // 3. Ties broken by ID asc
-  const opsnOperators: OpsnOperator[] = perimetreOperators
-    .map((op) => ({
-      ...op,
-      services: (servicesByOperatorId.get(op.id) || []).filter(
-        (s) => isVisibleSocle(s) && !HIDDEN_SERVICE_IDS.has(s.id),
-      ),
-    }))
-    .sort((a, b) => {
-      const aDeptCount = a.departments?.length ?? 0;
-      const bDeptCount = b.departments?.length ?? 0;
-      if (aDeptCount !== bDeptCount) return aDeptCount - bDeptCount;
-      const aHasServices = a.status === "partenaire_avec_services" ? 1 : 0;
-      const bHasServices = b.status === "partenaire_avec_services" ? 1 : 0;
-      if (aHasServices !== bHasServices) return bHasServices - aHasServices;
-      return a.id.localeCompare(b.id);
-    });
+  // Sort perimetre operators: department-scoped first, then partenaire_avec_services first,
+  // then by id. Matches the prior ordering.
+  const sortedPerimetre = [...perimetreOperators].sort((a, b) => {
+    const aDeptCount = a.departments?.length ?? 0;
+    const bDeptCount = b.departments?.length ?? 0;
+    if (aDeptCount !== bDeptCount) return aDeptCount - bDeptCount;
+    const aHasServices = a.status === "partenaire_avec_services" ? 1 : 0;
+    const bHasServices = b.status === "partenaire_avec_services" ? 1 : 0;
+    if (aHasServices !== bHasServices) return bHasServices - aHasServices;
+    return a.id.localeCompare(b.id);
+  });
 
-  const hasOpsnWithServices = opsnOperators.some((op) => op.status === "partenaire_avec_services");
-
-  // Collect all service IDs covered by partenaire_avec_services operators
-  const opsnServiceIds = new Set<number>();
-  for (const op of opsnOperators) {
-    if (op.status === "partenaire_avec_services") {
-      for (const s of op.services) {
-        opsnServiceIds.add(s.id);
-      }
-    }
+  // Build OPSN blocks (one per operator with status partenaire_avec_services).
+  // Within each block, services keep their st_services_to_operators.position order
+  // (seeded), with ProConnect pinned first.
+  const opsnBlocks: OpServices[] = [];
+  const shownKeys = new Set<number>();
+  for (const op of sortedPerimetre) {
+    if (op.status !== "partenaire_avec_services") continue;
+    const opServices = (servicesByOperatorId.get(op.id) || []).filter(
+      (s) => !HIDDEN_SERVICE_IDS.has(s.id),
+    );
+    const socle = proconnectFirst(opServices.filter(isVisibleSocle));
+    const nonSocle = proconnectFirst(opServices.filter((s) => !isVisibleSocle(s)));
+    if (socle.length === 0 && nonSocle.length === 0) continue;
+    for (const s of opServices) shownKeys.add(serviceKey(s));
+    opsnBlocks.push({ op, socle, nonSocle });
   }
 
-  // Suite services = ANCT operator's services minus OPSN services minus socle services
-  const ANCT_OPERATOR_ID = "9f5624fc-ef99-4d10-ae3f-403a81eb16ef";
-  const anctServicesResult = await findServicesByOperatorIds([ANCT_OPERATOR_ID]);
-  const anctServiceIds = new Set(anctServicesResult.map((r) => r.service.id));
-  const suiteServices = allServices.filter(
-    (s) => anctServiceIds.has(s.id) && !opsnServiceIds.has(s.id) && !isVisibleSocle(s),
+  const opsnWithoutServices = sortedPerimetre.filter(
+    (op) => op.status === "intention" || op.status === "partenaire",
   );
 
-  // Visible socle services delivered by ANCT and not covered by any OPSN with services
-  const remainingSocleServices = allServices.filter(
-    (s) => anctServiceIds.has(s.id) && isVisibleSocle(s) && !opsnServiceIds.has(s.id),
-  );
+  // ANCT block: ANCT's services that haven't already been shown by an OPSN block.
+  // Order comes from st_services_to_operators.position (seeded), with ProConnect first.
+  const anctOperator = await findOperatorById(ANCT_OPERATOR_ID);
+  let anctBlock: OpServices | null = null;
+  if (anctOperator) {
+    const anctServicesResult = await findServicesByOperatorIds([ANCT_OPERATOR_ID]);
+    const anctServices = anctServicesResult
+      .map((r) => r.service)
+      .filter((s) => !HIDDEN_SERVICE_IDS.has(s.id) && !shownKeys.has(serviceKey(s)));
+    const socle = proconnectFirst(anctServices.filter(isVisibleSocle));
+    const nonSocle = proconnectFirst(anctServices.filter((s) => !isVisibleSocle(s)));
+    if (socle.length > 0 || nonSocle.length > 0) {
+      anctBlock = { op: anctOperator, socle, nonSocle };
+    }
+  }
 
   const usedServices = allServices.filter((s) => usedServiceIds.has(s.id));
 
@@ -379,12 +337,10 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   return {
     props: {
       commune: communeData,
-      allServices: JSON.parse(JSON.stringify(allServices)),
-      opsnOperators: JSON.parse(JSON.stringify(opsnOperators)),
-      suiteServices: JSON.parse(JSON.stringify(suiteServices)),
-      remainingSocleServices: JSON.parse(JSON.stringify(remainingSocleServices)),
+      opsnBlocks: JSON.parse(JSON.stringify(opsnBlocks)),
+      opsnWithoutServices: JSON.parse(JSON.stringify(opsnWithoutServices)),
+      anctBlock: JSON.parse(JSON.stringify(anctBlock)),
       usedServices: JSON.parse(JSON.stringify(usedServices)),
-      hasOpsnWithServices,
     },
   };
 };
