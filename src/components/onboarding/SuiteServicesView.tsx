@@ -61,7 +61,7 @@ export default function SuiteServicesView({
                   href: `/bienvenue/${commune.siret}/contact`,
                 }}
               >
-                Commencer
+                Contacter
               </Button>
             </div>
           </div>
