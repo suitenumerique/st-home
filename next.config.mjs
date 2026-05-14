@@ -21,7 +21,12 @@ const moduleExports = {
   reactStrictMode: process.env.NODE_ENV !== "production",
 
   images: {
-    remotePatterns: process.env.DOCS_CMS_URL ? [new URL(process.env.DOCS_CMS_URL + "/**")] : [],
+    remotePatterns: [
+      { protocol: "https", hostname: "**.gouv.fr", pathname: "/**" },
+      ...(process.env.DOCS_CMS_URL
+        ? [new URL(process.env.DOCS_CMS_URL.replace(/\/+$/, "") + "/**")]
+        : []),
+    ],
   },
 
   webpack: (config) => {

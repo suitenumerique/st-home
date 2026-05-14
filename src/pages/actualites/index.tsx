@@ -71,7 +71,10 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
 
   try {
     const { getDocumentChildren } = await import("@/lib/docs2dsfr/server");
-    const posts = await getDocumentChildren(parentId, forceRefresh);
+    const allPosts = await getDocumentChildren(parentId, forceRefresh);
+    const posts = allPosts.filter(
+      (post) => post.document?.frontmatter.date && post.document?.frontmatter.path,
+    );
     posts.sort(
       (a, b) =>
         new Date(b.document?.frontmatter.date || "").getTime() -
@@ -79,9 +82,9 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
     );
     posts.forEach((post) => {
       post.path =
-        post.document?.frontmatter.date.substring(0, 10).replace(/\//g, "") +
+        post.document!.frontmatter.date.substring(0, 10).replace(/\//g, "") +
         "-" +
-        post.document?.frontmatter.path;
+        post.document!.frontmatter.path;
     });
 
     return {

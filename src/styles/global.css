@@ -756,3 +756,27 @@ path.leaflet-interactive:focus {
     }
   }
 }
+
+/* Article body (rendered from Docs CMS) */
+article li:has(> details) {
+  list-style: none;
+}
+
+article li > p,
+article summary > p,
+article p.bn-inline-content {
+  margin: 0;
+}
+
+article summary > p {
+  display: inline;
+}
+
+article blockquote {
+  margin-left: 0;
+  padding-left: 1rem;
+  border-left: 2px solid var(--border-default-grey);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--text-mention-grey);
+}

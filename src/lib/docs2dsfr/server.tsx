@@ -98,7 +98,7 @@ export async function fetchDocumentContent(
   docId: string,
   forceRefresh: boolean = false,
 ): Promise<DocsContentResponse> {
-  const url = getDocsApiUrl(`/documents/${docId}/content/?content_format=html`);
+  const url = getDocsApiUrl(`/documents/${docId}/formatted-content/?content_format=html`);
 
   const data = await cachedFetch(
     url,
@@ -197,12 +197,18 @@ export async function getDocument(
   if (!document.frontmatter.image) {
     const image = document.content.match(/^<img\s+[^>]*src="([^"]+)"/);
     if (image) {
-      document.frontmatter.image = getImageProps({
-        src: image[1],
-        alt: "",
-        width: 800,
-        height: 600,
-      }).props.src;
+      try {
+        document.frontmatter.image = getImageProps({
+          src: image[1],
+          alt: "",
+          width: 800,
+          height: 600,
+        }).props.src;
+      } catch (error) {
+        console.warn(
+          `Skipping unoptimized image for doc ${docId}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
     }
   }
 

@@ -85,10 +85,12 @@ export const getServerSideProps: GetServerSideProps = async ({ params, query }) 
 
     let document;
     for (const child of children) {
-      child.path =
-        child.document?.frontmatter.date.substring(0, 10).replace(/\//g, "") +
-        "-" +
-        child.document?.frontmatter.path;
+      if (child.document?.frontmatter.date && child.document?.frontmatter.path) {
+        child.path =
+          child.document.frontmatter.date.substring(0, 10).replace(/\//g, "") +
+          "-" +
+          child.document.frontmatter.path;
+      }
 
       if (child.path == docId || child.id == docId) {
         document = child.document;

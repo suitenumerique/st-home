@@ -1,6 +1,5 @@
 import CommuneSearch from "@/components/CommuneSearch";
 import FaqList from "@/components/FaqList";
-import { Quote } from "@codegouvfr/react-dsfr/Quote";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import React, { ReactNode } from "react";
@@ -11,9 +10,9 @@ function CommuneSearchDoc() {
 }
 
 export const htmlComponents = {
-  blockquote: (props: React.BlockquoteHTMLAttributes<HTMLQuoteElement>) => {
-    return <Quote text={props.children} size="large" />;
-  },
+  details: ({ open: _open, ...rest }: React.DetailsHTMLAttributes<HTMLDetailsElement>) => (
+    <details {...rest} />
+  ),
   img: (props: React.ImgHTMLAttributes<HTMLImageElement> & { "data-text-alignment"?: string }) => {
     const { src, alt, width, height } = props;
 
