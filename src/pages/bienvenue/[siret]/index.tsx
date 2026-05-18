@@ -90,6 +90,15 @@ export default function Bienvenue(props: PageProps) {
 
           const descriptors: BlockDescriptor[] = [];
           const pushOperator = (block: OpServices) => {
+            if (block.socle.length === 0 && block.nonSocle.length === 0) {
+              descriptors.push({
+                kind: "operator",
+                key: `${block.op.id}-fallback`,
+                block,
+                isSocle: false,
+              });
+              return;
+            }
             if (block.socle.length > 0) {
               descriptors.push({
                 kind: "operator",
@@ -323,19 +332,26 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
     (op) => op.status === "intention" || op.status === "partenaire",
   );
 
-  // ANCT block: ANCT's services that haven't already been shown by an OPSN block.
-  // Order comes from st_services_to_operators.position (seeded), with ProConnect first.
+  // ANCT block:
+  // - If the commune has perimetre OPSN(s), show ANCT's remaining services (those
+  //   not already covered by an OPSN block).
+  // - Otherwise, show ANCT as a fallback marketing block with no service list.
   const anctOperator = await findOperatorById(ANCT_OPERATOR_ID);
+  const hasPerimetreOpsn = opsnBlocks.length > 0 || opsnWithoutServices.length > 0;
   let anctBlock: OpServices | null = null;
   if (anctOperator) {
-    const anctServicesResult = await findServicesByOperatorIds([ANCT_OPERATOR_ID]);
-    const anctServices = anctServicesResult
-      .map((r) => r.service)
-      .filter((s) => !HIDDEN_SERVICE_IDS.has(s.id) && !shownKeys.has(serviceKey(s)));
-    const socle = proconnectFirst(anctServices.filter(isVisibleSocle));
-    const nonSocle = proconnectFirst(anctServices.filter((s) => !isVisibleSocle(s)));
-    if (socle.length > 0 || nonSocle.length > 0) {
-      anctBlock = { op: anctOperator, socle, nonSocle };
+    if (!hasPerimetreOpsn) {
+      anctBlock = { op: anctOperator, socle: [], nonSocle: [] };
+    } else {
+      const anctServicesResult = await findServicesByOperatorIds([ANCT_OPERATOR_ID]);
+      const anctServices = anctServicesResult
+        .map((r) => r.service)
+        .filter((s) => !HIDDEN_SERVICE_IDS.has(s.id) && !shownKeys.has(serviceKey(s)));
+      const socle = proconnectFirst(anctServices.filter(isVisibleSocle));
+      const nonSocle = proconnectFirst(anctServices.filter((s) => !isVisibleSocle(s)));
+      if (socle.length > 0 || nonSocle.length > 0) {
+        anctBlock = { op: anctOperator, socle, nonSocle };
+      }
     }
   }
 

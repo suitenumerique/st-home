@@ -2,6 +2,7 @@ import type { Commune, Operator, Service } from "@/lib/schema";
 import { capitalizeFirst } from "@/lib/string";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Button } from "@codegouvfr/react-dsfr/Button";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import ServiceIllustration, { preloadServiceIllustrations } from "./ServiceIllustration";
@@ -38,13 +39,21 @@ export default function OperatorServicesBlock({
   }, [firstServiceId, services]);
 
   const isAnct = op.id === ANCT_OPERATOR_ID;
+  const hasServices = services.length > 0;
   const opName = op.name_with_article || op.name;
 
-  const heading = isSocle
-    ? `Obtenez le socle de la Suite territoriale avec ${opName}`
-    : `Accédez à l’écosystème applicatif avec ${opName}`;
+  const heading = !hasServices
+    ? `Découvrez les services de la Suite territoriale avec ${opName}`
+    : isSocle
+      ? `Obtenez le socle de la Suite territoriale avec ${opName}`
+      : `Accédez à l’écosystème applicatif avec ${opName}`;
 
-  const description = isSocle ? (
+  const description = !hasServices ? (
+    <>
+      <strong>{capitalizeFirst(opName)}</strong> a vocation à accompagner les collectivités dans la
+      mise en œuvre de la Suite territoriale et de son écosystème applicatif.
+    </>
+  ) : isSocle ? (
     <>
       <strong>{capitalizeFirst(opName)}</strong> peut accompagner la collectivité dans la mise en
       œuvre du socle de la Suite territoriale.
@@ -74,11 +83,13 @@ export default function OperatorServicesBlock({
           <div className="suite-services-section">
             <h2 className={fr.cx("fr-h2")}>{heading}</h2>
             <p>{description}</p>
-            <ServicePicker
-              services={services}
-              selectedService={selectedService}
-              onSelect={setSelectedService}
-            />
+            {hasServices && (
+              <ServicePicker
+                services={services}
+                selectedService={selectedService}
+                onSelect={setSelectedService}
+              />
+            )}
             <div
               className="fr-mb-1w"
               style={{ display: "flex", flexDirection: "row", gap: "1rem" }}
@@ -98,6 +109,11 @@ export default function OperatorServicesBlock({
                   Voir l’offre de service
                 </Button>
               )}
+              {!hasServices && (
+                <Button priority="secondary" linkProps={{ href: "/services" }}>
+                  Voir les services
+                </Button>
+              )}
             </div>
             {!isAnct && (
               <p className={fr.cx("fr-text--xs")} style={{ color: "var(--text-mention-grey)" }}>
@@ -107,7 +123,22 @@ export default function OperatorServicesBlock({
             )}
           </div>
         </div>
-        <ServiceIllustration selectedService={selectedService} />
+        {hasServices ? (
+          <ServiceIllustration selectedService={selectedService} />
+        ) : (
+          <div
+            className={fr.cx("fr-col-12", "fr-col-md-6")}
+            style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+          >
+            <Image
+              src="/images/bienvenue-illu/suite-ecosystem.svg"
+              width={670}
+              height={400}
+              style={{ width: "100%", height: "auto" }}
+              alt="Illustration de la Suite territoriale"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
