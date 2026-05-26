@@ -398,7 +398,23 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
     })();
 
     const epciGeoJSON = (mapState.selectedAreas.department as SelectedArea)?.geoJSONEPCI;
-    const epciOutlineLayer = epciGeoJSON
+    const selectedEpciCode = (mapState.selectedAreas.epci as SelectedArea)?.insee_geo;
+    const epciLayerData = (() => {
+      if (!epciGeoJSON) return null;
+      if (mapState.currentLevel === "epci" || mapState.currentLevel === "city") {
+        if (!selectedEpciCode) return null;
+        const fc = epciGeoJSON as unknown as GeoJSON.FeatureCollection;
+        return {
+          type: "FeatureCollection" as const,
+          features:
+            fc.features?.filter(
+              (f) => (f.properties as { INSEE_GEO: string })?.INSEE_GEO === selectedEpciCode,
+            ) ?? [],
+        };
+      }
+      return epciGeoJSON;
+    })();
+    const epciOutlineLayer = epciLayerData
       ? [
           {
             id: "epci-layer",
@@ -406,7 +422,7 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
               id: "epci-outlines",
               type: "geojson" as const,
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              data: epciGeoJSON as any,
+              data: epciLayerData as any,
             },
             layers: [
               {
