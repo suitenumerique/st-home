@@ -371,8 +371,6 @@ export const useMapNavigation = (
 
       if (departmentView) {
         newMapState.departmentView = departmentView;
-      } else if (level === "city" && source === "quickNav") {
-        newMapState.departmentView = "city";
       }
 
       if (regionView) {

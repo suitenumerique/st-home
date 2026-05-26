@@ -405,10 +405,8 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
             source: {
               id: "epci-outlines",
               type: "geojson" as const,
-              data: {
-                type: "FeatureCollection" as const,
-                features: epciGeoJSON as GeoJSON.Feature[],
-              },
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              data: epciGeoJSON as any,
             },
             layers: [
               {
