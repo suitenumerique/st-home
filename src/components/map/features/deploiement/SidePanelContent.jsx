@@ -270,7 +270,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
           </button>
           {openDropdown === 'structure' && (
             <ul className={styles.filterDropdownMenu}>
-              {[['all', 'Toutes structures'], ['commune', 'Communes'], ['epci', 'Intercommunalités'], ['department', 'Départements'], ['region', 'Région']].map(([val, label], index) => (
+              {[['all', 'Toutes structures'], ['commune', 'Communes'], ['epci', 'Intercommunalités'], ['department', 'Départements'], ['region', 'Régions']].map(([val, label], index) => (
                 <li
                   key={val}
                   className={`${styles.filterDropdownOption} ${index === 0 ? styles.filterDropdownOptionFirst : ''}`}
@@ -322,8 +322,8 @@ const serviceDetails = (service, stats, compact = false) => {
         <div className={styles.serviceDetailsGrid}>
           <span>Communes : <strong>{formatNumber(communes)}</strong></span>
           {showEpci && <span>EPCI : <strong>{formatNumber(epci)}</strong></span>}
-          {showDepartement && <span>Départements : <strong>{formatNumber(departements)}</strong></span>}
-          {showRegion && <span>Régions : <strong>{formatNumber(regions)}</strong></span>}
+          {showDepartement && departements > 0 && <span>Départements : <strong>{formatNumber(departements)}</strong></span>}
+          {showRegion && regions > 0 && <span>Régions : <strong>{formatNumber(regions)}</strong></span>}
         </div>
       </div>
     );
