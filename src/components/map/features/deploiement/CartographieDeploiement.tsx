@@ -239,6 +239,7 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
         if (level === "city") {
           const city = stats.find((s: StatRecord) => s.id === siret);
           if (!city) return { n_cities: 1, score: 0 };
+          if (!applyPopulationThreshold(city)) return { n_cities: 1, score: 0 };
           const hasService = serviceIds.length
             ? city.all_services?.some((s: string) => serviceIds.includes(Number(s)))
             : (city.all_services?.length ?? 0) > 0;
