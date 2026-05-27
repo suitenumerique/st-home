@@ -458,7 +458,7 @@ export const InteractiveMap = ({
     type: "line",
     filter: ["==", ["get", "INSEE_GEO"], mapState.selectedAreas.city?.insee_geo],
     paint: {
-      "line-color": ["get", "color_darker"],
+      "line-color": "#000091",
       "line-opacity": 1,
       "line-width": 2.5,
     },

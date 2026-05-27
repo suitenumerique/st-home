@@ -239,6 +239,7 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
         if (level === "city") {
           const city = stats.find((s: StatRecord) => s.id === siret);
           if (!city) return { n_cities: 1, score: 0 };
+          if (!applyPopulationThreshold(city)) return { n_cities: 1, score: 0 };
           const hasService = serviceIds.length
             ? city.all_services?.some((s: string) => serviceIds.includes(Number(s)))
             : (city.all_services?.length ?? 0) > 0;
@@ -398,17 +399,31 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
     })();
 
     const epciGeoJSON = (mapState.selectedAreas.department as SelectedArea)?.geoJSONEPCI;
-    const epciOutlineLayer = epciGeoJSON
+    const selectedEpciCode = (mapState.selectedAreas.epci as SelectedArea)?.insee_geo;
+    const epciLayerData = (() => {
+      if (!epciGeoJSON) return null;
+      if (mapState.currentLevel === "epci" || mapState.currentLevel === "city") {
+        if (!selectedEpciCode) return null;
+        const fc = epciGeoJSON as unknown as GeoJSON.FeatureCollection;
+        return {
+          type: "FeatureCollection" as const,
+          features:
+            fc.features?.filter(
+              (f) => (f.properties as { INSEE_GEO: string })?.INSEE_GEO === selectedEpciCode,
+            ) ?? [],
+        };
+      }
+      return epciGeoJSON;
+    })();
+    const epciOutlineLayer = epciLayerData
       ? [
           {
             id: "epci-layer",
             source: {
               id: "epci-outlines",
               type: "geojson" as const,
-              data: {
-                type: "FeatureCollection" as const,
-                features: epciGeoJSON as GeoJSON.Feature[],
-              },
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              data: epciLayerData as any,
             },
             layers: [
               {
