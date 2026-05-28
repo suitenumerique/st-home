@@ -186,7 +186,8 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
         // A record qualifies if it has a non-threshold service, OR a threshold service AND passes population check.
         const statMatchesServices = (stat: StatRecord) => {
           const statServices = stat.all_services?.map(Number) ?? [];
-          if (!serviceIds.length) return statServices.length > 0 && (!anctThreshold || passesPopulationCheck(stat));
+          if (!serviceIds.length)
+            return statServices.length > 0 && (!anctThreshold || passesPopulationCheck(stat));
           return statServices.some((id) => {
             if (!serviceIds.includes(id)) return false;
             return thresholdServiceIds.has(id) ? passesPopulationCheck(stat) : true;
@@ -237,26 +238,27 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
             .filter(statMatchesServices);
           const total = communesSirensInEpci.size + epciInEpci.length;
 
-
-          
           return { n_cities: total, score: total > 0 ? 1 : 0 };
         }
 
         if (level === "city") {
+          if (orgType === "epci") return { n_cities: 1, score: 0 };
           // Match by SIREN (first 9 digits) so any establishment of the same commune is found,
           // even when the GeoJSON mairie SIRET differs from the subscriber SIRET in the DB.
           const siren = siret.slice(0, 9);
           const cityRecords = stats.filter((s: StatRecord) => s.id.slice(0, 9) === siren);
           if (cityRecords.length === 0) return { n_cities: 1, score: 0 };
           // Use the commune-type record for population threshold (ignores CCAS pop=null records).
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const thresholdRecord = cityRecords.find((s) => (s as any).type === "commune") ?? cityRecords[0];
+          const thresholdRecord =
+            cityRecords.find((s) => (s as StatRecord & { type: string }).type === "commune") ??
+            cityRecords[0];
           const cityPassesPopulation = passesPopulationCheck(thresholdRecord);
           // The commune qualifies if any SIRET record has a non-threshold service,
           // or a threshold service and the city passes the population check.
           const hasService = cityRecords.some((record) => {
             const statServices = record.all_services?.map(Number) ?? [];
-            if (!serviceIds.length) return statServices.length > 0 && (!anctThreshold || cityPassesPopulation);
+            if (!serviceIds.length)
+              return statServices.length > 0 && (!anctThreshold || cityPassesPopulation);
             return statServices.some((id) => {
               if (!serviceIds.includes(id)) return false;
               return thresholdServiceIds.has(id) ? cityPassesPopulation : true;
@@ -302,7 +304,14 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
         return { n_cities: 0, score: null };
       }
     },
-    [stats, mapState.filters, mapState.selectedAreas, thresholdServiceIds, anctThreshold, defaultServiceIds],
+    [
+      stats,
+      mapState.filters,
+      mapState.selectedAreas,
+      thresholdServiceIds,
+      anctThreshold,
+      defaultServiceIds,
+    ],
   );
 
   useEffect(() => {
@@ -314,7 +323,8 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
     const filterByServiceIds = (list: StatRecord[]) =>
       list.filter((stat: StatRecord) => {
         const statServices = stat.all_services?.map(Number) ?? [];
-        if (!effectiveIds.length) return statServices.length > 0 && (!anctThreshold || passesPopulationCheckStat(stat));
+        if (!effectiveIds.length)
+          return statServices.length > 0 && (!anctThreshold || passesPopulationCheckStat(stat));
         return statServices.some((id) => {
           if (!effectiveIds.includes(id)) return false;
           return thresholdServiceIds.has(id) ? passesPopulationCheckStat(stat) : true;
@@ -336,7 +346,9 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
 
     const orgTypeFilter = mapState.filters.org_type as string | null;
 
-    const communeStats = stats.filter((s: StatRecord) => (s as unknown as { type: string }).type === "commune");
+    const communeStats = stats.filter(
+      (s: StatRecord) => (s as unknown as { type: string }).type === "commune",
+    );
     const cityPointsGeoJSON: GeoJSON.FeatureCollection = {
       type: "FeatureCollection",
       features:
@@ -851,7 +863,7 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
     }
 
     return layers;
-  }, [activeTab, allDeptsGeoJSON, operatorsForMap, filteredOperators, mapState, coordMap]);
+  }, [activeTab, allDeptsGeoJSON, operatorsForMap, mapState, coordMap]);
 
   return stats ? (
     <MapLayout
