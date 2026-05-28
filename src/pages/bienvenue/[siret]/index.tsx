@@ -277,6 +277,17 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   // and resolve to the same servicesConfig entry).
   const serviceKey = (s: Service) => getServiceConfig(s)?.id ?? s.id;
 
+  // Collapse alias rows (e.g. multiple ProConnect entries) to a single service per key.
+  const dedupeByKey = (list: Service[]): Service[] => {
+    const seen = new Set<number>();
+    return list.filter((s) => {
+      const k = serviceKey(s);
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  };
+
   // Pin ProConnect first; otherwise preserve input order (= seed position).
   const proconnectFirst = (list: Service[]): Service[] => {
     const pc = list.filter((s) => s.type === "proconnect");
@@ -318,8 +329,8 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   const shownKeys = new Set<number>();
   for (const op of sortedPerimetre) {
     if (op.status !== "partenaire_avec_services") continue;
-    const opServices = (servicesByOperatorId.get(op.id) || []).filter(
-      (s) => !HIDDEN_SERVICE_IDS.has(s.id),
+    const opServices = dedupeByKey(
+      (servicesByOperatorId.get(op.id) || []).filter((s) => !HIDDEN_SERVICE_IDS.has(s.id)),
     );
     const socle = proconnectFirst(opServices.filter(isVisibleSocle));
     const nonSocle = proconnectFirst(opServices.filter((s) => !isVisibleSocle(s)));
@@ -344,9 +355,11 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
       anctBlock = { op: anctOperator, socle: [], nonSocle: [] };
     } else {
       const anctServicesResult = await findServicesByOperatorIds([ANCT_OPERATOR_ID]);
-      const anctServices = anctServicesResult
-        .map((r) => r.service)
-        .filter((s) => !HIDDEN_SERVICE_IDS.has(s.id) && !shownKeys.has(serviceKey(s)));
+      const anctServices = dedupeByKey(
+        anctServicesResult
+          .map((r) => r.service)
+          .filter((s) => !HIDDEN_SERVICE_IDS.has(s.id) && !shownKeys.has(serviceKey(s))),
+      );
       const socle = proconnectFirst(anctServices.filter(isVisibleSocle));
       const nonSocle = proconnectFirst(anctServices.filter((s) => !isVisibleSocle(s)));
       if (socle.length > 0 || nonSocle.length > 0) {
