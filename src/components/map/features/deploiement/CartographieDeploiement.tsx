@@ -10,8 +10,19 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import parentAreas from "../../../../../public/parent_areas.json";
 import { FeatureProperties, SelectedArea } from "../../types";
 import SidePanelContent from "./SidePanelContent";
-import { getServiceConfig, ServiceConfig } from "./servicesConfig";
+import servicesConfig, { getServiceConfig, ServiceConfig } from "./servicesConfig";
 import { StatRecord } from "./types";
+
+const passesPopulationCheckStat = (stat: StatRecord): boolean => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pop = (stat as any).population as number | null;
+  if (pop == null) return true;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const type = (stat as any).type as string;
+  if (type === "commune") return pop < 3500;
+  if (type === "epci") return pop < 15000;
+  return true;
+};
 
 const REGION_CODES = [
   "01",
@@ -106,19 +117,18 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
       .map((s) => s.id);
   }, [allServicesList, isLSTMode]);
 
-  const anctThreshold = useMemo(() => {
-    const serviceIds = mapState.filters.service_ids as number[] | null;
-    if (!serviceIds?.length || operators.length === 0) return false;
-    const allServices = operators
-      .flatMap((op) => op.services || [])
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .filter((s: any, i: number, arr: any[]) => arr.findIndex((x) => x.id === s.id) === i);
-    return serviceIds.some((id) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const service = allServices.find((s: any) => s.id === id);
-      return service && getServiceConfig(service)?.anct_threshold_active;
-    });
-  }, [operators, mapState.filters.service_ids]);
+  const thresholdServiceIds = useMemo(() => {
+    const explicitIds = mapState.filters.service_ids as number[] | null;
+    const effectiveIds = explicitIds?.length ? explicitIds : defaultServiceIds;
+    if (!effectiveIds.length) return new Set<number>();
+    return new Set<number>(
+      effectiveIds.filter((id) =>
+        Object.values(servicesConfig).some((cfg) => cfg.id === id && cfg.anct_threshold_active),
+      ),
+    );
+  }, [mapState.filters.service_ids, defaultServiceIds]);
+
+  const anctThreshold = thresholdServiceIds.size > 0;
 
   const gradientColors = useMemo(() => ["#EEEEEE", "#2A3C84"], []);
   const gradientDomain = useMemo(() => [0, 1], []);
@@ -171,32 +181,32 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
         const explicitServiceIds = mapState.filters.service_ids as number[] | null;
         const serviceIds = explicitServiceIds?.length ? explicitServiceIds : defaultServiceIds;
 
-        const applyPopulationThreshold = (stat: StatRecord) => {
-          if (!anctThreshold) return true;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const pop = (stat as any).population as number | null;
-          if (pop == null) return true;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const type = (stat as any).type as string;
-          if (type === "commune") return pop < 3500;
-          if (type === "epci") return pop < 15000;
-          return true;
+        const passesPopulationCheck = passesPopulationCheckStat;
+
+        // A record qualifies if it has a non-threshold service, OR a threshold service AND passes population check.
+        const statMatchesServices = (stat: StatRecord) => {
+          const statServices = stat.all_services?.map(Number) ?? [];
+          if (!serviceIds.length) return statServices.length > 0 && (!anctThreshold || passesPopulationCheck(stat));
+          return statServices.some((id) => {
+            if (!serviceIds.includes(id)) return false;
+            return thresholdServiceIds.has(id) ? passesPopulationCheck(stat) : true;
+          });
         };
 
+        const selectedRegionCode =
+          (mapState.selectedAreas?.region as SelectedArea)?.insee_geo?.replace("r", "") ?? null;
+
         const filterList = (list: StatRecord[]) => {
-          let filtered = list.filter(applyPopulationThreshold);
+          let filtered = list;
           if (level === "region") {
             filtered = filtered.filter((stat) => stat.reg === insee_geo.replace("r", ""));
           } else if (level === "department") {
             filtered = filtered.filter((stat) => stat.dep === insee_geo);
+            if (selectedRegionCode) {
+              filtered = filtered.filter((stat) => stat.reg === selectedRegionCode);
+            }
           }
-          if (serviceIds.length) {
-            return filtered.filter((stat) =>
-              stat.all_services?.some((s: string) => serviceIds.includes(Number(s))),
-            );
-          }
-          // @ts-expect-error not typed
-          return filtered.filter((stat) => stat.all_services.length > 0);
+          return filtered.filter(statMatchesServices);
         };
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -213,36 +223,45 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
             return { n_cities: 0, score: null };
           }
           const epciSiren = insee_geo;
-          const communesInEpci = (activeTypes.includes("commune") ? byType("commune") : [])
-            .filter(applyPopulationThreshold)
+          const communesSirensInEpci = new Set<string>();
+          (activeTypes.includes("commune") ? byType("commune") : [])
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .filter((stat: StatRecord) => (stat as any).epci_siren === epciSiren)
-            .filter((stat: StatRecord) =>
-              serviceIds.length
-                ? stat.all_services?.some((s: string) => serviceIds.includes(Number(s)))
-                : (stat.all_services?.length ?? 0) > 0,
-            );
+            .filter(statMatchesServices)
+            // Deduplicate by SIREN: a commune may have multiple SIRETs (mairie, CCAS…)
+            .forEach((stat: StatRecord) => communesSirensInEpci.add(stat.id.slice(0, 9)));
           const epciInEpci = (activeTypes.includes("epci") ? byType("epci") : [])
-            .filter(applyPopulationThreshold)
             .filter(
               (stat: StatRecord) => stat.id === epciSiren || stat.id.slice(0, 9) === epciSiren,
             )
-            .filter((stat: StatRecord) =>
-              serviceIds.length
-                ? stat.all_services?.some((s: string) => serviceIds.includes(Number(s)))
-                : (stat.all_services?.length ?? 0) > 0,
-            );
-          const total = communesInEpci.length + epciInEpci.length;
+            .filter(statMatchesServices);
+          const total = communesSirensInEpci.size + epciInEpci.length;
+
+
+          
           return { n_cities: total, score: total > 0 ? 1 : 0 };
         }
 
         if (level === "city") {
-          const city = stats.find((s: StatRecord) => s.id === siret);
-          if (!city) return { n_cities: 1, score: 0 };
-          if (!applyPopulationThreshold(city)) return { n_cities: 1, score: 0 };
-          const hasService = serviceIds.length
-            ? city.all_services?.some((s: string) => serviceIds.includes(Number(s)))
-            : (city.all_services?.length ?? 0) > 0;
+          // Match by SIREN (first 9 digits) so any establishment of the same commune is found,
+          // even when the GeoJSON mairie SIRET differs from the subscriber SIRET in the DB.
+          const siren = siret.slice(0, 9);
+          const cityRecords = stats.filter((s: StatRecord) => s.id.slice(0, 9) === siren);
+          if (cityRecords.length === 0) return { n_cities: 1, score: 0 };
+          // Use the commune-type record for population threshold (ignores CCAS pop=null records).
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const thresholdRecord = cityRecords.find((s) => (s as any).type === "commune") ?? cityRecords[0];
+          const cityPassesPopulation = passesPopulationCheck(thresholdRecord);
+          // The commune qualifies if any SIRET record has a non-threshold service,
+          // or a threshold service and the city passes the population check.
+          const hasService = cityRecords.some((record) => {
+            const statServices = record.all_services?.map(Number) ?? [];
+            if (!serviceIds.length) return statServices.length > 0 && (!anctThreshold || cityPassesPopulation);
+            return statServices.some((id) => {
+              if (!serviceIds.includes(id)) return false;
+              return thresholdServiceIds.has(id) ? cityPassesPopulation : true;
+            });
+          });
           return { n_cities: 1, score: hasService ? 1 : 0 };
         } else {
           let nTotalCities;
@@ -283,23 +302,24 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
         return { n_cities: 0, score: null };
       }
     },
-    [stats, mapState.filters, anctThreshold, defaultServiceIds],
+    [stats, mapState.filters, mapState.selectedAreas, thresholdServiceIds, anctThreshold, defaultServiceIds],
   );
 
   useEffect(() => {
     if (!stats || !coordMap || stats.length === 0) return;
 
-    const filterByServiceIds = (list: StatRecord[]) => {
-      const explicitIds = mapState.filters.service_ids as number[] | null;
-      const effectiveIds = explicitIds?.length ? explicitIds : defaultServiceIds;
-      if (effectiveIds.length > 0) {
-        return list.filter((stat: StatRecord) =>
-          stat.all_services?.some((service: string) => effectiveIds.includes(Number(service))),
-        );
-      }
-      // @ts-expect-error not typed
-      return list.filter((stat: StatRecord) => stat.all_services.length > 0);
-    };
+    const explicitIds = mapState.filters.service_ids as number[] | null;
+    const effectiveIds = explicitIds?.length ? explicitIds : defaultServiceIds;
+
+    const filterByServiceIds = (list: StatRecord[]) =>
+      list.filter((stat: StatRecord) => {
+        const statServices = stat.all_services?.map(Number) ?? [];
+        if (!effectiveIds.length) return statServices.length > 0 && (!anctThreshold || passesPopulationCheckStat(stat));
+        return statServices.some((id) => {
+          if (!effectiveIds.includes(id)) return false;
+          return thresholdServiceIds.has(id) ? passesPopulationCheckStat(stat) : true;
+        });
+      });
 
     const toPointFeatures = (list: StatRecord[]): GeoJSON.Feature[] =>
       list
@@ -316,11 +336,12 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
 
     const orgTypeFilter = mapState.filters.org_type as string | null;
 
+    const communeStats = stats.filter((s: StatRecord) => (s as unknown as { type: string }).type === "commune");
     const cityPointsGeoJSON: GeoJSON.FeatureCollection = {
       type: "FeatureCollection",
       features:
         !orgTypeFilter || orgTypeFilter === "commune"
-          ? toPointFeatures(filterByServiceIds(stats))
+          ? toPointFeatures(filterByServiceIds(communeStats))
           : [],
     };
 
@@ -348,22 +369,7 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const applyThreshold = (stat: StatRecord) => {
-      if (!anctThreshold) return true;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const pop = (stat as any).population as number | null;
-      if (pop == null) return true;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const type = (stat as any).type as string;
-      if (type === "commune") return pop < 3500;
-      if (type === "epci") return pop < 15000;
-      return true;
-    };
-
-    const filteredEpciStats = filterByServiceIds(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      stats.filter((s: any) => s.type === "epci").filter(applyThreshold),
-    );
+    const filteredEpciStats = filterByServiceIds(stats.filter((s: any) => s.type === "epci"));
 
     const toEpciPointFeatures = (list: StatRecord[]): GeoJSON.Feature[] =>
       list
@@ -480,6 +486,7 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
     coordMap,
     mapState.filters.org_type,
     mapState.filters.service_ids,
+    thresholdServiceIds,
     anctThreshold,
     defaultServiceIds,
     mapState.currentLevel,
