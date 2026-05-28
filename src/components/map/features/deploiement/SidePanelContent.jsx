@@ -287,7 +287,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
                       filters: {
                         ...mapState.filters,
                         org_type: newOrgType,
-                        ...(serviceAvailable ? {} : { service_ids: null, anct_threshold_active: false }),
+                        ...(serviceAvailable ? {} : { service_ids: null }),
                       },
                     });
                     setOpenDropdown(null);
@@ -374,11 +374,10 @@ const serviceDetails = (service, stats, compact = false) => {
                       e.stopPropagation();
                       const idsToToggle = service._mergedIds || [service.id];
                       if (isSelected) {
-                        setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: null, anct_threshold_active: false } });
+                        setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: null } });
                         setExpandedServices(prev => { const next = new Set(prev); next.delete(service.id); return next; });
                       } else {
-                        const thresholdActive = !!servicesConfig[service.name]?.anct_threshold_active;
-                        setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: idsToToggle, anct_threshold_active: thresholdActive } });
+                        setMapState({ ...mapState, filters: { ...mapState.filters, service_ids: idsToToggle } });
                         setExpandedServices(new Set([service.id]));
                       }
                     }}

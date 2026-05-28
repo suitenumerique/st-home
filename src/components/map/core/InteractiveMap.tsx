@@ -97,6 +97,7 @@ export const InteractiveMap = ({
     properties: FeatureProperties;
   } | null>(null);
   const [hoveredFeatureScore, setHoveredFeatureScore] = useState<number | null>(null);
+  const [hoveredFeatureCode, setHoveredFeatureCode] = useState<string | null>(null);
   const hoveredFeatureIdRef = useRef<string | number | null>(null);
   const hoveredNeighbourIdRef = useRef<string | number | null>(null);
   const hoveredDeptIdRef = useRef<string | number | null>(null);
@@ -227,16 +228,6 @@ export const InteractiveMap = ({
       } catch {
         // Source may have been removed
       }
-      if (map.getSource("feature-points")) {
-        try {
-          map.setFeatureState(
-            { source: "feature-points", id: hoveredFeatureIdRef.current },
-            { hover: false },
-          );
-        } catch {
-          // Source may have been removed
-        }
-      }
       hoveredFeatureIdRef.current = null;
     }
     if (hoveredNeighbourIdRef.current !== null && map.getSource("neighbour-polygons")) {
@@ -328,14 +319,10 @@ export const InteractiveMap = ({
             } catch {
               // Source may have been removed
             }
-            if (map.getSource("feature-points")) {
-              try {
-                map.setFeatureState({ source: "feature-points", id: featureId }, { hover: true });
-              } catch {
-                // Source may have been removed
-              }
-            }
           }
+          setHoveredFeatureCode(
+            (feature.properties?.INSEE_GEO || feature.properties?.SIRET) as string | null,
+          );
           setHoveredFeatureScore(feature.properties.SCORE as number);
           setPopupInfo({
             longitude: event.lngLat.lng,
@@ -352,6 +339,7 @@ export const InteractiveMap = ({
             originalDotColorRef.current = null;
           }
         }
+        setHoveredFeatureCode(null);
         setHoveredFeatureScore(null);
         setPopupInfo(null);
       }
@@ -364,6 +352,7 @@ export const InteractiveMap = ({
     if (map) {
       clearHoverState(map);
     }
+    setHoveredFeatureCode(null);
     setHoveredFeatureScore(null);
     setPopupInfo(null);
   }, [clearHoverState]);
@@ -464,23 +453,27 @@ export const InteractiveMap = ({
     },
   };
 
-  const circleLayerStyle = {
-    id: "feature-circles",
-    type: "circle",
-    filter: [">", ["coalesce", ["get", "circleValue"], 0], 0],
-    paint: {
-      "circle-radius": 22,
-      "circle-color": "#ECECFE",
-      "circle-stroke-color": [
-        "case",
-        ["boolean", ["feature-state", "hover"], false],
-        "rgba(0, 0, 145, 0.4)",
-        "rgba(0, 0, 145, 0.2)",
-      ],
-      "circle-stroke-width": ["case", ["boolean", ["feature-state", "hover"], false], 6, 3],
-      "circle-opacity": 1,
-    },
-  };
+  const circleLayerStyle = useMemo(() => {
+    const isHovered = hoveredFeatureCode
+      ? [
+          "any",
+          ["==", ["get", "INSEE_GEO"], hoveredFeatureCode],
+          ["==", ["get", "SIRET"], hoveredFeatureCode],
+        ]
+      : false;
+    return {
+      id: "feature-circles",
+      type: "circle",
+      filter: [">", ["coalesce", ["get", "circleValue"], 0], 0],
+      paint: {
+        "circle-radius": 22,
+        "circle-color": "#ECECFE",
+        "circle-stroke-color": ["case", isHovered, "rgba(0, 0, 145, 0.4)", "rgba(0, 0, 145, 0.2)"],
+        "circle-stroke-width": ["case", isHovered, 6, 3],
+        "circle-opacity": 1,
+      },
+    };
+  }, [hoveredFeatureCode]);
 
   const textLayerStyle = {
     id: "feature-labels",
