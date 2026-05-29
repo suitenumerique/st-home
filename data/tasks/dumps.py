@@ -200,7 +200,10 @@ def dump_groupements_memberships():
         return
 
     # https://www.data.gouv.fr/fr/datasets/5e1f20058b4c414d3f94460d/
-    url = "https://www.data.gouv.fr/fr/datasets/r/348cc004-22b4-4b12-9281-b00d4ccb1d88"
+    # url = "https://www.data.gouv.fr/fr/datasets/r/348cc004-22b4-4b12-9281-b00d4ccb1d88"
+    # url changed at Banatic without warning
+    url = "https://www.banatic.interieur.gouv.fr/consultation/api/export/pregenere/telecharger/France"
+
     r = requests.get(url, timeout=120)
     r.raise_for_status()
 
