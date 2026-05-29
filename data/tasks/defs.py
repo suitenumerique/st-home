@@ -120,6 +120,19 @@ DOMAIN_EXTENSIONS_ALLOWED = [
     # "mf",  # Saint-Martin
 ]
 
+# Domains a declared website is allowed to redirect to — as a final target or as
+# an intermediary step — without breaking RPNT criterion 1.6 ("the site declared
+# on Service-Public.gouv.fr must not redirect elsewhere"). Subdomains are included.
+WEBSITE_REDIRECT_DOMAINS_ALLOWED = [
+    "collectivite.fr",
+    "gouv.fr",
+]
+
+# Maximum number of redirects tolerated in a trusted chain (criterion 1.6): a
+# declared site may bounce through the allow-listed domains above, but only if the
+# whole chain stays trusted and is no longer than this many hops.
+WEBSITE_REDIRECT_MAX_HOPS = 5
+
 EU_COUNTRIES = {
     "AT",
     "BE",
