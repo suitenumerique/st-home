@@ -131,36 +131,49 @@ export async function findOrganizationServicesBySiret(siret: string) {
 
 export async function searchOrganizations(query: string, type: string, limit = 10) {
   const searchQuery = query.trim();
+  const unaccentQuery = unaccent(searchQuery);
 
-  const baseQuery = db
-    .select({
-      siret: organizations.siret,
-      name: organizations.name,
-      type: organizations.type,
-      zipcode: organizations.zipcode,
-      insee_geo: organizations.insee_geo,
-      insee_dep: organizations.insee_dep,
-      insee_reg: organizations.insee_reg,
-      population: organizations.population,
-    })
-    .from(organizations)
-    .orderBy(desc(organizations.population))
-    .limit(limit);
+  const columns = {
+    siret: organizations.siret,
+    name: organizations.name,
+    type: organizations.type,
+    zipcode: organizations.zipcode,
+    insee_geo: organizations.insee_geo,
+    insee_dep: organizations.insee_dep,
+    insee_reg: organizations.insee_reg,
+    population: organizations.population,
+  };
 
   const addWhere = [];
   if (type !== "all") {
     addWhere.push(eq(organizations.type, type));
   }
 
+  // Exact name match (accent-insensitive): a wide limit of its own so a small town whose
+  // name exactly matches the query is not crowded out by the broader, lower-limit searches.
+  const exactQuery = db
+    .select(columns)
+    .from(organizations)
+    .orderBy(desc(organizations.population))
+    .limit(100);
+
+  const baseQuery = db
+    .select(columns)
+    .from(organizations)
+    .orderBy(desc(organizations.population))
+    .limit(limit);
+
   const whereSearches = [
     like(organizations.zipcode, `${searchQuery}%`),
-    like(organizations.name_unaccent, `${unaccent(searchQuery)}%`),
-    like(organizations.name_unaccent, `%${unaccent(searchQuery)}%`),
-    sql`to_tsvector('french', ${organizations.name_unaccent}) @@ plainto_tsquery('french', ${unaccent(searchQuery)})`,
+    like(organizations.name_unaccent, `${unaccentQuery}%`),
+    like(organizations.name_unaccent, `%${unaccentQuery}%`),
+    sql`to_tsvector('french', ${organizations.name_unaccent}) @@ plainto_tsquery('french', ${unaccentQuery})`,
   ];
 
   // Do all searches sequentially, then concatenate the results and filter by unique siret
-  const allResults = [];
+  const allResults = [
+    ...(await exactQuery.where(and(...addWhere, eq(organizations.name_unaccent, unaccentQuery)))),
+  ];
   for (const whereSearch of whereSearches) {
     const results = await baseQuery.where(and(...addWhere, whereSearch));
     allResults.push(...results);
@@ -169,6 +182,11 @@ export async function searchOrganizations(query: string, type: string, limit = 1
   const uniqueResults = allResults.filter(
     (result, index, self) => index === self.findIndex((t) => t.siret === result.siret),
   );
+
+  // Merging several individually-limited queries breaks the global ordering, so
+  // re-sort the combined list by population descending.
+  uniqueResults.sort((a, b) => b.population - a.population);
+
   return uniqueResults;
 }
 
