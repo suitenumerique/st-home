@@ -101,7 +101,7 @@ def check_website(url, force_http_url=None):
 def normalize_domain(netloc):
     """Lowercase a netloc and strip the default ports and a leading "www."."""
     netloc = netloc.lower()
-    netloc = re.sub(r"\:(80|443)", "", netloc)
+    netloc = re.sub(r":(80|443)$", "", netloc)
     netloc = re.sub(r"^www\.", "", netloc)
     return netloc
 
@@ -226,9 +226,7 @@ def check_non_www(base_final_domain, base_url, urls_to_test, issues, request_kwa
                     )
             else:
                 # Check if final domain matches original
-                final_domain = urlparse(response.url).netloc
-                final_domain = re.sub(r"\:(80|443)", "", final_domain)
-                final_domain = re.sub(r"^www\.", "", final_domain)
+                final_domain = normalize_domain(urlparse(response.url).netloc)
                 if final_domain != base_final_domain:
                     if url_type == "http_no_www":
                         issues[Issues.WEBSITE_HTTP_NOWWW] = (
