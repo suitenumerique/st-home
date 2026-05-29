@@ -8,7 +8,11 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import pytest
 import requests
 
-from ..tasks.check_website import check_website
+from ..tasks.check_website import (
+    check_website,
+    is_allowed_redirect_domain,
+    is_trusted_redirect_chain,
+)
 from ..tasks.conformance import Issues
 
 
@@ -32,7 +36,18 @@ class LocalhostHandler(BaseHTTPRequestHandler):
 
         elif self.path == "/domain_redirect":
             self.send_response(302)
+            self.send_header("Location", "https://example.com/")
+            self.end_headers()
+
+        elif self.path == "/gouv_redirect":
+            self.send_response(302)
             self.send_header("Location", "https://suiteterritoriale.anct.gouv.fr")
+            self.end_headers()
+
+        elif self.path == "/double_gouv_redirect":
+            # Multi-hop: localhost -> localhost -> *.gouv.fr (a trusted chain)
+            self.send_response(302)
+            self.send_header("Location", "/gouv_redirect")
             self.end_headers()
 
         elif self.path == "/slow":
@@ -216,9 +231,96 @@ def test_https_redirect(http_server):
 
 
 def test_domain_redirect(http_server):
-    """Test detection of domain redirect"""
+    """A redirect to a non-allowed domain breaks criterion 1.6"""
     issues = check_website("http://localhost:8080/domain_redirect")
     assert Issues.WEBSITE_DOMAIN_REDIRECT in issues
+
+
+def test_allowed_redirect_gouv(http_server):
+    """A redirect to a *.gouv.fr domain is on the allow-list (criterion 1.6)"""
+    issues = check_website("http://localhost:8080/gouv_redirect")
+    assert Issues.WEBSITE_DOMAIN_REDIRECT not in issues
+
+
+def test_allowed_multihop_redirect(http_server):
+    """A multi-hop chain that stays trusted and ends on *.gouv.fr is allowed"""
+    issues = check_website("http://localhost:8080/double_gouv_redirect")
+    assert Issues.WEBSITE_DOMAIN_REDIRECT not in issues
+
+
+@pytest.mark.parametrize(
+    "domain,allowed",
+    [
+        ("collectivite.fr", True),
+        ("www.collectivite.fr", True),
+        ("mairie-de-test.collectivite.fr", True),
+        ("gouv.fr", True),
+        ("suiteterritoriale.anct.gouv.fr", True),
+        ("www.sante.gouv.fr", True),
+        ("example.com", False),
+        ("maville.com", False),
+        ("notcollectivite.fr", False),  # not a subdomain, must not match
+        ("collectivite.fr.evil.com", False),  # allow-listed name as a prefix
+        ("evil-gouv.fr", False),
+        ("gouv.fr.evil.com", False),
+    ],
+)
+def test_is_allowed_redirect_domain(domain, allowed):
+    assert is_allowed_redirect_domain(domain) is allowed
+
+
+class _FakeResponse:
+    """Minimal stand-in for a requests.Response redirect chain."""
+
+    def __init__(self, url, history=None):
+        self.url = url
+        self.history = history or []
+
+
+def _chain(*urls):
+    """Build a fake response whose history is every url but the last."""
+    *history_urls, final_url = urls
+    return _FakeResponse(final_url, [_FakeResponse(u) for u in history_urls])
+
+
+def test_trusted_redirect_chain_to_allowed_target():
+    chain = _chain("https://mairie-test.fr/", "https://suiteterritoriale.anct.gouv.fr/")
+    assert is_trusted_redirect_chain(chain, "mairie-test.fr") is True
+
+
+def test_trusted_redirect_chain_through_allowed_intermediary():
+    chain = _chain(
+        "https://mairie-test.fr/",
+        "https://www.collectivite.fr/login",
+        "https://mairie-test.collectivite.fr/",
+    )
+    assert is_trusted_redirect_chain(chain, "mairie-test.fr") is True
+
+
+def test_untrusted_intermediary_breaks_chain():
+    chain = _chain(
+        "https://mairie-test.fr/",
+        "https://tracker.example/redir",
+        "https://suiteterritoriale.anct.gouv.fr/",
+    )
+    assert is_trusted_redirect_chain(chain, "mairie-test.fr") is False
+
+
+def test_untrusted_target_breaks_chain():
+    chain = _chain("https://mairie-test.fr/", "https://example.com/")
+    assert is_trusted_redirect_chain(chain, "mairie-test.fr") is False
+
+
+def test_trusted_chain_within_hop_limit():
+    # 5 redirects (6 urls) all trusted -> still allowed
+    chain = _chain(*(["https://mairie-test.fr/"] + ["https://x.gouv.fr/"] * 5))
+    assert is_trusted_redirect_chain(chain, "mairie-test.fr") is True
+
+
+def test_trusted_chain_exceeding_hop_limit():
+    # 6 redirects (7 urls) all trusted -> too long, not allowed
+    chain = _chain(*(["https://mairie-test.fr/"] + ["https://x.gouv.fr/"] * 6))
+    assert is_trusted_redirect_chain(chain, "mairie-test.fr") is False
 
 
 def test_ssl_error():

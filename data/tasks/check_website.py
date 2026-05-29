@@ -11,6 +11,7 @@ from celery_app import app
 
 from .conformance import Issues, data_checks_doable, validate_conformance
 from .db import find_org_by_siret, list_all_orgs, upsert_issues
+from .defs import WEBSITE_REDIRECT_DOMAINS_ALLOWED, WEBSITE_REDIRECT_MAX_HOPS
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -97,6 +98,42 @@ def check_website(url, force_http_url=None):
     return issues
 
 
+def normalize_domain(netloc):
+    """Lowercase a netloc and strip the default ports and a leading "www."."""
+    netloc = netloc.lower()
+    netloc = re.sub(r":(80|443)$", "", netloc)
+    netloc = re.sub(r"^www\.", "", netloc)
+    return netloc
+
+
+def is_allowed_redirect_domain(domain):
+    """
+    Whether a website may redirect to (or through) `domain` without breaking RPNT
+    criterion 1.6. Matches the allow-listed domains and any of their subdomains.
+    """
+    domain = normalize_domain(domain)
+    return any(
+        domain == allowed or domain.endswith("." + allowed)
+        for allowed in WEBSITE_REDIRECT_DOMAINS_ALLOWED
+    )
+
+
+def is_trusted_redirect_chain(response, expected_domain):
+    """
+    Whether the redirect chain that produced `response` stayed within trusted
+    domains (the expected domain or an allow-listed one, see is_allowed_redirect_domain)
+    across at most WEBSITE_REDIRECT_MAX_HOPS hops. This keeps RPNT criterion 1.6 valid
+    when a declared site redirects to — or bounces through — collectivite.fr or *.gouv.fr.
+    """
+    if len(response.history) > WEBSITE_REDIRECT_MAX_HOPS:
+        return False
+    for hop in [*response.history, response]:
+        domain = normalize_domain(urlparse(hop.url).netloc)
+        if domain != expected_domain and not is_allowed_redirect_domain(domain):
+            return False
+    return True
+
+
 def check_http(base_url, urls_to_test, issues, request_kwargs):
     """
     Check HTTP URL
@@ -118,11 +155,11 @@ def check_http(base_url, urls_to_test, issues, request_kwargs):
                 issues[Issues.WEBSITE_HTTP_REDIRECT] = f"Site stays on HTTP: {http_response.url}"
 
             # Check if final domain matches original
-            expected_domain = re.sub(r"^www\.", "", urlparse(urls_to_test["https"]).netloc)
-            final_domain = urlparse(http_response.url).netloc
-            final_domain = re.sub(r"\:(80|443)", "", final_domain)
-            final_domain = re.sub(r"^www\.", "", final_domain)
-            if final_domain != expected_domain:
+            expected_domain = normalize_domain(urlparse(urls_to_test["https"]).netloc)
+            final_domain = normalize_domain(urlparse(http_response.url).netloc)
+            if final_domain != expected_domain and not is_trusted_redirect_chain(
+                http_response, expected_domain
+            ):
                 issues[Issues.WEBSITE_DOMAIN_REDIRECT] = (
                     f"HTTP Site redirects to different domain: {final_domain} vs. {expected_domain}"
                 )
@@ -149,11 +186,11 @@ def check_https(base_url, urls_to_test, issues, request_kwargs):
             issues[Issues.WEBSITE_DOWN] = f"HTTPS returned status {https_response.status_code}"
         else:
             # Check if final domain matches original
-            expected_domain = re.sub(r"^www\.", "", urlparse(urls_to_test["https"]).netloc)
-            final_domain = urlparse(https_response.url).netloc
-            final_domain = re.sub(r"\:(80|443)", "", final_domain)
-            final_domain = re.sub(r"^www\.", "", final_domain)
-            if final_domain != expected_domain:
+            expected_domain = normalize_domain(urlparse(urls_to_test["https"]).netloc)
+            final_domain = normalize_domain(urlparse(https_response.url).netloc)
+            if final_domain != expected_domain and not is_trusted_redirect_chain(
+                https_response, expected_domain
+            ):
                 issues[Issues.WEBSITE_DOMAIN_REDIRECT] = (
                     f"HTTPS Site redirects to different domain: {final_domain} vs. {expected_domain}"
                 )
@@ -189,9 +226,7 @@ def check_non_www(base_final_domain, base_url, urls_to_test, issues, request_kwa
                     )
             else:
                 # Check if final domain matches original
-                final_domain = urlparse(response.url).netloc
-                final_domain = re.sub(r"\:(80|443)", "", final_domain)
-                final_domain = re.sub(r"^www\.", "", final_domain)
+                final_domain = normalize_domain(urlparse(response.url).netloc)
                 if final_domain != base_final_domain:
                     if url_type == "http_no_www":
                         issues[Issues.WEBSITE_HTTP_NOWWW] = (
