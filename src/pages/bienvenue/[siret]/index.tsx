@@ -273,6 +273,15 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
     return cfg?.visible === true && cfg?.socle === true;
   };
 
+  // ANCT services flagged anct_threshold_active are targeted at small collectivities
+  // (commune < 3500, epci < 15000) and should be hidden from the ANCT block above that.
+  const isAboveAnctThreshold =
+    commune.type === "commune"
+      ? commune.population >= 3500
+      : commune.type === "epci"
+        ? commune.population >= 15000
+        : false;
+
   // Stable key across alias rows (e.g. all ProConnect rows share type "proconnect"
   // and resolve to the same servicesConfig entry).
   const serviceKey = (s: Service) => getServiceConfig(s)?.id ?? s.id;
@@ -358,7 +367,12 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
       const anctServices = dedupeByKey(
         anctServicesResult
           .map((r) => r.service)
-          .filter((s) => !HIDDEN_SERVICE_IDS.has(s.id) && !shownKeys.has(serviceKey(s))),
+          .filter(
+            (s) =>
+              !HIDDEN_SERVICE_IDS.has(s.id) &&
+              !shownKeys.has(serviceKey(s)) &&
+              !(isAboveAnctThreshold && getServiceConfig(s)?.anct_threshold_active === true),
+          ),
       );
       const socle = proconnectFirst(anctServices.filter(isVisibleSocle));
       const nonSocle = proconnectFirst(anctServices.filter((s) => !isVisibleSocle(s)));

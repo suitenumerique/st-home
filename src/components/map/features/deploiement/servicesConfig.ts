@@ -126,7 +126,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     category: "lst",
     shortname: null,
     order: 3,
-    anct_threshold_active: false,
+    anct_threshold_active: true,
   },
   Grist: {
     id: 9,
@@ -170,7 +170,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     category: "lst",
     shortname: null,
     order: 2,
-    anct_threshold_active: false,
+    anct_threshold_active: true,
   },
   "Mon Espace Collectivité": {
     id: 11,
