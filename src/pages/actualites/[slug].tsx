@@ -11,7 +11,15 @@ interface BlogPostProps {
 
 export default function BlogPostPage({ document }: BlogPostProps) {
   return (
-    <div className={fr.cx("fr-container", "fr-pt-2w")}>
+    <>
+      <div
+        style={{
+          height: "300px",
+          background: "linear-gradient(to bottom, rgba(205, 200, 255, 0.2), transparent)",
+          pointerEvents: "none",
+        }}
+      />
+      <div className={fr.cx("fr-container", "fr-pt-2w")} style={{ marginTop: "-300px" }}>
       <NextSeo
         title={document.title}
         description={document.frontmatter.summary || ""}
@@ -62,6 +70,7 @@ export default function BlogPostPage({ document }: BlogPostProps) {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
