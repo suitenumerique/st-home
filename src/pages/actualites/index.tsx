@@ -129,9 +129,12 @@ export default function BlogIndex({ posts, allServices, allCategories }: BlogInd
         )}
 
         {hasActiveFilters && (
-          <p className="fr-text--lead fr-mb-3w" style={{ fontWeight: 700, color: "var(--text-action-high-blue-france)" }}>
-            {filteredPosts.length} résultat{filteredPosts.length > 1 ? "s" : ""} correspondant à
-            vos critères
+          <p
+            className="fr-text--lead fr-mb-3w"
+            style={{ fontWeight: 700, color: "var(--text-action-high-blue-france)" }}
+          >
+            {filteredPosts.length} résultat{filteredPosts.length > 1 ? "s" : ""} correspondant à vos
+            critères
           </p>
         )}
 
