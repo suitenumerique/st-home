@@ -1,4 +1,3 @@
-import json
 import logging
 import re
 import sys
@@ -43,11 +42,6 @@ def run(siret):
 
         if issues is not None:  # Only store if we got results
             upsert_issues(siret, "dns", issues, metadata)
-
-        return {
-            "issues": {str(x): issues[x] for x in issues.keys()},
-            "metadata": metadata,
-        }
 
 
 @register_task(name="check_dns.queue_all")
@@ -202,10 +196,12 @@ def check_dmarc(email_domain, issues):
 
 
 if __name__ == "__main__":
-    # Run with command line arguments
-    siret = sys.argv[1]
-    if "." in siret:
-        logger.info(check_dns(siret))
+    # CLI: pass an email domain to check it directly, or a SIRET to check that
+    # org's email domain. Prints check_dns()'s return value; no DB write.
+    arg = sys.argv[1]
+    if "." in arg:
+        print(check_dns(arg))  # noqa: T201
     else:
-        issues = run(siret)
-        logger.info(json.dumps(issues, indent=2))
+        org = find_org_by_siret(arg)
+        email = (org or {}).get("email_official")
+        print(check_dns(email.split("@")[1]) if email else f"No email for org {arg}")  # noqa: T201

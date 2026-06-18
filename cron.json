@@ -5,7 +5,7 @@
       "size": "2XL"
     },
     {
-      "command": "0 2 * * * bash -c 'python -c \"from tasks.check_website import queue_all; queue_all()\" && python -c \"from tasks.check_dns import queue_all; queue_all()\"'",
+      "command": "0 2 * * * python -m tasks.queue_all",
       "size": "M"
     },
     {

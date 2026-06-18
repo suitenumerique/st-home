@@ -4,9 +4,8 @@ Task modules decorate their functions with ``@register_task`` (imported from
 here), which both configures the global broker and keeps the modules free of any
 direct dependency on the queue implementation.
 
-In tests we use a ``StubBroker``: registering a task eagerly creates Redis
-consumer groups on the real broker (and thus requires a running Redis). The stub
-keeps everything in memory so importing task modules stays cheap and offline.
+Declaring a task is Redis-free (the broker only connects when the worker starts
+consuming), so importing task modules — for the tests or the CLI — needs no Redis.
 """
 
 import os
@@ -33,11 +32,6 @@ class _SentryMiddleware(dramatiq.Middleware):
 
 
 def _make_broker():
-    if os.getenv("WORKER_TESTING") == "1":
-        from dramatiq.brokers.stub import StubBroker
-
-        return StubBroker()
-
     from dramatiq_redis_streams import StreamsBroker
 
     import redis_conn

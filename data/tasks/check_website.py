@@ -1,4 +1,3 @@
-import json
 import logging
 import re
 import sys
@@ -39,8 +38,6 @@ def run(siret):
         issues = check_website(org["website_url"])
         if issues is not None:
             upsert_issues(siret, "website", issues, {})
-
-        return {str(x): issues[x] for x in issues.keys()}
 
 
 @register_task(name="check_website.queue_all")
@@ -272,10 +269,12 @@ def check_non_www(base_final_domain, base_url, urls_to_test, issues, request_kwa
 
 
 if __name__ == "__main__":
-    # Run with command line arguments
-    siret = sys.argv[1]
-    if "." in siret:
-        logger.info(check_website(siret))
+    # CLI: pass a URL to check it directly, or a SIRET to check that org's
+    # website. Prints check_website()'s return value; no DB write.
+    arg = sys.argv[1]
+    if "." in arg:
+        print(check_website(arg))  # noqa: T201
     else:
-        issues = run(siret)
-        logger.info(json.dumps(issues, indent=2))
+        org = find_org_by_siret(arg)
+        url = (org or {}).get("website_url")
+        print(check_website(url) if url else f"No website for org {arg}")  # noqa: T201

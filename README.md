@@ -52,13 +52,16 @@ Une fois dedans, il est possible de lancer les tâches de synchronisation des do
 # Tout synchroniser
 python -m tasks.sync
 
-# Lancer une tâche de vérification manuellement
-python -m tasks.check_website [SIRET]
-python -m tasks.check_dns [SIRET]
-
+# Lancer une vérification manuellement et afficher son résultat.
+# On peut passer un SIRET (la vérification porte alors sur l'email / le site web
+# de l'organisation correspondante), ou directement une URL / un domaine email :
+python -m tasks.check_website [SIRET | URL]      # ex: python -m tasks.check_website https://example.com
+python -m tasks.check_dns [SIRET | domaine]      # ex: python -m tasks.check_dns example.com
 ```
 
-Cela peut permettre de débugguer des problèmes liés à certains SIRETs en particulier.
+Ces commandes affichent la valeur de retour de la vérification (les problèmes
+détectés) sans rien écrire en base, ce qui permet de débugguer des problèmes
+liés à certains SIRETs ou domaines en particulier.
 
 Il est recommandé d'ajouter des tests unitaires à chaque nouveau cas pour rendre les vérifications plus robustes.
 

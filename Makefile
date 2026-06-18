@@ -125,7 +125,7 @@ data-sync:  ## Run data synchronization tasks
 .PHONY: data-sync
 
 data-queue-all:  ## Queue all dramatiq tasks (website and DNS checks)
-	$(COMPOSE_RUN) worker sh -c 'python -c "from tasks.check_website import queue_all; queue_all()" && python -c "from tasks.check_dns import queue_all; queue_all()"'
+	$(COMPOSE_RUN) worker python -m tasks.queue_all
 .PHONY: data-queue-all
 
 PURGE_CMD = python -c 'import tasks.sync, tasks.check_website, tasks.check_dns, tasks.historize, broker; broker.broker.flush_all()'
