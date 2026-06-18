@@ -3,6 +3,7 @@ import socket
 import unicodedata
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
+from threading import Lock
 from typing import Iterable
 from urllib.parse import urlparse
 
@@ -103,9 +104,14 @@ def geoip_country_by_ip(ip):
 
 
 geoip_cache = TTLCache(maxsize=1000, ttl=3600)
+# cachetools' @cached is not thread-safe without a lock; dramatiq runs tasks on
+# multiple threads, so guard the shared cache. The lock only protects cache
+# reads/writes (cachetools releases it during the wrapped call), so concurrent
+# DNS/GeoIP lookups still run in parallel.
+_geoip_cache_lock = Lock()
 
 
-@cached(geoip_cache)
+@cached(geoip_cache, lock=_geoip_cache_lock)
 def geoip_countries_by_hostname(hostname) -> tuple[list[str], list[str]]:
     """Returns all the IPs and their countries for a hostname"""
     try:

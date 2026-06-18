@@ -6,8 +6,9 @@ from urllib.parse import urlparse, urlunparse
 
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from sentry_sdk.crons import monitor
 
-from celery_app import app
+from broker import register_task
 
 from .conformance import Issues, data_checks_doable, validate_conformance
 from .db import find_org_by_siret, list_all_orgs, upsert_issues
@@ -22,7 +23,7 @@ logging.basicConfig(level=logging.INFO)
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
-@app.task(time_limit=60, acks_late=True)
+@register_task(name="check_website.run", queue="check_website", time_limit=60_000, max_retries=1)
 def run(siret):
     org = find_org_by_siret(siret)
 
@@ -42,10 +43,21 @@ def run(siret):
         return {str(x): issues[x] for x in issues.keys()}
 
 
-@app.task
+@register_task(name="check_website.queue_all")
+@monitor(
+    monitor_slug="check_website.queue_all",
+    monitor_config={
+        "schedule": {"type": "crontab", "value": "00 2 * * *"},
+        "timezone": "UTC",
+        "checkin_margin": 60,  # in minutes
+        "max_runtime": 60,
+        "failure_issue_threshold": 1,
+        "recovery_threshold": 3,
+    },
+)
 def queue_all():
     for org in list_all_orgs():
-        run.apply_async(args=[org["siret"]], queue="check_website")
+        run.send(org["siret"])
 
 
 def check_website(url, force_http_url=None):

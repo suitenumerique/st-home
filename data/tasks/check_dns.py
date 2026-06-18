@@ -8,7 +8,7 @@ import dns.resolver
 import tldextract
 from sentry_sdk.crons import monitor
 
-from celery_app import app
+from broker import register_task
 
 from .conformance import Issues, data_checks_doable, validate_conformance
 from .db import find_org_by_siret, list_all_orgs, upsert_issues
@@ -18,8 +18,15 @@ from .lib import geoip_countries_by_hostname
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+# tldextract.extract() lazily loads (and disk-caches) the public-suffix list on
+# first use, which is not safe when several dramatiq worker threads hit it at
+# once. We build one extractor from the bundled snapshot (no network, no cache
+# writes) and warm it at import; subsequent calls are read-only and thread-safe.
+_tld_extract = tldextract.TLDExtract(suffix_list_urls=(), cache_dir=None)
+_tld_extract("example.com")
 
-@app.task(time_limit=60, acks_late=True)
+
+@register_task(name="check_dns.run", queue="check_dns", time_limit=60_000, max_retries=1)
 def run(siret):
     org = find_org_by_siret(siret)
 
@@ -43,7 +50,7 @@ def run(siret):
         }
 
 
-@app.task
+@register_task(name="check_dns.queue_all")
 @monitor(
     monitor_slug="check_dns.queue_all",
     monitor_config={
@@ -57,7 +64,7 @@ def run(siret):
 )
 def queue_all():
     for org in list_all_orgs():
-        run.apply_async(args=[org["siret"]], queue="check_dns")
+        run.send(org["siret"])
 
 
 def check_dns(email_domain):
@@ -97,7 +104,7 @@ def check_dns(email_domain):
                 continue
             metadata["mx_countries"] = list(non_empty_countries)
             metadata["mx_tld"] = str(
-                tldextract.extract(record.exchange.to_text()).top_domain_under_public_suffix
+                _tld_extract(record.exchange.to_text()).top_domain_under_public_suffix
             ).lower()
             metadata["mx_ips"] = list(ips)
 

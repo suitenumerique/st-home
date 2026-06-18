@@ -5,7 +5,7 @@
       "size": "2XL"
     },
     {
-      "command": "0 2 * * * bash -c 'celery -A celery_app call tasks.check_website.queue_all && celery -A celery_app call tasks.check_dns.queue_all'",
+      "command": "0 2 * * * bash -c 'python -c \"from tasks.check_website import queue_all; queue_all()\" && python -c \"from tasks.check_dns import queue_all; queue_all()\"'",
       "size": "M"
     },
     {

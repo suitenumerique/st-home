@@ -2,51 +2,52 @@
 FROM python:3.13.3-slim-bookworm AS base
 
 # Bump this to force an update of the apt repositories
-ENV MIN_UPDATE_DATE="2025-05-08"
+ENV MIN_UPDATE_DATE="2025-06-18"
 
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
 
 WORKDIR /app/data
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# ---- Poetry package manager ----
-FROM base AS poetry
+# ---- uv package manager ----
+FROM base AS uv
 
-ENV POETRY_NO_INTERACTION=1
-ENV POETRY_VIRTUALENVS_CREATE=0
-ENV POETRY_VIRTUALENVS_OPTIONS_NO_PIP=1
-ENV POETRY_VERSION=2.1.3
+# Pin uv by digest for supply-chain security.
+# Verify with: gh attestation verify --owner astral-sh oci://ghcr.io/astral-sh/uv:latest
+COPY --from=ghcr.io/astral-sh/uv@sha256:ff07b86af50d4d9391d9daf4ff89ce427bc544f9aae87057e69a1cc0aa369946 /uv /uvx /bin/
 
-RUN python -m pip install poetry==${POETRY_VERSION}
+# Use the interpreter from the base image rather than a uv-managed one, and
+# install the project venv at a stable path.
+ENV UV_PYTHON_PREFERENCE=only-system
+ENV UV_PROJECT_ENVIRONMENT=/venv
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
 
-# ---- Base image with dependencies installed ----
-FROM poetry AS base-with-deps
+# ---- Base image with production dependencies installed ----
+FROM uv AS base-with-deps
 
-COPY pyproject.toml poetry.lock ./
+COPY pyproject.toml uv.lock ./
 
-# Create a runtime virtual environment and activate it
-RUN python -m venv /venv
+RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev
+
 ENV PATH="/venv/bin:$PATH"
 ENV VIRTUAL_ENV=/venv
-ENV VIRTUAL_ENV_PROMPT=venv
 
-# Install dependencies in this new virtual environment
-RUN poetry install --compile
-
-# ---- Base image with dependencies installed for development ----
+# ---- Base image with dev dependencies installed for development ----
 FROM base-with-deps AS runtime-dev
 
-RUN poetry install --compile --extras dev
+RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --all-extras
 
 # ---- Runtime production image ----
-FROM debian:bookworm-slim AS runtime-prod
+FROM base AS runtime-prod
 
-# In a production build, we use a base debian image with the runtime venv only.
+# In a production build, we use the base image with the runtime venv only.
 COPY --from=base-with-deps /venv /venv
 
 ENV PATH="/venv/bin:$PATH"
 ENV VIRTUAL_ENV=/venv
-ENV VIRTUAL_ENV_PROMPT=venv
