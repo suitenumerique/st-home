@@ -147,9 +147,7 @@ export default function BlogIndex({ posts, allServices, allCategories }: BlogInd
         ) : (
           <>
             <div className="fr-grid-row fr-grid-row--gutters">
-              {paginatedPosts
-                .filter((post) => post.document?.frontmatter.status === "published")
-                .map((post) => (
+              {paginatedPosts.map((post) => (
                   <div key={post.id} className="fr-col-12 fr-col-md-6 fr-col-lg-4 fr-mb-4w">
                     <Card
                       linkProps={{
@@ -213,7 +211,10 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
     const { getDocumentChildren } = await import("@/lib/docs2dsfr/server");
     const allPosts = await getDocumentChildren(parentId, forceRefresh);
     const posts = allPosts.filter(
-      (post) => post.document?.frontmatter.date && post.document?.frontmatter.path,
+      (post) =>
+        post.document?.frontmatter.date &&
+        post.document?.frontmatter.path &&
+        post.document?.frontmatter.status === "published",
     );
     posts.sort(
       (a, b) =>
