@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
-@register_task(name="check_website.run", queue="check_website", time_limit=60_000, max_retries=1)
+@register_task(name="check_website.run", queue="check_website", time_limit=120_000, max_retries=1)
 def run(siret):
     org = find_org_by_siret(siret)
 

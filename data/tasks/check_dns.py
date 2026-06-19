@@ -25,7 +25,7 @@ _tld_extract = tldextract.TLDExtract(suffix_list_urls=(), cache_dir=None)
 _tld_extract("example.com")
 
 
-@register_task(name="check_dns.run", queue="check_dns", time_limit=60_000, max_retries=1)
+@register_task(name="check_dns.run", queue="check_dns", time_limit=120_000, max_retries=1)
 def run(siret):
     org = find_org_by_siret(siret)
 
