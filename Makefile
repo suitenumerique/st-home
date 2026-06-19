@@ -100,20 +100,20 @@ lint-check: \
 # ==============================================================================
 # DATA SERVICES
 
-data-freeze-deps:  ## Lock Poetry dependencies
-	$(COMPOSE_RUN) data_poetry poetry lock
+data-freeze-deps:  ## Lock uv dependencies
+	$(COMPOSE_RUN) data_uv uv lock
 .PHONY: data-freeze-deps
 
-data-check-deps:  ## Check Poetry configuration
-	$(COMPOSE_RUN) data_poetry poetry check
+data-check-deps:  ## Check the uv lockfile is up to date
+	$(COMPOSE_RUN) data_uv uv lock --check
 .PHONY: data-check-deps
 
-data-outdated-deps:  ## Show outdated Poetry dependencies
-	$(COMPOSE_RUN) data_poetry poetry show --outdated
+data-outdated-deps:  ## Show outdated dependencies
+	$(COMPOSE_RUN) data_uv uv tree --outdated
 .PHONY: data-outdated-deps
 
-data-tree-deps:  ## Show Poetry dependency tree
-	$(COMPOSE_RUN) data_poetry poetry show --tree
+data-tree-deps:  ## Show the dependency tree
+	$(COMPOSE_RUN) data_uv uv tree
 .PHONY: data-tree-deps
 
 data-shell:  ## Open shell in worker container with local environment
@@ -124,21 +124,15 @@ data-sync:  ## Run data synchronization tasks
 	$(COMPOSE_RUN) worker python -m tasks.sync
 .PHONY: data-sync
 
-data-queue-all:  ## Queue all Celery tasks (website and DNS checks)
-	$(COMPOSE_RUN) worker sh -c 'celery -A celery_app call tasks.check_website.queue_all && celery -A celery_app call tasks.check_dns.queue_all'
+data-queue-all:  ## Queue all dramatiq tasks (website and DNS checks)
+	$(COMPOSE_RUN) worker python -m tasks.queue_all
 .PHONY: data-queue-all
 
-data-purge:  ## Purge all Celery queues
-	$(COMPOSE_RUN) worker sh -c 'celery -A celery_app purge -Q celery,check_website,check_dns -f'
+PURGE_CMD = python -c 'import tasks.sync, tasks.check_website, tasks.check_dns, tasks.historize, broker; broker.broker.flush_all()'
+
+data-purge:  ## Purge all dramatiq queues
+	$(COMPOSE_RUN) worker $(PURGE_CMD)
 .PHONY: data-purge
-
-data-purge-staging:  ## Purge all Celery queues in staging environment
-	$(COMPOSE_RUN) flower_staging celery -A celery_app purge -Q celery,check_website,check_dns -f
-.PHONY: data-purge-staging
-
-data-purge-production:  ## Purge all Celery queues in production environment
-	$(COMPOSE_RUN) flower_production celery -A celery_app purge -Q celery,check_website,check_dns -f
-.PHONY: data-purge-production
 
 data-historize:  ## Run data historization tasks
 	$(COMPOSE_RUN) worker python -m tasks.historize
@@ -159,18 +153,6 @@ data-lint-check:  ## Check data code linting without fixing
 data-geoip-download:  ## Download the GeoIP database from https://www.npmjs.com/package/@ip-location-db/dbip-geo-whois-asn-country-mmdb
 	mkdir -p data/dumps && curl -LSs -o data/dumps/geoip-country.mmdb 'https://cdn.jsdelivr.net/npm/@ip-location-db/dbip-geo-whois-asn-country-mmdb/dbip-geo-whois-asn-country-ipv4.mmdb'
 .PHONY: data-geoip-download
-
-# ==============================================================================
-# FLOWER MONITORING
-
-flower-staging:  ## Start Flower monitoring for staging environment
-	$(COMPOSE_RUN) --service-ports flower_staging
-.PHONY: flower-staging
-
-flower-production:  ## Start Flower monitoring for production environment
-	$(COMPOSE_RUN) --service-ports flower_production
-.PHONY: flower-production
-
 
 # ==============================================================================
 # DATABASE

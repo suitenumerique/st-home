@@ -42,9 +42,15 @@
 		respond @ratelimited "Rate limit exceeded" 429
 	}
 
-	# Reverse proxy to Next.js
-	reverse_proxy localhost:3000 {
-		header_up X-Forwarded-Proto https
-		header_up X-Forwarded-For {client_ip}
+	# Worker dashboard (generated at runtime by scalingo_run_web; empty file when
+	# not configured). Serves /$WORKER_DASHBOARD_URL* behind IP allowlist + basic auth.
+	import dashboard.caddy
+
+	# Reverse proxy to Next.js (catch-all for everything not handled above)
+	handle {
+		reverse_proxy localhost:3000 {
+			header_up X-Forwarded-Proto https
+			header_up X-Forwarded-For {client_ip}
+		}
 	}
 }

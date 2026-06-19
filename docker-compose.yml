@@ -12,7 +12,7 @@ services:
       - "8951:5432"
 
   redis:
-    image: redis:5
+    image: redis:7
     ports:
       - "8952:6379"
 
@@ -28,14 +28,14 @@ services:
     pull_policy: build
     command: pytest tests/ -vv
 
-  data_poetry:
+  data_uv:
     profiles:
       - tools
     volumes:
       - ./data:/app/data
     build:
       context: data/
-      target: poetry
+      target: uv
     pull_policy: build
 
   worker:
@@ -51,9 +51,13 @@ services:
     env_file:
       - .env.defaults
       - .env.local
-    command: watchmedo auto-restart --patterns="*.py" --recursive -- celery -A celery_app worker -E -Q celery,check_website,check_dns --loglevel=debug --concurrency=2
+    environment:
+      - WORKER_PROCESSES=1
+      - WORKER_THREADS=2
+      - WORKER_WATCH=.
+    command: python worker.py
 
-  flower:
+  dashboard:
     build:
       context: data/
       target: runtime-dev
@@ -62,43 +66,14 @@ services:
     env_file:
       - .env.defaults
       - .env.local
+    environment:
+      - WORKER_DASHBOARD_HOST=0.0.0.0
+      - WORKER_DASHBOARD_PORT=8953
     volumes:
       - ./data:/app/data
     ports:
       - "8953:8953"
-    command: celery -A celery_app flower --port=8953
-
-  flower_staging:
-    profiles:
-      - tools_staging
-    volumes:
-      - ./data:/app/data
-    build:
-      context: data/
-      target: runtime-dev
-    pull_policy: build
-    env_file:
-      - .env.defaults
-      - .env.staging
-    ports:
-      - "8953:8953"
-    command: celery -A celery_app flower --port=8953
-
-  flower_production:
-    profiles:
-      - tools_production
-    volumes:
-      - ./data:/app/data
-    build:
-      context: data/
-      target: runtime-dev
-    pull_policy: build
-    env_file:
-      - .env.defaults
-      - .env.production
-    ports:
-      - "8953:8953"
-    command: celery -A celery_app flower --port=8953
+    command: python dashboard.py
 
   frontend-dev:
     build:

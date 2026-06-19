@@ -7,7 +7,7 @@ from collections import defaultdict
 
 from sentry_sdk.crons import monitor
 
-from celery_app import app
+from broker import register_task
 
 from .conformance import Issues, get_rcpnt_conformance, validate_conformance
 from .db import (
@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-@app.task
+@register_task(name="sync.run")
 @monitor(
     monitor_slug="sync.run",
     monitor_config={
@@ -733,7 +733,7 @@ def create_new_dumps(orgs: list):
     upload_file_to_data_gouv("551a41a5-4ac7-40df-99cb-930aedb3c3ac", "dumps/dpnt-quotidien.csv.gz")
 
 
-@app.task
+@register_task(name="sync.debug_sentry")
 def debug_sentry():
     raise Exception("This is a test exception for Sentry")
 

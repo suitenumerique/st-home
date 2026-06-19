@@ -33,7 +33,7 @@ Les services suivants sont disponibles :
 | **Frontend**       | [http://localhost:8950](http://localhost:8950) | Site vitrine en développement              | Aucun         |
 | **PostgreSQL**     | 8951                                           | Serveur de base de données                 | `usr` / `pwd` |
 | **Redis**          | 8952                                           | Cache et courtier de messages              | Aucun         |
-| **Celery UI**      | [http://localhost:8953](http://localhost:8953) | Supervision de la file de tâches           | Aucun         |
+| **Dashboard tâches** | [http://localhost:8953/worker-dashboard](http://localhost:8953/worker-dashboard) | Supervision de la file de tâches (dramatiq) | Aucun         |
 | **Drizzle Studio** | [http://localhost:8954](http://localhost:8954) | Interface de gestion de la base de données | Aucun         |
 
 ### Production de données
@@ -52,13 +52,16 @@ Une fois dedans, il est possible de lancer les tâches de synchronisation des do
 # Tout synchroniser
 python -m tasks.sync
 
-# Lancer une tâche de vérification manuellement
-python -m tasks.check_website [SIRET]
-python -m tasks.check_dns [SIRET]
-
+# Lancer une vérification manuellement et afficher son résultat.
+# On peut passer un SIRET (la vérification porte alors sur l'email / le site web
+# de l'organisation correspondante), ou directement une URL / un domaine email :
+python -m tasks.check_website [SIRET | URL]      # ex: python -m tasks.check_website https://example.com
+python -m tasks.check_dns [SIRET | domaine]      # ex: python -m tasks.check_dns example.com
 ```
 
-Cela peut permettre de débugguer des problèmes liés à certains SIRETs en particulier.
+Ces commandes affichent la valeur de retour de la vérification (les problèmes
+détectés) sans rien écrire en base, ce qui permet de débugguer des problèmes
+liés à certains SIRETs ou domaines en particulier.
 
 Il est recommandé d'ajouter des tests unitaires à chaque nouveau cas pour rendre les vérifications plus robustes.
 

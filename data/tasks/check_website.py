@@ -1,4 +1,3 @@
-import json
 import logging
 import re
 import sys
@@ -6,8 +5,9 @@ from urllib.parse import urlparse, urlunparse
 
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from sentry_sdk.crons import monitor
 
-from celery_app import app
+from broker import register_task
 
 from .conformance import Issues, data_checks_doable, validate_conformance
 from .db import find_org_by_siret, list_all_orgs, upsert_issues
@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO)
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
-@app.task(time_limit=60, acks_late=True)
+@register_task(name="check_website.run", queue="check_website", time_limit=60_000, max_retries=1)
 def run(siret):
     org = find_org_by_siret(siret)
 
@@ -39,13 +39,22 @@ def run(siret):
         if issues is not None:
             upsert_issues(siret, "website", issues, {})
 
-        return {str(x): issues[x] for x in issues.keys()}
 
-
-@app.task
+@register_task(name="check_website.queue_all")
+@monitor(
+    monitor_slug="check_website.queue_all",
+    monitor_config={
+        "schedule": {"type": "crontab", "value": "00 2 * * *"},
+        "timezone": "UTC",
+        "checkin_margin": 60,  # in minutes
+        "max_runtime": 60,
+        "failure_issue_threshold": 1,
+        "recovery_threshold": 3,
+    },
+)
 def queue_all():
     for org in list_all_orgs():
-        run.apply_async(args=[org["siret"]], queue="check_website")
+        run.send(org["siret"])
 
 
 def check_website(url, force_http_url=None):
@@ -260,10 +269,12 @@ def check_non_www(base_final_domain, base_url, urls_to_test, issues, request_kwa
 
 
 if __name__ == "__main__":
-    # Run with command line arguments
-    siret = sys.argv[1]
-    if "." in siret:
-        logger.info(check_website(siret))
+    # CLI: pass a URL to check it directly, or a SIRET to check that org's
+    # website. Prints check_website()'s return value; no DB write.
+    arg = sys.argv[1]
+    if "." in arg:
+        print(check_website(arg))  # noqa: T201
     else:
-        issues = run(siret)
-        logger.info(json.dumps(issues, indent=2))
+        org = find_org_by_siret(arg)
+        url = (org or {}).get("website_url")
+        print(check_website(url) if url else f"No website for org {arg}")  # noqa: T201

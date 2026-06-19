@@ -15,6 +15,28 @@ else
   : > ratelimit.caddy
 fi
 
+# Worker dashboard — only exposed when both an IP allowlist and basic-auth
+# credentials are configured (fail closed). The Python process binds to
+# localhost; Caddy serves it at /$WORKER_DASHBOARD_URL behind the guards below.
+if [ -n "$WORKER_DASHBOARD_BASICAUTH_HASH" ] && [ -n "$WORKER_DASHBOARD_ALLOWED_IPS" ]; then
+  WORKER_DASHBOARD_HOST=127.0.0.1 WORKER_DASHBOARD_PORT="${WORKER_DASHBOARD_PORT:-8090}" \
+    python dashboard.py &
+  cat > dashboard.caddy <<'EOF'
+handle /{$WORKER_DASHBOARD_URL:worker-dashboard}* {
+	route {
+		@dash_denied not client_ip {$WORKER_DASHBOARD_ALLOWED_IPS}
+		respond @dash_denied "Access denied" 403
+		basic_auth {
+			{$WORKER_DASHBOARD_BASICAUTH_USER} {$WORKER_DASHBOARD_BASICAUTH_HASH}
+		}
+		reverse_proxy 127.0.0.1:{$WORKER_DASHBOARD_PORT:8090}
+	}
+}
+EOF
+else
+  : > dashboard.caddy
+fi
+
 # Start the NextJS server
 npm run start &
 
