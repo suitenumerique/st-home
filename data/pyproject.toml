@@ -6,7 +6,7 @@ requires-python = ">=3.13"
 dependencies = [
     "pygrister==0.7.0",
     "requests==2.32.3",
-    "dramatiq-redis-streams @ git+https://github.com/sylvinus/dramatiq-redis-streams.git@b02d0c6b3e80b29d7a48e254068924301bd284fc",
+    "dramatiq-redis-streams @ git+https://github.com/sylvinus/dramatiq-redis-streams.git@819912de7259361688fcfa1b91b0c465ecd2b6e4",
     "redis==5.2.1",
     "dnspython==2.7.0",
     "maxminddb==2.7.0",
