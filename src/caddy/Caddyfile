@@ -6,7 +6,8 @@
 #                           e.g. "1.2.3.4 5.6.7.0/24"
 #   PROXY_ALLOWED_COUNTRIES — space-separated country codes to allow (empty = open)
 #                           e.g. "FR DE BE"
-#   PROXY_GEOIP_DB_PATH   — path to the MaxMind/DB-IP mmdb file (required for geo-blocking)
+#   PROXY_GEOIP_DB_PATH   — path to the MaxMind/DB-IP mmdb file (geo-blocking is
+#                           skipped — fail open — when this file is missing)
 #   PROXY_RATE_LIMIT_EVENTS     — max requests per IP per window (empty = no rate limiting)
 #   PROXY_RATE_LIMIT_WINDOW     — rate limit window duration (default: 10s)
 
@@ -23,17 +24,6 @@
   # rely only on the default runtime logs (rate limit/geoblock)
   # + Scalingo router logs (access logs)
 
-	# IP blocklist — empty = open (space-separated IPs/CIDRs)
-	@blocked client_ip {$PROXY_BLOCKED_IPS}
-	respond @blocked "Access denied" 403
-
-	# Geo-blocking — empty = open (space-separated country codes)
-	@geoblocked not maxmind_geolocation {
-		db_path {$PROXY_GEOIP_DB_PATH}
-		allow_countries {$PROXY_ALLOWED_COUNTRIES}
-	}
-	respond @geoblocked "Access denied" 403
-
 	# Rate limiting — empty = disabled
 	import ratelimit.caddy
 
@@ -43,11 +33,27 @@
 	}
 
 	# Worker dashboard (generated at runtime by scalingo_run_web; empty file when
-	# not configured). Serves /$WORKER_DASHBOARD_URL* behind IP allowlist + basic auth.
+	# not configured). Serves /$WORKER_DASHBOARD_URL* behind its OWN IP allowlist +
+	# basic auth. It's a sibling `handle`, so it's mutually exclusive with the
+	# catch-all below and bypasses the global blocklist/geoblock by design — the
+	# dashboard's own allowlist is stricter (whitelist), so this is fail-closed.
 	import dashboard.caddy
 
-	# Reverse proxy to Next.js (catch-all for everything not handled above)
+	# Everything else: global guards then reverse proxy. The guards and the proxy
+	# live in the SAME handle with a bare reverse_proxy (no nested catch-all), so
+	# Caddy's directive order keeps `respond` (guards) ahead of `reverse_proxy`.
 	handle {
+		# IP blocklist — empty = open (space-separated IPs/CIDRs)
+		@blocked client_ip {$PROXY_BLOCKED_IPS}
+		respond @blocked "Access denied" 403
+
+		# Geo-blocking (generated at runtime by scalingo_run_web; empty file when
+		# disabled or when the GeoIP DB is missing). Generated rather than inline
+		# because the maxmind module fails to boot if the .mmdb file is absent —
+		# we don't want a failed DB download to take Caddy (and the deploy) down.
+		import geoblock.caddy
+
+		# Reverse proxy to Next.js
 		reverse_proxy localhost:3000 {
 			header_up X-Forwarded-Proto https
 			header_up X-Forwarded-For {client_ip}
