@@ -1006,6 +1006,11 @@ const FAQS = [
         <p>Voici son historique :</p>
         <ul>
           <li>
+            <strong>Version 0.2.1</strong> (10 Juillet 2026) : Autorisation de la redirection du
+            nom de domaine vers la page Service-Public.gouv.fr pour les communes sans site web
+            (critère 1.6)
+          </li>
+          <li>
             <strong>Version 0.2</strong> (16 Août 2025) : Ajout du critère 2.8
           </li>
           <li>
@@ -1297,7 +1302,7 @@ const ReferentielPage: NextPage = () => {
                   }
                 }}
               >
-                RPNT v0.2, publié le 16 Août 2025
+                RPNT v0.2.1, publié le 10 Juillet 2026
               </div>
 
               <div className={fr.cx("fr-text--lg", "fr-mb-5w")}>{REF_INTRO}</div>
