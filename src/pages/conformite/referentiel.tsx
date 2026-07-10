@@ -105,6 +105,18 @@ export const ReferentielConformite: ReferentielSection[] = [
               </li>
               <li>Envoyez votre demande. Elle sera examinée sous 48 heures.</li>
             </ol>
+            <p>
+              Les communes ne disposant pas de site web sont invitées à mettre en place la
+              redirection de leur nom de domaine vers leur page officielle sur l&rsquo;Annuaire de
+              l&rsquo;administration. La procédure est documentée{" "}
+              <Link
+                href="https://aide.suite.anct.gouv.fr/socle/domaines/utiliser-ma-page-collectivite-comme-site-internet"
+                target="_blank"
+              >
+                ici
+              </Link>
+              .
+            </p>
           </>
         ),
         type: "declarative",
@@ -328,14 +340,17 @@ export const ReferentielConformite: ReferentielSection[] = [
       },
       {
         num: "1.6",
-        title: <>Le site déclaré sur Service-Public.gouv.fr ne doit pas rediriger ailleurs</>,
+        title: <>Le site déclaré ne doit pas rediriger vers un site non officiel</>,
         shortTitle: "Déclaration et redirection identiques",
         whyItsImportant: (
           <>
             <p>
-              Si le site internet renseigné sur l&rsquo;Annuaire de l&rsquo;administration de{" "}
-              {DILA_LINK} redirige vers un autre nom de domaine, celui-ci ne peut pas être considéré
-              comme le site officiel de la collectivité.
+              Si le site internet déclaré sur {DILA_LINK} redirige vers un autre nom de domaine,
+              celui-ci ne peut pas être considéré comme le site officiel de la collectivité.
+            </p>
+            <p>
+              Une dérogation est accordée aux communes ne disposant pas de site web : elles sont
+              invitées à rediriger leur nom de domaine sur leur page {DILA_LINK}.
             </p>
           </>
         ),
@@ -355,6 +370,18 @@ export const ReferentielConformite: ReferentielSection[] = [
               </li>
               <li>Envoyez votre demande. Elle sera examinée sous 48 h.</li>
             </ol>
+            <p>
+              Les communes ne disposant pas de site web sont invitées à mettre en place la
+              redirection de leur nom de domaine vers leur page officielle sur l&rsquo;Annuaire de
+              l&rsquo;administration. La procédure est documentée{" "}
+              <Link
+                href="https://aide.suite.anct.gouv.fr/socle/domaines/utiliser-ma-page-collectivite-comme-site-internet"
+                target="_blank"
+              >
+                ici
+              </Link>
+              .
+            </p>
           </>
         ),
         type: "tested",

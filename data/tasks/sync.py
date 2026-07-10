@@ -16,7 +16,12 @@ from .db import (
     init_db,
     update_rcpnt_stats,
 )
-from .defs import HARDCODED_COMMUNES, HARDCODED_DILA_SIRETS
+from .defs import (
+    EXCLUDED_DEPARTEMENTS,
+    EXCLUDED_REGIONS,
+    HARDCODED_COMMUNES,
+    HARDCODED_DILA_SIRETS,
+)
 from .dumps import (
     add_dila_issue,
     dump_adherents,
@@ -177,6 +182,9 @@ def list_departements():
             "population": population_by_insee.get(x["DEP"]) or 0,
         }
         for x in iter_insee_departements()
+        # Skip departements whose powers are exercised by a merged collectivity
+        # already represented at another tier (see EXCLUDED_DEPARTEMENTS).
+        if x["DEP"] not in EXCLUDED_DEPARTEMENTS
     ]
 
 
@@ -221,6 +229,9 @@ def list_regions():
             "population": population_by_insee.get(x["REG"]) or 0,
         }
         for x in iter_insee_regions()
+        # Skip regions whose powers are exercised by a merged collectivity already
+        # represented at another tier (see EXCLUDED_REGIONS).
+        if x["REG"] not in EXCLUDED_REGIONS
     ]
 
 

@@ -31,13 +31,25 @@ export default function DepartmentPresenceView({ organisation }: DepartmentPrese
         <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
           <div className="departement-section">
             <span>
-              {organisation.dep_siret && (
+              {organisation.dep_siret ? (
                 <Link
                   className="fr-link fr-icon-arrow-right-line fr-link--icon-right"
                   href={`/bienvenue/${organisation.dep_siret}`}
                 >
                   Voir la présence numérique de mon département
                 </Link>
+              ) : (
+                // Territories governed by a merged collectivity (Corse, Martinique,
+                // Guyane, Alsace…) have no separate department: fall back to the
+                // collectivity represented at the region tier.
+                organisation.region_siret && (
+                  <Link
+                    className="fr-link fr-icon-arrow-right-line fr-link--icon-right"
+                    href={`/bienvenue/${organisation.region_siret}`}
+                  >
+                    Voir la présence numérique de ma collectivité
+                  </Link>
+                )
               )}
             </span>
           </div>

@@ -134,7 +134,9 @@
 }
 
 .communeInfoButton {
-  margin-top: -0.5rem;
+  /* No negative margin: it pulled the button up into the bottom separator of the
+     criteria list above, clipping it. */
+  margin-top: 0;
 }
 
 .criteriaHeader {
