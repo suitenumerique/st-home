@@ -8,7 +8,18 @@ echo "-----> Running post-frontend script"
 make data-geoip-download
 
 echo "-----> Downloading GeoIP database for Caddy"
-curl -fLSs -o /tmp/caddy-geoip.mmdb.gz "${PROXY_GEOIP_DB_URL}" && gunzip -f /tmp/caddy-geoip.mmdb.gz && mv /tmp/caddy-geoip.mmdb "data/${PROXY_GEOIP_DB_PATH}"
+# Non-fatal: a bad/unreachable PROXY_GEOIP_DB_URL must NOT fail the deploy. If the
+# download fails the .mmdb is simply absent and scalingo_run_web disables geo-
+# blocking (fail open) instead of letting Caddy refuse to boot. The `if` condition
+# suspends `errexit` for these commands.
+if [ -n "${PROXY_GEOIP_DB_URL}" ] \
+  && curl -fLSs -o /tmp/caddy-geoip.mmdb.gz "${PROXY_GEOIP_DB_URL}" \
+  && gunzip -f /tmp/caddy-geoip.mmdb.gz; then
+  mv /tmp/caddy-geoip.mmdb "data/${PROXY_GEOIP_DB_PATH}"
+else
+  echo "WARNING: GeoIP database download failed or PROXY_GEOIP_DB_URL unset; geo-blocking will be disabled"
+  rm -f /tmp/caddy-geoip.mmdb.gz
+fi
 
 mv data/* .
 mv src/caddy/* .

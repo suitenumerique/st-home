@@ -15,6 +15,24 @@ else
   : > ratelimit.caddy
 fi
 
+# Geo-blocking (empty country list or missing DB = disabled). The maxmind module
+# fails to boot if the .mmdb file is absent, so we only wire it up when the DB is
+# actually present — a failed/missing GeoIP download must not take Caddy down.
+if [ -n "$PROXY_ALLOWED_COUNTRIES" ] && [ -f "$PROXY_GEOIP_DB_PATH" ]; then
+  cat > geoblock.caddy <<EOF
+@geoblocked not maxmind_geolocation {
+	db_path $PROXY_GEOIP_DB_PATH
+	allow_countries $PROXY_ALLOWED_COUNTRIES
+}
+respond @geoblocked "Access denied" 403
+EOF
+else
+  if [ -n "$PROXY_ALLOWED_COUNTRIES" ]; then
+    echo "WARNING: PROXY_ALLOWED_COUNTRIES set but GeoIP DB '$PROXY_GEOIP_DB_PATH' missing; geo-blocking DISABLED"
+  fi
+  : > geoblock.caddy
+fi
+
 # Worker dashboard — only exposed when both an IP allowlist and basic-auth
 # credentials are configured (fail closed). The Python process binds to
 # localhost; Caddy serves it at /$WORKER_DASHBOARD_URL behind the guards below.
