@@ -10,6 +10,8 @@ from pathlib import Path
 
 import requests
 
+from .defs import FORCE_INCLUDE_SIRENE
+
 
 def dump_dila():
     if Path("dumps/dila.json").exists():
@@ -167,10 +169,35 @@ def dump_filtered_sirene(orgs):
 
     url = "https://www.data.gouv.fr/fr/datasets/r/0651fb76-bcf3-4f6a-a38d-bc04fa708576"
 
-    # Start the process to stream data. We do this to avoid loading the whole file in memory.
+    # The sed pre-filter keeps only lines with NAF 84.11Z to shrink the stream.
+    # Force-included SIRENs (siège mis-coded or cessée) must survive it too, so we
+    # add a print rule per SIREN. Digits only, safe inside the single-quoted script.
+    force_rules = "".join(f";/{siren}/p" for siren in FORCE_INCLUDE_SIRENE)
+
+    # The data.gouv stream truncates intermittently ("gzip: stdin: invalid
+    # compressed data--length error"). A naked curl|zcat pipe can't recover: curl
+    # exits 0 having sent a partial body and zcat chokes on the missing tail. So we
+    # download to a file with resumable retries (-C - continues a partial file) and
+    # verify gzip integrity before parsing, so we never build from a truncated dump.
+    gz_path = "dumps/sirene_stock.csv.gz"
+    Path(gz_path).unlink(missing_ok=True)
+    for _ in range(6):
+        subprocess.call(
+            f"curl -sfL --connect-timeout 30 --retry 5 --retry-delay 2 -C - '{url}' -o '{gz_path}'",
+            shell=True,
+            executable="/bin/bash",
+        )
+        if subprocess.call(["gzip", "-t", gz_path]) == 0:
+            break
+    else:
+        Path(gz_path).unlink(missing_ok=True)
+        raise RuntimeError("Could not obtain a complete SIRENE gzip after retries")
+
+    # Parse from the verified local file (pipefail so a zcat/sed error still fails loudly).
     process = subprocess.Popen(
-        f"curl -sL '{url}' | zcat | sed -n '1p;/84.11Z/p'",
+        f"set -o pipefail; zcat '{gz_path}' | sed -n '1p;/84.11Z/p{force_rules}'",
         shell=True,
+        executable="/bin/bash",
         stdout=subprocess.PIPE,
         text=True,
     )
@@ -181,13 +208,20 @@ def dump_filtered_sirene(orgs):
     rows = []
     # Process each row
     for row in reader:
-        if (
-            row["siren"] in orgs_sirens
-            and row.get("etatAdministratifEtablissement") == "A"
-            and row.get("etablissementSiege") == "true"
-        ):
+        siren = row["siren"]
+        if siren not in orgs_sirens or row.get("etablissementSiege") != "true":
+            continue
+        # Force-included SIRENs keep their siège row regardless of NAF/état.
+        if siren in FORCE_INCLUDE_SIRENE or row.get("etatAdministratifEtablissement") == "A":
             rows.append(row)
-            orgs_sirens.remove(row["siren"])
+            orgs_sirens.remove(siren)
+
+    # Fail loudly on a broken pipe/truncated stream so we never cache a partial dump.
+    if process.wait() != 0:
+        raise RuntimeError(f"SIRENE parse failed (exit {process.returncode})")
+    assert len(rows) > 30000, f"Suspiciously few SIRENE rows ({len(rows)}), refusing to cache"
+
+    Path(gz_path).unlink(missing_ok=True)
 
     with open("dumps/sirene.json", "w") as f:
         json.dump(rows, f, ensure_ascii=False, indent=4)

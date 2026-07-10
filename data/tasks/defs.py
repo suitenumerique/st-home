@@ -33,6 +33,41 @@ HARDCODED_COMMUNES = {
     },
 }
 
+# SIRENs whose siège establishment is dropped by dump_filtered_sirene's default
+# filter (NAF 84.11Z pre-filter + état "A"), but that we still need in the dump.
+# For these we keep the siège row regardless of its NAF code or état.
+FORCE_INCLUDE_SIRENE = {
+    # Active collectivités whose siège is mis-coded with a NAF ≠ 84.11Z:
+    "234500023",  # Région Centre-Val de Loire — siège NAF 49.10Z
+    "213105885",  # Villeneuve-Tolosane — siège NAF 68.20B
+    "215103789",  # Œuilly — siège NAF 01.21Z
+    # EPCIs dissolved 2026-01-01 (unité légale cessée) but still listed as active
+    # with member communes in the perimetre_epci source, waiting for DGCL to drop
+    # them / publish successors:
+    "241200658",  # CC du Pays de Salars
+    "241200765",  # CC de Lévézou Pareloup
+    "245701222",  # CA du Val de Fensch
+    "245701362",  # CA Portes de France-Thionville
+}
+
+# Territories where a single merged collectivity exercises the powers of several
+# INSEE tiers. Each collectivity is represented ONCE — at the tier for which DILA
+# carries a SIREN — so the redundant tiers below are intentionally NOT created as
+# orgs. They have no distinct active SIREN of their own; assigning them the
+# collectivity's SIREN would share its SIRET and get them dropped as duplicates
+# downstream (see create_new_dumps' SIRET de-duplication). The value documents the
+# tier that already represents the collectivity.
+EXCLUDED_DEPARTEMENTS = {
+    "2A": "Collectivité de Corse — représentée par la région 94",
+    "2B": "Collectivité de Corse — représentée par la région 94",
+    "68": "Collectivité européenne d'Alsace — représentée par le département 67",
+    "972": "Collectivité territoriale de Martinique — représentée par la région 02",
+    "973": "Collectivité territoriale de Guyane — représentée par la région 03",
+}
+EXCLUDED_REGIONS = {
+    "06": "Mayotte, Département-Région — représentée par le département 976",
+}
+
 HARDCODED_DILA_SIRETS = {
     # EPCIs
     "20007016700016": "9d0b7414-fca0-4419-a998-22df8e738bd0",

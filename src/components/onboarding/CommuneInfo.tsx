@@ -132,8 +132,8 @@ export default function CommuneInfo({
               <Badge severity="success" noIcon as="span">
                 Bonne nouvelle !
               </Badge>{" "}
-              Si vous n&rsquo;en possédez pas, la Suite territoriale peut vous accompagner à en
-              obtenir un.
+              Si vous ne possédez pas de nom de domaine, la Suite territoriale peut vous accompagner
+              à en obtenir un.
             </li>
           )}
         </>
