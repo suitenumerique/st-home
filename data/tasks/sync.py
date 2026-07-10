@@ -365,14 +365,32 @@ def associate_dila_to_organizations(orgs: list):
             # We try to find the best match by name
             if org["type"] == "commune":
                 normalized_search = normalize("Mairie - " + org["name"])
-                normalized_matches = {
+                # Keep only "principal" mairies (drop mairies déléguées / annexes).
+                principals = {
                     normalize(x["nom"]): x
                     for x in all_matches.values()
                     if not re.match(r"^mairie.+(déléguée|annexe)", x["nom"], flags=re.IGNORECASE)
                 }
 
-                if normalized_search in normalized_matches:
-                    dila_match = normalized_matches[normalized_search]
+                if normalized_search in principals:
+                    dila_match = principals[normalized_search]
+                elif len(principals) == 1:
+                    # A single principal mairie remains (e.g. a commune nouvelle whose
+                    # only non-déléguée mairie is named after its chef-lieu, like
+                    # "Mairie - Les Portes du Coglais - Montours"): it is unambiguous.
+                    dila_match = next(iter(principals.values()))
+                else:
+                    # Several principals (commune nouvelle keeping the former communes'
+                    # mairies). DILA names them "Mairie - <commune> - <chef-lieu>" or
+                    # after a constituent, so accept a match only when exactly one
+                    # principal's name is a prefix of, or extends, the searched name.
+                    prefixed = [
+                        x
+                        for k, x in principals.items()
+                        if k.startswith(normalized_search) or normalized_search.startswith(k)
+                    ]
+                    if len(prefixed) == 1:
+                        dila_match = prefixed[0]
 
             if not dila_match:
                 logger.warning(

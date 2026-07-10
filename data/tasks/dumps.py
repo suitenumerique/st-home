@@ -4,6 +4,7 @@ import io
 import json
 import logging
 import os
+import signal
 import subprocess
 import zipfile
 from pathlib import Path
@@ -11,6 +12,8 @@ from pathlib import Path
 import requests
 
 from .defs import FORCE_INCLUDE_SIRENE
+
+logger = logging.getLogger(__name__)
 
 
 def dump_dila():
@@ -174,54 +177,94 @@ def dump_filtered_sirene(orgs):
     # add a print rule per SIREN. Digits only, safe inside the single-quoted script.
     force_rules = "".join(f";/{siren}/p" for siren in FORCE_INCLUDE_SIRENE)
 
-    # The data.gouv stream truncates intermittently ("gzip: stdin: invalid
-    # compressed data--length error"). A naked curl|zcat pipe can't recover: curl
-    # exits 0 having sent a partial body and zcat chokes on the missing tail. So we
-    # download to a file with resumable retries (-C - continues a partial file) and
-    # verify gzip integrity before parsing, so we never build from a truncated dump.
-    gz_path = "dumps/sirene_stock.csv.gz"
-    Path(gz_path).unlink(missing_ok=True)
-    for _ in range(6):
-        subprocess.call(
-            f"curl -sfL --connect-timeout 30 --retry 5 --retry-delay 2 -C - '{url}' -o '{gz_path}'",
+    # All the SIRENs we care about are territorial collectivities, which live in the
+    # low 20x–24x range. SIRENE is sorted by SIREN ascending, so once the stream
+    # passes our highest target we have already seen every relevant row.
+    max_target = max(int(s) for s in orgs_sirens if s and s.isdigit())
+
+    # The data.gouv stream truncates intermittently at the far end ("gzip: invalid
+    # compressed data--length error") — but that tail is millions of unrelated
+    # companies with high SIRENs. We stream (curl | zcat | sed) to avoid storing the
+    # multi-GB file on disk, and stop as soon as we pass max_target: the truncation
+    # is never reached, and we skip ~95% of the file. We only retry when the stream
+    # dies *before* reaching that point (a genuinely incomplete read).
+    def stream_rows():
+        # No `curl --retry` here: retrying inside a running pipe would re-send bytes
+        # into zcat and corrupt the stream. We retry the whole pipeline instead.
+        process = subprocess.Popen(
+            f"set -o pipefail; curl -sfL --connect-timeout 30 '{url}' "
+            f"| zcat | sed -n '1p;/84.11Z/p{force_rules}'",
             shell=True,
             executable="/bin/bash",
+            stdout=subprocess.PIPE,
+            text=True,
+            start_new_session=True,
         )
-        if subprocess.call(["gzip", "-t", gz_path]) == 0:
+        seen = set()
+        collected = []
+        passed_range = False
+        prev_siren = 0
+        disordered = False
+        try:
+            reader = csv.DictReader(process.stdout, delimiter=",")
+            for row in reader:
+                siren = row["siren"]
+                if not siren.isdigit():
+                    continue
+                siren_int = int(siren)
+                # The early-exit below is only sound if SIRENs arrive in ascending
+                # order. That isn't a guarantee we found documented, so we verify it
+                # as we go and abort loudly rather than risk silently dropping a row.
+                if siren_int < prev_siren:
+                    disordered = True
+                    break
+                prev_siren = siren_int
+                if (
+                    siren in orgs_sirens
+                    and siren not in seen
+                    and row.get("etablissementSiege") == "true"
+                    # Force-included SIRENs keep their siège row regardless of NAF/état.
+                    and (
+                        siren in FORCE_INCLUDE_SIRENE
+                        or row.get("etatAdministratifEtablissement") == "A"
+                    )
+                ):
+                    collected.append(row)
+                    seen.add(siren)
+                if siren_int > max_target:
+                    passed_range = True
+                    break
+        finally:
+            # Tear down the whole pipeline (curl would keep downloading otherwise).
+            try:
+                os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+            except (ProcessLookupError, PermissionError):
+                pass
+            process.stdout.close()
+            returncode = process.wait()
+
+        if disordered:
+            raise RuntimeError(
+                "SIRENE stream is not sorted by SIREN ascending; the early-exit would "
+                "risk dropping rows. Aborting instead of writing an incomplete dump."
+            )
+
+        # Complete if we passed the target range, or the stream reached a clean EOF.
+        return (passed_range or returncode == 0), collected
+
+    rows = None
+    for attempt in range(6):
+        complete, collected = stream_rows()
+        if complete and len(collected) > 30000:
+            rows = collected
             break
+        logger.warning(
+            "SIRENE stream attempt %d incomplete (%d rows), retrying",
+            attempt + 1,
+            len(collected),
+        )
     else:
-        Path(gz_path).unlink(missing_ok=True)
-        raise RuntimeError("Could not obtain a complete SIRENE gzip after retries")
-
-    # Parse from the verified local file (pipefail so a zcat/sed error still fails loudly).
-    process = subprocess.Popen(
-        f"set -o pipefail; zcat '{gz_path}' | sed -n '1p;/84.11Z/p{force_rules}'",
-        shell=True,
-        executable="/bin/bash",
-        stdout=subprocess.PIPE,
-        text=True,
-    )
-
-    # Create a CSV reader with proper encoding
-    reader = csv.DictReader(process.stdout, delimiter=",")
-
-    rows = []
-    # Process each row
-    for row in reader:
-        siren = row["siren"]
-        if siren not in orgs_sirens or row.get("etablissementSiege") != "true":
-            continue
-        # Force-included SIRENs keep their siège row regardless of NAF/état.
-        if siren in FORCE_INCLUDE_SIRENE or row.get("etatAdministratifEtablissement") == "A":
-            rows.append(row)
-            orgs_sirens.remove(siren)
-
-    # Fail loudly on a broken pipe/truncated stream so we never cache a partial dump.
-    if process.wait() != 0:
-        raise RuntimeError(f"SIRENE parse failed (exit {process.returncode})")
-    assert len(rows) > 30000, f"Suspiciously few SIRENE rows ({len(rows)}), refusing to cache"
-
-    Path(gz_path).unlink(missing_ok=True)
+        raise RuntimeError("Could not stream a complete SIRENE dump after retries")
 
     with open("dumps/sirene.json", "w") as f:
         json.dump(rows, f, ensure_ascii=False, indent=4)
