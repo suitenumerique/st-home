@@ -71,17 +71,6 @@ async function migrate() {
       ALTER TABLE st_organizations ADD COLUMN IF NOT EXISTS region_siret TEXT;
     `);
 
-    // Mirror the epci_siret/dep_siret/region_siret columns onto st_organizations_history
-    await db.execute(sql`
-      ALTER TABLE IF EXISTS st_organizations_history ADD COLUMN IF NOT EXISTS epci_siret TEXT;
-    `);
-    await db.execute(sql`
-      ALTER TABLE IF EXISTS st_organizations_history ADD COLUMN IF NOT EXISTS dep_siret TEXT;
-    `);
-    await db.execute(sql`
-      ALTER TABLE IF EXISTS st_organizations_history ADD COLUMN IF NOT EXISTS region_siret TEXT;
-    `);
-
     // Add name_with_article and status columns to operators
     await db.execute(sql`
       ALTER TABLE st_operators ADD COLUMN IF NOT EXISTS name_with_article TEXT;
