@@ -182,20 +182,44 @@ def historize_table(table_name: str):
                 )
                 # No need to populate history columns here, the INSERT below handles it.
 
-            # Get column names from the original table
-            # This needs to be done *after* potential table creation
+            # Get column names (and types, to reconcile drift below) from the original
+            # table. This needs to be done *after* potential table creation.
             cur.execute(
                 """
-                SELECT column_name
-                FROM information_schema.columns
-                WHERE table_name = %s
-                  AND table_schema = 'public'  -- Assuming public schema, adjust if needed
-                ORDER BY ordinal_position;
+                SELECT a.attname AS column_name, format_type(a.atttypid, a.atttypmod) AS column_type
+                FROM pg_attribute a
+                WHERE a.attrelid = %s::regclass
+                  AND a.attnum > 0
+                  AND NOT a.attisdropped
+                ORDER BY a.attnum;
             """,
                 (table_name,),
             )
-            columns = [row[0] for row in cur.fetchall()]
+            source_columns = cur.fetchall()
+            columns = [row[0] for row in source_columns]
             column_list = ", ".join(f'"{col}"' for col in columns)  # Quote column names
+
+            # The history table's schema is otherwise only set once, above, when it's
+            # first created. Columns added to the source table by a later migration
+            # would silently be missing from *_history and break every subsequent
+            # INSERT below, so reconcile any drift on every run instead.
+            cur.execute(
+                """
+                SELECT a.attname
+                FROM pg_attribute a
+                WHERE a.attrelid = %s::regclass
+                  AND a.attnum > 0
+                  AND NOT a.attisdropped;
+            """,
+                (history_table_name,),
+            )
+            existing_history_columns = {row[0] for row in cur.fetchall()}
+            for column_name, column_type in source_columns:
+                if column_name not in existing_history_columns:
+                    cur.execute(
+                        f'ALTER TABLE {history_table_name} '
+                        f'ADD COLUMN "{column_name}" {column_type};'
+                    )
 
             # Insert current data from original table into history table,
             # adding the current date and month for the new history columns.
