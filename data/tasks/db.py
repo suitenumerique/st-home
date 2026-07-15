@@ -188,8 +188,7 @@ def historize_table(table_name: str):
                 """
                 SELECT a.attname AS column_name, format_type(a.atttypid, a.atttypmod) AS column_type
                 FROM pg_attribute a
-                JOIN pg_class c ON a.attrelid = c.oid
-                WHERE c.relname = %s
+                WHERE a.attrelid = %s::regclass
                   AND a.attnum > 0
                   AND NOT a.attisdropped
                 ORDER BY a.attnum;
@@ -204,11 +203,23 @@ def historize_table(table_name: str):
             # first created. Columns added to the source table by a later migration
             # would silently be missing from *_history and break every subsequent
             # INSERT below, so reconcile any drift on every run instead.
+            cur.execute(
+                """
+                SELECT a.attname
+                FROM pg_attribute a
+                WHERE a.attrelid = %s::regclass
+                  AND a.attnum > 0
+                  AND NOT a.attisdropped;
+            """,
+                (history_table_name,),
+            )
+            existing_history_columns = {row[0] for row in cur.fetchall()}
             for column_name, column_type in source_columns:
-                cur.execute(
-                    f'ALTER TABLE {history_table_name} '
-                    f'ADD COLUMN IF NOT EXISTS "{column_name}" {column_type};'
-                )
+                if column_name not in existing_history_columns:
+                    cur.execute(
+                        f'ALTER TABLE {history_table_name} '
+                        f'ADD COLUMN "{column_name}" {column_type};'
+                    )
 
             # Insert current data from original table into history table,
             # adding the current date and month for the new history columns.
