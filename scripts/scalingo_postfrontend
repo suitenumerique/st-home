@@ -13,6 +13,11 @@ make data-geoip-download
 # is simply disabled.
 if [ -n "${PROXY_GEOIP_DB_URL}" ]; then
   echo "-----> Downloading GeoIP database for Caddy"
+  if [ -z "${PROXY_GEOIP_DB_PATH}" ]; then
+    echo "ERROR: PROXY_GEOIP_DB_PATH must be set when PROXY_GEOIP_DB_URL is set" >&2
+    exit 1
+  fi
+  mkdir -p "$(dirname "data/${PROXY_GEOIP_DB_PATH}")"
   curl -fLSs -o "data/${PROXY_GEOIP_DB_PATH}" "${PROXY_GEOIP_DB_URL}"
 fi
 
