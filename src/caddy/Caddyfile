@@ -6,8 +6,10 @@
 #                           e.g. "1.2.3.4 5.6.7.0/24"
 #   PROXY_ALLOWED_COUNTRIES — space-separated country codes to allow (empty = open)
 #                           e.g. "FR DE BE"
-#   PROXY_GEOIP_DB_PATH   — path to the MaxMind/DB-IP mmdb file (geo-blocking is
-#                           skipped — fail open — when this file is missing)
+#   PROXY_GEOIP_DB_PATH   — path to the MaxMind/DB-IP mmdb file (downloaded at
+#                           deploy time by scalingo_postfrontend when
+#                           PROXY_GEOIP_DB_URL is set; a failed download fails
+#                           the deploy)
 #   PROXY_RATE_LIMIT_EVENTS     — max requests per IP per window (empty = no rate limiting)
 #   PROXY_RATE_LIMIT_WINDOW     — rate limit window duration (default: 10s)
 
@@ -49,8 +51,7 @@
 
 		# Geo-blocking (generated at runtime by scalingo_run_web; empty file when
 		# disabled or when the GeoIP DB is missing). Generated rather than inline
-		# because the maxmind module fails to boot if the .mmdb file is absent —
-		# we don't want a failed DB download to take Caddy (and the deploy) down.
+		# because the maxmind module fails to boot if the .mmdb file is absent.
 		import geoblock.caddy
 
 		# Reverse proxy to Next.js

@@ -17,7 +17,7 @@ fi
 
 # Geo-blocking (empty country list or missing DB = disabled). The maxmind module
 # fails to boot if the .mmdb file is absent, so we only wire it up when the DB is
-# actually present — a failed/missing GeoIP download must not take Caddy down.
+# actually present (i.e. PROXY_GEOIP_DB_URL was set at deploy time).
 if [ -n "$PROXY_ALLOWED_COUNTRIES" ] && [ -f "$PROXY_GEOIP_DB_PATH" ]; then
   cat > geoblock.caddy <<EOF
 @geoblocked not maxmind_geolocation {
