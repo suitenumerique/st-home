@@ -1,6 +1,5 @@
 import { findOrganizationsWithOperators } from "@/lib/db";
 import * as Sentry from "@sentry/nextjs";
-import { GristDocAPI } from "grist-api";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { RateLimiterMemory } from "rate-limiter-flexible";
 
@@ -18,7 +17,6 @@ interface SignUpRequestBody {
 type SignUpResponse = {
   success: boolean;
   message?: string;
-  rowId?: number | null;
 };
 
 const MAX_REQUESTS_PER_HOUR = 5;
@@ -120,7 +118,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   let recordToAdd: Record<string, string | number> | null = null;
-  const tableName = "Formulaire_Groupe_Pilote";
 
   try {
     const commune = await findOrganizationsWithOperators(siret);
@@ -158,14 +155,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       IP: ip,
     };
 
-    const apiKey = process.env.GRIST_API_KEY;
-    const docId = process.env.GRIST_DOC_ID_SIGNUP;
-    const server =
-      process.env.GRIST_SELF_MANAGED === "Y" ? process.env.GRIST_SELF_MANAGED_HOME : undefined;
+    const messagesEndpoint = process.env.SIGNUP_MESSAGES_API_ENDPOINT;
+    const messagesChannelId = process.env.SIGNUP_MESSAGES_CHANNEL_ID;
 
-    if (!apiKey || !docId) {
-      console.error("GRIST_API_KEY or GRIST_DOC_ID is not configured.");
-      Sentry.captureMessage("Grist API configuration missing", {
+    if (!messagesEndpoint || !messagesChannelId) {
+      console.error("SIGNUP_MESSAGES_API_ENDPOINT or SIGNUP_MESSAGES_CHANNEL_ID is not configured.");
+      Sentry.captureMessage("Messages API configuration missing", {
         level: "error",
         extra: { requestBody: req.body },
       });
@@ -175,18 +170,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       });
     }
 
-    const api = new GristDocAPI(docId, { apiKey, server });
+    const textBody = [
+      `Nouvelle inscription depuis le formulaire de contact`,
+      ``,
+      `Collectivité (SIRET ${recordToAdd.SIRET}): ${recordToAdd.Structure}`,
+      `Nom: ${recordToAdd.Nom}`,
+      `Email: ${recordToAdd.Mail}`,
+      `Fonction: ${recordToAdd.Fonction}`,
+      `Téléphone: ${recordToAdd.Telephone || "Inconnu"}`,
+      recordToAdd.CP ? `Code postal: ${recordToAdd.CP}` : "",
+      recordToAdd.OPSN ? `OPSN: ${recordToAdd.OPSN}` : "",
+      recordToAdd.Membre_OPSN ? `Membre OPSN: ${recordToAdd.Membre_OPSN}` : "",
+      recordToAdd.Precisions ? `Précisions: ${recordToAdd.Precisions}` : "",
+    ].join("\n");
 
-    console.log(`Adding record to Grist table '${tableName}':`, JSON.stringify(recordToAdd));
-    const addedRowIds = await api.addRecords(tableName, [recordToAdd]);
-    console.log("Grist response - addedRowIds:", addedRowIds);
+    const messagesResponse = await fetch(`${messagesEndpoint}deliver/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Channel-ID": messagesChannelId,
+      },
+      body: JSON.stringify({ email, textBody }),
+    });
 
-    if (!addedRowIds || addedRowIds.length === 0) {
-      const errorMsg = `Failed to add record to Grist table '${tableName}' (no row ID returned).`;
+    if (!messagesResponse.ok) {
+      const errorMsg = `Failed to post signup to Messages API (status ${messagesResponse.status}).`;
       console.error(errorMsg);
       Sentry.captureMessage(errorMsg, {
         level: "error",
-        extra: { requestBody: req.body, gristRecord: recordToAdd, tableName },
+        extra: { requestBody: req.body, status: messagesResponse.status },
+        tags: { api_route: "/api/communes/signup", target: "messages" },
       });
       return res.status(500).json({
         success: false,
@@ -195,67 +208,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       });
     }
 
-    // Post to Messages API (non-blocking)
-    const messagesEndpoint = process.env.SIGNUP_MESSAGES_API_ENDPOINT;
-    const messagesChannelId = process.env.SIGNUP_MESSAGES_CHANNEL_ID;
-    if (messagesEndpoint && messagesChannelId) {
-      const textBody = [
-        `Nouvelle inscription depuis le formulaire de contact`,
-        ``,
-        `Nom: ${recordToAdd.Nom}`,
-        `Email: ${recordToAdd.Mail}`,
-        `Fonction: ${recordToAdd.Fonction}`,
-        `Structure: ${recordToAdd.Structure} (SIRET: ${recordToAdd.SIRET})`,
-        `Téléphone: ${recordToAdd.Telephone || "Inconnu"}`,
-        recordToAdd.CP ? `Code postal: ${recordToAdd.CP}` : "",
-        recordToAdd.OPSN ? `OPSN: ${recordToAdd.OPSN}` : "",
-        recordToAdd.Membre_OPSN ? `Membre OPSN: ${recordToAdd.Membre_OPSN}` : "",
-        recordToAdd.Precisions ? `Précisions: ${recordToAdd.Precisions}` : "",
-      ].join("\n");
-
-      fetch(`${messagesEndpoint}deliver/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Channel-ID": messagesChannelId,
-        },
-        body: JSON.stringify({ email, textBody }),
-      }).catch((err) => {
-        console.error("Messages API Error:", err);
-        Sentry.captureException(err, {
-          tags: { api_route: "/api/communes/signup", target: "messages" },
-        });
-      });
-    }
-
-    return res
-      .status(201)
-      .json({ success: true, message: "Inscription réussie !", rowId: addedRowIds[0] });
+    return res.status(201).json({ success: true, message: "Inscription réussie !" });
   } catch (error: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
     console.error("Signup API Error:", error);
     Sentry.captureException(error, {
-      extra: { requestBody: req.body, gristRecordAttempt: recordToAdd },
+      extra: { requestBody: req.body, signupRecordAttempt: recordToAdd },
       tags: { api_route: "/api/communes/signup" },
     });
 
     let userMessage =
       "Échec du traitement de l'inscription. Veuillez réessayer plus tard ou nous contacter.";
-    if (error.response) {
-      console.error("Grist API Error Status:", error.response.status);
-      console.error("Grist API Error Data:", error.response.data);
-      const errorDetail = error.response.data?.error || JSON.stringify(error.response.data);
-      if (error.response.status === 404) {
-        userMessage = `Erreur service distant: Ressource non trouvée (${errorDetail}). Vérifiez le nom de la table ('${tableName}') ou l'ID du document.`;
-      } else if (error.response.status === 400) {
-        userMessage = `Erreur service distant: Données invalides (${errorDetail}). Vérifiez les noms/types des colonnes: ${Object.keys(recordToAdd || {}).join(", ")}.`;
-      } else {
-        userMessage = `Erreur service distant (${error.response.status}): ${errorDetail}. Veuillez réessayer plus tard ou nous contacter.`;
-      }
-      Sentry.setContext("Grist Error Detail", {
-        status: error.response.status,
-        data: error.response.data,
-      });
-    } else if (error.message) {
+    if (error.message) {
       userMessage = `Échec du traitement de l'inscription: ${error.message}. Veuillez réessayer plus tard ou nous contacter.`;
     }
 

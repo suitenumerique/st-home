@@ -58,7 +58,6 @@
     "debounce": "^2.2.0",
     "drizzle-kit": "^0.31.4",
     "drizzle-orm": "^0.44.4",
-    "grist-api": "^0.1.7",
     "html-to-text": "^9.0.5",
     "husky": "^9.1.7",
     "is-ci": "^4.1.0",
