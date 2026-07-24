@@ -143,16 +143,18 @@ export async function getDocument(
 
   if (!document.content) return document;
 
-  // Extract frontmatter from the document content
+  // Extract frontmatter from the document content. The <p> tags carry attributes
+  // when the editor applied any formatting (highlight, text color…) to those
+  // lines, so they must be tolerated everywhere here.
   const frontmatter = document.content.match(
-    /^<p>\s*---\s*(?:<br\s*\/?>\s*)?<\/p>((<p>[a-z0-9_-]+\:\s.+?<\/p>)+)<p>\s*---\s*(?:<br\s*\/?>\s*)?<\/p>/,
+    /^<p[^>]*>\s*---\s*(?:<br\s*\/?>\s*)?<\/p>((<p[^>]*>[a-z0-9_-]+\:\s.+?<\/p>)+)<p[^>]*>\s*---\s*(?:<br\s*\/?>\s*)?<\/p>/,
   );
   if (frontmatter && frontmatter[1]) {
     document.frontmatter =
       frontmatter[1]
-        .match(/<p>([a-z0-9]+)\:\s(.+?)<\/p>/g)
+        .match(/<p[^>]*>([a-z0-9]+)\:\s(.+?)<\/p>/g)
         ?.reduce((acc: Record<string, string>, curr: string) => {
-          const match = curr.match(/<p>([a-z0-9]+)\:\s(.+?)<\/p>/);
+          const match = curr.match(/<p[^>]*>([a-z0-9]+)\:\s(.+?)<\/p>/);
           if (match) {
             const [, key, value] = match;
             acc[key.toLowerCase()] = value;
