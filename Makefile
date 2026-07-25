@@ -222,7 +222,7 @@ db-reset-sample: \
 	db-drop \
 	db-push \
 	db-seed-sample
-.PHONY: db-reset
+.PHONY: db-reset-sample
 
 cms-refresh:  ## Refresh the CMS
 	curl 'http://suiteterritoriale.anct.gouv.fr/services?refresh=1'
