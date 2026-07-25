@@ -27,7 +27,7 @@ interface PageProps {
 }
 
 export default function ContactForm(props: PageProps) {
-  const { commune, opsnServices, anctServices, operatorName, operatorId, selectedServices } = props;
+  const { commune, operatorId, selectedServices } = props;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{

@@ -28,13 +28,13 @@ make help
 
 Les services suivants sont disponibles :
 
-| Service            | URL / Port                                     | Description                                | Identifiants  |
-| ------------------ | ---------------------------------------------- | ------------------------------------------ | ------------- |
-| **Frontend**       | [http://localhost:8950](http://localhost:8950) | Site vitrine en développement              | Aucun         |
-| **PostgreSQL**     | 8951                                           | Serveur de base de données                 | `usr` / `pwd` |
-| **Redis**          | 8952                                           | Cache et courtier de messages              | Aucun         |
+| Service              | URL / Port                                                                       | Description                                 | Identifiants  |
+| -------------------- | -------------------------------------------------------------------------------- | ------------------------------------------- | ------------- |
+| **Frontend**         | [http://localhost:8950](http://localhost:8950)                                   | Site vitrine en développement               | Aucun         |
+| **PostgreSQL**       | 8951                                                                             | Serveur de base de données                  | `usr` / `pwd` |
+| **Redis**            | 8952                                                                             | Cache et courtier de messages               | Aucun         |
 | **Dashboard tâches** | [http://localhost:8953/worker-dashboard](http://localhost:8953/worker-dashboard) | Supervision de la file de tâches (dramatiq) | Aucun         |
-| **Drizzle Studio** | [http://localhost:8954](http://localhost:8954) | Interface de gestion de la base de données | Aucun         |
+| **Drizzle Studio**   | [http://localhost:8954](http://localhost:8954)                                   | Interface de gestion de la base de données  | Aucun         |
 
 ### Production de données
 

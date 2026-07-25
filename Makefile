@@ -281,6 +281,10 @@ front-links-check:  ## Check the frontend links
 	$(COMPOSE_RUN) frontend-dev npm run test:links
 .PHONY: front-links-check
 
+front-test:  ## Run the frontend unit tests
+	$(COMPOSE_RUN) frontend-base npm run test:unit
+.PHONY: front-test
+
 help:
 	@echo "$(BOLD)Makefile help$(RESET)"
 	@echo "Please use 'make $(BOLD)target$(RESET)' where $(BOLD)target$(RESET) is one of:"

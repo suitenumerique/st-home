@@ -29,13 +29,6 @@ const moduleExports = {
     ],
   },
 
-  webpack: (config) => {
-    config.module.rules.push({
-      test: /\.(woff2|webmanifest)$/,
-      type: "asset/resource",
-    });
-    return config;
-  },
   env: {
     NEXT_PUBLIC_APP_VERSION: version,
     NEXT_PUBLIC_APP_VERSION_COMMIT: process.env.GITHUB_SHA || process.env.CONTAINER_VERSION,

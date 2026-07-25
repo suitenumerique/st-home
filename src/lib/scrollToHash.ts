@@ -130,24 +130,3 @@ export function useScrollToHash(options: ScrollToHashOptions = {}) {
     };
   }, [delay, smooth, onCancelled, onComplete, maxWaitTime]);
 }
-
-/**
- * Utility function to manually scroll to a hash target
- */
-export function scrollToHash(hash: string, smooth = true) {
-  const target = document.querySelector(hash);
-  if (target) {
-    target.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
-    return true;
-  }
-  return false;
-}
-
-/**
- * Listen for when hash scroll is complete
- */
-export function onHashScrollComplete(callback: (event: CustomEvent) => void) {
-  const handler = (event: Event) => callback(event as CustomEvent);
-  window.addEventListener("hashScrollComplete", handler);
-  return () => window.removeEventListener("hashScrollComplete", handler);
-}

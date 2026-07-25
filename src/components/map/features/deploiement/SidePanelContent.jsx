@@ -14,13 +14,12 @@ const DEPT_NAMES = Object.fromEntries(
   parentAreas.filter(a => a.type === 'department').map(a => [a.insee_geo, a.name])
 );
 
-const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, computeAreaStats, activeTab, setActiveTab, operators = [], allServices = [], selectedServiceFilter, setSelectedServiceFilter, selectedAreaOwnServices = new Set(), isLSTMode = true }) => {
+const SidePanelContent = ({ container, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, activeTab, setActiveTab, operators = [], allServices = [], selectedServiceFilter, setSelectedServiceFilter, selectedAreaOwnServices = new Set(), isLSTMode = true }) => {
 
   const [linkCopied, setLinkCopied] = useState(false);
   const [services, setServices] = useState([]);
   const [scopedStats, setScopedStats] = useState([]);
   const [expandedServices, setExpandedServices] = useState(new Set());
-  const [hoveredServiceId, setHoveredServiceId] = useState(null);
   const [openDropdown, setOpenDropdown] = useState(null); // 'structure' | 'service-filter' | null
   const [expandedOperatorId, setExpandedOperatorId] = useState(null);
   const [showTerritoireServices, setShowTerritoireServices] = useState(false);
@@ -163,15 +162,6 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     fetchScopedStats();
   }, [mapState.selectedAreas, mapState.currentLevel]);
 
-  const usageStats = useMemo(() => {
-    if (mapState.selectedAreas.city) return null;
-    return computeAreaStats(
-      mapState.currentLevel,
-      mapState.selectedAreas[mapState.currentLevel]?.insee_geo || "",
-      "",
-    );
-  }, [mapState.currentLevel, mapState.selectedAreas, mapState.filters, computeAreaStats]);
-
   const orgType = mapState.filters.org_type ?? 'all';
 
   const resolveVisible = (config) => {
@@ -304,7 +294,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
     );
   };
 
-const serviceDetails = (service, stats, compact = false) => {
+const serviceDetails = (service, stats) => {
     const level = mapState.currentLevel;
     const threshold = servicesConfig[service?.name]?.anct_threshold_active;
     const communes = threshold ? (stats?.communes_anct || 0) : (stats?.communes || 0);
@@ -343,7 +333,7 @@ const serviceDetails = (service, stats, compact = false) => {
           if (singleService) {
             return (
               <div key={service.id}>
-                {serviceDetails(service, stats, true)}
+                {serviceDetails(service, stats)}
               </div>
             );
           }
@@ -539,7 +529,6 @@ const serviceDetails = (service, stats, compact = false) => {
         {sortedOperators.map((op) => {
           const isExpanded = expandedOperatorId === op.id;
           const depts = op.departments || [];
-          const singleDept = depts.length === 1 ? depts[0] : null;
           return (
             <div key={op.id} className={`${styles.serviceAccordion} ${isExpanded ? styles.serviceAccordionSelected : ''}`}>
               <button
@@ -683,13 +672,11 @@ SidePanelContent.propTypes = {
   setActiveTab: PropTypes.func.isRequired,
   mapState: PropTypes.object.isRequired,
   selectLevel: PropTypes.func.isRequired,
-  getColor: PropTypes.func.isRequired,
   setMapState: PropTypes.func.isRequired,
   goBack: PropTypes.func.isRequired,
   handleQuickNav: PropTypes.func.isRequired,
   isMobile: PropTypes.bool.isRequired,
   panelState: PropTypes.string.isRequired,
-  computeAreaStats: PropTypes.func.isRequired,
 };
 
 export default SidePanelContent;

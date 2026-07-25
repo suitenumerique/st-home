@@ -159,7 +159,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const messagesChannelId = process.env.SIGNUP_MESSAGES_CHANNEL_ID;
 
     if (!messagesEndpoint || !messagesChannelId) {
-      console.error("SIGNUP_MESSAGES_API_ENDPOINT or SIGNUP_MESSAGES_CHANNEL_ID is not configured.");
+      console.error(
+        "SIGNUP_MESSAGES_API_ENDPOINT or SIGNUP_MESSAGES_CHANNEL_ID is not configured.",
+      );
       Sentry.captureMessage("Messages API configuration missing", {
         level: "error",
         extra: { requestBody: req.body },

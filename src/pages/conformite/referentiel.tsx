@@ -1006,9 +1006,9 @@ const FAQS = [
         <p>Voici son historique :</p>
         <ul>
           <li>
-            <strong>Version 0.2.1</strong> (10 Juillet 2026) : Autorisation de la redirection du
-            nom de domaine vers la page Service-Public.gouv.fr pour les communes sans site web
-            (critère 1.6)
+            <strong>Version 0.2.1</strong> (10 Juillet 2026) : Autorisation de la redirection du nom
+            de domaine vers la page Service-Public.gouv.fr pour les communes sans site web (critère
+            1.6)
           </li>
           <li>
             <strong>Version 0.2</strong> (16 Août 2025) : Ajout du critère 2.8
