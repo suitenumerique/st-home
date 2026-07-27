@@ -1,5 +1,6 @@
 // This file configures the initialization of Sentry on the browser.
 // The config you add here will be used whenever a page is visited.
+// With Turbopack this file replaces the legacy `sentry.client.config.ts`.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
@@ -18,3 +19,6 @@ Sentry.init({
   // `release` value here - use the environment variable `SENTRY_RELEASE`, so
   // that it will also get attached to your source maps
 });
+
+// Required by the Sentry SDK to instrument client-side navigations under Turbopack.
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

@@ -22,8 +22,8 @@ interface Organization {
   issues_last_checked: string;
   website_domain: string | null;
   email_domain: string | null;
-  website_metadata: Record<string, any> | null;
-  email_metadata: Record<string, any> | null;
+  website_metadata: Record<string, string> | null;
+  email_metadata: Record<string, string> | null;
   website_tld: string | null;
   email_tld: string | null;
   epci_name: string | null;

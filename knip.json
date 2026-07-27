@@ -1,0 +1,5 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": ["webcomponents/st-collectivite-search.tsx!"],
+  "ignoreDependencies": ["sharp", "linkinator", "next-router-mock"]
+}

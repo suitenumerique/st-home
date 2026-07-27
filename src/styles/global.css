@@ -1,12 +1,13 @@
+/* MuiAutocomplete styles - imported from communesearch.css */
+/* Must stay at the top: CSS @import rules must precede all other rules. */
+@import "./communesearch.css";
+
 .fr-collapse,
 .fr-collapse--expanded,
 .fr-collapsing,
 .fr-collapse::before {
   transition: none !important;
 }
-
-/* MuiAutocomplete styles - imported from communesearch.css */
-@import "./communesearch.css";
 
 .fr-header__operator {
   min-width: 155px;

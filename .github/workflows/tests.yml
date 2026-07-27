@@ -44,6 +44,8 @@ jobs:
         run: make create-env-files
       - name: Install dependencies
         run: make front-install-deps
+      - name: Run unit tests
+        run: make front-test
       - name: Run linting checks
         run: make front-lint-check
       - name: Run links checks

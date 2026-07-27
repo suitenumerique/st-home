@@ -1,0 +1,9 @@
+# The worker code and data are volume-mounted at runtime (see docker-compose.yml),
+# and the image build only needs pyproject.toml + uv.lock + the venv. Keep the
+# large data dumps out of the build context so builds stay small and fast.
+dumps/
+dumps-sample/
+__pycache__/
+*.pyc
+.venv/
+.ruff_cache/

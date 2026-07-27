@@ -1,4 +1,3 @@
-import { Select } from "@codegouvfr/react-dsfr/Select";
 import { fr } from "@codegouvfr/react-dsfr";
 import PropTypes from "prop-types";
 import { useCallback, useMemo, useState } from "react";
@@ -358,7 +357,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
       <div>
         <p className={fr.cx("fr-text--sm")}>
           Voici la situation de la commune par rapport au{" "}
-          <a href="/conformite/referentiel">Référentiel de la Présence Numérique des Territoires</a> :
+          <Link href="/conformite/referentiel">Référentiel de la Présence Numérique des Territoires</Link> :
         </p>
         <CommuneInfo commune={mapState.selectedAreas.city} servicePublicUrlOnExpand={true} />
         <div className={styles.communeInfoButton}>
@@ -395,7 +394,7 @@ const SidePanelContent = ({ container, getColor, mapState, selectLevel, setMapSt
         </div>
         <p>
           Retrouvez le détail des critères sur le {" "}
-          <a href="/conformite/referentiel">Référentiel de la Présence Numérique des Territoires</a>{" "}
+          <Link href="/conformite/referentiel">Référentiel de la Présence Numérique des Territoires</Link>{" "}
             (RPNT).
         </p>
         <form>

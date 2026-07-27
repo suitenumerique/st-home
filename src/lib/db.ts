@@ -56,36 +56,6 @@ export const db = drizzle(pool, { schema });
 export { pool };
 
 // Helper functions for common database operations
-export async function findOrganizationBySlug(slug: string) {
-  const [organization] = await db
-    .select()
-    .from(organizations)
-    .where(eq(organizations.slug, slug))
-    .limit(1);
-
-  return organization;
-}
-
-export async function findOrganizationBySiret(siret: string) {
-  const [organization] = await db
-    .select()
-    .from(organizations)
-    .where(eq(organizations.siret, siret))
-    .limit(1);
-
-  return organization;
-}
-
-export async function findOrganizationBySiren(siren: string) {
-  const [organization] = await db
-    .select()
-    .from(organizations)
-    .where(eq(organizations.siren, siren))
-    .limit(1);
-
-  return organization;
-}
-
 export async function findOrganizationsWithOperators(siret: string): Promise<Commune | null> {
   const [organization] = await db
     .select()

@@ -222,7 +222,7 @@ db-reset-sample: \
 	db-drop \
 	db-push \
 	db-seed-sample
-.PHONY: db-reset
+.PHONY: db-reset-sample
 
 cms-refresh:  ## Refresh the CMS
 	curl 'http://suiteterritoriale.anct.gouv.fr/services?refresh=1'
@@ -280,6 +280,10 @@ front-lint-check:  ## Check the frontend code linting without fixing
 front-links-check:  ## Check the frontend links
 	$(COMPOSE_RUN) frontend-dev npm run test:links
 .PHONY: front-links-check
+
+front-test:  ## Run the frontend unit tests
+	$(COMPOSE_RUN) frontend-base npm run test:unit
+.PHONY: front-test
 
 help:
 	@echo "$(BOLD)Makefile help$(RESET)"

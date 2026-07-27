@@ -1,10 +1,5 @@
 import CustomAlert from "@/components/CustomAlert";
-import {
-  findAllServices,
-  findOperatorById,
-  findOrganizationsWithOperators,
-  findServicesByOperatorIds,
-} from "@/lib/db";
+import { findAllServices, findOrganizationsWithOperators } from "@/lib/db";
 import type { Commune, Service } from "@/lib/schema";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Alert } from "@codegouvfr/react-dsfr/Alert";
@@ -19,15 +14,12 @@ import { FormEvent, useState } from "react";
 
 interface PageProps {
   commune: Commune;
-  opsnServices: Service[];
-  anctServices: Service[];
-  operatorName: string | null;
   operatorId: string | null;
   selectedServices: Service[];
 }
 
 export default function ContactForm(props: PageProps) {
-  const { commune, opsnServices, anctServices, operatorName, operatorId, selectedServices } = props;
+  const { commune, operatorId, selectedServices } = props;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{
@@ -534,16 +526,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const allServices = await findAllServices();
 
-  // Resolve operator from query param
+  // Resolve operator id from query param
   const operatorIdParam =
     typeof context.query.operator === "string" ? context.query.operator : null;
-  let operatorName: string | null = null;
-  if (operatorIdParam) {
-    const operator = await findOperatorById(operatorIdParam);
-    if (operator) {
-      operatorName = operator.name_with_article || operator.name;
-    }
-  }
 
   // Resolve selected services from query param (comma-separated IDs)
   const servicesParam = typeof context.query.services === "string" ? context.query.services : "";
@@ -555,24 +540,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   );
   const selectedServices = allServices.filter((s) => serviceIds.has(s.id));
 
-  // Compute OPSN services from perimetre operators
-  const perimetreOperators = (commune.operators || []).filter((op) => op.isPerimetre);
-  const perimetreOperatorIds = perimetreOperators.map((op) => op.id);
-  const operatorServicesResult = await findServicesByOperatorIds(perimetreOperatorIds);
-  const opsnServiceIds = new Set(operatorServicesResult.map((r) => r.service.id));
-
-  const opsnServices = allServices.filter((s) => opsnServiceIds.has(s.id));
-  const anctServices = allServices.filter((s) => !opsnServiceIds.has(s.id));
-
   const communeData: Commune = JSON.parse(JSON.stringify(commune));
 
   return {
     props: {
       commune: communeData,
-      opsnServices: JSON.parse(JSON.stringify(opsnServices)),
-      anctServices: JSON.parse(JSON.stringify(anctServices)),
       operatorId: operatorIdParam,
-      operatorName,
       selectedServices: JSON.parse(JSON.stringify(selectedServices)),
     },
   };

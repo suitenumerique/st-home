@@ -3,7 +3,7 @@ import path from "path";
 
 export const filePath = path.join(__dirname, "../public/robots.txt");
 
-export const generateRobotsTxt = (isOnProduction: boolean, host: string) => {
+export const generateRobotsTxt = (isOnProduction: boolean, _host: string) => {
   const robotsDev = ["User-agent: *", "Disallow: /"].join("\n");
   const robotsProd = ["User-agent: *", "Allow: /"].join("\n");
 

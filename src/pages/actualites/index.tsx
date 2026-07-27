@@ -148,36 +148,36 @@ export default function BlogIndex({ posts, allServices, allCategories }: BlogInd
           <>
             <div className="fr-grid-row fr-grid-row--gutters">
               {paginatedPosts.map((post) => (
-                  <div key={post.id} className="fr-col-12 fr-col-md-6 fr-col-lg-4 fr-mb-4w">
-                    <Card
-                      linkProps={{
-                        href: `/actualites/${post.path}`,
-                        title: post.title,
-                      }}
-                      enlargeLink={true}
-                      title={post.title}
-                      titleAs="h2"
-                      start={(() => {
-                        const tags = [
-                          ...parseTags(post.document?.frontmatter.category),
-                          ...parseTags(post.document?.frontmatter.service),
-                        ];
-                        return tags.length > 0 ? (
-                          <div className="fr-mb-2w">
-                            {tags.map((tag) => (
-                              <Tag key={tag} as="span" className="fr-mr-1w">
-                                {tag}
-                              </Tag>
-                            ))}
-                          </div>
-                        ) : undefined;
-                      })()}
-                      endDetail={<>Publié le {post.document?.frontmatter.dateFormatted}</>}
-                      imageUrl={post.document?.frontmatter.image || ""}
-                      imageAlt={post.title}
-                    />
-                  </div>
-                ))}
+                <div key={post.id} className="fr-col-12 fr-col-md-6 fr-col-lg-4 fr-mb-4w">
+                  <Card
+                    linkProps={{
+                      href: `/actualites/${post.path}`,
+                      title: post.title,
+                    }}
+                    enlargeLink={true}
+                    title={post.title}
+                    titleAs="h2"
+                    start={(() => {
+                      const tags = [
+                        ...parseTags(post.document?.frontmatter.category),
+                        ...parseTags(post.document?.frontmatter.service),
+                      ];
+                      return tags.length > 0 ? (
+                        <div className="fr-mb-2w">
+                          {tags.map((tag) => (
+                            <Tag key={tag} as="span" className="fr-mr-1w">
+                              {tag}
+                            </Tag>
+                          ))}
+                        </div>
+                      ) : undefined;
+                    })()}
+                    endDetail={<>Publié le {post.document?.frontmatter.dateFormatted}</>}
+                    imageUrl={post.document?.frontmatter.image || ""}
+                    imageAlt={post.title}
+                  />
+                </div>
+              ))}
             </div>
 
             {totalPages > 1 && (

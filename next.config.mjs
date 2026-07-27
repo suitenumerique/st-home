@@ -21,6 +21,12 @@ const moduleExports = {
   reactStrictMode: process.env.NODE_ENV !== "production",
 
   images: {
+    // The Docs CMS host resolves to a private IP from inside our hosting network
+    // (internal routing / split-horizon DNS). Next 16 added an SSRF check that rejects
+    // upstream images resolving to private IPs with a 400 "url parameter is not allowed",
+    // even when the host matches remotePatterns below. Hosts are still restricted to the
+    // patterns below, so re-allow private IPs here.
+    dangerouslyAllowLocalIP: true,
     remotePatterns: [
       { protocol: "https", hostname: "**.gouv.fr", pathname: "/**" },
       ...(process.env.DOCS_CMS_URL
@@ -29,13 +35,6 @@ const moduleExports = {
     ],
   },
 
-  webpack: (config) => {
-    config.module.rules.push({
-      test: /\.(woff2|webmanifest)$/,
-      type: "asset/resource",
-    });
-    return config;
-  },
   env: {
     NEXT_PUBLIC_APP_VERSION: version,
     NEXT_PUBLIC_APP_VERSION_COMMIT: process.env.GITHUB_SHA || process.env.CONTAINER_VERSION,

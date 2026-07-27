@@ -791,8 +791,7 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
     // EPCI borders overlay when an EPCI or city is selected
     // geoJSONEPCI is typed as Feature[] but processGeoJSONEPCI returns a FeatureCollection
     const epciGeoJSON = (selectedAreas.department as SelectedArea)?.geoJSONEPCI as unknown as
-      | GeoJSON.FeatureCollection
-      | undefined;
+      GeoJSON.FeatureCollection | undefined;
     const selectedEpciCode = (selectedAreas.epci as SelectedArea)?.insee_geo;
     if (currentLevel === "epci" && epciGeoJSON && selectedEpciCode) {
       const selectedEpciFeature = epciGeoJSON.features.find(
