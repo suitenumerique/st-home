@@ -1,0 +1,20 @@
+/*
+ * Feature rows alternate sides. The DOM order is always text then screenshot so
+ * that rows stack text-first on mobile; from the DSFR `md` breakpoint (48em) up,
+ * odd rows are flipped horizontally. Reversing the flex direction only reorders
+ * items within a line, so the mobile stacking order is untouched.
+ */
+@media (min-width: 48em) {
+  .featureRowReversed {
+    flex-direction: row-reverse;
+  }
+}
+
+/*
+ * The text and screenshot columns add up to 11 of the 12 grid columns, so the
+ * spare column becomes breathing room between them rather than trailing space.
+ * Works in both directions, including the reversed rows above.
+ */
+.featureRow {
+  justify-content: space-between;
+}

@@ -1,3 +1,4 @@
+import { getServicesNavLinks } from "@/lib/services";
 import { Footer } from "@codegouvfr/react-dsfr/Footer";
 import { Header } from "@codegouvfr/react-dsfr/Header";
 import { SkipLinks } from "@codegouvfr/react-dsfr/SkipLinks";
@@ -71,10 +72,12 @@ export function PageLayout({ children }: LayoutProps) {
     },
     {
       text: "Services numériques",
-      linkProps: {
-        href: "/services",
-      },
       isActive: router.asPath.startsWith("/services"),
+      menuLinks: getServicesNavLinks().map(({ text, href }) => ({
+        text,
+        linkProps: { href },
+        isActive: router.asPath === href,
+      })),
     },
     {
       text: "Présence Numérique des Territoires",
