@@ -117,8 +117,9 @@ export async function fetchDocumentContent(
 export async function fetchDocumentChildren(
   parentId: string,
   forceRefresh: boolean = false,
+  page: number = 1,
 ): Promise<DocsChildrenResponse> {
-  const url = getDocsApiUrl(`/documents/${parentId}/children/`);
+  const url = getDocsApiUrl(`/documents/${parentId}/children/?page=${page}`);
 
   const data = await cachedFetch(
     url,
@@ -219,11 +220,21 @@ export async function getDocumentChildren(
   parentId: string,
   forceRefresh: boolean = false,
 ): Promise<DocsChild[]> {
-  const response = await fetchDocumentChildren(parentId, forceRefresh);
+  // The API paginates children (20 per page), so follow every page
+  const results: DocsChild[] = [];
+  const MAX_PAGES = 50;
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const response = await fetchDocumentChildren(parentId, forceRefresh, page);
+    results.push(...response.results);
+    if (!response.next) break;
+    if (page === MAX_PAGES) {
+      console.warn(`Stopped listing children of ${parentId} after ${MAX_PAGES} pages`);
+    }
+  }
 
-  for (const doc of response.results) {
+  for (const doc of results) {
     doc.document = await getDocument(doc.id, forceRefresh);
   }
 
-  return response.results;
+  return results;
 }
