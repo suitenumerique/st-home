@@ -41,14 +41,45 @@ FORCE_INCLUDE_SIRENE = {
     "234500023",  # Région Centre-Val de Loire — siège NAF 49.10Z
     "213105885",  # Villeneuve-Tolosane — siège NAF 68.20B
     "215103789",  # Œuilly — siège NAF 01.21Z
-    # EPCIs dissolved 2026-01-01 (unité légale cessée) but still listed as active
-    # with member communes in the perimetre_epci source, waiting for DGCL to drop
-    # them / publish successors:
-    "241200658",  # CC du Pays de Salars
-    "241200765",  # CC de Lévézou Pareloup
-    "245701222",  # CA du Val de Fensch
-    "245701362",  # CA Portes de France-Thionville
+    "200043776",  # CC Pyrénées Audoises — siège NAF 86.21Z
 }
+
+# Communes absent from INSEE's "populations légales" archive, which we therefore
+# cannot read from dumps/insee_population.json.
+#
+# Mayotte follows its own census cycle and is published apart from the ensemble.zip
+# we consume (its communes are missing from donnees_communes.csv, and département 976
+# is missing from donnees_departements.csv). Paris, Lyon and Marseille are *not*
+# listed here: that archive carries their 45 arrondissements, so dump_insee_population
+# rebuilds the three parent communes by summing them.
+#
+# Values below are the populations municipales that the DGCL "périmètre des EPCI"
+# file carried before we stopped using it. Refresh them when INSEE publishes a new
+# Mayotte census.
+HARDCODED_POPULATIONS = {
+    "97601": 5192,  # Acoua
+    "97602": 13989,  # Bandraboua
+    "97603": 10282,  # Bandrele
+    "97604": 6189,  # Bouéni
+    "97605": 8295,  # Chiconi
+    "97606": 8920,  # Chirongui
+    "97607": 15848,  # Dembeni
+    "97608": 17831,  # Dzaoudzi
+    "97609": 5507,  # Kani-Kéli
+    "97610": 32156,  # Koungou
+    "97611": 71437,  # Mamoudzou
+    "97612": 7705,  # Mtsamboro
+    "97613": 6432,  # M'Tsangamouji
+    "97614": 10203,  # Ouangani
+    "97615": 11442,  # Pamandzi
+    "97616": 11156,  # Sada
+    "97617": 13934,  # Tsingoni
+}
+
+# BANATIC "nature juridique" codes that designate an EPCI à fiscalité propre, i.e.
+# the groupements we expose as organisations. Everything else in the BANATIC export
+# (syndicats, pôles métropolitains, EPT…) is ignored.
+EPCI_FP_NATURES = {"CC", "CA", "CU", "METRO", "MET69"}
 
 # Territories where a single merged collectivity exercises the powers of several
 # INSEE tiers. Each collectivity is represented ONCE — at the tier for which DILA
@@ -72,6 +103,16 @@ HARDCODED_DILA_SIRETS = {
     # EPCIs
     "20007016700016": "9d0b7414-fca0-4419-a998-22df8e738bd0",
     "20007015900013": "2f603f8d-0d05-4352-be94-7c2dc3863cd0",
+    # Lévézou Communauté, created by the 2026-01-01 merger of the CC du Pays de Salars
+    # and the CC de Lévézou-Pareloup, has no annuaire record yet. Both records of its
+    # dissolved predecessors already declare https://www.levezou.fr, which BANATIC
+    # confirms is the merged EPCI's site, so we point at the Pays de Salars record
+    # rather than leave the successor with no website / no email at all.
+    "99457967000013": "34cbca1a-a3f8-42ba-b262-493f990e4597",
+    # No equivalent for Thionville Fensch Agglomération: its two predecessors declare
+    # two different sites (agglo-valdefensch.fr, agglo-thionville.fr) and BANATIC
+    # gives neither site nor email for the successor, so there is nothing to inherit
+    # without guessing. It stays without contact data until DILA publishes its record.
     # # Communes
     "20007648700012": "52ffafc5-2fbe-4324-804f-2c507369137e",
     "20008671800018": "262d3e65-16d9-4d6d-8537-ba15743d294e",

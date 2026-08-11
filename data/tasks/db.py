@@ -217,7 +217,7 @@ def historize_table(table_name: str):
             for column_name, column_type in source_columns:
                 if column_name not in existing_history_columns:
                     cur.execute(
-                        f'ALTER TABLE {history_table_name} '
+                        f"ALTER TABLE {history_table_name} "
                         f'ADD COLUMN "{column_name}" {column_type};'
                     )
 

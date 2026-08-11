@@ -6,12 +6,14 @@ import logging
 import os
 import signal
 import subprocess
+import tempfile
 import zipfile
 from pathlib import Path
 
+import openpyxl
 import requests
 
-from .defs import FORCE_INCLUDE_SIRENE
+from .defs import EPCI_FP_NATURES, FORCE_INCLUDE_SIRENE, HARDCODED_POPULATIONS
 
 logger = logging.getLogger(__name__)
 
@@ -119,24 +121,6 @@ def dump_insee_regions():
         json.dump(rows, f, ensure_ascii=False, indent=4)
 
 
-def dump_perimetre_epci():
-    if Path("dumps/perimetre_epci.json").exists():
-        return
-
-    # https://www.data.gouv.fr/fr/datasets/base-nationale-sur-les-intercommunalites/
-    url = "https://www.data.gouv.fr/fr/datasets/r/6e05c448-62cc-4470-aa0f-4f31adea0bc4"
-    r = requests.get(url, timeout=120)
-    r.raise_for_status()
-
-    # Convert CSV to JSON
-    rows = list(csv.DictReader(r.text.splitlines(), delimiter=";"))
-    assert len(rows) > 20000
-    with open("dumps/perimetre_epci.json", "w") as f:
-        for row in rows:
-            assert len(row) == 14
-        json.dump(rows, f, ensure_ascii=False, indent=4)
-
-
 def dump_insee_population():
     if Path("dumps/insee_population.json").exists():
         return
@@ -159,16 +143,45 @@ def dump_insee_population():
             ):
                 data["communes"][row["COM"]] = int(row["PMUN"])
 
+    # The archive lists the 45 arrondissements municipaux of Paris, Lyon and Marseille
+    # but not the three communes themselves, which would otherwise end up with a
+    # population of 0 and be dropped by filter_invalid_communes. Rebuild each parent
+    # from its arrondissements, whose COMPARENT we take from the COG.
+    with open("dumps/insee_communes.json") as f:
+        arrondissement_parents = {
+            row["COM"]: row["COMPARENT"] for row in json.load(f) if row["TYPECOM"] == "ARM"
+        }
+    parents_population: dict[str, int] = {}
+    for insee, parent in arrondissement_parents.items():
+        if insee in data["communes"]:
+            parents_population[parent] = (
+                parents_population.get(parent, 0) + (data["communes"][insee])
+            )
+    assert len(parents_population) == 3, (
+        f"Expected Paris, Lyon and Marseille, rebuilt {sorted(parents_population)}"
+    )
+    data["communes"].update(parents_population)
+
+    # Mayotte is published apart from this archive (see HARDCODED_POPULATIONS).
+    for insee, population in HARDCODED_POPULATIONS.items():
+        data["communes"].setdefault(insee, population)
+
     with open("dumps/insee_population.json", "w") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
 
-def dump_filtered_sirene(orgs):
+def dump_filtered_sirene(sirens):
+    """Dump the siège establishment of every SIREN in `sirens`.
+
+    Takes the SIRENs rather than the organisations themselves: communes get their
+    SIREN from BANATIC, and it is this dump that then tells us which INSEE commune
+    each one sits in (see insee_by_commune_siren), so it has to run first.
+    """
     # https://www.data.gouv.fr/fr/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/
     if Path("dumps/sirene.json").exists():
         return
 
-    orgs_sirens = {org["siren"] for org in orgs}
+    orgs_sirens = {siren for siren in sirens if siren}
 
     url = "https://www.data.gouv.fr/fr/datasets/r/0651fb76-bcf3-4f6a-a38d-bc04fa708576"
 
@@ -177,17 +190,23 @@ def dump_filtered_sirene(orgs):
     # add a print rule per SIREN. Digits only, safe inside the single-quoted script.
     force_rules = "".join(f";/{siren}/p" for siren in FORCE_INCLUDE_SIRENE)
 
-    # All the SIRENs we care about are territorial collectivities, which live in the
-    # low 20x–24x range. SIRENE is sorted by SIREN ascending, so once the stream
-    # passes our highest target we have already seen every relevant row.
+    # SIRENE is sorted by SIREN ascending, so once the stream reaches our highest
+    # target we have seen every relevant row and can stop.
+    #
+    # Collectivités used to live entirely in the low 20x–24x range, which put that
+    # cutoff early in the file. INSEE has since exhausted that block and allocates 99x
+    # SIRENs to new ones (Lévézou Communauté 994579670, Thionville Fensch
+    # Agglomération 992367730…), so the cutoff now sits near the end of the file and we
+    # read almost all of it. The retry loop below is what protects us: the stream is
+    # only considered complete once we have actually reached max_target.
     max_target = max(int(s) for s in orgs_sirens if s and s.isdigit())
 
     # The data.gouv stream truncates intermittently at the far end ("gzip: invalid
-    # compressed data--length error") — but that tail is millions of unrelated
-    # companies with high SIRENs. We stream (curl | zcat | sed) to avoid storing the
-    # multi-GB file on disk, and stop as soon as we pass max_target: the truncation
-    # is never reached, and we skip ~95% of the file. We only retry when the stream
-    # dies *before* reaching that point (a genuinely incomplete read).
+    # compressed data--length error"). We stream (curl | zcat | sed) to avoid storing
+    # the multi-GB file on disk, and stop as soon as we pass max_target. That used to
+    # skip ~95% of the file; now that max_target is a 99x SIREN we read nearly all of
+    # it, so we are much closer to the truncated tail — hence the retries below, which
+    # fire whenever the stream dies *before* reaching max_target (an incomplete read).
     def stream_rows():
         # No `curl --retry` here: retrying inside a running pipe would re-send bytes
         # into zcat and corrupt the stream. We retry the whole pipeline instead.
@@ -231,6 +250,9 @@ def dump_filtered_sirene(orgs):
                 ):
                     collected.append(row)
                     seen.add(siren)
+                # Stop once the stream has gone *past* the last target: a SIREN spans
+                # several rows and the siège is not necessarily the first of them, so
+                # breaking on the target itself could drop it.
                 if siren_int > max_target:
                     passed_range = True
                     break
@@ -281,27 +303,56 @@ def dump_groupements_memberships():
     # url changed at Banatic without warning
     url = "https://www.banatic.interieur.gouv.fr/consultation/api/export/pregenere/telecharger/France"
 
-    r = requests.get(url, timeout=120)
-    r.raise_for_status()
-
-    # Convert XLSX to JSON
-    from io import BytesIO
-
-    import pandas as pd
-
-    # Read the XLSX file directly from the response content using a file-like object
-    df = pd.read_excel(BytesIO(r.content))
-    df_selected = df[
-        [
-            "Nom du groupement",
-            "N° SIREN",
-            "Nom membre",
-            "Siren membre",
-            "Catégorie des membres du groupement",
-        ]
+    columns = [
+        "Nom du groupement",
+        "N° SIREN",
+        "Nature juridique",
+        "Département",
+        "Nom membre",
+        "Siren membre",
+        "Catégorie des membres du groupement",
     ]
+
+    # This export is ~75 MB of XLSX for 140k rows and 120 columns. pandas.read_excel
+    # materialises the whole workbook and needs several GB; openpyxl's read-only mode
+    # streams it row by row instead, so we only ever hold the columns above. Stream the
+    # download to disk as well rather than keeping the archive in memory.
+    with tempfile.NamedTemporaryFile(suffix=".xlsx") as tmp:
+        with requests.get(url, timeout=300, stream=True) as r:
+            r.raise_for_status()
+            for chunk in r.iter_content(chunk_size=1024 * 1024):
+                tmp.write(chunk)
+        tmp.flush()
+
+        workbook = openpyxl.load_workbook(tmp.name, read_only=True, data_only=True)
+        try:
+            sheet = workbook.worksheets[0]
+            stream = sheet.iter_rows(values_only=True)
+            header = [str(cell) if cell is not None else "" for cell in next(stream)]
+            indexes = [header.index(name) for name in columns]
+            rows = [
+                {
+                    name: ("" if row[index] is None else str(row[index]))
+                    for name, index in zip(columns, indexes, strict=False)
+                }
+                for row in stream
+            ]
+        finally:
+            workbook.close()
+
+    # This export is the referential for the EPCI perimeter.
+    # Fail loudly rather than rebuild the whole country from a
+    # truncated download.
+    epci_members = sum(
+        1
+        for row in rows
+        if row["Nature juridique"] in EPCI_FP_NATURES
+        and row["Catégorie des membres du groupement"] == "commune"
+    )
+    assert epci_members > 34000, f"Only {epci_members} EPCI memberships in the BANATIC export"
+
     with open("dumps/groupements_memberships.json", "w") as f:
-        json.dump(df_selected.to_dict(orient="records"), f, ensure_ascii=False, indent=4)
+        json.dump(rows, f, ensure_ascii=False, indent=4)
 
 
 def dump_services():
