@@ -1,6 +1,7 @@
 import CommuneSearch, { type Commune } from "@/components/CommuneSearch";
 import { useSmallScreen } from "@/lib/hooks";
-import { type ServiceHeroBlock } from "@/lib/services/types";
+import { ELIGIBILITY_SEARCH_ANCHOR, type ServiceHeroBlock } from "@/lib/services/types";
+import styles from "@/styles/services.module.css";
 import { fr } from "@codegouvfr/react-dsfr";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -18,6 +19,10 @@ const HERO_BACKGROUND = `linear-gradient(180deg, rgba(0, 0, 145, ${GRADIENT_ALPH
 // `width/height: auto`, the two max-* bounds keep the aspect ratio intact.
 const ILLUSTRATION_MAX_HEIGHT = 370;
 
+// Logotypes are authored at their own scale, so the hero bounds their height
+// instead of trusting the intrinsic size. Paired with `width/height: auto`.
+const LOGO_MAX_HEIGHT = 56;
+
 // Vertical rhythm from the mockup: the service name sits ~150px below the header.
 const CONTENT_PADDING_TOP = 150;
 
@@ -25,7 +30,7 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
   const router = useRouter();
   const isSmallScreen = useSmallScreen(1000);
 
-  const { eligibilitySearch, illustration } = hero;
+  const { eligibilitySearch, illustration, screenshot } = hero;
 
   return (
     <section style={{ backgroundImage: HERO_BACKGROUND }}>
@@ -36,7 +41,27 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
         <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters", "fr-grid-row--middle")}>
           <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
             <h1 className={fr.cx("fr-mb-2w")}>
-              <span style={{ display: "block" }}>{hero.name},</span>
+              {hero.logo ? (
+                // The logotype carries the service name, so it is the accessible
+                // text of the heading rather than a decorative image.
+                <Image
+                  src={hero.logo.src}
+                  alt={hero.name}
+                  width={hero.logo.width}
+                  height={hero.logo.height}
+                  priority
+                  className={fr.cx("fr-mb-2w")}
+                  style={{
+                    display: "block",
+                    width: "auto",
+                    height: "auto",
+                    maxWidth: "100%",
+                    maxHeight: `${LOGO_MAX_HEIGHT}px`,
+                  }}
+                />
+              ) : (
+                <span style={{ display: "block" }}>{hero.name},</span>
+              )}
               <span style={{ display: "block", fontWeight: 400 }}>{hero.tagline}</span>
             </h1>
 
@@ -47,16 +72,19 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
                 <h2 className={fr.cx("fr-text--lg", "fr-text--bold", "fr-mb-1w")}>
                   {eligibilitySearch.title}
                 </h2>
-                <CommuneSearch
-                  smallButton
-                  placeholder={
-                    isSmallScreen
-                      ? eligibilitySearch.placeholderSmallScreen
-                      : eligibilitySearch.placeholder
-                  }
-                  onSelect={(commune: Commune) => router.push(`/bienvenue/${commune.siret}`)}
-                  style={{ backgroundColor: "white" }}
-                />
+                {/* Anchor target: the ProConnect block sends visitors back up
+                    to this search when they are already on the service page. */}
+                <div id={ELIGIBILITY_SEARCH_ANCHOR} className={styles.heroSearch}>
+                  <CommuneSearch
+                    smallButton
+                    placeholder={
+                      isSmallScreen
+                        ? eligibilitySearch.placeholderSmallScreen
+                        : eligibilitySearch.placeholder
+                    }
+                    onSelect={(commune: Commune) => router.push(`/bienvenue/${commune.siret}`)}
+                  />
+                </div>
               </>
             )}
           </div>
@@ -84,6 +112,24 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
           )}
         </div>
       </div>
+
+      {screenshot && (
+        // In its own container, outside the hero grid: it spans the full
+        // content width of the page. Its drop shadow and rounded window frame
+        // are baked into the asset, transparent around them.
+        <div className={fr.cx("fr-container")}>
+          <Image
+            src={screenshot.src}
+            alt={screenshot.alt}
+            width={screenshot.width}
+            height={screenshot.height}
+            sizes="(min-width: 78rem) 1248px, 100vw"
+            // Full width just under the fold: it is the LCP element.
+            priority
+            style={{ display: "block", width: "100%", height: "auto" }}
+          />
+        </div>
+      )}
     </section>
   );
 }

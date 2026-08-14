@@ -15,6 +15,12 @@ export type ServiceIllustration = {
   height: number;
 };
 
+/**
+ * `id` of the hero eligibility search. Blocks further down the page link to it
+ * to send visitors back up to the search instead of off to another page.
+ */
+export const ELIGIBILITY_SEARCH_ANCHOR = "modalites-acces";
+
 /** Commune search sending visitors to their eligibility page (/bienvenue/[siret]). */
 export type ServiceEligibilitySearch = {
   title: ReactNode;
@@ -24,12 +30,19 @@ export type ServiceEligibilitySearch = {
 };
 
 export type ServiceHeroBlock = {
-  /** Service name, emphasized first line of the <h1>. */
+  /**
+   * Service name. Displayed as the emphasized first line of the <h1>, unless
+   * `logo` is set — it then only names the service for assistive technologies.
+   */
   name: string;
+  /** Logotype replacing the service name at the top of the <h1>. */
+  logo?: Omit<ServiceIllustration, "alt">;
   /** Second line of the <h1>, in regular weight. */
   tagline: ReactNode;
   description: ReactNode;
   illustration?: ServiceIllustration;
+  /** Product screenshot spanning the full viewport width, under the hero text. */
+  screenshot?: ServiceIllustration;
   /** Omitted for services whose access does not depend on the collectivité. */
   eligibilitySearch?: ServiceEligibilitySearch;
 };
@@ -66,8 +79,11 @@ export type ServiceFeaturesBlock = {
 
 /** One of the bordered cards of the ProConnect block. */
 export type ServiceProConnectCard = {
-  icon: FrIconClassName | RiIconClassName;
+  /** Monochrome pictogram, to the left of the card text. */
+  icon: ServiceIllustration;
+  /** Doubles as the card's link. */
   title: ReactNode;
+  href: string;
   description: ReactNode;
 };
 
@@ -83,6 +99,67 @@ export type ServiceProConnectBlock = {
   link?: ServiceLink;
 };
 
+export type ServiceTestimonial = {
+  quote: ReactNode;
+  /** The collectivité behind the quote, displayed under it. */
+  author: ReactNode;
+};
+
+/**
+ * Quotes from collectivités using the service, shown one at a time with
+ * previous/next controls.
+ */
+export type ServiceTestimonialsBlock = {
+  /** Displayed above the quotes, typically towards the deployment map. */
+  link?: ServiceLink;
+  testimonials: ServiceTestimonial[];
+};
+
+/** One of the pillars of the "fondements essentiels" block. */
+export type ServiceFoundation = {
+  icon: ServiceIllustration;
+  title: ReactNode;
+  description: ReactNode;
+};
+
+/**
+ * Closing block: what every service of the Suite guarantees, followed by an
+ * invitation to contribute.
+ */
+export type ServiceFoundationsBlock = {
+  title: ReactNode;
+  description: ReactNode;
+  foundations: ServiceFoundation[];
+  callToAction?: {
+    text: ReactNode;
+    primaryLink: ServiceLink;
+    secondaryLink?: ServiceLink;
+  };
+};
+
+export type ServiceFaqItem = {
+  question: ReactNode;
+  /** Non-nullable: it is the content of the DSFR accordion. */
+  answer: NonNullable<ReactNode>;
+};
+
+/** Frequently asked questions, one accordion per question. */
+export type ServiceFaqBlock = {
+  title: ReactNode;
+  /** Sits under the title, typically pointing at the help centre. */
+  description?: ReactNode;
+  items: ServiceFaqItem[];
+};
+
+/**
+ * Closing call to action, reusing the shared "Intéressé ? Testez !" visual of
+ * the other pages.
+ */
+export type ServiceTrialBlock = {
+  /** Primary button, typically back up to the hero eligibility search. */
+  accessLink: ServiceLink;
+};
+
 export type ServicePage = {
   /** URL segment: /services/<slug>. */
   slug: string;
@@ -96,4 +173,8 @@ export type ServicePage = {
   hero: ServiceHeroBlock;
   features?: ServiceFeaturesBlock;
   proConnect?: ServiceProConnectBlock;
+  testimonials?: ServiceTestimonialsBlock;
+  foundations?: ServiceFoundationsBlock;
+  faq?: ServiceFaqBlock;
+  trial?: ServiceTrialBlock;
 };

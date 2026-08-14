@@ -4,13 +4,27 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Image from "next/image";
 import Link from "next/link";
 
-function FeatureRow({ row, reversed }: { row: ServiceFeatureRow; reversed: boolean }) {
+function FeatureRow({
+  row,
+  reversed,
+  last,
+}: {
+  row: ServiceFeatureRow;
+  reversed: boolean;
+  last: boolean;
+}) {
   const { screenshot } = row;
 
   return (
     <div
       className={
-        fr.cx("fr-grid-row", "fr-grid-row--gutters", "fr-grid-row--middle", "fr-mb-12w") +
+        fr.cx(
+          "fr-grid-row",
+          "fr-grid-row--gutters",
+          "fr-grid-row--middle",
+          // Separates rows, so the last one leaves the gap to the next block.
+          !last && "fr-mb-12w",
+        ) +
         ` ${styles.featureRow}` +
         (reversed ? ` ${styles.featureRowReversed}` : "")
       }
@@ -71,7 +85,12 @@ export default function ServiceFeatures({ block }: { block: ServiceFeaturesBlock
   return (
     <section className={fr.cx("fr-container", "fr-py-10w")}>
       {block.rows.map((row, index) => (
-        <FeatureRow key={index} row={row} reversed={index % 2 === 1} />
+        <FeatureRow
+          key={index}
+          row={row}
+          reversed={index % 2 === 1}
+          last={index === block.rows.length - 1}
+        />
       ))}
     </section>
   );

@@ -4,9 +4,12 @@ import Image from "next/image";
 export default function TrialContact({
   signupUrl,
   priority,
+  primaryAction,
 }: {
   signupUrl?: string;
   priority?: "primary" | "secondary";
+  /** Extra call to action, displayed before "Nous contacter". */
+  primaryAction?: { text: string; href: string };
 }) {
   return (
     <div className="trial-contact">
@@ -21,6 +24,11 @@ export default function TrialContact({
         style={{ width: "100%", maxWidth: 580, height: "auto" }}
       />
       <div className="buttons">
+        {primaryAction && (
+          <Button priority="primary" linkProps={{ href: primaryAction.href }}>
+            {primaryAction.text}
+          </Button>
+        )}
         {signupUrl ? (
           <Button priority={priority || "secondary"} linkProps={{ href: signupUrl }}>
             Nous contacter

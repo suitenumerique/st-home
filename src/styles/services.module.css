@@ -18,3 +18,121 @@
 .featureRow {
   justify-content: space-between;
 }
+
+/*
+ * FAQ answers are written as plain paragraphs, so the last one's bottom margin
+ * would stack on top of the accordion's own padding.
+ */
+.faq :global(.fr-collapse) > p:last-child {
+  margin-bottom: 0;
+}
+
+/*
+ * All the verbatims share one grid cell, so the block keeps the height of the
+ * longest one and the controls underneath stay put from one quote to the next.
+ * A fixed min-height would have to be guessed, and would be wrong at some
+ * viewport width. Hidden quotes use `visibility`, which keeps their size while
+ * taking them out of the accessibility tree.
+ */
+.testimonialStack {
+  display: grid;
+}
+
+.testimonialStack > * {
+  grid-area: 1 / 1;
+}
+
+/*
+ * ProConnect cards are clickable as a whole: an empty span inside the title
+ * link is stretched over the card. A pseudo-element would collide with the
+ * arrow of `fr-link--icon-right`, which DSFR renders with `::after`.
+ */
+.proConnectCard {
+  position: relative;
+}
+
+.proConnectCardOverlay {
+  position: absolute;
+  inset: 0;
+}
+
+/* Links inside the description stay reachable above that overlay. */
+.proConnectCard p :global(a) {
+  position: relative;
+  z-index: 1;
+}
+
+/*
+ * Hero eligibility search: the DSFR search bar reworked into the softer, card
+ * like field of the service mockups — one rounded white box, a light grey
+ * submit square, no blue. Scoped to this wrapper so the search bars elsewhere
+ * (homepage hero, cartographie) keep the standard DSFR look.
+ *
+ * The button is absolutely positioned at the right edge by react-dsfr and
+ * overlays the input, which spans the full width. Hence the radius lives on the
+ * input (its right corners end up hidden behind the button) rather than on the
+ * bar with `overflow: hidden`, which would clip the input's focus outline.
+ */
+.heroSearch :global(.fr-search-bar) {
+  height: 3rem;
+  background-color: #fff;
+  border: 1px solid var(--border-default-grey);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 6%);
+}
+
+.heroSearch :global(.fr-search-bar .fr-input) {
+  height: 3rem;
+  max-height: 3rem;
+  padding-left: 1rem;
+  /* Keeps the typed text and the placeholder clear of the submit square. */
+  padding-right: 4rem;
+  background-color: transparent;
+  border-radius: 8px;
+  /* Drops the blue France inset underline of the DSFR input. */
+  box-shadow: none;
+}
+
+.heroSearch :global(.fr-search-bar .fr-input::placeholder) {
+  font-style: normal;
+  color: var(--text-mention-grey);
+}
+
+.heroSearch :global(.fr-search-bar .fr-btn) {
+  top: 0;
+  bottom: 0;
+  width: 3rem;
+  max-width: 3rem;
+  height: auto;
+  max-height: none;
+  padding: 0;
+  /* `.fr-btn` is a flex row without justification, so the icon would sit left. */
+  justify-content: center;
+  /* The label stays in the DOM as the accessible name; only the icon shows. */
+  font-size: 0;
+  background-color: var(--background-contrast-grey);
+  color: var(--text-mention-grey);
+  /* 7px, not 8px: the inner edge of the 1px border of an 8px radius box. */
+  border-radius: 0 7px 7px 0;
+}
+
+.heroSearch :global(.fr-search-bar .fr-btn:hover) {
+  background-color: var(--background-contrast-grey-hover);
+}
+
+.heroSearch :global(.fr-search-bar .fr-btn:active) {
+  background-color: var(--background-contrast-grey-active);
+}
+
+/*
+ * Swaps the DSFR magnifier for the upward arrow of the mockup. Inlined as a
+ * data URI rather than an `fr-icon-*` class because the button markup is owned
+ * by react-dsfr; the path is DSFR's own `icons/system/arrow-up-line.svg`.
+ */
+.heroSearch :global(.fr-search-bar .fr-btn::before) {
+  --data-uri-svg: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M13 7.828V20h-2V7.828l-5.364 5.364-1.414-1.414L12 4l7.778 7.778-1.414 1.414L13 7.828Z"/></svg>');
+
+  margin-right: 0;
+  -webkit-mask-image: var(--data-uri-svg);
+  mask-image: var(--data-uri-svg);
+}
