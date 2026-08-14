@@ -1,6 +1,10 @@
+import ServiceFaq from "@/components/services/ServiceFaq";
 import ServiceFeatures from "@/components/services/ServiceFeatures";
+import ServiceFoundations from "@/components/services/ServiceFoundations";
 import ServiceHero from "@/components/services/ServiceHero";
 import ServiceProConnect from "@/components/services/ServiceProConnect";
+import ServiceTestimonials from "@/components/services/ServiceTestimonials";
+import ServiceTrial from "@/components/services/ServiceTrial";
 import { getServicePage, getServicePageSlugs } from "@/lib/services";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { NextSeo } from "next-seo";
@@ -27,6 +31,14 @@ export default function ServicePage({ slug }: ServicePageProps) {
       {service.features && <ServiceFeatures block={service.features} />}
 
       {service.proConnect && <ServiceProConnect block={service.proConnect} />}
+
+      {service.testimonials && <ServiceTestimonials block={service.testimonials} />}
+
+      {service.foundations && <ServiceFoundations block={service.foundations} />}
+
+      {service.faq && <ServiceFaq block={service.faq} />}
+
+      {service.trial && <ServiceTrial block={service.trial} />}
     </>
   );
 }
