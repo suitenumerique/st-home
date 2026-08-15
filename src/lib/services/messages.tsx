@@ -23,6 +23,8 @@ const WEBINAR_URL = "https://aide.suite.anct.gouv.fr/socle/messages";
 const messages: ServicePage = {
   slug: "messages",
   navLabel: "Messages",
+  // Matches the service_ids filter of DEPLOYMENT_MAP_URL below.
+  deploymentServiceId: 2,
   seo: {
     title: "Messages, la messagerie professionnelle des collectivités",
     description:
@@ -196,9 +198,10 @@ const messages: ServicePage = {
   },
 
   testimonials: {
-    // TODO: the count is hardcoded and will drift — read it from the deployment
-    // data once that is available at build time.
-    link: { text: "212 collectivités l’ont déjà adopté", href: DEPLOYMENT_MAP_URL },
+    link: {
+      href: DEPLOYMENT_MAP_URL,
+      text: (count) => <>{count.toLocaleString("fr-FR")} collectivités l’ont déjà adopté</>,
+    },
     testimonials: [
       {
         quote: (

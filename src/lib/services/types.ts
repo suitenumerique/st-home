@@ -110,8 +110,15 @@ export type ServiceTestimonial = {
  * previous/next controls.
  */
 export type ServiceTestimonialsBlock = {
-  /** Displayed above the quotes, typically towards the deployment map. */
-  link?: ServiceLink;
+  /**
+   * Displayed above the quotes, typically towards the deployment map. Its label
+   * is built from the number of collectivités having adopted the service, so
+   * the link is dropped when that count is unavailable.
+   */
+  link?: {
+    href: string;
+    text: (adoptionCount: number) => ReactNode;
+  };
   testimonials: ServiceTestimonial[];
 };
 
@@ -165,6 +172,11 @@ export type ServicePage = {
   slug: string;
   /** Label in the "Services numériques" header dropdown. */
   navLabel: string;
+  /**
+   * `st_services.id` of the service, as used by the deployment map. Set it to
+   * count how many collectivités have adopted the service.
+   */
+  deploymentServiceId?: number;
   seo: {
     title: string;
     description: string;
