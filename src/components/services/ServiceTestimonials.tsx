@@ -4,7 +4,13 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Link from "next/link";
 import { useState } from "react";
 
-export default function ServiceTestimonials({ block }: { block: ServiceTestimonialsBlock }) {
+export default function ServiceTestimonials({
+  block,
+  adoptionCount,
+}: {
+  block: ServiceTestimonialsBlock;
+  adoptionCount: number | null;
+}) {
   const { testimonials, link } = block;
   const [current, setCurrent] = useState(0);
 
@@ -18,10 +24,11 @@ export default function ServiceTestimonials({ block }: { block: ServiceTestimoni
       <div className={fr.cx("fr-container", "fr-py-6w")}>
         <h2 className={fr.cx("fr-sr-only")}>Ils utilisent le service</h2>
 
-        {link && (
+        {/* No count, no claim: the label is built around the figure. */}
+        {link && adoptionCount !== null && (
           <p className={fr.cx("fr-mb-2w")}>
             <Link href={link.href} className={fr.cx("fr-link")}>
-              {link.text}
+              {link.text(adoptionCount)}
             </Link>
           </p>
         )}

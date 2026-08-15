@@ -6,16 +6,21 @@ import ServiceProConnect from "@/components/services/ServiceProConnect";
 import ServiceTestimonials from "@/components/services/ServiceTestimonials";
 import ServiceTrial from "@/components/services/ServiceTrial";
 import { getServicePage, getServicePageSlugs } from "@/lib/services";
+// Used only by getStaticProps, so Next keeps it out of the client bundle.
+import { countAdoptingOrganizations } from "@/lib/services/deployment";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { NextSeo } from "next-seo";
 
 type ServicePageProps = {
   slug: string;
+  /** Null when the service declares no id, or when the database was out of reach. */
+  adoptionCount: number | null;
 };
 
 // Service content is looked up client-side from the registry rather than passed
 // through props: the blocks hold ReactNode, which getStaticProps cannot serialize.
-export default function ServicePage({ slug }: ServicePageProps) {
+// Only the figures read from the database travel through props.
+export default function ServicePage({ slug, adoptionCount }: ServicePageProps) {
   const service = getServicePage(slug);
 
   // Unreachable: getStaticPaths only emits known slugs and getStaticProps 404s
@@ -32,7 +37,9 @@ export default function ServicePage({ slug }: ServicePageProps) {
 
       {service.proConnect && <ServiceProConnect block={service.proConnect} />}
 
-      {service.testimonials && <ServiceTestimonials block={service.testimonials} />}
+      {service.testimonials && (
+        <ServiceTestimonials block={service.testimonials} adoptionCount={adoptionCount} />
+      )}
 
       {service.foundations && <ServiceFoundations block={service.foundations} />}
 
@@ -48,12 +55,22 @@ export const getStaticPaths: GetStaticPaths = () => ({
   fallback: false,
 });
 
-export const getStaticProps: GetStaticProps<ServicePageProps> = ({ params }) => {
-  const slug = typeof params?.slug === "string" ? params.slug : "";
+// Kept in sync with the deployment data without rebuilding: the count moves
+// slowly, and a stale figure for an hour is better than a database round-trip
+// on every visit.
+const REVALIDATE_SECONDS = 3600;
 
-  if (!getServicePage(slug)) {
+export const getStaticProps: GetStaticProps<ServicePageProps> = async ({ params }) => {
+  const slug = typeof params?.slug === "string" ? params.slug : "";
+  const service = getServicePage(slug);
+
+  if (!service) {
     return { notFound: true };
   }
 
-  return { props: { slug } };
+  const adoptionCount = service.deploymentServiceId
+    ? await countAdoptingOrganizations(service.deploymentServiceId)
+    : null;
+
+  return { props: { slug, adoptionCount }, revalidate: REVALIDATE_SECONDS };
 };
