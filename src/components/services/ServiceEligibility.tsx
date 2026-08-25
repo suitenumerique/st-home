@@ -1,21 +1,15 @@
 import CommuneSearch, { type Commune } from "@/components/CommuneSearch";
-import { openFeedbackWidget } from "@/components/FeedbackWidget";
 import { useSmallScreen } from "@/lib/hooks";
-import { type ServiceEligibilitySearch } from "@/lib/services/types";
 import styles from "@/styles/services.module.css";
 import { fr } from "@codegouvfr/react-dsfr";
 import Link from "next/link";
 import { type ReactNode, useState } from "react";
 
-/**
- * Population thresholds of the ANCT offer, as used by the bienvenue page: under
- * them the collectivité is equipped by a partner or by the ANCT itself, above
- * them it runs the service on its own infrastructure. Types absent from this
- * map (département, région) are never above a threshold, as there.
- */
 const ANCT_THRESHOLDS: Record<string, number> = { commune: 3500, epci: 15000 };
+const PLACEHOLDER = "Entrez le nom de votre territoire ou son code postal";
+const PLACEHOLDER_SMALL_SCREEN = "Nom ou code postal";
+const CONTACT_EMAIL = "contact@suite.anct.gouv.fr";
 
-/** The operators returned by /api/communes/[siret], narrowed to what is used here. */
 type Operator = {
   id: string;
   name: string;
@@ -33,7 +27,6 @@ type Organization = {
   operators?: Operator[];
 };
 
-/** What the visitor is offered once their territory is known. */
 type Eligibility =
   { kind: "operator"; operator: Operator } | { kind: "anct" } | { kind: "self-hosted" };
 
@@ -43,11 +36,6 @@ type State =
   | { status: "ready"; commune: Commune; eligibility: Eligibility }
   | { status: "error"; commune: Commune };
 
-/**
- * A structure de mutualisation covering the territory *and* offering services.
- * Same filter and order as the OPSN blocks of the bienvenue page: the operators
- * scoped to fewer departments come first, as the more local ones.
- */
 function partnerOperator(operators: Operator[]): Operator | null {
   const partners = operators
     .filter((op) => op.isPerimetre && op.status === "partenaire_avec_services")
@@ -71,17 +59,15 @@ function eligibilityOf(organization: Organization): Eligibility {
   return operator ? { kind: "operator", operator } : { kind: "anct" };
 }
 
-/** "Mégalis", "l'ANCT": the name as it reads after "avec". */
 function operatorLabel(operator: Operator): string {
   return operator.name_with_article ?? operator.shortname ?? operator.name;
 }
 
 export default function ServiceEligibility({
-  search,
+  selfHostingUrl,
   serviceName,
 }: {
-  search: ServiceEligibilitySearch;
-  /** Named in the result headings: "Accéder à Messages avec…". */
+  selfHostingUrl?: string;
   serviceName: string;
 }) {
   const isSmallScreen = useSmallScreen(1000);
@@ -105,9 +91,6 @@ export default function ServiceEligibility({
     }
   };
 
-  // Emptying the field leaves the result in place — it only goes away on the
-  // reset button or on another territory. Remounting is how the field gets
-  // cleared: its text lives in the search's own state.
   const reset = () => {
     setState({ status: "idle" });
     setSearchKey((key) => key + 1);
@@ -121,7 +104,7 @@ export default function ServiceEligibility({
         <CommuneSearch
           key={searchKey}
           smallButton
-          placeholder={isSmallScreen ? search.placeholderSmallScreen : search.placeholder}
+          placeholder={isSmallScreen ? PLACEHOLDER_SMALL_SCREEN : PLACEHOLDER}
           onSelect={select}
           onButtonClick={reset}
         />
@@ -129,8 +112,13 @@ export default function ServiceEligibility({
 
       {state.status === "idle" ? (
         <div className={styles.heroSearchText}>
-          <h2 className={fr.cx("fr-h4", "fr-mt-3w", "fr-mb-1w")}>{search.title}</h2>
-          {search.description && <p className={fr.cx("fr-mb-0")}>{search.description}</p>}
+          <h2 className={fr.cx("fr-h4", "fr-mt-3w", "fr-mb-1w")}>
+            Découvrez vos modalités d&rsquo;accès
+          </h2>
+          <p className={fr.cx("fr-mb-0")}>
+            Selon votre administration et sa localité, les conditions d&rsquo;accès au service
+            peuvent varier.
+          </p>
         </div>
       ) : (
         <div className={`${styles.heroSearchText} ${styles.heroSearchResult}`}>
@@ -151,7 +139,7 @@ export default function ServiceEligibility({
               commune={state.commune}
               eligibility={state.eligibility}
               serviceName={serviceName}
-              selfHostingUrl={search.selfHostingUrl}
+              selfHostingUrl={selfHostingUrl}
             />
           )}
         </div>
@@ -181,9 +169,7 @@ function Result({
   const { title, description, primaryLink, footnote } = ((): {
     title: string;
     description: ReactNode;
-    /** Absent while the self-hosting guide has no URL. */
     primaryLink: { text: string; href: string } | null;
-    /** Lead-in of the closing line, which ends on the "contactez-nous" link. */
     footnote: ReactNode | null;
   } => {
     switch (eligibility.kind) {
@@ -253,17 +239,7 @@ function Result({
           style={{ color: "var(--text-mention-grey)" }}
         >
           {footnote}
-          <Link
-            href={`/bienvenue/${commune.siret}/contact`}
-            onClick={(event) => {
-              // The widget is the quickest way to reach us; the contact page of
-              // the territory stands in when it is not configured.
-              if (openFeedbackWidget()) event.preventDefault();
-            }}
-          >
-            contactez-nous
-          </Link>
-          .
+          <a href={`mailto:${CONTACT_EMAIL}`}>contactez-nous</a>.
         </p>
       )}
     </>

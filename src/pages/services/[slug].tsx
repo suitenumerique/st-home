@@ -6,25 +6,18 @@ import ServiceProConnect from "@/components/services/ServiceProConnect";
 import ServiceTestimonials from "@/components/services/ServiceTestimonials";
 import ServiceTrial from "@/components/services/ServiceTrial";
 import { getServicePage, getServicePageSlugs } from "@/lib/services";
-// Used only by getStaticProps, so Next keeps it out of the client bundle.
 import { countAdoptingOrganizations } from "@/lib/services/deployment";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { NextSeo } from "next-seo";
 
 type ServicePageProps = {
   slug: string;
-  /** Null when the service declares no id, or when the database was out of reach. */
   adoptionCount: number | null;
 };
 
-// Service content is looked up client-side from the registry rather than passed
-// through props: the blocks hold ReactNode, which getStaticProps cannot serialize.
-// Only the figures read from the database travel through props.
 export default function ServicePage({ slug, adoptionCount }: ServicePageProps) {
   const service = getServicePage(slug);
 
-  // Unreachable: getStaticPaths only emits known slugs and getStaticProps 404s
-  // on anything else. Kept to narrow the type.
   if (!service) return null;
 
   return (
@@ -35,18 +28,17 @@ export default function ServicePage({ slug, adoptionCount }: ServicePageProps) {
 
       {service.features && <ServiceFeatures block={service.features} />}
 
-      {/* Same block on every service page: its content lives in the component. */}
       <ServiceProConnect service={service} />
 
       {service.testimonials && (
         <ServiceTestimonials block={service.testimonials} adoptionCount={adoptionCount} />
       )}
 
-      {service.foundations && <ServiceFoundations block={service.foundations} />}
+      <ServiceFoundations />
 
       {service.faq && <ServiceFaq block={service.faq} />}
 
-      {service.trial && <ServiceTrial block={service.trial} />}
+      <ServiceTrial service={service} />
     </>
   );
 }
@@ -56,9 +48,6 @@ export const getStaticPaths: GetStaticPaths = () => ({
   fallback: false,
 });
 
-// Kept in sync with the deployment data without rebuilding: the count moves
-// slowly, and a stale figure for an hour is better than a database round-trip
-// on every visit.
 const REVALIDATE_SECONDS = 3600;
 
 export const getStaticProps: GetStaticProps<ServicePageProps> = async ({ params }) => {

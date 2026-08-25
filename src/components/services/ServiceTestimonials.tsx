@@ -14,8 +14,6 @@ export default function ServiceTestimonials({
   const { testimonials, link } = block;
   const [current, setCurrent] = useState(0);
 
-  // Navigation wraps around: with a handful of quotes, dead-ending on the last
-  // one is more surprising than looping.
   const go = (step: number) =>
     setCurrent((i) => (i + step + testimonials.length) % testimonials.length);
 
@@ -27,7 +25,6 @@ export default function ServiceTestimonials({
       <div className={fr.cx("fr-container", "fr-py-6w")}>
         <h2 className={fr.cx("fr-sr-only")}>Ils utilisent le service</h2>
 
-        {/* No count, no claim: the label is built around the figure. */}
         {link && adoptionCount !== null && (
           <p className={fr.cx("fr-mb-2w")}>
             <Link href={link.href} className={fr.cx("fr-link")}>

@@ -3,7 +3,6 @@ import styles from "@/styles/services.module.css";
 import { fr } from "@codegouvfr/react-dsfr";
 import { Accordion } from "@codegouvfr/react-dsfr/Accordion";
 
-// Narrower than the container: long question labels and answers stay readable.
 const COLUMN_MAX_WIDTH = "56rem";
 
 export default function ServiceFaq({ block }: { block: ServiceFaqBlock }) {
