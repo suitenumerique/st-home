@@ -103,6 +103,14 @@
   text-align: center;
 }
 
+/*
+ * The result needs more room than the caption it replaces: its two buttons sit
+ * side by side rather than stacking, and its heading holds on two lines.
+ */
+.heroSearchResult {
+  max-width: 40rem;
+}
+
 .heroSearch :global(.fr-search-bar) {
   height: 3rem;
   background-color: #fff;
