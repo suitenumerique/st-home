@@ -6,7 +6,8 @@ import Link from "next/link";
 import { type ReactNode } from "react";
 
 const TEXT_MAX_WIDTH = "34rem";
-const REPOSITORY_URL = process.env.NEXT_PUBLIC_APP_REPOSITORY_URL ?? "";
+// Where the code lives when a service does not name its own repository.
+const DEFAULT_REPOSITORY_URL = process.env.NEXT_PUBLIC_APP_REPOSITORY_URL ?? "";
 const CONTACT_EMAIL = "contact@suite.anct.gouv.fr";
 
 type Foundation = {
@@ -58,7 +59,9 @@ const foundations: Foundation[] = [
   },
 ];
 
-export default function ServiceFoundations() {
+export default function ServiceFoundations({ repositoryUrl }: { repositoryUrl?: string }) {
+  const repository = repositoryUrl ?? DEFAULT_REPOSITORY_URL;
+
   return (
     <section className={`${fr.cx("fr-container")} ${styles.section}`}>
       <h2 className={fr.cx("fr-h4", "fr-mb-2w")}>Des fondements essentiels</h2>
@@ -111,9 +114,9 @@ export default function ServiceFoundations() {
             Partager un retour
           </Link>
 
-          {REPOSITORY_URL && (
+          {repository && (
             <Link
-              href={REPOSITORY_URL}
+              href={repository}
               target="_blank"
               rel="noopener noreferrer"
               className={fr.cx("fr-btn", "fr-btn--secondary")}

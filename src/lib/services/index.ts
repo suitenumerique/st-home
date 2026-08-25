@@ -1,3 +1,4 @@
+import annuaire from "./annuaire";
 import messages from "./messages";
 import { type ServicePage } from "./types";
 
@@ -7,7 +8,7 @@ export * from "./types";
  * Services that have their own page under /services/<slug>, in header dropdown
  * order. Adding a service here creates its route and its dropdown entry.
  */
-const servicePages: ServicePage[] = [messages];
+const servicePages: ServicePage[] = [messages, annuaire];
 
 export function getServicePage(slug: string): ServicePage | undefined {
   return servicePages.find((page) => page.slug === slug);

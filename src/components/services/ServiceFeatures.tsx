@@ -29,12 +29,7 @@ function FeatureRow({
   return (
     <div
       className={
-        fr.cx(
-          "fr-grid-row",
-          "fr-grid-row--gutters",
-          "fr-grid-row--middle",
-          !last && "fr-mb-12w",
-        ) +
+        fr.cx("fr-grid-row", "fr-grid-row--gutters", "fr-grid-row--middle", !last && "fr-mb-12w") +
         ` ${styles.featureRow}` +
         (reversed ? ` ${styles.featureRowReversed}` : "")
       }
