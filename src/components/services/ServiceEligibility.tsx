@@ -2,7 +2,6 @@ import CommuneSearch, { type Commune } from "@/components/CommuneSearch";
 import { openFeedbackWidget } from "@/components/FeedbackWidget";
 import { useSmallScreen } from "@/lib/hooks";
 import { type ServiceEligibilitySearch } from "@/lib/services/types";
-import { getOrganizationTypeDisplay } from "@/lib/string";
 import styles from "@/styles/services.module.css";
 import { fr } from "@codegouvfr/react-dsfr";
 import Link from "next/link";
@@ -87,6 +86,7 @@ export default function ServiceEligibility({
 }) {
   const isSmallScreen = useSmallScreen(1000);
   const [state, setState] = useState<State>({ status: "idle" });
+  const [searchKey, setSearchKey] = useState(0);
 
   const select = async (commune: Commune) => {
     setState({ status: "loading", commune });
@@ -105,67 +105,61 @@ export default function ServiceEligibility({
     }
   };
 
-  if (state.status === "idle") {
-    return (
-      <>
-        <div className={styles.heroSearch}>
-          <CommuneSearch
-            smallButton
-            placeholder={isSmallScreen ? search.placeholderSmallScreen : search.placeholder}
-            onSelect={select}
-          />
-        </div>
+  // Remounting the search is how it gets emptied: the field keeps its own text,
+  // and the reset button has no other way to clear it.
+  const reset = () => {
+    setState({ status: "idle" });
+    setSearchKey((key) => key + 1);
+  };
 
+  return (
+    <>
+      <div
+        className={`${styles.heroSearch} ${state.status !== "idle" ? styles.heroSearchSelected : ""}`}
+      >
+        <CommuneSearch
+          key={searchKey}
+          smallButton
+          placeholder={isSmallScreen ? search.placeholderSmallScreen : search.placeholder}
+          onSelect={select}
+          onInputChange={(_, reason) => {
+            // "reset" is the field being filled from the selection itself;
+            // anything the visitor types or clears drops the result.
+            if (reason !== "reset") setState({ status: "idle" });
+          }}
+          onButtonClick={reset}
+        />
+      </div>
+
+      {state.status === "idle" ? (
         <div className={styles.heroSearchText}>
           <h2 className={fr.cx("fr-h4", "fr-mt-3w", "fr-mb-1w")}>{search.title}</h2>
           {search.description && <p className={fr.cx("fr-mb-0")}>{search.description}</p>}
         </div>
-      </>
-    );
-  }
+      ) : (
+        <div className={`${styles.heroSearchText} ${styles.heroSearchResult}`}>
+          {state.status === "loading" && <p className={fr.cx("fr-mt-3w", "fr-mb-0")}>Recherche…</p>}
 
-  const { commune } = state;
+          {state.status === "error" && (
+            <p className={fr.cx("fr-mt-3w", "fr-mb-0")}>
+              Vos modalités d&rsquo;accès n&rsquo;ont pas pu être chargées.{" "}
+              <Link href={`/bienvenue/${state.commune.siret}`}>
+                Voir la page de votre territoire
+              </Link>
+              .
+            </p>
+          )}
 
-  return (
-    <>
-      <div className={`${styles.heroSearch} ${styles.heroSearchSelected}`}>
-        <div className={fr.cx("fr-search-bar")}>
-          <input
-            className={fr.cx("fr-input")}
-            type="text"
-            readOnly
-            value={`${commune.name} (${getOrganizationTypeDisplay(commune)})`}
-            aria-label="Territoire sélectionné"
-          />
-          <button
-            type="button"
-            className={fr.cx("fr-btn")}
-            onClick={() => setState({ status: "idle" })}
-          >
-            Choisir un autre territoire
-          </button>
+          {state.status === "ready" && (
+            <Result
+              commune={state.commune}
+              eligibility={state.eligibility}
+              serviceName={serviceName}
+              selfHostingUrl={search.selfHostingUrl}
+            />
+          )}
         </div>
-      </div>
-
-      <div className={styles.heroSearchText}>
-        {state.status === "loading" && <p className={fr.cx("fr-mt-3w", "fr-mb-0")}>Recherche…</p>}
-
-        {state.status === "error" && (
-          <p className={fr.cx("fr-mt-3w", "fr-mb-0")}>
-            Vos modalités d&rsquo;accès n&rsquo;ont pas pu être chargées.{" "}
-            <Link href={`/bienvenue/${commune.siret}`}>Voir la page de votre territoire</Link>.
-          </p>
-        )}
-
-        {state.status === "ready" && (
-          <Result
-            commune={commune}
-            eligibility={state.eligibility}
-            serviceName={serviceName}
-            selfHostingUrl={search.selfHostingUrl}
-          />
-        )}
-      </div>
+      )}
     </>
   );
 }
