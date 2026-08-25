@@ -11,34 +11,24 @@ import {
   Signature,
 } from "@/components/icons/uikit";
 import Link from "next/link";
-import { ELIGIBILITY_SEARCH_ANCHOR, type ServicePage } from "./types";
+import { type ServicePage } from "./types";
 
 const DEMO_URL = "https://tube.numerique.gouv.fr/w/2UJw6Prm1XwsxxLfnjfgSJ";
 const ALL_FEATURES_URL =
   "https://projets.suite.anct.gouv.fr/boards/1785606084149380144?labels=1785609198420100164";
-// The deployment map, filtered on Messages.
 const DEPLOYMENT_MAP_URL = "/cartographie-deploiement?service_ids=2";
-// Fallback for "Partager un retour": the button opens the feedback widget, and
-// only follows this link when the widget is not configured.
-const FEEDBACK_URL = "https://aide.suite.anct.gouv.fr/socle/messages";
-// The help centre, filtered on Messages, and the partner documentation.
 const HELP_CENTRE_URL = "https://aide.suite.anct.gouv.fr/socle/messages";
-const PARTNER_CENTRE_URL =
-  "https://docs.numerique.gouv.fr/docs/a85b4b1f-790f-4e55-b097-91eac06d69a6/";
-// TODO: placeholder — point this at the self-hosting guide for Messages once
-// it is published. Until then the result offers no primary button.
-const SELF_HOSTING_URL = "https://aide.suite.anct.gouv.fr/socle/messages";
-const REPOSITORY_URL = process.env.NEXT_PUBLIC_APP_REPOSITORY_URL ?? "";
+const SELF_HOSTING_URL =
+  "https://docs.numerique.gouv.fr/docs/440cb67a-093c-4901-ac88-702c7b298ff5/";
 
 const messages: ServicePage = {
   slug: "messages",
   navLabel: "Messages",
-  // Matches the service_ids filter of DEPLOYMENT_MAP_URL below.
   deploymentServiceId: 2,
   seo: {
-    title: "Messages, la messagerie professionnelle des collectivités",
+    title: "Messages, envoyez et recevez vos courriels professionnels",
     description:
-      "Créez des adresses de messagerie nominatives ou partagées pour votre collectivité et gérez vos courriels professionnels en équipe, dans un environnement souverain et sécurisé.",
+      "Envoyez et recevez vos courriels et gérez votre calendrier professionnel dans un environnement souverain et sécurisé, avec des adresses nominatives ou partagées.",
   },
 
   hero: {
@@ -48,11 +38,11 @@ const messages: ServicePage = {
       width: 568,
       height: 160,
     },
-    tagline: <>Envoyez et recevez vos courriels en toute sécurité</>,
+    tagline: <>Envoyez et recevez vos courriels professionnels</>,
     description: (
       <>
-        Créer des adresses nominatives ou partagées pour votre collectivité et gérer vos courriels
-        professionnels en équipe.
+        Envoyez et recevez vos courriels et gérez votre calendrier professionnel dans un
+        environnement sécurisé.
       </>
     ),
     illustration: {
@@ -67,18 +57,7 @@ const messages: ServicePage = {
       width: 2412,
       height: 1656,
     },
-    eligibilitySearch: {
-      title: <>Découvrez vos modalités d&rsquo;accès</>,
-      description: (
-        <>
-          Selon votre administration et sa localité, les conditions d&rsquo;accès au service peuvent
-          varier.
-        </>
-      ),
-      placeholder: "Entrez le nom de votre territoire ou son code postal",
-      placeholderSmallScreen: "Nom ou code postal",
-      selfHostingUrl: SELF_HOSTING_URL,
-    },
+    eligibilitySearch: { selfHostingUrl: SELF_HOSTING_URL },
   },
 
   features: {
@@ -214,69 +193,6 @@ const messages: ServicePage = {
     ],
   },
 
-  foundations: {
-    title: <>Des fondements essentiels</>,
-    description: (
-      <>
-        Tous nos services sont conçus pour et avec les collectivités, selon des standards élevés
-        garantissant l&rsquo;intégrité de vos données.
-      </>
-    ),
-    foundations: [
-      {
-        icon: { src: "/images/shield-check.svg", alt: "", width: 64, height: 64 },
-        title: <>Sécurité avancée</>,
-        description: (
-          <>
-            Identification unique avec ProConnect, système antivirus, contrôles d&rsquo;accès,
-            journaux d&rsquo;audit détaillés, le tout conforme au RGPD.
-          </>
-        ),
-      },
-      {
-        icon: { src: "/images/code.svg", alt: "", width: 64, height: 64 },
-        title: <>Commun numérique</>,
-        description: (
-          <>
-            La gouvernance partagée avec nos partenaires garantit la prise en compte de vos retours
-            et le maintien de tous nos codes sources ouverts.
-          </>
-        ),
-      },
-      {
-        icon: { src: "/images/map-pin.svg", alt: "", width: 64, height: 64 },
-        title: <>Hébergement en France</>,
-        description: (
-          <>
-            Pour une souveraineté renforcée, toutes vos données sont stockées et traitées en France,
-            sous juridiction française et avec une gouvernance vérifiable.
-          </>
-        ),
-      },
-      {
-        icon: { src: "/images/puzzle.svg", alt: "", width: 64, height: 64 },
-        title: <>Service interopérable</>,
-        description: (
-          <>
-            Nos services sont nativement conçus pour fonctionner avec d&rsquo;autres services, pour
-            toujours plus d&rsquo;efficacité et sans ressaisie de vos données.
-          </>
-        ),
-      },
-    ],
-    callToAction: {
-      text: (
-        <>
-          Aidez-nous à construire un service sur mesure pour les collectivités : partagez vos
-          retours ou contribuez directement au code.
-        </>
-      ),
-      primaryLink: { text: "Partager un retour", href: FEEDBACK_URL },
-      primaryOpensFeedbackWidget: true,
-      secondaryLink: { text: "Contribuer au code", href: REPOSITORY_URL },
-    },
-  },
-
   faq: {
     title: <>Questions fréquentes</>,
     description: (
@@ -284,7 +200,7 @@ const messages: ServicePage = {
         Pour en savoir plus, consultez le{" "}
         <Link href={HELP_CENTRE_URL} target="_blank" rel="noopener noreferrer">
           centre d&rsquo;aide
-        </Link>{" "}
+        </Link>
         .
       </>
     ),
@@ -336,7 +252,7 @@ const messages: ServicePage = {
         answer: (
           <p>
             Oui, si les adresses de messagerie sont strictement nominatives, il est possible de
-            créer des boîtes de messagerie partagées (ex : bibliotheque@commune.collectivite.fr).
+            créer des boîtes de messagerie partagées (ex : bibliothèque@commune.fr).
           </p>
         ),
       },
@@ -354,15 +270,18 @@ const messages: ServicePage = {
       },
       {
         question: <>La durabilité du service est-elle assurée ?</>,
-        // TODO: answer still to be written — this question ships with a
-        // placeholder until then.
-        answer: <p>à écrire…</p>,
+        answer: (
+          <p>
+            Messages est opéré par l&rsquo;ANCT à partir de briques open-source et constitue un
+            élément central de la feuille de route numérique de l&rsquo;Incubateur des territoires
+            pour la souveraineté des collectivités. Au-delà de cette dimension stratégique, sa
+            résilience et sa pérennité tiennent à sa coopération avec les opérateurs publics de
+            services numériques et partenaires, pour déployer le service que ce soit sur
+            l&rsquo;instance de l&rsquo;ANCT ou sur des instances dédiées.
+          </p>
+        ),
       },
     ],
-  },
-
-  trial: {
-    accessLink: { text: "Voir mes modalités d’accès", href: `#${ELIGIBILITY_SEARCH_ANCHOR}` },
   },
 };
 

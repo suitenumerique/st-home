@@ -9,9 +9,6 @@ import Image from "next/image";
 import Link from "next/link";
 
 const ICON_SIZE = 20;
-// DSFR `$<palette>-850-active`. Written out because react-dsfr exposes a CSS
-// variable for each shade (`--blue-ecume-850-200`) but not for the active
-// variant of its palette entry, which is where these two come from.
 const ICON_COLORS: Record<ServiceFeatureIconColor, string> = {
   "blue-ecume": "#6b93f6",
   "yellow-tournesol": "#a88e26",
@@ -36,7 +33,6 @@ function FeatureRow({
           "fr-grid-row",
           "fr-grid-row--gutters",
           "fr-grid-row--middle",
-          // Separates rows, so the last one leaves the gap to the next block.
           !last && "fr-mb-12w",
         ) +
         ` ${styles.featureRow}` +
@@ -53,7 +49,6 @@ function FeatureRow({
               key={index}
               className={fr.cx(
                 "fr-col-12",
-                // Two columns only split once there is room for them.
                 row.highlightColumns === 2 ? "fr-col-sm-6" : "fr-col-sm-12",
               )}
               style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}

@@ -21,14 +21,12 @@ export type ServiceIllustration = {
  */
 export const ELIGIBILITY_SEARCH_ANCHOR = "modalites-acces";
 
-/** Commune search sending visitors to their eligibility page (/bienvenue/[siret]). */
+/**
+ * Declares the eligibility search under the hero: the same field, wording and
+ * results on every service page, so only what differs between services lives
+ * here. The block itself is in src/components/services/ServiceEligibility.tsx.
+ */
 export type ServiceEligibilitySearch = {
-  title: ReactNode;
-  /** Sits under the title, explaining what the answer depends on. */
-  description?: ReactNode;
-  placeholder: string;
-  /** Shorter placeholder used on small screens, where the full one is truncated. */
-  placeholderSmallScreen: string;
   /**
    * Documentation on running the service yourself, offered to the collectivités
    * above the ANCT thresholds. Without it, that result shows no primary button.
@@ -113,33 +111,6 @@ export type ServiceTestimonialsBlock = {
   testimonials: ServiceTestimonial[];
 };
 
-/** One of the pillars of the "fondements essentiels" block. */
-export type ServiceFoundation = {
-  icon: ServiceIllustration;
-  title: ReactNode;
-  description: ReactNode;
-};
-
-/**
- * Closing block: what every service of the Suite guarantees, followed by an
- * invitation to contribute.
- */
-export type ServiceFoundationsBlock = {
-  title: ReactNode;
-  description: ReactNode;
-  foundations: ServiceFoundation[];
-  callToAction?: {
-    text: ReactNode;
-    primaryLink: ServiceLink;
-    /**
-     * Open the feedback widget on the primary link instead of following it. The
-     * link is still the fallback, for when the widget is not configured.
-     */
-    primaryOpensFeedbackWidget?: boolean;
-    secondaryLink?: ServiceLink;
-  };
-};
-
 export type ServiceFaqItem = {
   question: ReactNode;
   /** Non-nullable: it is the content of the DSFR accordion. */
@@ -152,15 +123,6 @@ export type ServiceFaqBlock = {
   /** Sits under the title, typically pointing at the help centre. */
   description?: ReactNode;
   items: ServiceFaqItem[];
-};
-
-/**
- * Closing call to action, reusing the shared "Intéressé ? Testez !" visual of
- * the other pages.
- */
-export type ServiceTrialBlock = {
-  /** Primary button, typically back up to the hero eligibility search. */
-  accessLink: ServiceLink;
 };
 
 export type ServicePage = {
@@ -181,7 +143,5 @@ export type ServicePage = {
   hero: ServiceHeroBlock;
   features?: ServiceFeaturesBlock;
   testimonials?: ServiceTestimonialsBlock;
-  foundations?: ServiceFoundationsBlock;
   faq?: ServiceFaqBlock;
-  trial?: ServiceTrialBlock;
 };
