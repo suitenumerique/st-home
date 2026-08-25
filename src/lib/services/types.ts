@@ -48,6 +48,8 @@ export type ServiceHeroBlock = {
   illustration?: ServiceIllustration;
   /** Product screenshot spanning the full viewport width, under the hero text. */
   screenshot?: ServiceIllustration;
+  /** Primary action under the description, for the services that need no search. */
+  cta?: ServiceLink;
   /** Omitted for services whose access does not depend on the collectivité. */
   eligibilitySearch?: ServiceEligibilitySearch;
 };
@@ -139,6 +141,11 @@ export type ServicePage = {
     title: string;
     description: string;
   };
+  /**
+   * Source repository of the service, linked from the "fondements" block.
+   * Defaults to this site's own repository.
+   */
+  repositoryUrl?: string;
   /** The only mandatory block. */
   hero: ServiceHeroBlock;
   features?: ServiceFeaturesBlock;

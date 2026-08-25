@@ -34,7 +34,7 @@ export default function ServicePage({ slug, adoptionCount }: ServicePageProps) {
         <ServiceTestimonials block={service.testimonials} adoptionCount={adoptionCount} />
       )}
 
-      <ServiceFoundations />
+      <ServiceFoundations repositoryUrl={service.repositoryUrl} />
 
       {service.faq && <ServiceFaq block={service.faq} />}
 

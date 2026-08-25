@@ -3,6 +3,7 @@ import { ELIGIBILITY_SEARCH_ANCHOR, type ServiceHeroBlock } from "@/lib/services
 import styles from "@/styles/services.module.css";
 import { fr } from "@codegouvfr/react-dsfr";
 import Image from "next/image";
+import Link from "next/link";
 
 const GRADIENT_ALPHA = 0.05;
 const HERO_BACKGROUND = `linear-gradient(180deg, rgba(0, 0, 145, ${GRADIENT_ALPHA}) 0%, rgba(0, 0, 145, 0) 540px)`;
@@ -20,7 +21,8 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
         style={{ paddingTop: CONTENT_PADDING_TOP }}
       >
         <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters", "fr-grid-row--middle")}>
-          <div className={fr.cx("fr-col-12", "fr-col-md-6")}>
+          {/* Half the row next to the illustration, the whole of it without. */}
+          <div className={fr.cx("fr-col-12", illustration ? "fr-col-md-6" : "fr-col-md-12")}>
             <h1 className={fr.cx("fr-mb-2w")}>
               {hero.logo ? (
                 <Image
@@ -45,6 +47,17 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
             </h1>
 
             <p className={fr.cx("fr-text--lg", "fr-mb-0")}>{hero.description}</p>
+
+            {hero.cta && (
+              <Link
+                href={hero.cta.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={fr.cx("fr-btn", "fr-mt-4w")}
+              >
+                {hero.cta.text}
+              </Link>
+            )}
           </div>
 
           {illustration && (
