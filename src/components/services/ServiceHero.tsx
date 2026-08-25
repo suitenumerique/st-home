@@ -1,10 +1,8 @@
-import CommuneSearch, { type Commune } from "@/components/CommuneSearch";
-import { useSmallScreen } from "@/lib/hooks";
+import ServiceEligibility from "@/components/services/ServiceEligibility";
 import { ELIGIBILITY_SEARCH_ANCHOR, type ServiceHeroBlock } from "@/lib/services/types";
 import styles from "@/styles/services.module.css";
 import { fr } from "@codegouvfr/react-dsfr";
 import Image from "next/image";
-import { useRouter } from "next/router";
 
 // Hero background: blue France (#000091) fading to transparent over the first
 // 540px, with no decorative pattern. Kept at a low alpha so the dark heading
@@ -27,15 +25,16 @@ const LOGO_MAX_HEIGHT = 56;
 const CONTENT_PADDING_TOP = 150;
 
 export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
-  const router = useRouter();
-  const isSmallScreen = useSmallScreen(1000);
-
   const { eligibilitySearch, illustration, screenshot } = hero;
 
   return (
-    <section style={{ backgroundImage: HERO_BACKGROUND }}>
+    <section className={styles.section} style={{ backgroundImage: HERO_BACKGROUND }}>
+      {/* The gradient has faded out long before the bottom of the hero, so the
+          air under it is the gap to the next section, not the band. The bottom
+          padding is internal spacing instead: it separates the search from the
+          screenshot below, and is dropped when there is no screenshot. */}
       <div
-        className={fr.cx("fr-container", "fr-pb-6w")}
+        className={fr.cx("fr-container", screenshot && "fr-pb-6w")}
         style={{ paddingTop: CONTENT_PADDING_TOP }}
       >
         <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters", "fr-grid-row--middle")}>
@@ -65,28 +64,8 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
               <span style={{ display: "block", fontWeight: 400 }}>{hero.tagline}</span>
             </h1>
 
-            <p className={fr.cx("fr-text--lg", "fr-mb-4w")}>{hero.description}</p>
-
-            {eligibilitySearch && (
-              <>
-                <h2 className={fr.cx("fr-text--lg", "fr-text--bold", "fr-mb-1w")}>
-                  {eligibilitySearch.title}
-                </h2>
-                {/* Anchor target: the ProConnect block sends visitors back up
-                    to this search when they are already on the service page. */}
-                <div id={ELIGIBILITY_SEARCH_ANCHOR} className={styles.heroSearch}>
-                  <CommuneSearch
-                    smallButton
-                    placeholder={
-                      isSmallScreen
-                        ? eligibilitySearch.placeholderSmallScreen
-                        : eligibilitySearch.placeholder
-                    }
-                    onSelect={(commune: Commune) => router.push(`/bienvenue/${commune.siret}`)}
-                  />
-                </div>
-              </>
-            )}
+            {/* Last thing in the column now that the search moved out. */}
+            <p className={fr.cx("fr-text--lg", "fr-mb-0")}>{hero.description}</p>
           </div>
 
           {illustration && (
@@ -128,6 +107,14 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
             priority
             style={{ display: "block", width: "100%", height: "auto" }}
           />
+        </div>
+      )}
+
+      {eligibilitySearch && (
+        // Anchor target: blocks further down the page send visitors back up to
+        // this search when they are already on the service page.
+        <div id={ELIGIBILITY_SEARCH_ANCHOR} className={fr.cx("fr-container", "fr-mt-6w")}>
+          <ServiceEligibility search={eligibilitySearch} serviceName={hero.name} />
         </div>
       )}
     </section>

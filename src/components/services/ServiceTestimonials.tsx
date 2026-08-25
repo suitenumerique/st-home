@@ -20,7 +20,10 @@ export default function ServiceTestimonials({
     setCurrent((i) => (i + step + testimonials.length) % testimonials.length);
 
   return (
-    <section style={{ backgroundColor: "var(--background-alt-blue-france)" }}>
+    <section
+      className={styles.section}
+      style={{ backgroundColor: "var(--background-alt-blue-france)" }}
+    >
       <div className={fr.cx("fr-container", "fr-py-6w")}>
         <h2 className={fr.cx("fr-sr-only")}>Ils utilisent le service</h2>
 

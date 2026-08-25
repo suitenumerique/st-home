@@ -1,8 +1,22 @@
-import { type ServiceFeatureRow, type ServiceFeaturesBlock } from "@/lib/services/types";
+import {
+  type ServiceFeatureIconColor,
+  type ServiceFeatureRow,
+  type ServiceFeaturesBlock,
+} from "@/lib/services/types";
 import styles from "@/styles/services.module.css";
 import { fr } from "@codegouvfr/react-dsfr";
 import Image from "next/image";
 import Link from "next/link";
+
+const ICON_SIZE = 20;
+// DSFR `$<palette>-850-active`. Written out because react-dsfr exposes a CSS
+// variable for each shade (`--blue-ecume-850-200`) but not for the active
+// variant of its palette entry, which is where these two come from.
+const ICON_COLORS: Record<ServiceFeatureIconColor, string> = {
+  "blue-ecume": "#6b93f6",
+  "yellow-tournesol": "#a88e26",
+  "green-archipel": "#419ca4",
+};
 
 function FeatureRow({
   row,
@@ -44,10 +58,12 @@ function FeatureRow({
               )}
               style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}
             >
-              <span
-                className={fr.cx(highlight.icon, "fr-icon--sm")}
+              <highlight.icon
+                width={ICON_SIZE}
+                height={ICON_SIZE}
                 aria-hidden="true"
-                style={{ color: "var(--text-title-blue-france)", flexShrink: 0 }}
+                focusable="false"
+                style={{ color: ICON_COLORS[row.iconColor ?? "blue-ecume"], flexShrink: 0 }}
               />
               <span className={fr.cx("fr-text--sm", "fr-mb-0")}>{highlight.label}</span>
             </li>
@@ -83,7 +99,7 @@ function FeatureRow({
 
 export default function ServiceFeatures({ block }: { block: ServiceFeaturesBlock }) {
   return (
-    <section className={fr.cx("fr-container", "fr-py-10w")}>
+    <section className={`${fr.cx("fr-container")} ${styles.section}`}>
       {block.rows.map((row, index) => (
         <FeatureRow
           key={index}
