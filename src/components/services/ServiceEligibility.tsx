@@ -105,8 +105,9 @@ export default function ServiceEligibility({
     }
   };
 
-  // Remounting the search is how it gets emptied: the field keeps its own text,
-  // and the reset button has no other way to clear it.
+  // Emptying the field leaves the result in place — it only goes away on the
+  // reset button or on another territory. Remounting is how the field gets
+  // cleared: its text lives in the search's own state.
   const reset = () => {
     setState({ status: "idle" });
     setSearchKey((key) => key + 1);
@@ -122,11 +123,6 @@ export default function ServiceEligibility({
           smallButton
           placeholder={isSmallScreen ? search.placeholderSmallScreen : search.placeholder}
           onSelect={select}
-          onInputChange={(_, reason) => {
-            // "reset" is the field being filled from the selection itself;
-            // anything the visitor types or clears drops the result.
-            if (reason !== "reset") setState({ status: "idle" });
-          }}
           onButtonClick={reset}
         />
       </div>

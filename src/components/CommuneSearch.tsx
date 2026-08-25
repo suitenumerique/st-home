@@ -21,11 +21,6 @@ export interface Commune {
 
 interface CommuneSearchProps {
   onSelect?: (commune: Commune) => void;
-  /**
-   * Every change of the text, with the reason MUI reports: "input" when typed,
-   * "clear" when emptied, "reset" when the field is filled from a selection.
-   */
-  onInputChange?: (value: string, reason: string) => void;
   /** The search bar's own button, which submits nothing by default. */
   onButtonClick?: () => void;
   placeholder?: string;
@@ -38,7 +33,6 @@ interface CommuneSearchProps {
 
 interface SearchInputProps {
   id: string;
-  onInputChange?: (value: string, reason: string) => void;
   placeholder?: string;
   style?: React.CSSProperties;
   type: "commune" | "epci" | "departement" | "region" | "all";
@@ -130,10 +124,9 @@ function CommuneSearchInput(
       }
       getOptionLabel={(option) => `${option.name} (${getOrganizationTypeDisplay(option)})`}
       filterOptions={(x) => x} // Disable client-side filtering
-      onInputChange={(_, value, reason) => {
+      onInputChange={(_, value) => {
         setInputValue(value);
         handleInputChange(value);
-        props.onInputChange?.(value, reason);
       }}
       onChange={(_, value) => (value ? onOptionSelect(value) : null)}
       autoHighlight={true}
@@ -239,7 +232,6 @@ function CommuneSearchInput(
 
 export default function CommuneSearch({
   onSelect,
-  onInputChange,
   onButtonClick,
   placeholder,
   type = "all",
@@ -263,7 +255,6 @@ export default function CommuneSearch({
             type={type}
             style={style}
             onOptionSelect={onSelect || (() => {})}
-            onInputChange={onInputChange}
             container={container}
             apiBaseUrl={apiBaseUrl}
           />
