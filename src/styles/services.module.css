@@ -1,4 +1,19 @@
 /*
+ * Vertical rhythm of the page: the gap between two sections is always the
+ * bottom margin of the upper one, never the top padding of the lower one, so
+ * that two neighbours cannot each declare their share of the same gap and
+ * reordering the blocks cannot change the rhythm.
+ *
+ * A section may still pad itself when its own content needs air — the coloured
+ * band of the testimonials pads the band, not the gap. Resist doing it just to
+ * widen a gap: two padded neighbours add up again, which is what this value is
+ * here to prevent. Widen the gap here instead.
+ */
+.section {
+  margin-bottom: 7rem;
+}
+
+/*
  * Feature rows alternate sides. The DOM order is always text then screenshot so
  * that rows stack text-first on mobile; from the DSFR `md` breakpoint (48em) up,
  * odd rows are flipped horizontally. Reversing the flex direction only reorders
@@ -73,6 +88,21 @@
  * input (its right corners end up hidden behind the button) rather than on the
  * bar with `overflow: hidden`, which would clip the input's focus outline.
  */
+/*
+ * The field is wider than the wording it introduces, as in the mockup, and both
+ * are centred under the hero screenshot.
+ */
+.heroSearch {
+  max-width: 44rem;
+  margin: 0 auto;
+}
+
+.heroSearchText {
+  max-width: 30rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
 .heroSearch :global(.fr-search-bar) {
   height: 3rem;
   background-color: #fff;
@@ -135,4 +165,34 @@
   margin-right: 0;
   -webkit-mask-image: var(--data-uri-svg);
   mask-image: var(--data-uri-svg);
+}
+
+/*
+ * Once a territory is picked the field turns read-only and its button resets
+ * the search, so it becomes the emphasised action of the block rather than a
+ * discreet submit.
+ */
+.heroSearchSelected :global(.fr-search-bar .fr-btn) {
+  background-color: var(--background-action-high-blue-france);
+}
+
+.heroSearchSelected :global(.fr-search-bar .fr-btn:hover) {
+  background-color: var(--background-action-high-blue-france-hover);
+}
+
+.heroSearchSelected :global(.fr-search-bar .fr-btn:active) {
+  background-color: var(--background-action-high-blue-france-active);
+}
+
+.heroSearchSelected :global(.fr-search-bar .fr-btn::before) {
+  /* DSFR's own `icons/system/arrow-go-back-line.svg`, inlined as the search
+     button's icon is drawn by a mask rather than by an `fr-icon-*` class. */
+  --data-uri-svg: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="m5.828 7 2.536 2.536L6.95 10.95 2 6l4.95-4.95 1.414 1.414L5.828 5H13a8 8 0 1 1 0 16H4v-2h9a6 6 0 1 0 0-12H5.828Z"/></svg>');
+
+  background-color: #fff;
+}
+
+.heroSearchSelected :global(.fr-search-bar .fr-input) {
+  /* Read-only, so it should not read as an editable field. */
+  cursor: default;
 }

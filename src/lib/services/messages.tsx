@@ -1,24 +1,34 @@
+import {
+  Assign,
+  BubbleText,
+  Calendrier,
+  Contacts,
+  Doc,
+  Download,
+  Link as LinkIcon,
+  Retry,
+  Shared,
+  Signature,
+} from "@/components/icons/uikit";
 import Link from "next/link";
 import { ELIGIBILITY_SEARCH_ANCHOR, type ServicePage } from "./types";
 
 const DEMO_URL = "https://tube.numerique.gouv.fr/w/2UJw6Prm1XwsxxLfnjfgSJ";
 const ALL_FEATURES_URL =
   "https://projets.suite.anct.gouv.fr/boards/1785606084149380144?labels=1785609198420100164";
-// V1: the help centre article on domain names. TODO: point at /services/domaines
-// once that page exists.
-const DOMAINES_URL = "https://aide.suite.anct.gouv.fr/socle/domaines";
 // The deployment map, filtered on Messages.
 const DEPLOYMENT_MAP_URL = "/cartographie-deploiement?service_ids=2";
-// TODO: placeholder — point this at the feedback form once it exists.
+// Fallback for "Partager un retour": the button opens the feedback widget, and
+// only follows this link when the widget is not configured.
 const FEEDBACK_URL = "https://aide.suite.anct.gouv.fr/socle/messages";
 // The help centre, filtered on Messages, and the partner documentation.
 const HELP_CENTRE_URL = "https://aide.suite.anct.gouv.fr/socle/messages";
 const PARTNER_CENTRE_URL =
   "https://docs.numerique.gouv.fr/docs/a85b4b1f-790f-4e55-b097-91eac06d69a6/";
+// TODO: placeholder — point this at the self-hosting guide for Messages once
+// it is published. Until then the result offers no primary button.
+const SELF_HOSTING_URL = "https://aide.suite.anct.gouv.fr/socle/messages";
 const REPOSITORY_URL = process.env.NEXT_PUBLIC_APP_REPOSITORY_URL ?? "";
-// TODO: placeholder — point this at the registration form of the webinar on
-// domain names and compliance once published.
-const WEBINAR_URL = "https://aide.suite.anct.gouv.fr/socle/messages";
 
 const messages: ServicePage = {
   slug: "messages",
@@ -59,8 +69,15 @@ const messages: ServicePage = {
     },
     eligibilitySearch: {
       title: <>Découvrez vos modalités d&rsquo;accès</>,
+      description: (
+        <>
+          Selon votre administration et sa localité, les conditions d&rsquo;accès au service peuvent
+          varier.
+        </>
+      ),
       placeholder: "Entrez le nom de votre territoire ou son code postal",
       placeholderSmallScreen: "Nom ou code postal",
+      selfHostingUrl: SELF_HOSTING_URL,
     },
   },
 
@@ -75,12 +92,12 @@ const messages: ServicePage = {
           </>
         ),
         highlights: [
-          { icon: "fr-icon-download-line", label: <>Importer votre ancienne boîte aux lettres</> },
+          { icon: Download, label: <>Importer votre ancienne boîte aux lettres</> },
           {
-            icon: "fr-icon-file-text-line",
+            icon: Doc,
             label: <>Créer et utiliser des modèles prêt à l&rsquo;emploi</>,
           },
-          { icon: "fr-icon-refresh-line", label: <>Programmer une réponse automatique</> },
+          { icon: Retry, label: <>Programmer une réponse automatique</> },
         ],
         link: { text: "Regarder la démo", href: DEMO_URL },
         screenshot: {
@@ -99,11 +116,12 @@ const messages: ServicePage = {
           </>
         ),
         highlightColumns: 2,
+        iconColor: "yellow-tournesol",
         highlights: [
-          { icon: "fr-icon-user-add-line", label: <>Assignation</> },
-          { icon: "fr-icon-chat-3-line", label: <>Commentaire interne</> },
-          { icon: "fr-icon-team-line", label: <>Rôles différenciés</> },
-          { icon: "fr-icon-pen-nib-line", label: <>Signature uniformisée</> },
+          { icon: Assign, label: <>Assignation</> },
+          { icon: Shared, label: <>Rôles différenciés</> },
+          { icon: BubbleText, label: <>Commentaire interne</> },
+          { icon: Signature, label: <>Signature uniformisée</> },
         ],
         screenshot: {
           src: "/images/services-illlu/messages-feature-2.png",
@@ -120,11 +138,12 @@ const messages: ServicePage = {
             échanges.
           </>
         ),
+        iconColor: "green-archipel",
         highlights: [
-          { icon: "fr-icon-calendar-line", label: <>Gérer vos évènements avec Calendrier</> },
-          { icon: "fr-icon-user-star-line", label: <>Créer vos groupes avec Contacts</> },
+          { icon: Calendrier, label: <>Gérer vos évènements avec Calendrier</> },
+          { icon: Contacts, label: <>Créer vos groupes avec Contacts</> },
           {
-            icon: "fr-icon-links-line",
+            icon: LinkIcon,
             label: <>Configurer des intégrations (clé API, widget, webhook)</>,
           },
         ],
@@ -137,64 +156,6 @@ const messages: ServicePage = {
         },
       },
     ],
-  },
-
-  proConnect: {
-    logo: {
-      src: "/images/logo-proconnect-new.svg",
-      alt: "ProConnect",
-      width: 100,
-      height: 112,
-    },
-    title: <>Une identification sécurisée</>,
-    description: (
-      <>
-        Grâce à l&rsquo;identification ProConnect, votre collectivité peut accéder en toute sécurité
-        à l&rsquo;ensemble de vos services avec un seul identifiant et mot de passe.
-      </>
-    ),
-    cards: [
-      {
-        icon: {
-          src: "/images/rcpnt-site-mono.svg",
-          alt: "",
-          width: 40,
-          height: 40,
-        },
-        title: <>Nom de domaine</>,
-        href: DOMAINES_URL,
-        description: (
-          <>
-            Utilisez le nom de domaine renseigné sur l&rsquo;annuaire de{" "}
-            <Link href="https://service-public.gouv.fr" target="_blank" rel="noopener noreferrer">
-              service-public.gouv.fr
-            </Link>{" "}
-            pour votre proconnexion. Un nom de domaine conforme à notre référentiel est vivement
-            recommandé.
-          </>
-        ),
-      },
-      {
-        icon: {
-          src: "/images/rcpnt-messagerie-mono.svg",
-          alt: "",
-          width: 33,
-          height: 35,
-        },
-        title: <>Adresses nominatives</>,
-        // On the Messages page itself, the card points back up to the hero
-        // search rather than off to a page the visitor is already on.
-        href: `#${ELIGIBILITY_SEARCH_ANCHOR}`,
-        description: (
-          <>
-            Avec Messages, créez une adresse de messagerie pour chaque membre de votre collectivité
-            avec un nom de domaine conforme et être identifié en tant que représentant officiel de
-            la collectivité.
-          </>
-        ),
-      },
-    ],
-    link: { text: "S’inscrire à un webinaire", href: WEBINAR_URL },
   },
 
   testimonials: {
@@ -311,6 +272,7 @@ const messages: ServicePage = {
         </>
       ),
       primaryLink: { text: "Partager un retour", href: FEEDBACK_URL },
+      primaryOpensFeedbackWidget: true,
       secondaryLink: { text: "Contribuer au code", href: REPOSITORY_URL },
     },
   },
@@ -323,10 +285,6 @@ const messages: ServicePage = {
         <Link href={HELP_CENTRE_URL} target="_blank" rel="noopener noreferrer">
           centre d&rsquo;aide
         </Link>{" "}
-        ou le{" "}
-        <Link href={PARTNER_CENTRE_URL} target="_blank" rel="noopener noreferrer">
-          centre partenaire
-        </Link>
         .
       </>
     ),

@@ -35,7 +35,8 @@ export default function ServicePage({ slug, adoptionCount }: ServicePageProps) {
 
       {service.features && <ServiceFeatures block={service.features} />}
 
-      {service.proConnect && <ServiceProConnect block={service.proConnect} />}
+      {/* Same block on every service page: its content lives in the component. */}
+      <ServiceProConnect service={service} />
 
       {service.testimonials && (
         <ServiceTestimonials block={service.testimonials} adoptionCount={adoptionCount} />
@@ -62,6 +63,7 @@ const REVALIDATE_SECONDS = 3600;
 
 export const getStaticProps: GetStaticProps<ServicePageProps> = async ({ params }) => {
   const slug = typeof params?.slug === "string" ? params.slug : "";
+
   const service = getServicePage(slug);
 
   if (!service) {

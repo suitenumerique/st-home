@@ -1,5 +1,5 @@
-import { type FrIconClassName, type RiIconClassName } from "@codegouvfr/react-dsfr";
-import { type ReactNode } from "react";
+import { type IconProps } from "@/components/icons/uikit";
+import { type ComponentType, type ReactNode } from "react";
 
 // A service page is described by data, not by a bespoke page component: every
 // service renders the same blocks in the same order, and a block is displayed
@@ -24,9 +24,16 @@ export const ELIGIBILITY_SEARCH_ANCHOR = "modalites-acces";
 /** Commune search sending visitors to their eligibility page (/bienvenue/[siret]). */
 export type ServiceEligibilitySearch = {
   title: ReactNode;
+  /** Sits under the title, explaining what the answer depends on. */
+  description?: ReactNode;
   placeholder: string;
   /** Shorter placeholder used on small screens, where the full one is truncated. */
   placeholderSmallScreen: string;
+  /**
+   * Documentation on running the service yourself, offered to the collectivités
+   * above the ANCT thresholds. Without it, that result shows no primary button.
+   */
+  selfHostingUrl?: string;
 };
 
 export type ServiceHeroBlock = {
@@ -49,9 +56,13 @@ export type ServiceHeroBlock = {
 
 /** One "icon + label" entry of a feature row's list. */
 export type ServiceFeatureHighlight = {
-  icon: FrIconClassName | RiIconClassName;
+  /** One of the ui-kit icons of src/components/icons/uikit.tsx. */
+  icon: ComponentType<IconProps>;
   label: ReactNode;
 };
+
+/** Tint of a feature row's highlight bullets, from the DSFR palette. */
+export type ServiceFeatureIconColor = "blue-ecume" | "yellow-tournesol" | "green-archipel";
 
 export type ServiceLink = {
   text: string;
@@ -68,6 +79,8 @@ export type ServiceFeatureRow = {
   highlights: ServiceFeatureHighlight[];
   /** Lay the highlights out on two columns instead of one. */
   highlightColumns?: 1 | 2;
+  /** Tint of the highlight icons. Defaults to "blue-ecume". */
+  iconColor?: ServiceFeatureIconColor;
   link?: ServiceLink;
   /** Omitted while the screenshot is not available: the row renders text-only. */
   screenshot?: ServiceIllustration;
@@ -75,28 +88,6 @@ export type ServiceFeatureRow = {
 
 export type ServiceFeaturesBlock = {
   rows: ServiceFeatureRow[];
-};
-
-/** One of the bordered cards of the ProConnect block. */
-export type ServiceProConnectCard = {
-  /** Monochrome pictogram, to the left of the card text. */
-  icon: ServiceIllustration;
-  /** Doubles as the card's link. */
-  title: ReactNode;
-  href: string;
-  description: ReactNode;
-};
-
-/**
- * Centered block explaining how ProConnect gates access to the service. Its
- * wording is service-specific, so each service declares its own.
- */
-export type ServiceProConnectBlock = {
-  logo?: ServiceIllustration;
-  title: ReactNode;
-  description: ReactNode;
-  cards: ServiceProConnectCard[];
-  link?: ServiceLink;
 };
 
 export type ServiceTestimonial = {
@@ -140,6 +131,11 @@ export type ServiceFoundationsBlock = {
   callToAction?: {
     text: ReactNode;
     primaryLink: ServiceLink;
+    /**
+     * Open the feedback widget on the primary link instead of following it. The
+     * link is still the fallback, for when the widget is not configured.
+     */
+    primaryOpensFeedbackWidget?: boolean;
     secondaryLink?: ServiceLink;
   };
 };
@@ -184,7 +180,6 @@ export type ServicePage = {
   /** The only mandatory block. */
   hero: ServiceHeroBlock;
   features?: ServiceFeaturesBlock;
-  proConnect?: ServiceProConnectBlock;
   testimonials?: ServiceTestimonialsBlock;
   foundations?: ServiceFoundationsBlock;
   faq?: ServiceFaqBlock;

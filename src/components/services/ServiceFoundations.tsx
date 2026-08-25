@@ -1,4 +1,6 @@
+import { openFeedbackWidget } from "@/components/FeedbackWidget";
 import { type ServiceFoundationsBlock } from "@/lib/services/types";
+import styles from "@/styles/services.module.css";
 import { fr } from "@codegouvfr/react-dsfr";
 import Image from "next/image";
 import Link from "next/link";
@@ -11,7 +13,7 @@ export default function ServiceFoundations({ block }: { block: ServiceFoundation
   const { callToAction } = block;
 
   return (
-    <section className={fr.cx("fr-container", "fr-py-10w")}>
+    <section className={`${fr.cx("fr-container")} ${styles.section}`}>
       <h2 className={fr.cx("fr-h4", "fr-mb-2w")}>{block.title}</h2>
       <p className={fr.cx("fr-mb-6w")} style={{ maxWidth: TEXT_MAX_WIDTH }}>
         {block.description}
@@ -56,6 +58,13 @@ export default function ServiceFoundations({ block }: { block: ServiceFoundation
               target="_blank"
               rel="noopener noreferrer"
               className={fr.cx("fr-btn")}
+              onClick={(event) => {
+                // Only swallow the navigation once the panel is actually open:
+                // without the widget on the page, the link stands on its own.
+                if (callToAction.primaryOpensFeedbackWidget && openFeedbackWidget()) {
+                  event.preventDefault();
+                }
+              }}
             >
               {callToAction.primaryLink.text}
             </Link>
