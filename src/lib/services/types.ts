@@ -76,7 +76,8 @@ export type ServiceLink = {
 export type ServiceFeatureRow = {
   title: ReactNode;
   description: ReactNode;
-  highlights: ServiceFeatureHighlight[];
+  /** Omitted for the rows that are prose only. */
+  highlights?: ServiceFeatureHighlight[];
   /** Lay the highlights out on two columns instead of one. */
   highlightColumns?: 1 | 2;
   /** Tint of the highlight icons. Defaults to "blue-ecume". */
@@ -94,6 +95,8 @@ export type ServiceTestimonial = {
   quote: ReactNode;
   /** The collectivité behind the quote, displayed under it. */
   author: ReactNode;
+  /** Where the quote was published, when it comes from an article. */
+  link?: ServiceLink;
 };
 
 /**
