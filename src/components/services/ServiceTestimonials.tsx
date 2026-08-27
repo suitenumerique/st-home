@@ -48,6 +48,22 @@ export default function ServiceTestimonials({
               <figcaption className={fr.cx("fr-text--sm", "fr-text--bold")}>
                 {testimonial.author}
               </figcaption>
+
+              {testimonial.link && (
+                <p className={fr.cx("fr-text--sm", "fr-mt-1w", "fr-mb-0")}>
+                  <Link
+                    href={testimonial.link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={fr.cx("fr-link", "fr-link--sm")}
+                    // Hidden quotes keep their size but must stay out of the tab
+                    // order, which `visibility: hidden` alone does not do here.
+                    tabIndex={index === current ? undefined : -1}
+                  >
+                    {testimonial.link.text}
+                  </Link>
+                </p>
+              )}
             </figure>
           ))}
         </div>

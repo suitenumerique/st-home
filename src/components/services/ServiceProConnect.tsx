@@ -7,7 +7,7 @@ import { type ReactNode } from "react";
 
 const INTRO_MAX_WIDTH = "40rem";
 const CARDS_MAX_WIDTH = "45rem";
-const DOMAINES_URL = "https://aide.suite.anct.gouv.fr/socle/domaines";
+const DOMAINES_URL = "/services/domaines";
 const MESSAGES_URL = "/services/messages";
 const REFERENTIEL_URL = "/conformite/referentiel";
 

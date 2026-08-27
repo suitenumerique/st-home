@@ -38,27 +38,29 @@ function FeatureRow({
         <h2 className={fr.cx("fr-h4", "fr-mb-2w")}>{row.title}</h2>
         <p className={fr.cx("fr-mb-3w")}>{row.description}</p>
 
-        <ul className={fr.cx("fr-raw-list", "fr-mb-3w", "fr-grid-row", "fr-grid-row--gutters")}>
-          {row.highlights.map((highlight, index) => (
-            <li
-              key={index}
-              className={fr.cx(
-                "fr-col-12",
-                row.highlightColumns === 2 ? "fr-col-sm-6" : "fr-col-sm-12",
-              )}
-              style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}
-            >
-              <highlight.icon
-                width={ICON_SIZE}
-                height={ICON_SIZE}
-                aria-hidden="true"
-                focusable="false"
-                style={{ color: ICON_COLORS[row.iconColor ?? "blue-ecume"], flexShrink: 0 }}
-              />
-              <span className={fr.cx("fr-text--sm", "fr-mb-0")}>{highlight.label}</span>
-            </li>
-          ))}
-        </ul>
+        {row.highlights && (
+          <ul className={fr.cx("fr-raw-list", "fr-mb-3w", "fr-grid-row", "fr-grid-row--gutters")}>
+            {row.highlights.map((highlight, index) => (
+              <li
+                key={index}
+                className={fr.cx(
+                  "fr-col-12",
+                  row.highlightColumns === 2 ? "fr-col-sm-6" : "fr-col-sm-12",
+                )}
+                style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}
+              >
+                <highlight.icon
+                  width={ICON_SIZE}
+                  height={ICON_SIZE}
+                  aria-hidden="true"
+                  focusable="false"
+                  style={{ color: ICON_COLORS[row.iconColor ?? "blue-ecume"], flexShrink: 0 }}
+                />
+                <span className={fr.cx("fr-text--sm", "fr-mb-0")}>{highlight.label}</span>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {row.link && (
           <Link

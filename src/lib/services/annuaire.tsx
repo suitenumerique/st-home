@@ -20,10 +20,8 @@ const ALL_FEATURES_URL =
   "https://projets.suite.anct.gouv.fr/boards/1785606084149380144?labels=1785610535849428042";
 // The deployment map, filtered on Annuaire.
 const DEPLOYMENT_MAP_URL = "/cartographie-deploiement?service_ids=4";
-// The help centre, filtered on Annuaire, and the partner documentation.
+// The help centre, filtered on Annuaire.
 const HELP_CENTRE_URL = "https://aide.suite.anct.gouv.fr/socle/annuaire-des-collectivites";
-const PARTNER_CENTRE_URL =
-  "https://docs.numerique.gouv.fr/docs/a85b4b1f-790f-4e55-b097-91eac06d69a6/";
 
 const annuaire: ServicePage = {
   slug: "annuaire",
@@ -58,8 +56,8 @@ const annuaire: ServicePage = {
     illustration: {
       src: "/images/services-illlu/annuaire-head.png",
       alt: "",
-      width: 980,
-      height: 882,
+      width: 740,
+      height: 740,
     },
     screenshot: {
       src: "/images/services-illlu/annuaire-top.png",
@@ -90,8 +88,8 @@ const annuaire: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/annuaire-feature-1.png",
           alt: "",
-          width: 1206,
-          height: 828,
+          width: 1174,
+          height: 902,
         },
       },
       {
@@ -108,8 +106,8 @@ const annuaire: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/annuaire-feature-2.png",
           alt: "",
-          width: 1206,
-          height: 828,
+          width: 1174,
+          height: 902,
         },
       },
       {
@@ -129,8 +127,8 @@ const annuaire: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/annuaire-feature-3.png",
           alt: "",
-          width: 1206,
-          height: 828,
+          width: 1174,
+          height: 902,
         },
       },
     ],
@@ -182,10 +180,6 @@ const annuaire: ServicePage = {
         Pour en savoir plus, consultez le{" "}
         <Link href={HELP_CENTRE_URL} target="_blank" rel="noopener noreferrer">
           centre d&rsquo;aide
-        </Link>{" "}
-        ou le{" "}
-        <Link href={PARTNER_CENTRE_URL} target="_blank" rel="noopener noreferrer">
-          centre partenaire
         </Link>
         .
       </>
