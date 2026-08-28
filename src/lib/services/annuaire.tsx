@@ -29,6 +29,7 @@ const annuaire: ServicePage = {
   // Matches the service_ids filter of DEPLOYMENT_MAP_URL above.
   deploymentServiceId: 4,
   repositoryUrl: "https://github.com/betagouv/annuaire",
+  trialHeading: { lead: "Concerné\u202f?", action: "Certifiez\u202f!" },
   seo: {
     title: "Annuaire des collectivités, certifiez vos informations en un clic",
     description:

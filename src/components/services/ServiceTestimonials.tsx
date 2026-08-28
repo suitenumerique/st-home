@@ -4,6 +4,9 @@ import { fr } from "@codegouvfr/react-dsfr";
 import Link from "next/link";
 import { useState } from "react";
 
+// Air inside the coloured band, as in the mockup.
+const SECTION_PADDING = 60;
+
 export default function ServiceTestimonials({
   block,
   adoptionCount,
@@ -18,15 +21,15 @@ export default function ServiceTestimonials({
     setCurrent((i) => (i + step + testimonials.length) % testimonials.length);
 
   return (
-    <section
-      className={styles.section}
-      style={{ backgroundColor: "var(--background-alt-blue-france)" }}
-    >
-      <div className={fr.cx("fr-container", "fr-py-6w")}>
+    <section style={{ backgroundColor: "var(--background-alt-blue-france)" }}>
+      <div
+        className={fr.cx("fr-container")}
+        style={{ paddingTop: SECTION_PADDING, paddingBottom: SECTION_PADDING }}
+      >
         <h2 className={fr.cx("fr-sr-only")}>Ils utilisent le service</h2>
 
         {link && adoptionCount !== null && (
-          <p className={fr.cx("fr-mb-2w")}>
+          <p className={fr.cx("fr-text--md", "fr-mb-2w")}>
             <Link href={link.href} className={fr.cx("fr-link")}>
               {link.text(adoptionCount)}
             </Link>
@@ -41,9 +44,7 @@ export default function ServiceTestimonials({
               style={{ visibility: index === current ? "visible" : "hidden" }}
             >
               <blockquote className={fr.cx("fr-m-0", "fr-mb-1w")}>
-                <p className={fr.cx("fr-text--lead", "fr-text--bold", "fr-mb-0")}>
-                  {testimonial.quote}
-                </p>
+                <p className={fr.cx("fr-h4", "fr-mb-0")}>{testimonial.quote}</p>
               </blockquote>
               <figcaption className={fr.cx("fr-text--sm", "fr-text--bold")}>
                 {testimonial.author}
