@@ -1,11 +1,13 @@
 import { openFeedbackWidget } from "@/components/FeedbackWidget";
-import styles from "@/styles/services.module.css";
 import { fr } from "@codegouvfr/react-dsfr";
 import Image from "next/image";
 import Link from "next/link";
 import { type ReactNode } from "react";
 
 const TEXT_MAX_WIDTH = "34rem";
+
+// Air above and below the block, as in the mockup.
+const SECTION_PADDING = 120;
 // Where the code lives when a service does not name its own repository.
 const DEFAULT_REPOSITORY_URL = process.env.NEXT_PUBLIC_APP_REPOSITORY_URL ?? "";
 const CONTACT_EMAIL = "contact@suite.anct.gouv.fr";
@@ -63,9 +65,12 @@ export default function ServiceFoundations({ repositoryUrl }: { repositoryUrl?: 
   const repository = repositoryUrl ?? DEFAULT_REPOSITORY_URL;
 
   return (
-    <section className={`${fr.cx("fr-container")} ${styles.section}`}>
+    <section
+      className={fr.cx("fr-container")}
+      style={{ paddingTop: SECTION_PADDING, paddingBottom: SECTION_PADDING }}
+    >
       <h2 className={fr.cx("fr-h4", "fr-mb-2w")}>Des fondements essentiels</h2>
-      <p className={fr.cx("fr-mb-6w")} style={{ maxWidth: TEXT_MAX_WIDTH }}>
+      <p className={fr.cx("fr-text--md", "fr-mb-6w")} style={{ maxWidth: TEXT_MAX_WIDTH }}>
         Tous nos services sont conçus pour et avec les collectivités, selon des standards élevés
         garantissant l&rsquo;intégrité de vos données.
       </p>
@@ -98,7 +103,7 @@ export default function ServiceFoundations({ repositoryUrl }: { repositoryUrl?: 
           justifyContent: "space-between",
         }}
       >
-        <p className={fr.cx("fr-mb-0")} style={{ maxWidth: TEXT_MAX_WIDTH }}>
+        <p className={fr.cx("fr-text--md", "fr-mb-0")} style={{ maxWidth: TEXT_MAX_WIDTH }}>
           Aidez-nous à construire un service sur mesure pour les collectivités : partagez vos
           retours ou contribuez directement au code.
         </p>

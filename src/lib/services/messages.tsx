@@ -25,6 +25,7 @@ const messages: ServicePage = {
   slug: "messages",
   navLabel: "Messages",
   deploymentServiceId: 2,
+  trialHeading: { lead: "Intéressé\u202f?", action: "Démarrez\u202f!" },
   seo: {
     title: "Messages, envoyez et recevez vos courriels professionnels",
     description:
@@ -95,7 +96,6 @@ const messages: ServicePage = {
           </>
         ),
         highlightColumns: 2,
-        iconColor: "yellow-tournesol",
         highlights: [
           { icon: Assign, label: <>Assignation</> },
           { icon: Shared, label: <>Rôles différenciés</> },
@@ -117,7 +117,6 @@ const messages: ServicePage = {
             échanges.
           </>
         ),
-        iconColor: "green-archipel",
         highlights: [
           { icon: Calendrier, label: <>Gérer vos évènements avec Calendrier</> },
           { icon: Contacts, label: <>Créer vos groupes avec Contacts</> },

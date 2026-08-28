@@ -2,18 +2,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { type ServicePage } from "./types";
 
-// The service, its demo, and the two companion tools of the BAL programme.
 const MES_ADRESSES_URL = "https://mes-adresses.data.gouv.fr/";
 const DEMO_URL = "https://demo.mes-adresses.fr/";
 const PARTNERS_URL = "https://adresse.data.gouv.fr/communaute/charte-base-adresse-locale";
 const SIGNALEMENTS_URL = "https://signalement.adresse.data.gouv.fr/";
-// The deployment map, filtered on Mes adresses.
 const DEPLOYMENT_MAP_URL = "/cartographie-deploiement?service_ids=1";
-// The help centre, filtered on Mes adresses, and the partner documentation.
 const HELP_CENTRE_URL = "https://aide.suite.anct.gouv.fr/socle/mes-adresses";
 const PARTNER_CENTRE_URL =
   "https://docs.numerique.gouv.fr/docs/a85b4b1f-790f-4e55-b097-91eac06d69a6/";
-// Documentation of the BAL programme, linked from the FAQ.
 const PUBLISHING_DOC_URL =
   "https://doc.adresse.data.gouv.fr/docs/documentation-generale/mettre-a-jour-sa-base-adresse-locale/publier-une-base-adresse-locale";
 const DEPLOYMENT_BAL_URL = "https://adresse.data.gouv.fr/deploiement-bal";
@@ -22,18 +18,18 @@ const SERVICE_PUBLIC_URL = "https://service-public.gouv.fr";
 
 const mesAdresses: ServicePage = {
   slug: "mes-adresses",
-  navLabel: "Mes adresses",
-  // Matches the service_ids filter of DEPLOYMENT_MAP_URL above.
+  navLabel: "Mes Adresses",
   deploymentServiceId: 1,
   repositoryUrl: "https://github.com/BaseAdresseNationale/mes-adresses",
+  trialHeading: { lead: "Concerné\u202f?", action: "Certifiez\u202f!" },
   seo: {
-    title: "Mes adresses, référencez toutes les adresses de votre commune",
+    title: "Mes Adresses, référencez toutes les adresses de votre commune",
     description:
       "Créez ou mettez à jour la Base Adresse Locale de votre commune et alimentez la Base Adresse Nationale, pour des secours, des GPS et des livraisons qui trouvent la bonne adresse.",
   },
 
   hero: {
-    name: "Mes adresses",
+    name: "Mes Adresses",
     logo: {
       src: "/images/services-logos/adresses.png",
       width: 728,
@@ -55,7 +51,7 @@ const mesAdresses: ServicePage = {
     },
     screenshot: {
       src: "/images/services-illlu/adresses-top.webp",
-      alt: "L’éditeur de Mes adresses, avec la carte des voies de la commune et la liste des numéros",
+      alt: "L’éditeur de Mes Adresses, avec la carte des voies de la commune et la liste des numéros",
       width: 1728,
       height: 942,
     },
@@ -214,7 +210,7 @@ const mesAdresses: ServicePage = {
             français : c&rsquo;est la base officielle de référence des adresses en France, et elle
             appartient au Service Public de la Donnée de Référence. Une Base Adresse Locale est un
             fichier géré par une collectivité (habituellement une commune ou un EPCI) et contenant
-            toutes ses adresses géolocalisées. Une fois publiée via Mes adresses ou un autre moyen
+            toutes ses adresses géolocalisées. Une fois publiée via Mes Adresses ou un autre moyen
             de publication, elle alimente la Base Adresse Nationale.
           </p>
         ),
@@ -243,7 +239,7 @@ const mesAdresses: ServicePage = {
           <>
             <Image
               src="/images/services-illlu/bal-schema.webp"
-              alt="Les trois voies de publication d’une Base Adresse Locale vers la Base Adresse Nationale : Mes adresses, un outil partenaire, ou un dépôt direct"
+              alt="Les trois voies de publication d’une Base Adresse Locale vers la Base Adresse Nationale : Mes Adresses, un outil partenaire, ou un dépôt direct"
               width={1200}
               height={1467}
               sizes="(min-width: 56rem) 896px, 100vw"

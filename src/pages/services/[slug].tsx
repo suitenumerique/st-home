@@ -1,8 +1,11 @@
+import ServiceBanner from "@/components/services/ServiceBanner";
 import ServiceFaq from "@/components/services/ServiceFaq";
 import ServiceFeatures from "@/components/services/ServiceFeatures";
 import ServiceFoundations from "@/components/services/ServiceFoundations";
 import ServiceHero from "@/components/services/ServiceHero";
+import ServicePartners from "@/components/services/ServicePartners";
 import ServiceProConnect from "@/components/services/ServiceProConnect";
+import ServiceSteps from "@/components/services/ServiceSteps";
 import ServiceTestimonials from "@/components/services/ServiceTestimonials";
 import ServiceTrial from "@/components/services/ServiceTrial";
 import { getServicePage, getServicePageSlugs } from "@/lib/services";
@@ -26,15 +29,25 @@ export default function ServicePage({ slug, adoptionCount }: ServicePageProps) {
 
       <ServiceHero hero={service.hero} />
 
+      {service.steps && <ServiceSteps block={service.steps} />}
+
+      {service.banner && <ServiceBanner block={service.banner} />}
+
+      {service.partners && <ServicePartners block={service.partners} />}
+
       {service.features && <ServiceFeatures block={service.features} />}
 
-      <ServiceProConnect service={service} />
+      {/* On every service page but those that opt out: the content lives in the
+          component, only the choice to show it belongs to the service. */}
+      {service.proConnect !== false && <ServiceProConnect service={service} />}
 
       {service.testimonials && (
         <ServiceTestimonials block={service.testimonials} adoptionCount={adoptionCount} />
       )}
 
-      <ServiceFoundations repositoryUrl={service.repositoryUrl} />
+      {service.foundations !== false && (
+        <ServiceFoundations repositoryUrl={service.repositoryUrl} />
+      )}
 
       {service.faq && <ServiceFaq block={service.faq} />}
 

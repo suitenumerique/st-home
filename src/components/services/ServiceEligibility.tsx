@@ -112,16 +112,16 @@ export default function ServiceEligibility({
 
       {state.status === "idle" ? (
         <div className={styles.heroSearchText}>
-          <h2 className={fr.cx("fr-h4", "fr-mt-3w", "fr-mb-1w")}>
+          <h2 className={fr.cx("fr-h2", "fr-mt-3w", "fr-mb-1w")}>
             Découvrez vos modalités d&rsquo;accès
           </h2>
-          <p className={fr.cx("fr-mb-0")}>
+          <p className={`${fr.cx("fr-text--md", "fr-mb-0")} ${styles.heroSearchLead}`}>
             Selon votre administration et sa localité, les conditions d&rsquo;accès au service
             peuvent varier.
           </p>
         </div>
       ) : (
-        <div className={`${styles.heroSearchText} ${styles.heroSearchResult}`}>
+        <div className={styles.heroSearchText}>
           {state.status === "loading" && <p className={fr.cx("fr-mt-3w", "fr-mb-0")}>Recherche…</p>}
 
           {state.status === "error" && (
@@ -216,8 +216,8 @@ function Result({
 
   return (
     <>
-      <h2 className={fr.cx("fr-h4", "fr-mt-3w", "fr-mb-1w")}>{title}</h2>
-      <p className={fr.cx("fr-mb-3w")}>{description}</p>
+      <h2 className={fr.cx("fr-h2", "fr-mt-3w", "fr-mb-1w")}>{title}</h2>
+      <p className={fr.cx("fr-text--md", "fr-mb-3w")}>{description}</p>
 
       <div
         style={{ display: "flex", flexWrap: "wrap", gap: "1rem", justifyContent: "center" }}

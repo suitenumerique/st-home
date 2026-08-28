@@ -1,12 +1,12 @@
 import {
-  BadgeCheck,
   Bell,
   Calendar,
-  ChartFilled,
+  CalendarCheck,
+  CalendarXMark,
+  Chain,
+  Chart,
   CsvExport,
-  Curlybraces,
   Link as LinkIcon,
-  Retry,
   Settings,
 } from "@/components/icons/uikit";
 import Link from "next/link";
@@ -99,8 +99,8 @@ const rendezVous: ServicePage = {
         ),
         highlights: [
           { icon: Bell, label: <>Rappel par SMS et/ou par courriel</> },
-          { icon: BadgeCheck, label: <>Notification de confirmation</> },
-          { icon: Retry, label: <>Notification de modification ou annulation</> },
+          { icon: CalendarCheck, label: <>Notification de confirmation</> },
+          { icon: CalendarXMark, label: <>Notification de modification ou annulation</> },
         ],
         screenshot: {
           src: "/images/services-illlu/rdv-feature-2.png",
@@ -118,9 +118,9 @@ const rendezVous: ServicePage = {
           </>
         ),
         highlights: [
-          { icon: ChartFilled, label: <>Statistiques d&rsquo;activité</> },
+          { icon: Chart, label: <>Statistiques d&rsquo;activité</> },
           { icon: CsvExport, label: <>Export CSV</> },
-          { icon: Curlybraces, label: <>Possibilité d&rsquo;intégrer le service via une API</> },
+          { icon: Chain, label: <>Possibilité d&rsquo;intégrer le service via une API</> },
         ],
         link: { text: "Voir toutes les fonctionnalités", href: ALL_FEATURES_URL },
         screenshot: {

@@ -1,19 +1,4 @@
 /*
- * Vertical rhythm of the page: the gap between two sections is always the
- * bottom margin of the upper one, never the top padding of the lower one, so
- * that two neighbours cannot each declare their share of the same gap and
- * reordering the blocks cannot change the rhythm.
- *
- * A section may still pad itself when its own content needs air — the coloured
- * band of the testimonials pads the band, not the gap. Resist doing it just to
- * widen a gap: two padded neighbours add up again, which is what this value is
- * here to prevent. Widen the gap here instead.
- */
-.section {
-  margin-bottom: 7rem;
-}
-
-/*
  * Feature rows alternate sides. The DOM order is always text then screenshot so
  * that rows stack text-first on mobile; from the DSFR `md` breakpoint (48em) up,
  * odd rows are flipped horizontally. Reversing the flex direction only reorders
@@ -58,21 +43,22 @@
 }
 
 /*
- * ProConnect cards are clickable as a whole: an empty span inside the title
- * link is stretched over the card. A pseudo-element would collide with the
- * arrow of `fr-link--icon-right`, which DSFR renders with `::after`.
+ * Cards clickable as a whole — the ProConnect ones, the numbered steps: an
+ * empty span inside the title link is stretched over the card. A pseudo-element
+ * would collide with the arrow of `fr-link--icon-right`, which DSFR renders
+ * with `::after`.
  */
-.proConnectCard {
+.linkCard {
   position: relative;
 }
 
-.proConnectCardOverlay {
+.linkCardOverlay {
   position: absolute;
   inset: 0;
 }
 
 /* Links inside the description stay reachable above that overlay. */
-.proConnectCard p :global(a) {
+.linkCard p :global(a) {
   position: relative;
   z-index: 1;
 }
@@ -98,17 +84,16 @@
 }
 
 .heroSearchText {
-  max-width: 30rem;
+  max-width: 44rem;
   margin: 0 auto;
   text-align: center;
 }
 
-/*
- * The result needs more room than the caption it replaces: its two buttons sit
- * side by side rather than stacking, and its heading holds on two lines.
- */
-.heroSearchResult {
-  max-width: 40rem;
+/* The sentence under the title reads on two lines, narrower than the field. */
+.heroSearchLead {
+  max-width: 510px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .heroSearch :global(.fr-search-bar) {
@@ -203,4 +188,19 @@
 .heroSearchSelected :global(.fr-search-bar .fr-input) {
   /* Read-only, so it should not read as an editable field. */
   cursor: default;
+}
+
+/*
+ * The highlights of a feature row, one per line or on two columns from the DSFR
+ * `sm` breakpoint up, spaced by a single gap rather than by grid gutters.
+ */
+.featureHighlights {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 36em) {
+  .featureHighlightsTwoColumns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }

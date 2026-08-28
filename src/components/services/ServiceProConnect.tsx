@@ -5,6 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { type ReactNode } from "react";
 
+// Air above and below the block, as in the mockup.
+const SECTION_PADDING = 120;
+const LOGO_SIZE = 100;
+
 const INTRO_MAX_WIDTH = "40rem";
 const CARDS_MAX_WIDTH = "45rem";
 const DOMAINES_URL = "/services/domaines";
@@ -38,20 +42,31 @@ const cards: ProConnectCard[] = [
 
 export default function ServiceProConnect({ service }: { service: ServicePage }) {
   return (
-    <section className={`${fr.cx("fr-container")} ${styles.section}`}>
+    <section
+      className={fr.cx("fr-container")}
+      style={{ paddingTop: SECTION_PADDING, paddingBottom: SECTION_PADDING }}
+    >
+      {/* The logo and the heading span the container: at 32px the heading needs
+          more than the width of the text below it to hold on one line. */}
+      <div style={{ textAlign: "center" }}>
+        <Image
+          src="/images/logo-proconnect-new.svg"
+          alt="ProConnect"
+          width={LOGO_SIZE}
+          height={LOGO_SIZE}
+          // The asset is 100×112: bounding it to a square keeps its ratio and
+          // lands it on the 100px of the mockup.
+          style={{ width: "auto", height: "auto", maxWidth: LOGO_SIZE, maxHeight: LOGO_SIZE }}
+          className={fr.cx("fr-mb-2w")}
+        />
+        <h2 className={fr.cx("fr-h2", "fr-mb-2w")}>
+          Une authentification sécurisée avec ProConnect
+        </h2>
+      </div>
+
       <div style={{ maxWidth: CARDS_MAX_WIDTH, margin: "0 auto" }}>
         <div style={{ textAlign: "center", maxWidth: INTRO_MAX_WIDTH, margin: "0 auto" }}>
-          <Image
-            src="/images/logo-proconnect-new.svg"
-            alt="ProConnect"
-            width={100}
-            height={112}
-            className={fr.cx("fr-mb-2w")}
-          />
-          <h2 className={fr.cx("fr-h4", "fr-mb-2w")}>
-            Une authentification sécurisée avec ProConnect
-          </h2>
-          <p className={fr.cx("fr-mb-4w")}>
+          <p className={fr.cx("fr-text--md", "fr-mb-4w")}>
             L&rsquo;authentification ProConnect nécessite un nom de domaine conforme au{" "}
             <Link href={REFERENTIEL_URL}>Référentiel de la Présence numérique des territoires</Link>
             , et des adresses de messagerie nominatives utilisant ce nom de domaine.
@@ -62,7 +77,7 @@ export default function ServiceProConnect({ service }: { service: ServicePage })
           {cards.map((card, index) => (
             <div key={index} className={fr.cx("fr-col-12", "fr-col-sm-6")}>
               <div
-                className={`${fr.cx("fr-p-3w")} ${styles.proConnectCard}`}
+                className={`${fr.cx("fr-p-3w")} ${styles.linkCard}`}
                 style={{
                   height: "100%",
                   display: "flex",
@@ -90,7 +105,7 @@ export default function ServiceProConnect({ service }: { service: ServicePage })
                         "fr-icon-arrow-right-line",
                       )}
                     >
-                      <span className={styles.proConnectCardOverlay} aria-hidden="true" />
+                      <span className={styles.linkCardOverlay} aria-hidden="true" />
                       {card.title}
                     </Link>
                   </h3>

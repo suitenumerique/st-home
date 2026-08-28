@@ -61,9 +61,6 @@ export type ServiceFeatureHighlight = {
   label: ReactNode;
 };
 
-/** Tint of a feature row's highlight bullets, from the DSFR palette. */
-export type ServiceFeatureIconColor = "blue-ecume" | "yellow-tournesol" | "green-archipel";
-
 export type ServiceLink = {
   text: string;
   href: string;
@@ -80,8 +77,6 @@ export type ServiceFeatureRow = {
   highlights?: ServiceFeatureHighlight[];
   /** Lay the highlights out on two columns instead of one. */
   highlightColumns?: 1 | 2;
-  /** Tint of the highlight icons. Defaults to "blue-ecume". */
-  iconColor?: ServiceFeatureIconColor;
   link?: ServiceLink;
   /** Omitted while the screenshot is not available: the row renders text-only. */
   screenshot?: ServiceIllustration;
@@ -89,6 +84,52 @@ export type ServiceFeatureRow = {
 
 export type ServiceFeaturesBlock = {
   rows: ServiceFeatureRow[];
+};
+
+/** One numbered card of the steps block. */
+export type ServiceStep = {
+  /** Doubles as the card's link when `href` is set. */
+  title: ReactNode;
+  description: ReactNode;
+  href?: string;
+};
+
+/**
+ * Numbered steps under the hero: what the visitor has to do, in order. Sits
+ * before the feature rows.
+ */
+export type ServiceStepsBlock = {
+  title: ReactNode;
+  description: ReactNode;
+  /** Rendered as a numbered card each, in order. */
+  steps: ServiceStep[];
+  link?: ServiceLink;
+};
+
+/**
+ * A tinted band pointing somewhere off the page, between two sections. Its
+ * illustration stands on the bottom edge of the band.
+ */
+export type ServiceBannerBlock = {
+  title: ReactNode;
+  description: ReactNode;
+  link: ServiceLink;
+  illustration?: ServiceIllustration;
+};
+
+/**
+ * The national partners of a service, as a row of logos. Each logo is laid out
+ * to the same height, so its declared size only carries its ratio.
+ */
+export type ServicePartnerLogo = ServiceIllustration & {
+  /** Displayed height, for the logos that do not sit on the shared one. */
+  displayHeight?: number;
+};
+
+export type ServicePartnersBlock = {
+  title: ReactNode;
+  description: ReactNode;
+  logos: ServicePartnerLogo[];
 };
 
 export type ServiceTestimonial = {
@@ -130,6 +171,15 @@ export type ServiceFaqBlock = {
   items: ServiceFaqItem[];
 };
 
+/**
+ * Wording of the closing call to action: "Intéressé ? Démarrez !" reads as
+ * `lead` then `action`, the second half carrying the emphasis.
+ */
+export type ServiceTrialHeading = {
+  lead: string;
+  action: string;
+};
+
 export type ServicePage = {
   /** URL segment: /services/<slug>. */
   slug: string;
@@ -149,8 +199,17 @@ export type ServicePage = {
    * Defaults to this site's own repository.
    */
   repositoryUrl?: string;
+  /** The ProConnect block is on every service page; set false to drop it. */
+  proConnect?: boolean;
+  /** The "fondements essentiels" block, likewise. */
+  foundations?: boolean;
+  /** Defaults to "Intéressé ? Testez !". */
+  trialHeading?: ServiceTrialHeading;
   /** The only mandatory block. */
   hero: ServiceHeroBlock;
+  steps?: ServiceStepsBlock;
+  banner?: ServiceBannerBlock;
+  partners?: ServicePartnersBlock;
   features?: ServiceFeaturesBlock;
   testimonials?: ServiceTestimonialsBlock;
   faq?: ServiceFaqBlock;
