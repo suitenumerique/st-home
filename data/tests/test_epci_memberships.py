@@ -88,12 +88,40 @@ def test_paris_lyon_marseille_are_remapped_to_the_parent_commune(banatic, monkey
         "iter_sirene",
         lambda: iter(
             [
-                {"siren": "217500016", "codeCommuneEtablissement": "75104"},
-                {"siren": "216901231", "codeCommuneEtablissement": "69381"},
-                {"siren": "211300553", "codeCommuneEtablissement": "13202"},
-                {"siren": "211201850", "codeCommuneEtablissement": "12185"},
+                {
+                    "siren": "217500016",
+                    "siret": "21750001600019",
+                    "codeCommuneEtablissement": "75104",
+                },
+                {
+                    "siren": "216901231",
+                    "siret": "21690123100011",
+                    "codeCommuneEtablissement": "69381",
+                },
+                {
+                    "siren": "211300553",
+                    "siret": "21130055300016",
+                    "codeCommuneEtablissement": "13202",
+                },
+                {
+                    "siren": "211201850",
+                    "siret": "21120185000011",
+                    "codeCommuneEtablissement": "12185",
+                },
+                # La mairie du 12e partage le SIREN de la Ville de Paris. Elle vient
+                # après le siège et la placerait ailleurs si elle n'était pas ignorée,
+                # d'où le code volontairement aberrant.
+                {
+                    "siren": "217500016",
+                    "siret": "21750001608343",
+                    "codeCommuneEtablissement": "12185",
+                },
                 # Un SIREN qui n'est pas une commune membre : ignoré
-                {"siren": "200070159", "codeCommuneEtablissement": "12185"},
+                {
+                    "siren": "200070159",
+                    "siret": "20007015900013",
+                    "codeCommuneEtablissement": "12185",
+                },
             ]
         ),
     )

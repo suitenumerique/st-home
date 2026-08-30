@@ -9,7 +9,7 @@ from sentry_sdk.crons import monitor
 
 from broker import register_task
 
-from .conformance import Issues, data_checks_doable, validate_conformance
+from .conformance import Issues, data_checks_doable, to_punycode, validate_conformance
 from .db import find_org_by_siret, list_all_orgs, upsert_issues
 from .defs import WEBSITE_REDIRECT_DOMAINS_ALLOWED, WEBSITE_REDIRECT_MAX_HOPS
 
@@ -97,7 +97,7 @@ def check_website(url, force_http_url=None):
     final_domain_http = check_http(url, urls_to_test, issues, request_kwargs)
     final_domain_https = check_https(url, urls_to_test, issues, request_kwargs)
     check_non_www(
-        final_domain_https or final_domain_http or base_domain,
+        final_domain_https or final_domain_http or normalize_domain(base_domain),
         url,
         urls_to_test,
         issues,
@@ -108,11 +108,12 @@ def check_website(url, force_http_url=None):
 
 
 def normalize_domain(netloc):
-    """Lowercase a netloc and strip the default ports and a leading "www."."""
+    """Lowercase a netloc, strip the default ports and a leading "www.", and convert
+    internationalized domains to punycode (requests does it on the URLs it returns)."""
     netloc = netloc.lower()
     netloc = re.sub(r":(80|443)$", "", netloc)
     netloc = re.sub(r"^www\.", "", netloc)
-    return netloc
+    return to_punycode(netloc)
 
 
 def is_allowed_redirect_domain(domain):

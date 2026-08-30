@@ -12,7 +12,7 @@ from urllib.parse import urlparse
 import maxminddb
 from cachetools import TTLCache, cached
 
-from .defs import EPCI_FP_NATURES
+from .defs import ARRONDISSEMENT_SIRETS, EPCI_FP_NATURES
 
 logger = logging.getLogger(__name__)
 
@@ -136,6 +136,10 @@ def insee_by_commune_siren() -> dict:
     mapping = {}
     for row in iter_sirene():
         if row["siren"] not in commune_sirens:
+            continue
+        # Mairies d'arrondissement share their parent commune's SIREN: only the siège
+        # tells us where that commune sits.
+        if row.get("siret") in ARRONDISSEMENT_SIRETS:
             continue
         insee = row.get("codeCommuneEtablissement")
         if insee:

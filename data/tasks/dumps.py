@@ -13,7 +13,12 @@ from pathlib import Path
 import openpyxl
 import requests
 
-from .defs import EPCI_FP_NATURES, FORCE_INCLUDE_SIRENE, HARDCODED_POPULATIONS
+from .defs import (
+    ARRONDISSEMENT_SIRETS,
+    EPCI_FP_NATURES,
+    FORCE_INCLUDE_SIRENE,
+    HARDCODED_POPULATIONS,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -183,6 +188,10 @@ def dump_filtered_sirene(sirens):
 
     orgs_sirens = {siren for siren in sirens if siren}
 
+    # These are établissements, not sièges, so they need their own collection rule
+    # below. All of them are NAF 84.11Z, so the sed pre-filter already lets them through.
+    arrondissement_sirets = ARRONDISSEMENT_SIRETS
+
     url = "https://www.data.gouv.fr/fr/datasets/r/0651fb76-bcf3-4f6a-a38d-bc04fa708576"
 
     # The sed pre-filter keeps only lines with NAF 84.11Z to shrink the stream.
@@ -220,6 +229,7 @@ def dump_filtered_sirene(sirens):
             start_new_session=True,
         )
         seen = set()
+        seen_sirets = set()
         collected = []
         passed_range = False
         prev_siren = 0
@@ -238,7 +248,13 @@ def dump_filtered_sirene(sirens):
                     disordered = True
                     break
                 prev_siren = siren_int
-                if (
+                # Mairies d'arrondissement are not sièges, so they are collected by
+                # SIRET rather than by SIREN: their parent commune's siège is picked up
+                # separately by the rule below.
+                if row["siret"] in arrondissement_sirets and row["siret"] not in seen_sirets:
+                    collected.append(row)
+                    seen_sirets.add(row["siret"])
+                elif (
                     siren in orgs_sirens
                     and siren not in seen
                     and row.get("etablissementSiege") == "true"

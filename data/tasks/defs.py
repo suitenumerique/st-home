@@ -42,6 +42,106 @@ FORCE_INCLUDE_SIRENE = {
     "213105885",  # Villeneuve-Tolosane — siège NAF 68.20B
     "215103789",  # Œuilly — siège NAF 01.21Z
     "200043776",  # CC Pyrénées Audoises — siège NAF 86.21Z
+    "215400656",  # Bertrichamps — siège NAF 85.20Z
+}
+
+# Mairies d'arrondissement (Paris, Lyon) and de secteur (Marseille), exposed as
+# communes. They are not collectivités and have no SIREN of their own: they are
+# établissements of their parent commune, so we key them by SIRET.
+#
+# The SIRETs come from SIRENE, not from DILA, which is wrong on at least two of them
+# (it gives Lyon 1er the siège's SIRET, and Marseille 2e-3e the SIRET of a "service de
+# la vie scolaire"). SIRENE has one active 84.11Z establishment per mairie.
+#
+# The key is the INSEE arrondissement code where the mairie sits, which is also the one
+# DILA uses, so the existing match-by-INSEE finds each mairie's own website. "covers"
+# lists the INSEE arrondissements the mairie administers and whose populations we sum;
+# it defaults to the key alone. Paris counts 17 mairies for 20 arrondissements since the
+# 1er-4e merged into Paris Centre in 2020, and Marseille 8 for 16 (secteurs, whose pairs
+# are not consecutive: the 1er goes with the 7e, the 6e with the 8e).
+ARRONDISSEMENT_COMMUNES = {
+    "13201": {
+        "siret": "21130055305924",
+        "covers": ["13201", "13207"],
+        "name": "Marseille 1er et 7e Arrondissements",
+    },
+    "13202": {
+        "siret": "21130055306054",
+        "covers": ["13202", "13203"],
+        "name": "Marseille 2e et 3e Arrondissements",
+    },
+    "13205": {
+        "siret": "21130055305940",
+        "covers": ["13204", "13205"],
+        "name": "Marseille 4e et 5e Arrondissements",
+    },
+    "13208": {
+        "siret": "21130055305957",
+        "covers": ["13206", "13208"],
+        "name": "Marseille 6e et 8e Arrondissements",
+    },
+    "13209": {
+        "siret": "21130055305965",
+        "covers": ["13209", "13210"],
+        "name": "Marseille 9e et 10e Arrondissements",
+    },
+    "13212": {
+        "siret": "21130055305973",
+        "covers": ["13211", "13212"],
+        "name": "Marseille 11e et 12e Arrondissements",
+    },
+    "13214": {
+        "siret": "21130055305981",
+        "covers": ["13213", "13214"],
+        "name": "Marseille 13e et 14e Arrondissements",
+    },
+    "13215": {
+        "siret": "21130055305999",
+        "covers": ["13215", "13216"],
+        "name": "Marseille 15e et 16e Arrondissements",
+    },
+    "69381": {"siret": "21690123102835"},
+    "69382": {"siret": "21690123102512"},
+    "69383": {"siret": "21690123102520"},
+    "69384": {"siret": "21690123102538"},
+    "69385": {"siret": "21690123102546"},
+    "69386": {"siret": "21690123102561"},
+    "69387": {"siret": "21690123102579"},
+    "69388": {"siret": "21690123102587"},
+    "69389": {"siret": "21690123102595"},
+    "75103": {
+        "siret": "21750001630040",
+        "covers": ["75101", "75102", "75103", "75104"],
+        "name": "Paris Centre",
+    },
+    "75105": {"siret": "21750001606669"},
+    "75106": {"siret": "21750001607071"},
+    "75107": {"siret": "21750001608202"},
+    "75108": {"siret": "21750001607436"},
+    "75109": {"siret": "21750001607956"},
+    "75110": {"siret": "21750001608277"},
+    "75111": {"siret": "21750001608632"},
+    "75112": {"siret": "21750001608343"},
+    "75113": {"siret": "21750001609390"},
+    "75114": {"siret": "21750001608780"},
+    "75115": {"siret": "21750001609671"},
+    "75116": {"siret": "21750001609036"},
+    "75117": {"siret": "21750001609184"},
+    "75118": {"siret": "21750001608947"},
+    "75119": {"siret": "21750001608855"},
+    "75120": {"siret": "21750001609572"},
+}
+
+ARRONDISSEMENT_SIRETS = {x["siret"] for x in ARRONDISSEMENT_COMMUNES.values()}
+
+# Départements whose SIREN we pin rather than read from DILA's "cg" fiches. The Ville de
+# Paris exercises both commune and département powers under the single SIREN 217500016;
+# we expose it at the département tier, its 17 mairies d'arrondissement carrying the
+# commune tier. Pinned because the DILA fiche "Conseil de Paris" has lost and regained
+# its SIRET, which used to flip Paris between the two tiers from one sync to the next.
+HARDCODED_DEPARTEMENT_SIRENS = {
+    "01": "220100010",  # hotfix, waiting for a DILA fix
+    "75": "217500016",  # Ville de Paris
 }
 
 # Communes absent from INSEE's "populations légales" archive, which we therefore

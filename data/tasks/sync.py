@@ -17,10 +17,13 @@ from .db import (
     update_rcpnt_stats,
 )
 from .defs import (
+    ARRONDISSEMENT_COMMUNES,
+    ARRONDISSEMENT_SIRETS,
     EXCLUDED_DEPARTEMENTS,
     EXCLUDED_REGIONS,
     FORCE_INCLUDE_SIRENE,
     HARDCODED_COMMUNES,
+    HARDCODED_DEPARTEMENT_SIRENS,
     HARDCODED_DILA_SIRETS,
 )
 from .dumps import (
@@ -132,7 +135,14 @@ def run():
     associate_siret_to_organizations(orgs)
 
     # Remove orgs with no SIRET (warning emitted in the method above)
+    len_orgs = len(orgs)
     orgs = [x for x in orgs if x.get("siret")]
+    if len_orgs - len(orgs) > 0:
+        logger.warning("Removed %d orgs with no SIRET", len_orgs - len(orgs))
+
+    # Same exposure as the SIREN filter in filter_invalid_communes, for every org type.
+    # Currently 1: département 75, whose DILA "cg" fiche no longer carries a SIRET.
+    assert len_orgs - len(orgs) < 10
 
     associate_dila_to_organizations(orgs)
 
@@ -168,12 +178,48 @@ def list_communes():
             "population": population_by_insee.get(x["COM"]) or 0,
         }
         for x in iter_insee_communes()
-        # Arrondissements municipaux are not collectivités: they have no SIREN of their
-        # own, only établissements of their commune. Paris, Lyon and Marseille are
-        # listed here as the communes they are — see dump_insee_population, which
-        # rebuilds their population from those same arrondissements.
         if x["TYPECOM"] == "COM"
-    ]
+        # The Ville de Paris is exposed at the département tier (see
+        # HARDCODED_DEPARTEMENT_SIRENS); its 17 mairies d'arrondissement carry the
+        # commune tier instead. Lyon and Marseille stay communes, and their
+        # arrondissements are added on top of them.
+        and x["COM"] != "75056"
+    ] + list_arrondissement_communes()
+
+
+def list_arrondissement_communes():
+    """List the mairies d'arrondissement (Paris, Lyon) and de secteur (Marseille).
+
+    They have no SIREN of their own, only a SIRET: see ARRONDISSEMENT_COMMUNES. The
+    population is summed over the INSEE arrondissements each mairie administers, so
+    the 17 Paris units add back up to the 2 103 778 of the commune they replace.
+    """
+    population_by_insee = get_communes_population_by_insee()
+    arm_by_insee = {x["COM"]: x for x in iter_insee_communes() if x["TYPECOM"] == "ARM"}
+
+    communes = []
+    for insee, entry in ARRONDISSEMENT_COMMUNES.items():
+        arm = arm_by_insee[insee]
+        covers = entry.get("covers", [insee])
+        name = entry.get("name") or arm["LIBELLE"]
+        communes.append(
+            {
+                "type": "commune",
+                "name": name,
+                "insee_com": insee,
+                "insee_dep": arm["DEP"],
+                "insee_reg": arm["REG"],
+                # Drives the slug; the INSEE NCC only names the mairie's own
+                # arrondissement, which is wrong for the units covering several.
+                "insee_ncc": arm["NCC"] if "name" not in entry else name.upper(),
+                "population": sum(population_by_insee.get(x) or 0 for x in covers),
+                # These are établissements: the SIREN is their parent commune's.
+                "siren": entry["siret"][0:9],
+                "siret": entry["siret"],
+                "_st_arrondissement_parent": arm["COMPARENT"],
+            }
+        )
+    return communes
 
 
 def list_departements():
@@ -189,8 +235,9 @@ def list_departements():
         if x["pivot"][0]["code_insee_commune"][0] in communes_to_departments
     }
 
-    # Hotfix some issues waiting for DILA fix
-    dila_sirens["01"] = "220100010"
+    # Départements whose SIREN we pin rather than trust DILA for (Paris in particular,
+    # whose fiche has lost and regained its SIRET).
+    dila_sirens.update(HARDCODED_DEPARTEMENT_SIRENS)
 
     return [
         {
@@ -288,6 +335,10 @@ def filter_invalid_communes(communes: list):
     if len_communes - len(communes) > 0:
         logger.warning("Removed %d communes with no SIREN", len_communes - len(communes))
 
+    # Communes get their SIREN from BANATIC via SIRENE (see insee_by_commune_siren), so
+    # a SIRENE hiccup would silently drop communes from the site. Expected count is 0.
+    assert len_communes - len(communes) < 10
+
     return communes
 
 
@@ -307,6 +358,16 @@ def associate_epci_to_communes(communes: list, epcis: list, insee_by_siren: dict
         if commune["type"] != "commune":
             continue
         insee = commune["insee_com"]
+        # Mairies d'arrondissement are unknown to BANATIC, which records the membership
+        # under their parent commune's SIREN. Inherit it, otherwise the métropoles would
+        # lose the population of their ville-centre.
+        parent = commune.get("_st_arrondissement_parent")
+        if parent:
+            if parent in membership_by_insee:
+                commune["_st_epci"] = membership_by_insee[parent][1]
+            else:
+                logger.warning(f"No EPCI for the parent commune {parent} of {commune['name']}")
+            continue
         if insee in membership_by_insee:
             siren, epci = membership_by_insee[insee]
             commune["siren"] = siren
@@ -323,14 +384,29 @@ def associate_siret_to_organizations(orgs: list):
     """Associate SIRETs to orgs, using SIREN as pivot. Add Address & zipcode as a benefit of this data source."""
 
     siren_index = {}
+    siret_index = {}
     for row in iter_sirene():
+        siret_index[row["siret"]] = row
+        # The dump holds one siège per SIREN, plus the mairies d'arrondissement, which
+        # are établissements of a SIREN whose siège is in the dump as well. Index those
+        # by SIRET only, so they don't shadow their parent commune.
+        if row["siret"] in ARRONDISSEMENT_SIRETS:
+            continue
         if row["siren"] in siren_index:
             logger.warning(f"Duplicate siren in SIRENE: {row['siren']} {row['siret']}")
         else:
             siren_index[row["siren"]] = row
 
     for org in orgs:
-        if org["siren"] not in siren_index:
+        # Orgs carrying a SIRET already (mairies d'arrondissement, HARDCODED_COMMUNES)
+        # resolve it themselves: their SIREN points at another establishment.
+        if org.get("siret"):
+            row = siret_index.get(org["siret"])
+            if row is None:
+                logger.warning(f"Missing siret in SIRENE: {org['name']} {org['siret']}")
+            else:
+                org["zipcode"] = row["codePostalEtablissement"]
+        elif org["siren"] not in siren_index:
             logger.warning(f"Missing siren in SIRENE: {org['name']} {org['siren']}")
         else:
             org["siret"] = siren_index[org["siren"]]["siret"]

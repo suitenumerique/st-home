@@ -97,6 +97,12 @@ export default function CommuneInfo({
 
   const emailDomain = commune.email_domain || "";
   const websiteDomain = (commune.website_domain || "").replace(/^www\./, "");
+  const websiteDomainIdna = issues.includes("WEBSITE_DOMAIN_IDNA");
+  // Punycode is the ASCII form of an accented domain, so the wording has to differ
+  const websiteDomainPunycode = /(^|\.)xn--/i.test(websiteDomain);
+  // An IDNA domain can also have a non-sovereign extension, in which case we show both messages
+  const websiteExtensionInvalid =
+    !rcpnt.includes("1.2") && (!websiteDomainIdna || issues.includes("WEBSITE_DOMAIN_EXTENSION"));
 
   const hasWebsiteRecommendations = rcpnt.includes("1.a") && !rcpnt.includes("1.aa");
   const hasEmailRecommendations = rcpnt.includes("2.a") && !rcpnt.includes("2.aa");
@@ -143,7 +149,7 @@ export default function CommuneInfo({
         <MessageLine severity="error" rcpnt="1.1">
           Un site internet est déclaré pour la collectivité mais il n&rsquo;est pas formaté
           correctement. Veuillez vérifier que votre site internet correspond au format{" "}
-          <strong>https://domaine.extension</strong> et qu&rsquo;il ne comporte pas d&rsquo;accents.
+          <strong>https://domaine.extension</strong>.
         </MessageLine>
       )}
 
@@ -159,13 +165,27 @@ export default function CommuneInfo({
             </MessageLine>
           )}
 
-          {!rcpnt.includes("1.2") && (
+          {websiteExtensionInvalid && (
             <MessageLine severity="error" rcpnt="1.2">
               L&rsquo;extension <strong>.{commune.website_tld}</strong> du nom de domaine{" "}
               <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
                 {websiteDomain}
               </Link>{" "}
               n&rsquo;est pas souveraine.
+            </MessageLine>
+          )}
+
+          {websiteDomainIdna && (
+            <MessageLine severity="error" rcpnt="1.2">
+              Le nom de domaine{" "}
+              <Link href={commune.website_url || ""} target="_blank" rel="noopener noreferrer">
+                {websiteDomain}
+              </Link>{" "}
+              {websiteDomainPunycode
+                ? "est l’écriture technique (punycode) d’un nom de domaine accentué."
+                : "comporte des caractères accentués ou spéciaux."}{" "}
+              Ces noms de domaine internationalisés (IDN) sont source de confusion et facilitent
+              l&rsquo;hameçonnage&nbsp;: un domaine sans accent est nécessaire.
             </MessageLine>
           )}
 
@@ -327,6 +347,15 @@ export default function CommuneInfo({
             <MessageLine severity="success" rcpnt="1.2">
               L&rsquo;extension <strong>.{commune.email_tld}</strong> du domaine de messagerie{" "}
               <strong>{emailDomain}</strong> est bien souveraine.
+            </MessageLine>
+          )}
+
+          {rcpnt.includes("2.2") && issues.includes("EMAIL_DOMAIN_IDNA") && (
+            <MessageLine severity="error" rcpnt="2.3">
+              Le domaine de messagerie <strong>{emailDomain}</strong> est un nom de domaine
+              internationalisé (IDN). Qu&rsquo;ils s&rsquo;écrivent avec des accents ou sous leur
+              forme technique en <strong>xn--</strong>, ces domaines sont source de confusion et
+              facilitent l&rsquo;hameçonnage.
             </MessageLine>
           )}
 
