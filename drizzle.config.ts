@@ -1,11 +1,12 @@
 import type { Config } from "drizzle-kit";
+import { normalizeSslMode } from "./src/lib/dbUrl";
 
 export default {
   schema: "./src/lib/schema.ts",
   out: "./drizzle",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL || "",
+    url: normalizeSslMode(process.env.DATABASE_URL || ""),
   },
   tablesFilter: [
     "st_organizations",

@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, inArray, like, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
+import { normalizeSslMode } from "./dbUrl";
 import { departmentsRegion } from "./departmentsRegion";
 import type { Commune } from "./schema";
 import * as schema from "./schema";
@@ -30,7 +31,7 @@ function getConnectionString() {
       url.password = encodeURIComponent(url.password);
     }
 
-    return url.toString();
+    return normalizeSslMode(url.toString());
   } catch (error) {
     console.error("Error parsing DATABASE_URL:", error);
     throw error;
