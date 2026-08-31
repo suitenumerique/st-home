@@ -4,14 +4,17 @@ import ssl
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib.parse import urlparse
 
 import pytest
 import requests
+from requests.models import PreparedRequest
 
 from ..tasks.check_website import (
     check_website,
     is_allowed_redirect_domain,
     is_trusted_redirect_chain,
+    normalize_domain,
 )
 from ..tasks.conformance import Issues
 
@@ -321,6 +324,21 @@ def test_trusted_chain_exceeding_hop_limit():
     # 6 redirects (7 urls) all trusted -> too long, not allowed
     chain = _chain(*(["https://mairie-test.fr/"] + ["https://x.gouv.fr/"] * 6))
     assert is_trusted_redirect_chain(chain, "mairie-test.fr") is False
+
+
+def test_idna_host_matches_requests_encoding():
+    """An IDNA domain must normalize to the host requests puts in the URLs it returns,
+    otherwise its own pages look like a redirect to another domain (criterion 1.6)"""
+
+    prepared = PreparedRequest()
+    prepared.prepare_url("https://faß.de/", None)
+    assert urlparse(prepared.url).netloc == "xn--fa-hia.de"
+
+    expected_domain = normalize_domain(urlparse("https://faß.de/").netloc)
+    assert expected_domain == "xn--fa-hia.de"
+
+    chain = _chain(prepared.url)
+    assert is_trusted_redirect_chain(chain, expected_domain) is True
 
 
 def test_ssl_error():

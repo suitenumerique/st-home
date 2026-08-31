@@ -1,6 +1,8 @@
 import re
 from enum import Enum
 
+import idna
+
 from .defs import DOMAIN_EXTENSIONS_ALLOWED, GENERIC_EMAIL_DOMAINS
 
 
@@ -15,6 +17,8 @@ class Issues(Enum):
     EMAIL_DOMAIN_GENERIC = "EMAIL_DOMAIN_GENERIC"  # Email domain is generic
     WEBSITE_DOMAIN_EXTENSION = "WEBSITE_DOMAIN_EXTENSION"  # Website domain extension not allowed
     EMAIL_DOMAIN_EXTENSION = "EMAIL_DOMAIN_EXTENSION"  # Email domain extension not allowed
+    WEBSITE_DOMAIN_IDNA = "WEBSITE_DOMAIN_IDNA"  # Website domain is internationalized (IDNA)
+    EMAIL_DOMAIN_IDNA = "EMAIL_DOMAIN_IDNA"  # Email domain is internationalized (IDNA)
 
     # Absence of issues from asynchronous checks
     IN_PROGRESS = "IN_PROGRESS"
@@ -67,15 +71,40 @@ RcpntRefs = {
 
 # This regex is purposefully stricter than what is possible. But we want simple addresses for users.
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-z]{2,10}$")
+
+# Non-ASCII characters are accepted in the host so that internationalized domains
+# ("https://héry.fr") are reported as WEBSITE_DOMAIN_IDNA rather than as a syntax error.
 WEBSITE_REGEX = re.compile(
-    r"^https?://[-a-zA-Z0-9.]{2,256}\.[a-z]{2,10}(\/[a-zA-Z0-9._\/\?\=-]*)?$"
+    r"^https?://[-a-zA-Z0-9.\u00a1-\uffff]{2,256}\.[a-z]{2,10}(\/[a-zA-Z0-9._\/\?\=-]*)?$"
 )
 
-# Version with accents allowed:
+# Version with accents allowed in emails:
 # EMAIL_REGEX = re.compile(r"^[a-zA-Zéèçî0-9._-]+@[a-zA-Zéèçî0-9.-]+\.[a-z]{2,10}$")
-# WEBSITE_REGEX = re.compile(
-#     r"^https?://[-a-zA-Zéèçî0-9.]{2,256}\.[a-z]{2,10}(\/[a-zA-Z0-9._\/\?\=-]*)?$"
-# )
+
+
+def is_idna_domain(domain):
+    """Internationalized domain, in either of its 2 forms: unicode (héry.fr) or punycode
+    (xn--hry-bma.fr). Both are excluded by RPNT criterion 1.2."""
+
+    if not domain.isascii():
+        return True
+    return any(label.startswith("xn--") for label in domain.lower().split("."))
+
+
+def to_punycode(domain):
+    """ASCII form of a domain, so that both forms of an IDNA domain can be compared.
+    Returned unchanged if already ASCII or not encodable.
+
+    Uses the same encoding as requests (idna, UTS-46) and not the "idna" codec of the
+    standard library, which is IDNA 2003 and disagrees on some domains: "faß.de" is
+    "xn--fa-hia.de" for requests but "fass.de" for the codec."""
+
+    if domain.isascii():
+        return domain
+    try:
+        return idna.encode(domain, uts46=True).decode("ascii")
+    except UnicodeError:  # idna.IDNAError is a subclass
+        return domain
 
 
 def validate_conformance(email, website, bypass_website_regex=False):
@@ -105,11 +134,22 @@ def validate_conformance(email, website, bypass_website_regex=False):
         if website.startswith("http://"):
             issues.append(Issues.WEBSITE_DECLARED_HTTP)
 
-    if len(email_domain) > 0 and len(website_domain) > 0 and email_domain != website_domain:
+    if (
+        len(email_domain) > 0
+        and len(website_domain) > 0
+        and to_punycode(email_domain) != to_punycode(website_domain)
+    ):
         issues.append(Issues.EMAIL_DOMAIN_MISMATCH)
 
     if email_domain and email_domain in GENERIC_EMAIL_DOMAINS:
         issues.append(Issues.EMAIL_DOMAIN_GENERIC)
+
+    if website_domain and is_idna_domain(website_domain):
+        issues.append(Issues.WEBSITE_DOMAIN_IDNA)
+
+    # EMAIL_REGEX only accepts ASCII, so in practice this catches the punycode form.
+    if email_domain and is_idna_domain(email_domain):
+        issues.append(Issues.EMAIL_DOMAIN_IDNA)
 
     if website_domain_extension and website_domain_extension not in DOMAIN_EXTENSIONS_ALLOWED:
         issues.append(Issues.WEBSITE_DOMAIN_EXTENSION)
@@ -184,8 +224,13 @@ def get_rcpnt_conformance(issue_list):
         str(Issues.WEBSITE_MISSING) in issues
         or str(Issues.WEBSITE_MALFORMED) in issues
         or str(Issues.WEBSITE_DOMAIN_EXTENSION) in issues
-    ) and (str(Issues.EMAIL_DOMAIN_EXTENSION) not in issues):
-        # No need for 2.3 in this case
+        or str(Issues.WEBSITE_DOMAIN_IDNA) in issues
+    ) and (
+        str(Issues.EMAIL_DOMAIN_EXTENSION) not in issues
+        and str(Issues.EMAIL_DOMAIN_IDNA) not in issues
+    ):
+        # No need for 2.3 in this case, unless the email domain is itself non-conformant:
+        # dropping 2.3 there would reward a collectivité for its second fault.
         groups.update(
             {
                 "2.a": {"2.1", "2.2", "2.4", "2.5", "2.8"},
@@ -231,7 +276,9 @@ def get_rcpnt_conformance(issue_list):
         str(Issues.EMAIL_DOMAIN_MISMATCH): {"2.3"},
         str(Issues.EMAIL_DOMAIN_GENERIC): {"2.2", "2.3"},
         str(Issues.WEBSITE_DOMAIN_EXTENSION): {"1.2"},
+        str(Issues.WEBSITE_DOMAIN_IDNA): {"1.2"},
         str(Issues.EMAIL_DOMAIN_EXTENSION): {"2.3"},
+        str(Issues.EMAIL_DOMAIN_IDNA): {"2.3"},
         # Issues that are tested in check_website
         str(Issues.WEBSITE_DOWN): {"1.3", "1.4", "1.5", "1.6", "1.7"},
         str(Issues.WEBSITE_SSL): {"1.5"},

@@ -17,9 +17,13 @@ from .db import (
     update_rcpnt_stats,
 )
 from .defs import (
+    ARRONDISSEMENT_COMMUNES,
+    ARRONDISSEMENT_SIRETS,
     EXCLUDED_DEPARTEMENTS,
     EXCLUDED_REGIONS,
+    FORCE_INCLUDE_SIRENE,
     HARDCODED_COMMUNES,
+    HARDCODED_DEPARTEMENT_SIRENS,
     HARDCODED_DILA_SIRETS,
 )
 from .dumps import (
@@ -33,23 +37,24 @@ from .dumps import (
     dump_insee_population,
     dump_insee_regions,
     dump_operators,
-    dump_perimetre_epci,
     dump_service_usages,
     dump_services,
     reset_dila_issues,
     upload_file_to_data_gouv,
 )
 from .lib import (
+    clear_dila_cache,
     duplicates,
     get_communes_population_by_insee,
+    insee_by_commune_siren,
     is_safe_url,
     iter_adherents,
     iter_dila,
+    iter_epci_memberships,
     iter_insee_communes,
     iter_insee_departements,
     iter_insee_regions,
     iter_operators,
-    iter_perimetre_epci,
     iter_sirene,
     normalize,
 )
@@ -88,7 +93,6 @@ def run():
     dump_insee_regions()
     dump_insee_population()
     dump_dila()
-    dump_perimetre_epci()
     dump_groupements_memberships()
     dump_services()
     dump_service_usages()
@@ -99,28 +103,46 @@ def run():
 
     logger.info("Count of communes from INSEE: %d", len(communes))
 
-    associate_epci_to_communes(communes)
-
-    communes = filter_invalid_communes(communes)
-
-    # "nature_juridique": "CC",
-    # "mode_financ": "FPU",
-    epcis = list_epcis()
-
     departements = list_departements()
 
     regions = list_regions()
 
-    orgs = regions + departements + epcis + communes
-
-    sirene_row_count = dump_filtered_sirene(orgs)
+    # SIRENE has to be dumped before the communes are matched to their EPCI: BANATIC
+    # identifies both by SIREN, and it is SIRENE that tells us which INSEE commune
+    # each SIREN sits in. Every SIREN we may need is already known at this point,
+    # without the organisations being fully built.
+    sirene_row_count = dump_filtered_sirene(
+        {row["Siren membre"] for row in iter_epci_memberships()}
+        | {row["N° SIREN"] for row in iter_epci_memberships()}
+        | {org["siren"] for org in departements + regions}
+        | {commune["siren"] for commune in HARDCODED_COMMUNES.values()}
+        | FORCE_INCLUDE_SIRENE
+    )
 
     logger.info("Dumped filtered sirene: %s rows", sirene_row_count)
+
+    population_by_insee = get_communes_population_by_insee()
+    insee_by_siren = insee_by_commune_siren()
+
+    epcis = list_epcis(population_by_insee, insee_by_siren)
+
+    associate_epci_to_communes(communes, epcis, insee_by_siren)
+
+    communes = filter_invalid_communes(communes)
+
+    orgs = regions + departements + epcis + communes
 
     associate_siret_to_organizations(orgs)
 
     # Remove orgs with no SIRET (warning emitted in the method above)
+    len_orgs = len(orgs)
     orgs = [x for x in orgs if x.get("siret")]
+    if len_orgs - len(orgs) > 0:
+        logger.warning("Removed %d orgs with no SIRET", len_orgs - len(orgs))
+
+    # Same exposure as the SIREN filter in filter_invalid_communes, for every org type.
+    # Currently 1: département 75, whose DILA "cg" fiche no longer carries a SIRET.
+    assert len_orgs - len(orgs) < 10
 
     associate_dila_to_organizations(orgs)
 
@@ -129,6 +151,10 @@ def run():
     compute_slug_for_communes(orgs)
 
     associate_conformance_to_orgs(orgs)
+
+    # The parsed DILA export is no longer needed and weighs ~1 GB: release it before
+    # the stats and dump phases, which build large structures of their own.
+    clear_dila_cache()
 
     # Update data issues statistics
     update_rcpnt_stats(orgs)
@@ -143,7 +169,7 @@ def list_communes():
 
     return [
         {
-            "type": "commune" if x["TYPECOM"] == "COM" else "arrondissement",
+            "type": "commune",
             "name": x["LIBELLE"],
             "insee_com": x["COM"],
             "insee_dep": x["DEP"],
@@ -152,7 +178,48 @@ def list_communes():
             "population": population_by_insee.get(x["COM"]) or 0,
         }
         for x in iter_insee_communes()
-    ]
+        if x["TYPECOM"] == "COM"
+        # The Ville de Paris is exposed at the département tier (see
+        # HARDCODED_DEPARTEMENT_SIRENS); its 17 mairies d'arrondissement carry the
+        # commune tier instead. Lyon and Marseille stay communes, and their
+        # arrondissements are added on top of them.
+        and x["COM"] != "75056"
+    ] + list_arrondissement_communes()
+
+
+def list_arrondissement_communes():
+    """List the mairies d'arrondissement (Paris, Lyon) and de secteur (Marseille).
+
+    They have no SIREN of their own, only a SIRET: see ARRONDISSEMENT_COMMUNES. The
+    population is summed over the INSEE arrondissements each mairie administers, so
+    the 17 Paris units add back up to the 2 103 778 of the commune they replace.
+    """
+    population_by_insee = get_communes_population_by_insee()
+    arm_by_insee = {x["COM"]: x for x in iter_insee_communes() if x["TYPECOM"] == "ARM"}
+
+    communes = []
+    for insee, entry in ARRONDISSEMENT_COMMUNES.items():
+        arm = arm_by_insee[insee]
+        covers = entry.get("covers", [insee])
+        name = entry.get("name") or arm["LIBELLE"]
+        communes.append(
+            {
+                "type": "commune",
+                "name": name,
+                "insee_com": insee,
+                "insee_dep": arm["DEP"],
+                "insee_reg": arm["REG"],
+                # Drives the slug; the INSEE NCC only names the mairie's own
+                # arrondissement, which is wrong for the units covering several.
+                "insee_ncc": arm["NCC"] if "name" not in entry else name.upper(),
+                "population": sum(population_by_insee.get(x) or 0 for x in covers),
+                # These are établissements: the SIREN is their parent commune's.
+                "siren": entry["siret"][0:9],
+                "siret": entry["siret"],
+                "_st_arrondissement_parent": arm["COMPARENT"],
+            }
+        )
+    return communes
 
 
 def list_departements():
@@ -168,8 +235,9 @@ def list_departements():
         if x["pivot"][0]["code_insee_commune"][0] in communes_to_departments
     }
 
-    # Hotfix some issues waiting for DILA fix
-    dila_sirens["01"] = "220100010"
+    # Départements whose SIREN we pin rather than trust DILA for (Paris in particular,
+    # whose fiche has lost and regained its SIRET).
+    dila_sirens.update(HARDCODED_DEPARTEMENT_SIRENS)
 
     return [
         {
@@ -188,22 +256,36 @@ def list_departements():
     ]
 
 
-def list_epcis():
+def list_epcis(population_by_insee: dict, insee_by_siren: dict):
+    """List all EPCIs à fiscalité propre from BANATIC.
+
+    BANATIC gives no population for the groupement itself that matches INSEE's
+    populations municipales, so we sum the members' — the same figure the rest of the
+    pipeline uses for communes.
+    """
     insee_region_map = {x["DEP"]: x["REG"] for x in iter_insee_departements()}
 
-    return list(
-        {
-            x["siren"]: {
+    epcis = {}
+    for row in iter_epci_memberships():
+        siren = row["N° SIREN"]
+        # "12 - Aveyron" -> "12"
+        insee_dep = row["Département"].split(" - ")[0].strip()
+        epci = epcis.setdefault(
+            siren,
+            {
                 "type": "epci",
-                "siren": x["siren"],
-                "name": x["raison_sociale"],
-                "insee_dep": x["dept"],
-                "insee_reg": insee_region_map[x["dept"]],
-                "population": int(x["total_pop_mun"].replace(" ", "") or 0),
-            }
-            for x in iter_perimetre_epci()
-        }.values()
-    )
+                "siren": siren,
+                "name": row["Nom du groupement"],
+                "insee_dep": insee_dep,
+                "insee_reg": insee_region_map[insee_dep],
+                "population": 0,
+            },
+        )
+        insee = insee_by_siren.get(row["Siren membre"])
+        if insee:
+            epci["population"] += population_by_insee.get(insee) or 0
+
+    return list(epcis.values())
 
 
 def list_regions():
@@ -253,42 +335,78 @@ def filter_invalid_communes(communes: list):
     if len_communes - len(communes) > 0:
         logger.warning("Removed %d communes with no SIREN", len_communes - len(communes))
 
+    # Communes get their SIREN from BANATIC via SIRENE (see insee_by_commune_siren), so
+    # a SIRENE hiccup would silently drop communes from the site. Expected count is 0.
+    assert len_communes - len(communes) < 10
+
     return communes
 
 
-def associate_epci_to_communes(communes: list):
-    """Associate EPCIs to communes. Add SIREN as a benefit of this data source."""
-    perimetre_epci_by_insee = {x["insee"]: x for x in iter_perimetre_epci()}
+def associate_epci_to_communes(communes: list, epcis: list, insee_by_siren: dict):
+    """Associate EPCIs to communes. Add SIREN as a benefit of this data source.
+
+    Populations are not touched here: they come from INSEE via list_communes().
+    """
+    epci_by_siren = {epci["siren"]: epci for epci in epcis}
+    membership_by_insee = {}
+    for row in iter_epci_memberships():
+        insee = insee_by_siren.get(row["Siren membre"])
+        if insee:
+            membership_by_insee[insee] = (row["Siren membre"], epci_by_siren[row["N° SIREN"]])
 
     for commune in communes:
         if commune["type"] != "commune":
             continue
         insee = commune["insee_com"]
-        if insee in perimetre_epci_by_insee:
-            commune["_st_epci"] = perimetre_epci_by_insee[insee]
-            commune["siren"] = commune["_st_epci"]["siren_membre"]
-            commune["population"] = int(commune["_st_epci"]["pmun_2025"].replace(" ", "") or 0)
+        # Mairies d'arrondissement are unknown to BANATIC, which records the membership
+        # under their parent commune's SIREN. Inherit it, otherwise the métropoles would
+        # lose the population of their ville-centre.
+        parent = commune.get("_st_arrondissement_parent")
+        if parent:
+            if parent in membership_by_insee:
+                commune["_st_epci"] = membership_by_insee[parent][1]
+            else:
+                logger.warning(f"No EPCI for the parent commune {parent} of {commune['name']}")
+            continue
+        if insee in membership_by_insee:
+            siren, epci = membership_by_insee[insee]
+            commune["siren"] = siren
+            commune["_st_epci"] = epci
         elif insee in HARDCODED_COMMUNES:
             commune["siren"] = HARDCODED_COMMUNES[insee]["siren"]
-            commune["population"] = HARDCODED_COMMUNES[insee]["pmun_2025"]
             commune["siret"] = HARDCODED_COMMUNES[insee]["siret"]
             commune["zipcode"] = HARDCODED_COMMUNES[insee]["zipcode"]
         else:
-            logger.warning(f"Missing insee in perimetre_epci: {commune['name']} {insee}")
+            logger.warning(f"Commune not a member of any EPCI: {commune['name']} {insee}")
 
 
 def associate_siret_to_organizations(orgs: list):
     """Associate SIRETs to orgs, using SIREN as pivot. Add Address & zipcode as a benefit of this data source."""
 
     siren_index = {}
+    siret_index = {}
     for row in iter_sirene():
+        siret_index[row["siret"]] = row
+        # The dump holds one siège per SIREN, plus the mairies d'arrondissement, which
+        # are établissements of a SIREN whose siège is in the dump as well. Index those
+        # by SIRET only, so they don't shadow their parent commune.
+        if row["siret"] in ARRONDISSEMENT_SIRETS:
+            continue
         if row["siren"] in siren_index:
             logger.warning(f"Duplicate siren in SIRENE: {row['siren']} {row['siret']}")
         else:
             siren_index[row["siren"]] = row
 
     for org in orgs:
-        if org["siren"] not in siren_index:
+        # Orgs carrying a SIRET already (mairies d'arrondissement, HARDCODED_COMMUNES)
+        # resolve it themselves: their SIREN points at another establishment.
+        if org.get("siret"):
+            row = siret_index.get(org["siret"])
+            if row is None:
+                logger.warning(f"Missing siret in SIRENE: {org['name']} {org['siret']}")
+            else:
+                org["zipcode"] = row["codePostalEtablissement"]
+        elif org["siren"] not in siren_index:
             logger.warning(f"Missing siren in SIRENE: {org['name']} {org['siren']}")
         else:
             org["siret"] = siren_index[org["siren"]]["siret"]
@@ -627,9 +745,7 @@ def create_new_dumps(orgs: list):
             email_official = org["_st_email"]
 
         if org["type"] == "commune":
-            org["epci_population"] = int(
-                org.get("_st_epci", {}).get("total_pop_mun", "").replace(" ", "") or 0
-            )
+            org["epci_population"] = org.get("_st_epci", {}).get("population") or 0
             st_eligible = org["population"] <= 3500
             slug = org["_st_slug"]
         elif org["type"] == "epci":
@@ -639,8 +755,6 @@ def create_new_dumps(orgs: list):
             slug = "departement-" + org["insee_dep"]
         elif org["type"] == "region":
             slug = "region-" + org["insee_reg"]
-        elif org["type"] == "arrondissement":
-            slug = "arrondissement-" + org["insee_com"]
 
         phone = (
             org["_st_dila"]["telephone"][0]["valeur"]
@@ -679,7 +793,7 @@ def create_new_dumps(orgs: list):
                 "phone": phone,
                 "population": org["population"],
                 "epci_population": org.get("epci_population"),
-                "epci_name": org.get("_st_epci", {}).get("raison_sociale") or None,
+                "epci_name": org.get("_st_epci", {}).get("name") or None,
                 "epci_siren": org.get("_st_epci", {}).get("siren") or None,
                 "epci_siret": siren_to_siret.get(org.get("_st_epci", {}).get("siren", "")) or None,
                 "dep_siret": dep_to_siret.get(org.get("insee_dep", "")) or None,

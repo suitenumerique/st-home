@@ -150,6 +150,14 @@ export const ReferentielConformite: ReferentielSection[] = [
               <strong>.com</strong> notamment est réservée aux usages commerciaux, et{" "}
               <strong>.org</strong> aux activités associatives.
             </p>
+            <p>
+              Les noms de domaine internationalisés (IDN), qui comportent des caractères accentués
+              ou spéciaux, ne sont pas conformes. Cela vaut pour leurs deux écritures, par exemple{" "}
+              <strong>https://mairie-héry.fr</strong> et son équivalent technique{" "}
+              <strong>https://xn--mairie-hry-i7a.fr</strong>. Ces noms de domaine sont mal affichés
+              par certains logiciels et facilitent l&rsquo;usurpation d&rsquo;identité par
+              substitution de caractères visuellement proches.
+            </p>
           </>
         ),
         howToFix: (
@@ -164,7 +172,8 @@ export const ReferentielConformite: ReferentielSection[] = [
                 >
                   Vérifiez la disponibilité du domaine
                 </Link>{" "}
-                au format <strong>[commune].[extension]</strong>&nbsp;;
+                au format <strong>[commune].[extension]</strong>, sans accent ni caractère
+                spécial&nbsp;;
               </li>
               <li>
                 Effectuez la demande auprès d&rsquo;un{" "}
@@ -607,6 +616,11 @@ export const ReferentielConformite: ReferentielSection[] = [
               <li>Elle simplifie la gestion technique des services numériques&nbsp;;</li>
               <li>Elle renforce la présence numérique de votre collectivité.</li>
             </ul>
+            <p>
+              Ce domaine commun doit lui-même respecter le <Link href="#1.2">critère 1.2</Link>
+              &nbsp;: extension souveraine, et pas de nom de domaine internationalisé (IDN), quelle
+              que soit son écriture.
+            </p>
           </>
         ),
         howToFix: (
@@ -615,7 +629,7 @@ export const ReferentielConformite: ReferentielSection[] = [
             <ol>
               <li>
                 Identifiez le nom de domaine du site internet principal de votre commune (ce nom de
-                domaine doit correspondre aux critères 1.3) ;
+                domaine doit correspondre au <Link href="#1.2">critère 1.2</Link>)&nbsp;;
               </li>
               <li>
                 Créez des adresses de messagerie utilisant ce même domaine avec votre solution de
@@ -1006,6 +1020,10 @@ const FAQS = [
         <p>Voici son historique :</p>
         <ul>
           <li>
+            <strong>Version 0.2.2</strong> (31 Août 2026) : Précision de l&rsquo;interdiction des
+            noms de domaines contenant des accents
+          </li>
+          <li>
             <strong>Version 0.2.1</strong> (10 Juillet 2026) : Autorisation de la redirection du nom
             de domaine vers la page Service-Public.gouv.fr pour les communes sans site web (critère
             1.6)
@@ -1302,7 +1320,7 @@ const ReferentielPage: NextPage = () => {
                   }
                 }}
               >
-                RPNT v0.2.1, publié le 10 Juillet 2026
+                RPNT v0.2.2, publié le 31 Août 2026
               </div>
 
               <div className={fr.cx("fr-text--lg", "fr-mb-5w")}>{REF_INTRO}</div>

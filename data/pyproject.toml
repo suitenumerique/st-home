@@ -5,6 +5,7 @@ description = "Data pipeline for Suite territoriale communes"
 requires-python = ">=3.13"
 dependencies = [
     "requests==2.32.3",
+    "idna==3.18",
     "dramatiq-redis-streams @ git+https://github.com/sylvinus/dramatiq-redis-streams.git@819912de7259361688fcfa1b91b0c465ecd2b6e4",
     "redis==5.2.1",
     "dnspython==2.7.0",
@@ -13,7 +14,6 @@ dependencies = [
     "cachetools==5.5.2",
     "sentry-sdk==2.27.0",
     "psycopg2-binary==2.9.10",
-    "pandas==2.2.3",
     "openpyxl==3.1.3",
 ]
 

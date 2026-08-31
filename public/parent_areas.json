@@ -1336,28 +1336,12 @@
     "n_cities": 12
   },
   {
-    "insee_geo": "241200658",
-    "type": "epci",
-    "name": "CC du Pays de Salars",
-    "insee_reg": "r76",
-    "insee_dep": "12",
-    "n_cities": 9
-  },
-  {
     "insee_geo": "241200674",
     "type": "epci",
     "name": "CC du Plateau de Montbazens",
     "insee_reg": "r76",
     "insee_dep": "12",
     "n_cities": 13
-  },
-  {
-    "insee_geo": "241200765",
-    "type": "epci",
-    "name": "CC de Lévézou Pareloup",
-    "insee_reg": "r76",
-    "insee_dep": "12",
-    "n_cities": 10
   },
   {
     "insee_geo": "241200807",
@@ -1382,6 +1366,14 @@
     "insee_reg": "r76",
     "insee_dep": "12",
     "n_cities": 13
+  },
+  {
+    "insee_geo": "994579670",
+    "type": "epci",
+    "name": "Lévézou Communauté de communes",
+    "insee_reg": "r76",
+    "insee_dep": "12",
+    "n_cities": 19
   },
   {
     "insee_geo": "200035087",
@@ -6616,14 +6608,6 @@
     "n_cities": 128
   },
   {
-    "insee_geo": "245701222",
-    "type": "epci",
-    "name": "CA du Val de Fensch",
-    "insee_reg": "r44",
-    "insee_dep": "57",
-    "n_cities": 10
-  },
-  {
     "insee_geo": "245701271",
     "type": "epci",
     "name": "CC du Pays Orne Moselle",
@@ -6640,20 +6624,20 @@
     "n_cities": 26
   },
   {
-    "insee_geo": "245701362",
-    "type": "epci",
-    "name": "CA Portes de France-Thionville",
-    "insee_reg": "r44",
-    "insee_dep": "57",
-    "n_cities": 13
-  },
-  {
     "insee_geo": "245701404",
     "type": "epci",
     "name": "CC du Pays Haut Val d'Alzette",
     "insee_reg": "r44",
     "insee_dep": "57",
     "n_cities": 8
+  },
+  {
+    "insee_geo": "992367730",
+    "type": "epci",
+    "name": "Thionville Fensch Agglomération",
+    "insee_reg": "r44",
+    "insee_dep": "57",
+    "n_cities": 23
   },
   {
     "insee_geo": "200067429",
