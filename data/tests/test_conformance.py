@@ -130,6 +130,10 @@ def test_to_punycode():
     assert to_punycode("hery.fr") == "hery.fr"
     assert to_punycode("xn--hry-bma.fr") == "xn--hry-bma.fr"
 
+    # UTS-46, like requests, and not the IDNA 2003 codec of the stdlib, which maps
+    # this domain to "fass.de" and would make it look like a redirect to another domain
+    assert to_punycode("faß.de") == "xn--fa-hia.de"
+
     # Non-encodable domains are left untouched
     assert to_punycode("héry..fr") == "héry..fr"
 

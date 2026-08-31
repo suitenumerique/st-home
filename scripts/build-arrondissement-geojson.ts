@@ -62,6 +62,23 @@ const run = async () => {
     (o) => o.type === "commune" && o.insee_com !== null && o.insee_com in ARRONDISSEMENT_UNITS,
   );
 
+  // A missing unit would silently leave a hole in the map, a duplicated one would draw
+  // the same contour twice, so require exactly one organization per configured unit.
+  const counts: Record<string, number> = {};
+  for (const unit of units) {
+    const insee = unit.insee_com as string;
+    counts[insee] = (counts[insee] ?? 0) + 1;
+  }
+  const missing = Object.keys(ARRONDISSEMENT_UNITS).filter((c) => !counts[c]);
+  const duplicated = Object.keys(counts).filter((c) => counts[c] > 1);
+  if (missing.length > 0 || duplicated.length > 0) {
+    throw new Error(
+      `${ORGS}: expected one commune per arrondissement unit` +
+        (missing.length > 0 ? `, missing: ${missing.join(", ")}` : "") +
+        (duplicated.length > 0 ? `, duplicated: ${duplicated.join(", ")}` : ""),
+    );
+  }
+
   // Group the new features by department file
   const byDep: Record<string, GeoJSON.Feature[]> = {};
 

@@ -1,6 +1,8 @@
 import re
 from enum import Enum
 
+import idna
+
 from .defs import DOMAIN_EXTENSIONS_ALLOWED, GENERIC_EMAIL_DOMAINS
 
 
@@ -91,13 +93,17 @@ def is_idna_domain(domain):
 
 def to_punycode(domain):
     """ASCII form of a domain, so that both forms of an IDNA domain can be compared.
-    Returned unchanged if already ASCII or not encodable."""
+    Returned unchanged if already ASCII or not encodable.
+
+    Uses the same encoding as requests (idna, UTS-46) and not the "idna" codec of the
+    standard library, which is IDNA 2003 and disagrees on some domains: "faß.de" is
+    "xn--fa-hia.de" for requests but "fass.de" for the codec."""
 
     if domain.isascii():
         return domain
     try:
-        return domain.encode("idna").decode("ascii")
-    except UnicodeError:
+        return idna.encode(domain, uts46=True).decode("ascii")
+    except UnicodeError:  # idna.IDNAError is a subclass
         return domain
 
 
