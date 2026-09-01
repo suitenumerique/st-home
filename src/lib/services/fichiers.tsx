@@ -34,7 +34,7 @@ const fichiers: ServicePage = {
       </>
     ),
     illustration: {
-      src: "/images/services-illlu/fichiers-head.png",
+      src: "/images/services-illlu/fichiers-hero.webp",
       alt: "",
       width: 740,
       height: 740,
@@ -58,7 +58,7 @@ const fichiers: ServicePage = {
           </>
         ),
         screenshot: {
-          src: "/images/services-illlu/fichiers-feature-1.png",
+          src: "/images/services-illlu/fichiers-features-1.webp",
           alt: "",
           width: 1206,
           height: 828,
@@ -74,7 +74,7 @@ const fichiers: ServicePage = {
           </>
         ),
         screenshot: {
-          src: "/images/services-illlu/fichiers-feature-2.png",
+          src: "/images/services-illlu/fichiers-features-2.webp",
           alt: "",
           width: 1206,
           height: 828,
@@ -89,7 +89,7 @@ const fichiers: ServicePage = {
           </>
         ),
         screenshot: {
-          src: "/images/services-illlu/fichiers-feature-3.png",
+          src: "/images/services-illlu/fichiers-features-3.webp",
           alt: "",
           width: 1206,
           height: 828,

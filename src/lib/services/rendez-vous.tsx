@@ -53,7 +53,7 @@ const rendezVous: ServicePage = {
     ),
     eligibilitySearch: { selfHostingUrl: SELF_HOSTING_URL },
     illustration: {
-      src: "/images/services-illlu/rdv-head.png",
+      src: "/images/services-illlu/rdv-hero.webp",
       alt: "",
       width: 740,
       height: 740,
@@ -83,7 +83,7 @@ const rendezVous: ServicePage = {
         ],
         link: { text: "S’inscrire à une démo", href: DEMO_URL },
         screenshot: {
-          src: "/images/services-illlu/rdv-feature-1.png",
+          src: "/images/services-illlu/rdv-features-1.webp",
           alt: "",
           width: 1206,
           height: 828,
@@ -103,7 +103,7 @@ const rendezVous: ServicePage = {
           { icon: CalendarXMark, label: <>Notification de modification ou annulation</> },
         ],
         screenshot: {
-          src: "/images/services-illlu/rdv-feature-2.png",
+          src: "/images/services-illlu/rdv-features-2.webp",
           alt: "",
           width: 1206,
           height: 828,
@@ -124,7 +124,7 @@ const rendezVous: ServicePage = {
         ],
         link: { text: "Voir toutes les fonctionnalités", href: ALL_FEATURES_URL },
         screenshot: {
-          src: "/images/services-illlu/rdv-feature-3.png",
+          src: "/images/services-illlu/rdv-features-3.webp",
           alt: "",
           width: 1206,
           height: 828,

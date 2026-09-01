@@ -55,13 +55,13 @@ const annuaire: ServicePage = {
     ),
     cta: { text: "Certifier mes informations", href: ANNUAIRE_URL },
     illustration: {
-      src: "/images/services-illlu/annuaire-head.png",
+      src: "/images/services-illlu/annuaire-hero.webp",
       alt: "",
       width: 740,
       height: 740,
     },
     screenshot: {
-      src: "/images/services-illlu/annuaire-top.png",
+      src: "/images/services-illlu/annuaire-top.webp",
       alt: "L’espace commune de l’Annuaire, avec les informations publiées de la collectivité",
       width: 3063,
       height: 1869,
@@ -87,7 +87,7 @@ const annuaire: ServicePage = {
         ],
         link: { text: "Voir la page de ma collectivité", href: ANNUAIRE_URL },
         screenshot: {
-          src: "/images/services-illlu/annuaire-feature-1.png",
+          src: "/images/services-illlu/annuaire-features-1.webp",
           alt: "",
           width: 1174,
           height: 902,
@@ -105,7 +105,7 @@ const annuaire: ServicePage = {
         ],
         link: { text: "Voir toutes les fonctionnalités", href: ALL_FEATURES_URL },
         screenshot: {
-          src: "/images/services-illlu/annuaire-feature-2.png",
+          src: "/images/services-illlu/annuaire-features-2.webp",
           alt: "",
           width: 1174,
           height: 902,
@@ -126,7 +126,7 @@ const annuaire: ServicePage = {
         ],
         link: { text: "Certifier mes données", href: ANNUAIRE_URL },
         screenshot: {
-          src: "/images/services-illlu/annuaire-feature-3.png",
+          src: "/images/services-illlu/annuaire-features-3.webp",
           alt: "",
           width: 1174,
           height: 902,

@@ -38,7 +38,7 @@ const domaines: ServicePage = {
       </>
     ),
     illustration: {
-      src: "/images/services-illlu/domaines-head.png",
+      src: "/images/services-illlu/domaines-hero.webp",
       alt: "",
       width: 1832,
       height: 1504,
@@ -94,7 +94,7 @@ const domaines: ServicePage = {
     ),
     link: { text: "Voir la cartographie des partenaires", href: PARTNERS_MAP_URL },
     illustration: {
-      src: "/images/services-illlu/expertise-locale.webp",
+      src: "/images/services-illlu/domaines-banners.webp",
       alt: "",
       width: 900,
       height: 645,
