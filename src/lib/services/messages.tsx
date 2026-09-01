@@ -47,13 +47,13 @@ const messages: ServicePage = {
       </>
     ),
     illustration: {
-      src: "/images/services-illlu/messages-head.png",
+      src: "/images/services-illlu/messages-hero.webp",
       alt: "",
       width: 740,
       height: 740,
     },
     screenshot: {
-      src: "/images/services-illlu/messages-top.png",
+      src: "/images/services-illlu/messages-top.webp",
       alt: "La boîte de réception de Messages, avec la liste des courriels et la conversation ouverte",
       width: 2412,
       height: 1656,
@@ -81,7 +81,7 @@ const messages: ServicePage = {
         ],
         link: { text: "Regarder la démo", href: DEMO_URL },
         screenshot: {
-          src: "/images/services-illlu/messages-feature-1.png",
+          src: "/images/services-illlu/messages-features-1.webp",
           alt: "",
           width: 1206,
           height: 828,
@@ -103,7 +103,7 @@ const messages: ServicePage = {
           { icon: Signature, label: <>Signature uniformisée</> },
         ],
         screenshot: {
-          src: "/images/services-illlu/messages-feature-2.png",
+          src: "/images/services-illlu/messages-features-2.webp",
           alt: "",
           width: 1206,
           height: 828,
@@ -127,7 +127,7 @@ const messages: ServicePage = {
         ],
         link: { text: "Voir toutes les fonctionnalités", href: ALL_FEATURES_URL },
         screenshot: {
-          src: "/images/services-illlu/messages-feature-3.png",
+          src: "/images/services-illlu/messages-features-3.webp",
           alt: "",
           width: 1188,
           height: 808,

@@ -44,7 +44,7 @@ const mesAdresses: ServicePage = {
     ),
     cta: { text: "Créer ou éditer ma base", href: MES_ADRESSES_URL },
     illustration: {
-      src: "/images/services-illlu/adresses-head.png",
+      src: "/images/services-illlu/adresses-hero.webp",
       alt: "",
       width: 980,
       height: 882,
@@ -76,7 +76,7 @@ const mesAdresses: ServicePage = {
         ),
         link: { text: "Essayer la démo", href: DEMO_URL },
         screenshot: {
-          src: "/images/services-illlu/adresses-feature-1.png",
+          src: "/images/services-illlu/adresses-features-1.webp",
           alt: "",
           width: 1162,
           height: 764,
@@ -93,7 +93,7 @@ const mesAdresses: ServicePage = {
         ),
         link: { text: "Rechercher un partenaire", href: PARTNERS_URL },
         screenshot: {
-          src: "/images/services-illlu/adresses-feature-2.png",
+          src: "/images/services-illlu/adresses-features-2.webp",
           alt: "",
           width: 1184,
           height: 682,
@@ -110,7 +110,7 @@ const mesAdresses: ServicePage = {
         ),
         link: { text: "Diffuser Mes signalements", href: SIGNALEMENTS_URL },
         screenshot: {
-          src: "/images/services-illlu/adresses-feature-3.png",
+          src: "/images/services-illlu/adresses-features-3.webp",
           alt: "",
           width: 1116,
           height: 714,
@@ -238,7 +238,7 @@ const mesAdresses: ServicePage = {
         answer: (
           <>
             <Image
-              src="/images/services-illlu/bal-schema.webp"
+              src="/images/services-illlu/adresses-bal-schema.webp"
               alt="Les trois voies de publication d’une Base Adresse Locale vers la Base Adresse Nationale : Mes Adresses, un outil partenaire, ou un dépôt direct"
               width={1200}
               height={1467}
