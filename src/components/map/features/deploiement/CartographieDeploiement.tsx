@@ -224,13 +224,30 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
             return { n_cities: 0, score: null };
           }
           const epciSiren = insee_geo;
+          // An EPCI can span several departments, and the outline drawn inside a department
+          // only covers its members located there: restrict member communes to the displayed
+          // area, otherwise members of neighbouring departments inflate the count.
+          const selectedDepCode =
+            (mapState.selectedAreas?.department as SelectedArea)?.insee_geo ?? null;
+          const isInDisplayedArea = (stat: StatRecord) => {
+            if (mapState.currentLevel === "department") {
+              return !selectedDepCode || stat.dep === selectedDepCode;
+            }
+            if (mapState.currentLevel === "region") {
+              return !selectedRegionCode || stat.reg === selectedRegionCode;
+            }
+            return true;
+          };
           const communesSirensInEpci = new Set<string>();
           (activeTypes.includes("commune") ? byType("commune") : [])
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .filter((stat: StatRecord) => (stat as any).epci_siren === epciSiren)
+            .filter(isInDisplayedArea)
             .filter(statMatchesServices)
             // Deduplicate by SIREN: a commune may have multiple SIRETs (mairie, CCAS…)
             .forEach((stat: StatRecord) => communesSirensInEpci.add(stat.id.slice(0, 9)));
+          // The EPCI structure itself is kept whatever its own department, since it is
+          // displayed in every department it covers.
           const epciInEpci = (activeTypes.includes("epci") ? byType("epci") : [])
             .filter(
               (stat: StatRecord) => stat.id === epciSiren || stat.id.slice(0, 9) === epciSiren,
@@ -308,6 +325,7 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
       stats,
       mapState.filters,
       mapState.selectedAreas,
+      mapState.currentLevel,
       thresholdServiceIds,
       anctThreshold,
       defaultServiceIds,
