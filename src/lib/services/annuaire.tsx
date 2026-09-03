@@ -25,11 +25,12 @@ const HELP_CENTRE_URL = "https://aide.suite.anct.gouv.fr/socle/annuaire-des-coll
 
 const annuaire: ServicePage = {
   slug: "annuaire",
-  navLabel: "Annuaire",
+  navLabel: "Annuaire des collectivités",
   // Matches the service_ids filter of DEPLOYMENT_MAP_URL above.
   deploymentServiceId: 4,
   repositoryUrl: "https://github.com/betagouv/annuaire",
   trialHeading: { lead: "Concerné\u202f?", action: "Certifiez\u202f!" },
+  trialCta: { text: "Commencer", href: ANNUAIRE_URL },
   seo: {
     title: "Annuaire des collectivités, certifiez vos informations en un clic",
     description:
@@ -44,6 +45,9 @@ const annuaire: ServicePage = {
       height: 160,
     },
     tagline: <>Certifiez vos horaires, contacts, liste municipale… en un clic</>,
+    // A third longer than the other taglines: it needs the extra column to read
+    // on two lines like them.
+    textColumns: 8,
     description: (
       <>
         Vérifiez et mettez à jour facilement toutes les informations de votre collectivité présentes

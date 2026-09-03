@@ -12,6 +12,7 @@ const fichiers: ServicePage = {
   slug: "fichiers",
   navLabel: "Fichiers",
   deploymentServiceId: 12,
+  repositoryUrl: "https://github.com/suitenumerique/drive",
   trialHeading: { lead: "Intéressé\u202f?", action: "Commencez\u202f!" },
   seo: {
     title: "Fichiers, stockez et collaborez sur vos documents en ligne",
@@ -45,6 +46,7 @@ const fichiers: ServicePage = {
       width: 1920,
       height: 1686,
     },
+    eligibilitySearch: true,
   },
 
   features: {
@@ -104,16 +106,6 @@ const fichiers: ServicePage = {
       text: (count) => <>{count.toLocaleString("fr-FR")} collectivités l’ont déjà adopté</>,
     },
     testimonials: [
-      {
-        quote: (
-          <>
-            Par rapport à ce que j&rsquo;avais avant, c&rsquo;est un vrai confort de travailler avec
-            Fichiers.
-          </>
-        ),
-        // TODO: placeholder — the recap names no collectivité for this quote.
-        author: <>Mairie de x</>,
-      },
       {
         quote: (
           <>

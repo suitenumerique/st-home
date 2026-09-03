@@ -20,10 +20,6 @@ const API_DOC_URL = "https://www.rdv-solidarites.fr/api-docs/index.html";
 const DEPLOYMENT_MAP_URL = "/cartographie-deploiement?service_ids=49";
 // The help centre, filtered on RDV Service Public.
 const HELP_CENTRE_URL = "https://aide.suite.anct.gouv.fr/socle/rdv-service-public";
-// TODO: the recap gives the self-hosting guide of Messages here. Point this at
-// the guide for RDV Service Public once it exists.
-const SELF_HOSTING_URL =
-  "https://docs.numerique.gouv.fr/docs/440cb67a-093c-4901-ac88-702c7b298ff5/";
 
 const rendezVous: ServicePage = {
   slug: "rendez-vous",
@@ -51,7 +47,7 @@ const rendezVous: ServicePage = {
         cartes nationales d&rsquo;identité et aux passeports.
       </>
     ),
-    eligibilitySearch: { selfHostingUrl: SELF_HOSTING_URL },
+    eligibilitySearch: true,
     illustration: {
       src: "/images/services-illlu/rdv-hero.webp",
       alt: "",

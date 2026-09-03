@@ -22,17 +22,21 @@ export type ServiceIllustration = {
 export const ELIGIBILITY_SEARCH_ANCHOR = "modalites-acces";
 
 /**
- * Declares the eligibility search under the hero: the same field, wording and
- * results on every service page, so only what differs between services lives
- * here. The block itself is in src/components/services/ServiceEligibility.tsx.
+ * Width of the hero text and of the illustration facing it, as columns of the
+ * twelve of the DSFR grid. Spelled out rather than computed: `fr.cx` takes the
+ * class names as literals.
  */
-export type ServiceEligibilitySearch = {
-  /**
-   * Documentation on running the service yourself, offered to the collectivités
-   * above the ANCT thresholds. Without it, that result shows no primary button.
-   */
-  selfHostingUrl?: string;
-};
+export const HERO_COLUMN_SPLIT = {
+  6: ["fr-col-md-6", "fr-col-md-6"],
+  7: ["fr-col-md-7", "fr-col-md-5"],
+  8: ["fr-col-md-8", "fr-col-md-4"],
+  9: ["fr-col-md-9", "fr-col-md-3"],
+} as const;
+
+export type HeroTextColumns = keyof typeof HERO_COLUMN_SPLIT;
+
+/** Columns taken by the hero text when the service does not say otherwise. */
+export const DEFAULT_HERO_TEXT_COLUMNS: HeroTextColumns = 7;
 
 export type ServiceHeroBlock = {
   /**
@@ -50,8 +54,19 @@ export type ServiceHeroBlock = {
   screenshot?: ServiceIllustration;
   /** Primary action under the description, for the services that need no search. */
   cta?: ServiceLink;
-  /** Omitted for services whose access does not depend on the collectivité. */
-  eligibilitySearch?: ServiceEligibilitySearch;
+  /**
+   * Columns of twelve taken by the text next to the illustration, which takes
+   * the rest. Widen it for a long tagline, so that the title reads on two lines
+   * as it does on the other services. Ignored without an illustration.
+   */
+  textColumns?: HeroTextColumns;
+  /**
+   * Set to show the eligibility search under the hero. Nothing about it varies
+   * between services, so it is a flag rather than a block: the field, wording
+   * and results live in src/components/services/ServiceEligibility.tsx.
+   * Omitted for services whose access does not depend on the collectivité.
+   */
+  eligibilitySearch?: boolean;
 };
 
 /** One "icon + label" entry of a feature row's list. */
@@ -205,6 +220,11 @@ export type ServicePage = {
   foundations?: boolean;
   /** Defaults to "Intéressé ? Testez !". */
   trialHeading?: ServiceTrialHeading;
+  /**
+   * Primary button of the closing block, before "Nous contacter". Services with
+   * an eligibility search point at it instead, and need no `trialCta`.
+   */
+  trialCta?: ServiceLink;
   /** The only mandatory block. */
   hero: ServiceHeroBlock;
   steps?: ServiceStepsBlock;

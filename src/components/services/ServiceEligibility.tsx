@@ -9,6 +9,10 @@ const ANCT_THRESHOLDS: Record<string, number> = { commune: 3500, epci: 15000 };
 const PLACEHOLDER = "Entrez le nom de votre territoire ou son code postal";
 const PLACEHOLDER_SMALL_SCREEN = "Nom ou code postal";
 const CONTACT_EMAIL = "contact@suite.anct.gouv.fr";
+// Offered to the collectivités above the ANCT thresholds. One guide covers
+// every service, so it lives here rather than with each service.
+const SELF_HOSTING_URL =
+  "https://docs.numerique.gouv.fr/docs/440cb67a-093c-4901-ac88-702c7b298ff5/";
 
 type Operator = {
   id: string;
@@ -63,13 +67,7 @@ function operatorLabel(operator: Operator): string {
   return operator.name_with_article ?? operator.shortname ?? operator.name;
 }
 
-export default function ServiceEligibility({
-  selfHostingUrl,
-  serviceName,
-}: {
-  selfHostingUrl?: string;
-  serviceName: string;
-}) {
+export default function ServiceEligibility({ serviceName }: { serviceName: string }) {
   const isSmallScreen = useSmallScreen(1000);
   const [state, setState] = useState<State>({ status: "idle" });
   const [searchKey, setSearchKey] = useState(0);
@@ -139,7 +137,6 @@ export default function ServiceEligibility({
               commune={state.commune}
               eligibility={state.eligibility}
               serviceName={serviceName}
-              selfHostingUrl={selfHostingUrl}
             />
           )}
         </div>
@@ -152,12 +149,10 @@ function Result({
   commune,
   eligibility,
   serviceName,
-  selfHostingUrl,
 }: {
   commune: Commune;
   eligibility: Eligibility;
   serviceName: string;
-  selfHostingUrl?: string;
 }) {
   const allServicesLink = {
     text: "Voir tous les services accessibles",
@@ -206,9 +201,7 @@ function Result({
               {serviceName} directement sur votre propre infrastructure.
             </>
           ),
-          primaryLink: selfHostingUrl
-            ? { text: "Guide d’autohébergement", href: selfHostingUrl }
-            : null,
+          primaryLink: { text: "Guide d’autohébergement", href: SELF_HOSTING_URL },
           footnote: <>Si vous avez une question, </>,
         };
     }

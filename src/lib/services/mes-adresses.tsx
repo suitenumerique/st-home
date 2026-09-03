@@ -22,6 +22,7 @@ const mesAdresses: ServicePage = {
   deploymentServiceId: 1,
   repositoryUrl: "https://github.com/BaseAdresseNationale/mes-adresses",
   trialHeading: { lead: "Concerné\u202f?", action: "Certifiez\u202f!" },
+  trialCta: { text: "Commencer", href: MES_ADRESSES_URL },
   seo: {
     title: "Mes Adresses, référencez toutes les adresses de votre commune",
     description:
@@ -180,10 +181,6 @@ const mesAdresses: ServicePage = {
         <Link href={HELP_CENTRE_URL} target="_blank" rel="noopener noreferrer">
           centre d&rsquo;aide
         </Link>{" "}
-        ou le{" "}
-        <Link href={PARTNER_CENTRE_URL} target="_blank" rel="noopener noreferrer">
-          centre partenaire
-        </Link>
         .
       </>
     ),
