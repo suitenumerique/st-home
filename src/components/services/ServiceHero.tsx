@@ -1,5 +1,10 @@
 import ServiceEligibility from "@/components/services/ServiceEligibility";
-import { ELIGIBILITY_SEARCH_ANCHOR, type ServiceHeroBlock } from "@/lib/services/types";
+import {
+  DEFAULT_HERO_TEXT_COLUMNS,
+  ELIGIBILITY_SEARCH_ANCHOR,
+  HERO_COLUMN_SPLIT,
+  type ServiceHeroBlock,
+} from "@/lib/services/types";
 import { fr } from "@codegouvfr/react-dsfr";
 import Image from "next/image";
 import Link from "next/link";
@@ -23,6 +28,8 @@ const SEARCH_PADDING = 120;
 
 export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
   const { eligibilitySearch, illustration, screenshot } = hero;
+  const [textColumn, illustrationColumn] =
+    HERO_COLUMN_SPLIT[hero.textColumns ?? DEFAULT_HERO_TEXT_COLUMNS];
 
   return (
     <section style={{ backgroundImage: HERO_BACKGROUND }}>
@@ -34,8 +41,9 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
         }}
       >
         <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters", "fr-grid-row--middle")}>
-          {/* Half the row next to the illustration, the whole of it without. */}
-          <div className={fr.cx("fr-col-12", illustration ? "fr-col-md-6" : "fr-col-md-12")}>
+          {/* As many columns as the tagline needs next to the illustration,
+              the whole row without. */}
+          <div className={fr.cx("fr-col-12", illustration ? textColumn : "fr-col-md-12")}>
             <h1
               className={fr.cx("fr-mb-2w")}
               style={{ fontSize: TITLE_FONT_SIZE, lineHeight: `${TITLE_LINE_HEIGHT}px` }}
@@ -78,7 +86,7 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
 
           {illustration && (
             <div
-              className={fr.cx("fr-col-12", "fr-col-md-6")}
+              className={fr.cx("fr-col-12", illustrationColumn)}
               style={{ display: "flex", justifyContent: "center" }}
             >
               <Image
@@ -123,10 +131,7 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
             className={fr.cx("fr-container")}
             style={{ paddingTop: SEARCH_PADDING, paddingBottom: SEARCH_PADDING }}
           >
-            <ServiceEligibility
-              selfHostingUrl={eligibilitySearch.selfHostingUrl}
-              serviceName={hero.name}
-            />
+            <ServiceEligibility serviceName={hero.name} />
           </div>
         </div>
       )}

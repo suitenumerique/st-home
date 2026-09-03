@@ -18,13 +18,12 @@ const ALL_FEATURES_URL =
   "https://projets.suite.anct.gouv.fr/boards/1785606084149380144?labels=1785609198420100164";
 const DEPLOYMENT_MAP_URL = "/cartographie-deploiement?service_ids=2";
 const HELP_CENTRE_URL = "https://aide.suite.anct.gouv.fr/socle/messages";
-const SELF_HOSTING_URL =
-  "https://docs.numerique.gouv.fr/docs/440cb67a-093c-4901-ac88-702c7b298ff5/";
 
 const messages: ServicePage = {
   slug: "messages",
   navLabel: "Messages",
   deploymentServiceId: 2,
+  repositoryUrl: "https://github.com/suitenumerique/messages",
   trialHeading: { lead: "Intéressé\u202f?", action: "Démarrez\u202f!" },
   seo: {
     title: "Messages, envoyez et recevez vos courriels professionnels",
@@ -58,7 +57,7 @@ const messages: ServicePage = {
       width: 2412,
       height: 1656,
     },
-    eligibilitySearch: { selfHostingUrl: SELF_HOSTING_URL },
+    eligibilitySearch: true,
   },
 
   features: {
