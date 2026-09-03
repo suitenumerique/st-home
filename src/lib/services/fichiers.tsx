@@ -1,6 +1,20 @@
+import {
+  DocPlus,
+  Download,
+  Eye,
+  Mail,
+  Send,
+  Shared,
+  Suggest,
+  User,
+  Zoom,
+} from "@/components/icons/uikit";
 import Link from "next/link";
 import { type ServicePage } from "./types";
 
+const DEMO_URL = "https://tube.numerique.gouv.fr/w/ouMvHX9AdGy4SqFRmV3yPx";
+const ALL_FEATURES_URL =
+  "https://projets.suite.anct.gouv.fr/boards/1785606084149380144?labels=1785609325725615173";
 // The deployment map, filtered on Fichiers.
 const DEPLOYMENT_MAP_URL = "/cartographie-deploiement?service_ids=12";
 // The help centre, filtered on Fichiers.
@@ -52,13 +66,18 @@ const fichiers: ServicePage = {
   features: {
     rows: [
       {
-        title: <>Centralisez vos documents</>,
+        title: <>Vos fichiers au même endroit</>,
         description: (
-          <>
-            Fichiers est un espace en ligne pour stocker, organiser et retrouver tous les fichiers
-            de la collectivité : présentations, documents, images, feuilles de calcul.
-          </>
+          <>Retrouvez vos documents dans votre espace en ligne pour tous vos élus et agents.</>
         ),
+        highlightColumns: 2,
+        highlights: [
+          { icon: Download, label: <>Importer et exporter</> },
+          { icon: Eye, label: <>Prévisualiser</> },
+          { icon: DocPlus, label: <>Créer des documents</> },
+          { icon: Zoom, label: <>Rechercher et filtrer</> },
+        ],
+        link: { text: "Regarder la démo", href: DEMO_URL },
         screenshot: {
           src: "/images/services-illlu/fichiers-features-1.webp",
           alt: "",
@@ -67,14 +86,18 @@ const fichiers: ServicePage = {
         },
       },
       {
-        title: <>Partagez vos fichiers</>,
+        title: <>Au service de votre équipe</>,
         description: (
           <>
-            Définissez précisément les collaborateurs qui peuvent consulter, modifier ou gérer
-            chaque fichier ou dossier. Envoyez des documents via des liens de partage ou la
-            fonctionnalité Transferts.
+            Fini les multiples versions : tout le monde travaille sur le même document, au même
+            endroit, en même temps.
           </>
         ),
+        highlights: [
+          { icon: User, label: <>Rôles différenciés</> },
+          { icon: Shared, label: <>Partage privé ou public</> },
+          { icon: Suggest, label: <>Édition collaborative simultanée</> },
+        ],
         screenshot: {
           src: "/images/services-illlu/fichiers-features-2.webp",
           alt: "",
@@ -83,13 +106,13 @@ const fichiers: ServicePage = {
         },
       },
       {
-        title: <>Collaborez facilement</>,
-        description: (
-          <>
-            Rédigez et modifiez des documents à plusieurs en temps réel. Fini les versions multiples
-            : tout le monde travaille sur le même document, au même endroit.
-          </>
-        ),
+        title: <>Conçu pour un travail fluide</>,
+        description: <>Transférez et stockez vos documents sans heurts lors de vos échanges.</>,
+        highlights: [
+          { icon: Send, label: <>Envoyez et recevez les fichiers lourds avec Transferts</> },
+          { icon: Mail, label: <>Enregistrez directement vos pièces jointes depuis Messages</> },
+        ],
+        link: { text: "Voir toutes les fonctionnalités", href: ALL_FEATURES_URL },
         screenshot: {
           src: "/images/services-illlu/fichiers-features-3.webp",
           alt: "",
