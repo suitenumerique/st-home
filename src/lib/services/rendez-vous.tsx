@@ -160,118 +160,81 @@ const rendezVous: ServicePage = {
     ),
     items: [
       {
-        question: <>Quelles collectivités peuvent accéder à Rendez-vous service public ?</>,
+        question: <>Quelles collectivités peuvent utiliser RDV Service Public ?</>,
         answer: (
           <p>
-            Rendez-vous service public est accessible aux communes de moins de 3 500 habitants et
-            aux intercommunalités de moins de 15 000 habitants. Au-delà de ces seuils, la
-            collectivité peut auto-héberger le service sur sa propre infrastructure.
+            Rendez-vous Service Public est historiquement créé, financé et utilisé par les
+            départements français. Dans le cadre de la Suite territoriale, le service est également
+            proposé aux communes de moins de 3&nbsp;500 habitants et aux intercommunalités de moins
+            de 15&nbsp;000 habitants dans le cadre de leurs missions régaliennes, par l&rsquo;ANCT
+            ou une structure de mutualisation partenaire.
+          </p>
+        ),
+      },
+      {
+        question: <>Quelle est la différence avec RDV Solidarités ou RDV Insertion ?</>,
+        answer: (
+          <p>
+            Ces trois services reposent sur une même solution logicielle libre développée par
+            l&rsquo;État et les départements, mais s&rsquo;adressent à des besoins distincts. RDV
+            Solidarités et RDV Insertion couvrent les rendez-vous des services sociaux
+            départementaux et les parcours d&rsquo;insertion. RDV Service Public est dédié aux
+            démarches administratives des collectivités.
+          </p>
+        ),
+      },
+      {
+        question: <>Pour quelles démarches le service peut-il être utilisé ?</>,
+        answer: (
+          <p>
+            Pour les collectivités outillées par l&rsquo;ANCT ou par une structure de mutualisation
+            partenaire, le service est dédié exclusivement aux démarches liées à la délivrance des
+            cartes nationales d&rsquo;identité et des passeports. Les collectivités ou structures de
+            mutualisation qui autohébergent peuvent en revanche l&rsquo;utiliser pour
+            l&rsquo;ensemble de leurs besoins de prise de rendez-vous.
+          </p>
+        ),
+      },
+      {
+        question: <>Comment les usagers prennent-ils rendez-vous ?</>,
+        answer: (
+          <p>
+            La collectivité diffuse un lien de réservation, sur son site internet ou sur tout autre
+            support de communication. L&rsquo;usager choisit un service et un motif, sélectionne un
+            créneau disponible, puis confirme son rendez-vous après identification : par
+            FranceConnect, qui récupère automatiquement ses coordonnées, ou par la création
+            d&rsquo;un compte validée par courriel.
           </p>
         ),
       },
       {
         question: (
-          <>
-            Pour quels cas d&rsquo;usage est-il possible d&rsquo;utiliser Rendez-vous service public
-            ?
-          </>
+          <>Quand et comment sont envoyées les notifications de rappel d&rsquo;un rendez-vous ?</>
         ),
-        answer: (
-          <>
-            <p>
-              Pour les collectivités éligibles (communes de moins de 3 500 habitants,
-              intercommunalités de moins de 15 000 habitants), le service est dédié exclusivement
-              aux démarches liées aux cartes nationales d&rsquo;identité et aux passeports.
-            </p>
-            <p>
-              Les collectivités qui auto-hébergent Rendez-vous service public peuvent
-              l&rsquo;utiliser, en revanche, pour l&rsquo;ensemble de leurs besoins de prise de
-              rendez-vous, internes comme externes.
-            </p>
-          </>
-        ),
-      },
-      {
-        question: <>Comment les usagers prennent-ils un rendez-vous ?</>,
-        answer: (
-          <>
-            <p>
-              Les usagers peuvent prendre rendez-vous en ligne si cette option est activée et que
-              vous avez partagé votre lien de réservation. Ce lien peut être diffusé sur votre site
-              web ou tout autre support de communication.
-            </p>
-            <p>Une fois sur la plateforme, ils peuvent :</p>
-            <ul>
-              <li>choisir un service et un motif de rendez-vous ;</li>
-              <li>sélectionner un créneau disponible ;</li>
-              <li>s&rsquo;identifier pour confirmer leur rendez-vous.</li>
-            </ul>
-            <p>Deux options d&rsquo;identification sont proposées :</p>
-            <ol>
-              <li>
-                <strong>FranceConnect</strong> : les informations de contact sont récupérées
-                automatiquement — c&rsquo;est le parcours le plus rapide et le plus sécurisé.
-              </li>
-              <li>
-                <strong>Création de compte</strong> : si l&rsquo;usager ne passe pas par
-                FranceConnect, il renseigne son nom, prénom, email et, en option, son numéro de
-                téléphone. Un email de vérification lui est alors envoyé ; en cliquant sur le lien
-                qu&rsquo;il contient, il est redirigé vers son parcours pour finaliser son
-                rendez-vous.
-              </li>
-            </ol>
-          </>
-        ),
-      },
-      {
-        question: <>À quel moment les notifications sont-elles envoyées aux usagers ?</>,
-        answer: (
-          <>
-            <p>Trois types de notifications sont envoyées automatiquement aux usagers :</p>
-            <ul>
-              <li>
-                <strong>Confirmation</strong> : immédiatement après la création du rendez-vous ;
-              </li>
-              <li>
-                <strong>Rappel</strong> : 48h avant le rendez-vous (hors jours fériés et dimanches)
-                ;
-              </li>
-              <li>
-                <strong>Modification ou annulation</strong> : immédiatement en cas de changement
-                apporté au rendez-vous.
-              </li>
-            </ul>
-          </>
-        ),
-      },
-      {
-        question: <>Peut-on ajouter des instructions dans les notifications des usagers ?</>,
         answer: (
           <p>
-            Oui. Vous pouvez ajouter des instructions personnalisées dans les courriels de
-            notification envoyés aux usagers, et les adapter selon le motif (par exemple : documents
-            à apporter, consignes d&rsquo;accès au lieu de rendez-vous).
+            Les notifications sont envoyées automatiquement par SMS et par courriel : confirmation
+            immédiate à la création du rendez-vous, rappel 48&nbsp;heures avant celui-ci (hors
+            dimanches et jours fériés) et information immédiate en cas de modification ou
+            d&rsquo;annulation. Des instructions personnalisées peuvent être ajoutées selon le
+            motif, par exemple la liste des documents à apporter.
           </p>
         ),
       },
       {
-        question: <>Comment intégrer l&rsquo;API de Rendez-vous service public ?</>,
+        question: <>Comment intégrer l&rsquo;API de RDV Service Public ?</>,
         answer: (
-          <>
-            <p>
-              Notre API, puissante et flexible, permet d&rsquo;intégrer facilement la brique de
-              rendez-vous dans vos applications, avec un accès à un flux de données en temps réel
-              pour une expérience enrichie et personnalisée. Elle est enrichie régulièrement selon
-              les besoins de nos utilisateurs, et un développement spécifique à votre cas
-              d&rsquo;usage peut être envisagé dans le cadre d&rsquo;un partenariat entre nos
-              équipes.
-            </p>
-            <p>
-              <Link href={API_DOC_URL} target="_blank" rel="noopener noreferrer">
-                Consulter la documentation technique
-              </Link>
-            </p>
-          </>
+          <p>
+            Une API permet d&rsquo;intégrer la brique de prise de rendez-vous dans les applications
+            de la collectivité et d&rsquo;accéder aux données en temps réel. Elle est enrichie
+            régulièrement selon les besoins des utilisateurs, et un développement adapté à un cas
+            d&rsquo;usage particulier peut être envisagé dans le cadre d&rsquo;un partenariat. La
+            documentation technique est{" "}
+            <Link href={API_DOC_URL} target="_blank" rel="noopener noreferrer">
+              disponible en ligne
+            </Link>
+            .
+          </p>
         ),
       },
     ],

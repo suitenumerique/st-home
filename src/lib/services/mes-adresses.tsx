@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { type ServicePage } from "./types";
 
@@ -11,10 +10,10 @@ const HELP_CENTRE_URL = "https://aide.suite.anct.gouv.fr/socle/mes-adresses";
 const PARTNER_CENTRE_URL =
   "https://docs.numerique.gouv.fr/docs/a85b4b1f-790f-4e55-b097-91eac06d69a6/";
 const PUBLISHING_DOC_URL =
-  "https://doc.adresse.data.gouv.fr/docs/documentation-generale/mettre-a-jour-sa-base-adresse-locale/publier-une-base-adresse-locale";
+  "https://aide.suite.anct.gouv.fr/socle/mes-adresses/publier-une-base-adresse-locale/generalites-sur-la-publication";
 const DEPLOYMENT_BAL_URL = "https://adresse.data.gouv.fr/deploiement-bal";
-const SAMPLE_COMMUNE_URL = "https://adresse.data.gouv.fr/commune/56114";
-const SERVICE_PUBLIC_URL = "https://service-public.gouv.fr";
+const COMMUNE_PAGES_URL = "https://adresse.data.gouv.fr/commune";
+const ANNUAIRE_ADMINISTRATION_URL = "https://lannuaire.service-public.gouv.fr/";
 
 const mesAdresses: ServicePage = {
   slug: "mes-adresses",
@@ -186,29 +185,14 @@ const mesAdresses: ServicePage = {
     ),
     items: [
       {
-        question: (
-          <>Quelles collectivités sont concernées, et qui peut modifier les informations ?</>
-        ),
-        answer: (
-          <p>
-            Les Bases Adresses Locales concernent toutes les communes de France. Les outils sont
-            développés par l&rsquo;Agence nationale de la cohésion des territoires (ANCT) en lien
-            avec l&rsquo;Institut national de l&rsquo;information géographique et forestière (IGN)
-            et avec le soutien de l&rsquo;Association des Maires de France (AMF) et de
-            l&rsquo;Association des Maires Ruraux de France (AMRF).
-          </p>
-        ),
-      },
-      {
         question: <>Quelle est la différence avec la Base Adresse Nationale ?</>,
         answer: (
           <p>
             La Base Adresse Nationale (BAN) répertorie l&rsquo;ensemble des adresses du territoire
-            français : c&rsquo;est la base officielle de référence des adresses en France, et elle
-            appartient au Service Public de la Donnée de Référence. Une Base Adresse Locale est un
-            fichier géré par une collectivité (habituellement une commune ou un EPCI) et contenant
-            toutes ses adresses géolocalisées. Une fois publiée via Mes Adresses ou un autre moyen
-            de publication, elle alimente la Base Adresse Nationale.
+            français, c&rsquo;est la base officielle de référence des adresses en France. Une Base
+            Adresse Locale (BAL) est un fichier géré par une collectivité et contenant toutes ses
+            adresses géolocalisées. Une fois publiée <em>via</em> Mes Adresses ou un autre moyen de
+            publication, elle alimente la Base Adresse Nationale.
           </p>
         ),
       },
@@ -216,87 +200,80 @@ const mesAdresses: ServicePage = {
         question: <>Pourquoi renseigner les données d&rsquo;adressage de ma commune ?</>,
         answer: (
           <p>
-            Maintenir à jour les données d&rsquo;adressage de sa commune permet d&rsquo;améliorer la
-            qualité du service rendu aux usagers, en permettant par exemple une arrivée plus rapide
-            des services de secours, la bonne réception des colis ou le bon fonctionnement des
-            services de GPS. Une fois la BAL de sa commune publiée, le principe du
-            «&nbsp;Dites-le-nous une fois&nbsp;» s&rsquo;applique : les communes n&rsquo;ont plus à
-            transmettre leurs adresses à d&rsquo;autres acteurs.
+            Maintenir à jour les données d&rsquo;adressage de sa commune permet par exemple une
+            arrivée plus rapide des services de secours, la bonne réception des colis ou le bon
+            fonctionnement des services de GPS. Une fois leur BAL publiée, les communes n&rsquo;ont
+            plus à transmettre leurs adresses à d&rsquo;autres acteurs, selon le principe du
+            «&nbsp;Dites-le-nous une fois&nbsp;».
           </p>
         ),
       },
       {
         question: (
           <>
-            Quelles sont les différentes méthodes pour déposer une Base Adresse Locale sur la base
-            nationale ?
+            Quelles collectivités sont concernées et qui peut renseigner les données
+            d&rsquo;adressage ?
           </>
         ),
         answer: (
-          <>
-            <Image
-              src="/images/services-illlu/adresses-bal-schema.webp"
-              alt="Les trois voies de publication d’une Base Adresse Locale vers la Base Adresse Nationale : Mes Adresses, un outil partenaire, ou un dépôt direct"
-              width={1200}
-              height={1467}
-              sizes="(min-width: 56rem) 896px, 100vw"
-              style={{ width: "100%", height: "auto" }}
-            />
-            <p>
-              <Link href={PUBLISHING_DOC_URL} target="_blank" rel="noopener noreferrer">
-                Publier une Base Adresse Locale
-              </Link>{" "}
-              détaille chacune de ces méthodes.
-            </p>
-          </>
+          <p>
+            Les Bases Adresses Locales concernent toutes les communes de France. Depuis la loi 3DS,
+            la dénomination des voies et des lieux-dits ainsi que leur numérotation relèvent de la
+            compétence de la commune : celle-ci renseigne elle-même ses adresses, ou confie cette
+            mission à un organisme tiers (EPCI, agence départementale ou prestataire) agissant pour
+            son compte.
+          </p>
         ),
       },
       {
-        question: <>Comment savoir si ma commune a déjà créé sa Base ?</>,
+        question: <>Comment savoir si ma commune a déjà créé sa Base Adresse Locale ?</>,
         answer: (
           <p>
-            Base Adresse Locale met à disposition{" "}
+            Une{" "}
             <Link href={DEPLOYMENT_BAL_URL} target="_blank" rel="noopener noreferrer">
-              une cartographie
+              cartographie nationale
             </Link>{" "}
-            permettant de visualiser précisément l&rsquo;état du déploiement des Bases à
-            l&rsquo;échelle nationale, et indique à tous les utilisateurs l&rsquo;état
-            d&rsquo;avancement de la Base de leur commune. Chaque commune possède une page donnant
-            l&rsquo;état de sa Base Adresse Locale, par exemple{" "}
-            <Link href={SAMPLE_COMMUNE_URL} target="_blank" rel="noopener noreferrer">
-              celle de Kerfourn
+            permet de visualiser précisément l&rsquo;état du déploiement des Bases Adresses Locales
+            sur l&rsquo;ensemble du territoire. Chaque commune y dispose d&rsquo;une{" "}
+            <Link href={COMMUNE_PAGES_URL} target="_blank" rel="noopener noreferrer">
+              page dédiée
+            </Link>{" "}
+            indiquant l&rsquo;état d&rsquo;avancement de sa propre base.
+          </p>
+        ),
+      },
+      {
+        question: <>Comment publier la Base Adresse Locale de ma commune ?</>,
+        answer: (
+          <p>
+            Les communes peuvent saisir et gérer directement leurs données d&rsquo;adressage depuis
+            l&rsquo;outil{" "}
+            <Link href={MES_ADRESSES_URL} target="_blank" rel="noopener noreferrer">
+              Mes Adresses
+            </Link>
+            . Elles peuvent aussi s&rsquo;appuyer sur un organisme tiers qui dépose les données pour
+            leur compte. Quelle que soit la méthode, les données publiées alimentent la Base Adresse
+            Nationale sous deux heures. Le détail de chaque cas est publié dans{" "}
+            <Link href={PUBLISHING_DOC_URL} target="_blank" rel="noopener noreferrer">
+              le centre d&rsquo;aide
             </Link>
             .
           </p>
         ),
       },
       {
-        question: <>Comment se connecter avec ProConnect ?</>,
+        question: <>Quelle adresse email utiliser pour se connecter avec ProConnect ?</>,
         answer: (
-          <>
-            <p>
-              La connexion à ProConnect est nécessaire lorsque vous souhaitez publier votre Base
-              Adresse Locale. ProConnect est le service de l&rsquo;État qui vous permet de vous
-              connecter avec une seule identité professionnelle et un mot de passe unique à
-              plusieurs services publics numériques.
-            </p>
-            <ol>
-              <li>
-                Vous êtes redirigé vers la page de connexion ProConnect : saisissez votre adresse
-                email professionnelle. Vous devez utiliser l&rsquo;adresse de messagerie renseignée
-                sur la page mairie de l&rsquo;Annuaire de{" "}
-                <Link href={SERVICE_PUBLIC_URL} target="_blank" rel="noopener noreferrer">
-                  service-public.gouv.fr
-                </Link>{" "}
-                (par exemple : contact@mairieexemple.fr), ou une adresse comportant le même nom de
-                domaine (prenom.nom@mairieexemple.fr).
-              </li>
-              <li>
-                Si vous avez déjà un compte, connectez-vous. Sinon, laissez-vous guider pour le
-                créer : cela prend quelques minutes.
-              </li>
-            </ol>
-          </>
+          <p>
+            ProConnect est le service de l&rsquo;État permettant d&rsquo;accéder à plusieurs
+            services publics numériques avec une seule identité professionnelle. La connexion à Mes
+            Adresses est nécessaire pour publier une Base Adresse Locale. L&rsquo;adresse utilisée
+            doit reposer sur le nom de domaine institutionnel de la commune, publié sur{" "}
+            <Link href={ANNUAIRE_ADMINISTRATION_URL} target="_blank" rel="noopener noreferrer">
+              l&rsquo;Annuaire de l&rsquo;administration
+            </Link>
+            .
+          </p>
         ),
       },
     ],
