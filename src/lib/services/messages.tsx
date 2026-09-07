@@ -18,6 +18,8 @@ const ALL_FEATURES_URL =
   "https://projets.suite.anct.gouv.fr/boards/1785606084149380144?labels=1785609198420100164";
 const DEPLOYMENT_MAP_URL = "/cartographie-deploiement?service_ids=2";
 const HELP_CENTRE_URL = "https://aide.suite.anct.gouv.fr/socle/messages";
+const REFERENTIEL_URL = "/conformite/referentiel";
+const CLIENTS_LOURDS_POST_URL = "/actualites/2026-06-10-messages-clients-lourds";
 
 const messages: ServicePage = {
   slug: "messages",
@@ -204,53 +206,51 @@ const messages: ServicePage = {
     ),
     items: [
       {
-        question: <>Quelle est la capacité de stockage de ma boîte aux lettres ?</>,
-        answer: (
-          <>
-            <p>
-              La capacité de stockage des boîtes aux lettres fournies par la Suite territoriale est
-              fixée par chaque structure de mutualisation partenaire.
-            </p>
-            <p>
-              Lorsque l&rsquo;ANCT outille en direct les collectivités qui ne bénéficient pas de la
-              présence d&rsquo;une structure de mutualisation sur leur département, la capacité de
-              stockage de Messages est limitée à 10 Go. Elle est corrélée aux besoins des agents et
-              élus pour un usage strictement professionnel.
-            </p>
-          </>
+        question: (
+          <>Pourquoi utiliser une adresse de messagerie professionnelle plutôt que personnelle ?</>
         ),
-      },
-      {
-        question: <>Puis-je utiliser la Messagerie avec mon nom de domaine actuel ?</>,
         answer: (
           <p>
-            Oui, l&rsquo;utilisation de la Messagerie n&rsquo;est pas dépendante de la fourniture
-            d&rsquo;un nom de domaine institutionnel par l&rsquo;ANCT et est possible avec tout nom
-            de domaine conforme.
+            Pour des raisons de cybersécurité : une adresse professionnelle adossée au nom de
+            domaine de la commune identifie sans ambiguïté une communication officielle, là où une
+            adresse personnelle peut être confondue avec un envoi frauduleux. Elle sépare par
+            ailleurs les usages personnels et professionnels et assure la continuité du service,
+            notamment en cas de départ d&rsquo;un agent.
           </p>
         ),
       },
       {
-        question: <>Puis-je synchroniser ce compte mail avec un autre client ?</>,
+        question: <>Puis-je utiliser Messages avec mon nom de domaine actuel ?</>,
         answer: (
           <p>
-            Non, comme tous les services de la Suite territoriale, la Messagerie est accessible
-            uniquement <em>via</em> ProConnect pour des raisons de sécurité et afin de dissocier les
-            usages personnels de professionnels.
+            Oui, l&rsquo;utilisation de Messages est compatible avec tout nom de domaine conforme au{" "}
+            <Link href={REFERENTIEL_URL}>Référentiel de la présence numérique des territoires</Link>
+            , c&rsquo;est-à-dire reposant sur l&rsquo;extension souveraine .fr ou une extension
+            régionale (ex. : .bzh) et intégrant le libellé de la collectivité.
           </p>
         ),
       },
       {
         question: (
-          <>
-            Est-il possible de créer une adresse de messagerie accessible par plusieurs utilisateurs
-            ?
-          </>
+          <>Peut-on créer plusieurs adresses de messagerie et des boîtes aux lettres partagées ?</>
         ),
         answer: (
           <p>
-            Oui, si les adresses de messagerie sont strictement nominatives, il est possible de
-            créer des boîtes de messagerie partagées (ex : bibliothèque@commune.fr).
+            Messages permet de créer une boîte aux lettres nominative professionnelle par agent et
+            par élu de la collectivité, ainsi qu&rsquo;un nombre illimité de boîtes aux lettres
+            partagées (ex. : contact@mairie.fr ou bibliotheque@mairie.fr).
+          </p>
+        ),
+      },
+      {
+        question: <>Quelle est la capacité de stockage des boîtes aux lettres sur Messages ?</>,
+        answer: (
+          <p>
+            La capacité de stockage des boîtes aux lettres fournies par la Suite territoriale est
+            fixée par chaque structure de mutualisation partenaire. Lorsque l&rsquo;ANCT outille en
+            direct les collectivités, la capacité de stockage de Messages est limitée à 20&nbsp;Go
+            par collectivité. Elle est corrélée aux besoins des agents et élus pour un usage
+            strictement professionnel.
           </p>
         ),
       },
@@ -261,21 +261,25 @@ const messages: ServicePage = {
         answer: (
           <p>
             Oui, Messages permet un import simple de toutes les données (historique, dossiers,
-            étiquettes...) des messageries traditionnellement utilisées par les collectivités. Cette
-            migration est réalisable en autonomie, sans compétence technique.
+            étiquettes&hellip;) des messageries traditionnellement utilisées par les collectivités.
+            Cette migration est réalisable en autonomie, sans compétence technique.
           </p>
         ),
       },
       {
-        question: <>La durabilité du service est-elle assurée ?</>,
+        question: (
+          <>
+            Le service Messages couvre-t-il tous mes usages actuels (calendrier, mobile, application
+            bureau) ?
+          </>
+        ),
         answer: (
           <p>
-            Messages est opéré par l&rsquo;ANCT à partir de briques open-source et constitue un
-            élément central de la feuille de route numérique de l&rsquo;Incubateur des territoires
-            pour la souveraineté des collectivités. Au-delà de cette dimension stratégique, sa
-            résilience et sa pérennité tiennent à sa coopération avec les opérateurs publics de
-            services numériques et partenaires, pour déployer le service que ce soit sur
-            l&rsquo;instance de l&rsquo;ANCT ou sur des instances dédiées.
+            Oui, Messages dispose d&rsquo;un calendrier partagé, d&rsquo;un annuaire de contacts et
+            d&rsquo;une application mobile. Messages ne nécessite{" "}
+            <Link href={CLIENTS_LOURDS_POST_URL}>aucune installation sur un poste de travail</Link>{" "}
+            et est disponible <em>via</em> n&rsquo;importe quel navigateur web et une
+            authentification ProConnect sécurisée.
           </p>
         ),
       },

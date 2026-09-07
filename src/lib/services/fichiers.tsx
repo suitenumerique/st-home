@@ -19,6 +19,8 @@ const ALL_FEATURES_URL =
 const DEPLOYMENT_MAP_URL = "/cartographie-deploiement?service_ids=12";
 // The help centre, filtered on Fichiers.
 const HELP_CENTRE_URL = "https://aide.suite.anct.gouv.fr/socle/fichiers";
+// The large-file transfer service, named in the FAQ.
+const TRANSFERTS_URL = "https://transferts.suite.anct.gouv.fr/";
 // The host of the instance the ANCT operates, named in the FAQ.
 const HOSTING_PROVIDER_URL = "https://www.scaleway.com/fr/";
 
@@ -156,88 +158,77 @@ const fichiers: ServicePage = {
       {
         question: <>Quelle est la capacité de stockage de mon espace en ligne sur Fichiers ?</>,
         answer: (
-          <>
-            <p>
-              Si votre collectivité est outillée par une structure de mutualisation partenaire, la
-              capacité de stockage par collectivité et par utilisateur est fixée par cette
-              structure.
-            </p>
-            <p>
-              Pour les collectivités outillées directement par l&rsquo;ANCT, la capacité de stockage
-              maximum est fixée à 10 Go.
-            </p>
-          </>
+          <p>
+            La capacité de stockage par collectivité et par utilisateur est fixée par chaque
+            structure de mutualisation partenaire en fonction de l&rsquo;offre souscrite par la
+            collectivité. Concernant les collectivités outillées en direct par l&rsquo;ANCT, le
+            stockage sur Fichiers est limité à 20&nbsp;Go par collectivité.
+          </p>
+        ),
+      },
+      {
+        question: (
+          <>Puis-je partager mes documents avec une personne extérieure à ma collectivité ?</>
+        ),
+        answer: (
+          <p>
+            Oui, quand le document est configuré en partage public. Un lien de partage peut alors
+            être généré et la personne est également invitée directement par courriel, avec un accès
+            en lecture ou en modification. Tout partage peut être restreint, modifié ou révoqué à
+            tout moment par le propriétaire du document.
+          </p>
+        ),
+      },
+      {
+        question: <>Puis-je envoyer des fichiers lourds ou volumineux avec Fichiers ?</>,
+        answer: (
+          <p>
+            Oui, Fichiers dispose d&rsquo;une fonctionnalité dédiée à l&rsquo;envoi de fichiers trop
+            volumineux pour être envoyés par courriel par exemple :{" "}
+            <Link href={TRANSFERTS_URL} target="_blank" rel="noopener noreferrer">
+              Transferts
+            </Link>
+            . Il est également possible de partager un document volumineux en le stockant sur
+            Fichiers et en générant un lien de partage envoyé manuellement.
+          </p>
+        ),
+      },
+      {
+        question: <>Puis-je stocker les pièces jointes de mes courriels sur Fichiers ?</>,
+        answer: (
+          <p>
+            Oui. Fichiers est interopérable avec Messages, la messagerie de la Suite territoriale :
+            les pièces jointes reçues peuvent être enregistrées directement dans l&rsquo;espace en
+            ligne de la collectivité, sans téléchargement préalable. Il est également possible
+            d&rsquo;envoyer des documents stockés sur Fichiers directement depuis Messages afin
+            d&rsquo;éviter la démultiplication de pièces jointes.
+          </p>
         ),
       },
       {
         question: <>Puis-je synchroniser Fichiers sur mon ordinateur ?</>,
         answer: (
           <p>
-            Fichiers fonctionne exclusivement via le navigateur web, sans synchronisation locale. Ce
-            choix nous permet de vous garantir une expérience uniforme quel que soit votre système
-            d&rsquo;exploitation (Windows, macOS, Linux), et de renforcer la sécurité de vos données
-            grâce à des contrôles d&rsquo;accès centralisés. Vos fichiers restent ainsi accessibles
-            depuis n&rsquo;importe quel navigateur, sur n&rsquo;importe quel appareil, sans
-            installation ni configuration.
+            Non. Afin de séparer les usages personnels des usages professionnels, Fichiers
+            fonctionne exclusivement <em>via</em> le navigateur web, sans synchronisation locale. Ce
+            choix garantit une expérience uniforme et renforce la sécurité des données grâce à des
+            contrôles d&rsquo;accès centralisés : les documents restent accessibles depuis
+            n&rsquo;importe quel appareil, sans installation ni configuration.
           </p>
         ),
       },
       {
-        question: (
-          <>Comment partager un document avec une personne extérieure à ma collectivité ?</>
-        ),
-        answer: (
-          <>
-            <p>
-              Depuis Fichiers, vous pouvez générer un lien de partage pour tout document ou dossier,
-              avec un accès en lecture ou en modification selon vos besoins.
-            </p>
-            <p>
-              Le partage avec une personne extérieure à votre collectivité est possible uniquement
-              si le document est configuré en partage public. Dans ce cas, vous pouvez copier son
-              lien ou inviter directement la personne par email. Un document privé reste, lui,
-              réservé aux membres de votre collectivité. Vous gardez la main sur ce partage à tout
-              moment : vous pouvez le restreindre, le modifier ou le révoquer dès que nécessaire.
-            </p>
-          </>
-        ),
-      },
-      {
-        question: <>Puis-je restreindre l&rsquo;accès à certains documents selon les rôles ?</>,
+        question: <>Où sont hébergés mes documents et qui peut y avoir accès ?</>,
         answer: (
           <p>
-            Oui. Fichiers permet d&rsquo;attribuer des rôles différenciés à chaque utilisateur
-            (lecture, modification, gestion), afin que seules les personnes autorisées puissent
-            consulter ou modifier un document. Vous pouvez ainsi partager un document en privé, au
-            sein d&rsquo;un groupe restreint, ou le rendre accessible publiquement selon vos
-            besoins.
-          </p>
-        ),
-      },
-      {
-        question: <>Où mes documents et mes données sont-ils hébergés ?</>,
-        answer: (
-          <p>
-            Vos documents et données sont hébergés en France, sur une infrastructure souveraine et
-            sécurisée, sous juridiction française. L&rsquo;hébergeur actuel du service mis à
-            disposition par l&rsquo;ANCT est{" "}
+            Les documents sont hébergés sous juridiction française sur une infrastructure souveraine
+            et sécurisée. L&rsquo;hébergeur actuel du service mis à disposition par l&rsquo;ANCT est{" "}
             <Link href={HOSTING_PROVIDER_URL} target="_blank" rel="noopener noreferrer">
               Scaleway
             </Link>
-            .
-          </p>
-        ),
-      },
-      {
-        question: <>La durabilité du service est-elle assurée ?</>,
-        answer: (
-          <p>
-            Fichiers est opéré par l&rsquo;ANCT et la DINUM à partir de briques open-source et
-            constitue un élément central de la feuille de route numérique de l&rsquo;Incubateur des
-            territoires (ANCT) pour la souveraineté des collectivités. Au-delà de cette dimension
-            stratégique, sa résilience et sa pérennité tiennent à sa coopération avec les opérateurs
-            publics de services numériques et ses partenaires, pour déployer le service que ce soit
-            sur l&rsquo;instance de l&rsquo;ANCT ou sur des instances dédiées.
+            . L&rsquo;accès aux documents stockés sur Fichiers est réservé aux personnes autorisées
+            par la collectivité, après identification par ProConnect, et fait l&rsquo;objet de
+            journaux d&rsquo;audit détaillés, conformément au RGPD.
           </p>
         ),
       },
