@@ -1,0 +1,206 @@
+/*
+ * Feature rows alternate sides. The DOM order is always text then screenshot so
+ * that rows stack text-first on mobile; from the DSFR `md` breakpoint (48em) up,
+ * odd rows are flipped horizontally. Reversing the flex direction only reorders
+ * items within a line, so the mobile stacking order is untouched.
+ */
+@media (min-width: 48em) {
+  .featureRowReversed {
+    flex-direction: row-reverse;
+  }
+}
+
+/*
+ * The text and screenshot columns add up to 11 of the 12 grid columns, so the
+ * spare column becomes breathing room between them rather than trailing space.
+ * Works in both directions, including the reversed rows above.
+ */
+.featureRow {
+  justify-content: space-between;
+}
+
+/*
+ * FAQ answers are written as plain paragraphs, so the last one's bottom margin
+ * would stack on top of the accordion's own padding.
+ */
+.faq :global(.fr-collapse) > p:last-child {
+  margin-bottom: 0;
+}
+
+/*
+ * All the verbatims share one grid cell, so the block keeps the height of the
+ * longest one and the controls underneath stay put from one quote to the next.
+ * A fixed min-height would have to be guessed, and would be wrong at some
+ * viewport width. Hidden quotes use `visibility`, which keeps their size while
+ * taking them out of the accessibility tree.
+ */
+.testimonialStack {
+  display: grid;
+}
+
+.testimonialStack > * {
+  grid-area: 1 / 1;
+}
+
+/*
+ * Cards clickable as a whole — the ProConnect ones, the numbered steps: an
+ * empty span inside the title link is stretched over the card. A pseudo-element
+ * would collide with the arrow of `fr-link--icon-right`, which DSFR renders
+ * with `::after`.
+ */
+.linkCard {
+  position: relative;
+}
+
+.linkCardOverlay {
+  position: absolute;
+  inset: 0;
+}
+
+/* Links inside the description stay reachable above that overlay. */
+.linkCard p :global(a) {
+  position: relative;
+  z-index: 1;
+}
+
+/*
+ * Hero eligibility search: the DSFR search bar reworked into the softer, card
+ * like field of the service mockups — one rounded white box, a light grey
+ * submit square, no blue. Scoped to this wrapper so the search bars elsewhere
+ * (homepage hero, cartographie) keep the standard DSFR look.
+ *
+ * The button is absolutely positioned at the right edge by react-dsfr and
+ * overlays the input, which spans the full width. Hence the radius lives on the
+ * input (its right corners end up hidden behind the button) rather than on the
+ * bar with `overflow: hidden`, which would clip the input's focus outline.
+ */
+/*
+ * The field is wider than the wording it introduces, as in the mockup, and both
+ * are centred under the hero screenshot.
+ */
+.heroSearch {
+  max-width: 44rem;
+  margin: 0 auto;
+}
+
+.heroSearchText {
+  max-width: 44rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* The sentence under the title reads on two lines, narrower than the field. */
+.heroSearchLead {
+  max-width: 510px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.heroSearch :global(.fr-search-bar) {
+  height: 3rem;
+  background-color: #fff;
+  border: 1px solid var(--border-default-grey);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 6%);
+}
+
+.heroSearch :global(.fr-search-bar .fr-input) {
+  height: 3rem;
+  max-height: 3rem;
+  padding-left: 1rem;
+  /* Keeps the typed text and the placeholder clear of the submit square. */
+  padding-right: 4rem;
+  background-color: transparent;
+  border-radius: 8px;
+  /* Drops the blue France inset underline of the DSFR input. */
+  box-shadow: none;
+}
+
+.heroSearch :global(.fr-search-bar .fr-input::placeholder) {
+  font-style: normal;
+  color: var(--text-mention-grey);
+}
+
+.heroSearch :global(.fr-search-bar .fr-btn) {
+  top: 0;
+  bottom: 0;
+  width: 3rem;
+  max-width: 3rem;
+  height: auto;
+  max-height: none;
+  padding: 0;
+  /* `.fr-btn` is a flex row without justification, so the icon would sit left. */
+  justify-content: center;
+  /* The label stays in the DOM as the accessible name; only the icon shows. */
+  font-size: 0;
+  background-color: var(--background-contrast-grey);
+  color: var(--text-mention-grey);
+  /* 7px, not 8px: the inner edge of the 1px border of an 8px radius box. */
+  border-radius: 0 7px 7px 0;
+}
+
+.heroSearch :global(.fr-search-bar .fr-btn:hover) {
+  background-color: var(--background-contrast-grey-hover);
+}
+
+.heroSearch :global(.fr-search-bar .fr-btn:active) {
+  background-color: var(--background-contrast-grey-active);
+}
+
+/*
+ * Swaps the DSFR magnifier for the upward arrow of the mockup. Inlined as a
+ * data URI rather than an `fr-icon-*` class because the button markup is owned
+ * by react-dsfr; the path is DSFR's own `icons/system/arrow-up-line.svg`.
+ */
+.heroSearch :global(.fr-search-bar .fr-btn::before) {
+  --data-uri-svg: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M13 7.828V20h-2V7.828l-5.364 5.364-1.414-1.414L12 4l7.778 7.778-1.414 1.414L13 7.828Z"/></svg>');
+
+  margin-right: 0;
+  -webkit-mask-image: var(--data-uri-svg);
+  mask-image: var(--data-uri-svg);
+}
+
+/*
+ * Once a territory is picked the field turns read-only and its button resets
+ * the search, so it becomes the emphasised action of the block rather than a
+ * discreet submit.
+ */
+.heroSearchSelected :global(.fr-search-bar .fr-btn) {
+  background-color: var(--background-action-high-blue-france);
+}
+
+.heroSearchSelected :global(.fr-search-bar .fr-btn:hover) {
+  background-color: var(--background-action-high-blue-france-hover);
+}
+
+.heroSearchSelected :global(.fr-search-bar .fr-btn:active) {
+  background-color: var(--background-action-high-blue-france-active);
+}
+
+.heroSearchSelected :global(.fr-search-bar .fr-btn::before) {
+  /* DSFR's own `icons/system/arrow-go-back-line.svg`, inlined as the search
+     button's icon is drawn by a mask rather than by an `fr-icon-*` class. */
+  --data-uri-svg: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="m5.828 7 2.536 2.536L6.95 10.95 2 6l4.95-4.95 1.414 1.414L5.828 5H13a8 8 0 1 1 0 16H4v-2h9a6 6 0 1 0 0-12H5.828Z"/></svg>');
+
+  background-color: #fff;
+}
+
+.heroSearchSelected :global(.fr-search-bar .fr-input) {
+  /* Read-only, so it should not read as an editable field. */
+  cursor: default;
+}
+
+/*
+ * The highlights of a feature row, one per line or on two columns from the DSFR
+ * `sm` breakpoint up, spaced by a single gap rather than by grid gutters.
+ */
+.featureHighlights {
+  display: grid;
+  gap: 16px;
+}
+
+@media (min-width: 36em) {
+  .featureHighlightsTwoColumns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -21,6 +21,8 @@ export interface Commune {
 
 interface CommuneSearchProps {
   onSelect?: (commune: Commune) => void;
+  /** The search bar's own button, which submits nothing by default. */
+  onButtonClick?: () => void;
   placeholder?: string;
   type?: "commune" | "epci" | "departement" | "region" | "all";
   smallButton?: boolean;
@@ -230,6 +232,7 @@ function CommuneSearchInput(
 
 export default function CommuneSearch({
   onSelect,
+  onButtonClick,
   placeholder,
   type = "all",
   style = {},
@@ -243,6 +246,8 @@ export default function CommuneSearch({
         style={{ width: "100%" }}
         label="Rechercher une collectivité"
         big={!smallButton}
+        allowEmptySearch
+        onButtonClick={onButtonClick}
         renderInput={({ id }) => (
           <CommuneSearchInput
             id={id}
