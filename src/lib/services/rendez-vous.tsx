@@ -43,8 +43,8 @@ const rendezVous: ServicePage = {
     tagline: <>Facilitez la gestion et la prise de rendez-vous</>,
     description: (
       <>
-        Gagnez du temps et facilitez la prise de rendez-vous pour toutes les démarches liées aux
-        cartes nationales d&rsquo;identité et aux passeports.
+        Gagnez du temps et facilitez la prise de rendez-vous pour toutes vos démarches liées à vos
+        compétences régaliennes : passeport, état civil…
       </>
     ),
     eligibilitySearch: true,
@@ -65,11 +65,11 @@ const rendezVous: ServicePage = {
   features: {
     rows: [
       {
-        title: <>Pensé pour les démarches CNI</>,
+        title: <>Pensé pour vos démarches</>,
         description: (
           <>
-            Permettez à vos usagers de planifier des rendez-vous CNI en autonomie via un lien dédié
-            à votre administration.
+            Permettez à vos usagers de planifier des rendez-vous en toute autonomie via un lien
+            dédié à votre administration.
           </>
         ),
         highlights: [
