@@ -579,6 +579,24 @@ path.leaflet-interactive:focus {
   margin-bottom: 0;
 }
 
+.map-tooltip-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: #1e293b;
+  margin: 0.25rem 0 0;
+}
+
+.map-tooltip-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
 .map-gradient {
   position: absolute;
   bottom: 20px;

@@ -35,6 +35,7 @@ export interface InteractiveMapProps {
   neighbourClickOnly?: boolean;
   additionalInteractiveLayerIds?: string[];
   hideBaseLayer?: boolean;
+  renderTooltip?: (properties: FeatureProperties) => React.ReactNode;
   customLayers?: Array<{
     id: string;
     source?: {
@@ -81,6 +82,7 @@ export const InteractiveMap = ({
   neighbourClickOnly = false,
   additionalInteractiveLayerIds = [],
   hideBaseLayer = false,
+  renderTooltip,
   customLayers,
 }: InteractiveMapProps) => {
   const { mapState, selectLevel, goBack, handleQuickNav, nextLevel } = useMapContext();
@@ -644,6 +646,7 @@ export const InteractiveMap = ({
           >
             <div className="map-tooltip-content">
               <p className="map-tooltip-title">{popupInfo.properties.NAME}</p>
+              {renderTooltip?.(popupInfo.properties)}
               {((mapState.currentLevel === "department" && mapState.departmentView === "city") ||
                 mapState.currentLevel === "epci") && (
                 <p style={{ fontSize: "0.8rem", color: "#64748B", marginBottom: "0" }}>

@@ -333,6 +333,27 @@ const ConformiteMap = () => {
     getColor,
   ]);
 
+  const renderTooltip = useCallback(
+    (properties: FeatureProperties) => {
+      const code =
+        properties.INSEE_GEO ||
+        properties.EPCI_SIREN ||
+        (properties as unknown as { SIRET: string }).SIRET;
+      const areaData = code ? mapData[code] : undefined;
+      const details = areaData?.details as Record<string, number> | undefined;
+      if (!details || !areaData?.value) return null;
+
+      const percentage = Math.round((details["2"] / areaData.value) * 100);
+      return (
+        <p className="map-tooltip-stat">
+          <span className="map-tooltip-dot" style={{ backgroundColor: areaData.color }} />
+          Conformes : {percentage}%
+        </p>
+      );
+    },
+    [mapData],
+  );
+
   return (
     <MapLayout
       sidebar={
@@ -357,6 +378,7 @@ const ConformiteMap = () => {
           showGradientLegend={true}
           displayCircleValue={false}
           hoverFill={false}
+          renderTooltip={renderTooltip}
         />
       }
     />
