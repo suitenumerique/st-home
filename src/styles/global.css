@@ -579,6 +579,39 @@ path.leaflet-interactive:focus {
   margin-bottom: 0;
 }
 
+/* Same look as the hovered circle value it replaces (see feature-circles in InteractiveMap) */
+.map-circle-tooltip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  min-width: 56px;
+  max-width: 260px;
+  min-height: 56px;
+  padding: 0.35rem 0.9rem;
+  background: #ececfe;
+  border: 6px solid rgba(0, 0, 145, 0.4);
+  border-radius: 28px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  color: #000091;
+  font-family: Marianne, arial, sans-serif;
+  text-align: center;
+}
+
+.map-circle-tooltip-value {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.25rem;
+  margin: 0;
+}
+
+.map-circle-tooltip-labels {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  margin: 0.25rem 0 0;
+}
+
 .map-tooltip-stat {
   display: flex;
   align-items: center;
