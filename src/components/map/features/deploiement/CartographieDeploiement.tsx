@@ -238,14 +238,17 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
             }
             return true;
           };
-          const communesSirensInEpci = new Set<string>();
+          const communeIdsBySiren = new Map<string, string>();
           (activeTypes.includes("commune") ? byType("commune") : [])
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .filter((stat: StatRecord) => (stat as any).epci_siren === epciSiren)
             .filter(isInDisplayedArea)
             .filter(statMatchesServices)
             // Deduplicate by SIREN: a commune may have multiple SIRETs (mairie, CCAS…)
-            .forEach((stat: StatRecord) => communesSirensInEpci.add(stat.id.slice(0, 9)));
+            .forEach((stat: StatRecord) => {
+              const siren = stat.id.slice(0, 9);
+              if (!communeIdsBySiren.has(siren)) communeIdsBySiren.set(siren, stat.id);
+            });
           // The EPCI structure itself is kept whatever its own department, since it is
           // displayed in every department it covers.
           const epciInEpci = (activeTypes.includes("epci") ? byType("epci") : [])
@@ -253,9 +256,13 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
               (stat: StatRecord) => stat.id === epciSiren || stat.id.slice(0, 9) === epciSiren,
             )
             .filter(statMatchesServices);
-          const total = communesSirensInEpci.size + epciInEpci.length;
+          const total = communeIdsBySiren.size + epciInEpci.length;
 
-          return { n_cities: total, score: total > 0 ? 1 : 0 };
+          return {
+            n_cities: total,
+            score: total > 0 ? 1 : 0,
+            ids: [...communeIdsBySiren.values(), ...epciInEpci.map((stat) => stat.id)],
+          };
         }
 
         if (level === "city") {
@@ -315,6 +322,7 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
             n_cities: filteredByType.length,
             n_total_cities: nTotalCities,
             score,
+            ids: filteredByType.map((stat) => stat.id),
           };
         }
       } catch {
@@ -558,6 +566,32 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
     }
   }, [stats, mapState.selectedAreas.city, setMapState, mapState]);
 
+  // Organization names shown when hovering a circle, loaded per region from the Region level down
+  const [namesByRegion, setNamesByRegion] = useState<Record<string, Record<string, string>>>({});
+  const displayedRegionCode = useMemo(() => {
+    if (mapState.currentLevel === "country") return null;
+    const area = (
+      mapState.currentLevel === "region"
+        ? mapState.selectedAreas.region
+        : mapState.selectedAreas.department
+    ) as SelectedArea | null;
+    const code = mapState.currentLevel === "region" ? area?.insee_geo : area?.insee_reg;
+    return code?.replace("r", "") ?? null;
+  }, [mapState.currentLevel, mapState.selectedAreas]);
+
+  useEffect(() => {
+    if (!displayedRegionCode || namesByRegion[displayedRegionCode]) return;
+    fetch(`/api/deployment/stats?scope=list-names&reg=${displayedRegionCode}`)
+      .then((r) => r.json())
+      .then((result: { data?: { id: string; name: string }[] }) => {
+        const names = Object.fromEntries((result.data || []).map((org) => [org.id, org.name]));
+        setNamesByRegion((prev) => ({ ...prev, [displayedRegionCode]: names }));
+      })
+      .catch((error) => console.error("Error loading organization names:", error));
+  }, [displayedRegionCode, namesByRegion]);
+
+  const displayedNames = displayedRegionCode ? namesByRegion[displayedRegionCode] : undefined;
+
   const geoJSON = useDisplayedGeoJSON(mapState);
 
   const isCityView =
@@ -571,7 +605,10 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
   const mapData = useMemo(() => {
     if (!geoJSON || stats.length === 0) return {};
 
-    const data: Record<string, { value?: number; score?: number; color: string }> = {};
+    const data: Record<
+      string,
+      { value?: number; score?: number; color: string; labels?: string[] }
+    > = {};
     const features = geoJSON.features;
 
     const scoreLevel = {
@@ -604,6 +641,12 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
               ? "#2A3C84"
               : "transparent"
             : getColor(result.score),
+          labels:
+            displayedNames && !isCityView && "ids" in result && result.ids
+              ? [...new Set(result.ids.map((id) => displayedNames[id]).filter(Boolean))].sort(
+                  (a, b) => a.localeCompare(b, "fr"),
+                )
+              : undefined,
         };
       }
     });
@@ -617,6 +660,7 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
     computeAreaStats,
     getColor,
     isCityView,
+    displayedNames,
   ]);
 
   const operatorsForMap = useMemo(() => {

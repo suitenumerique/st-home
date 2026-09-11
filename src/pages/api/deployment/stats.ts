@@ -92,6 +92,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ${dep ? sql`AND ${organizations.insee_dep} = ${dep as string}` : sql``}
         GROUP BY ${organizations.siret}, ${organizations.type}, ${organizations.insee_dep}, ${organizations.insee_reg}, ${organizations.epci_siren}
       `;
+    } else if (scope === "list-names") {
+      // Names of the organizations using at least one service in a region, loaded on demand
+      // to keep them out of the (much larger) list-commune payload
+      if (!reg) {
+        return res
+          .status(400)
+          .json({ error: "Region parameter (reg) is required when scope=list-names" });
+      }
+      query = sql`
+        SELECT
+          ${organizations.siret} as id,
+          ${organizations.name} as name
+        FROM ${organizations}
+        WHERE ${organizations.insee_reg} = ${reg as string}
+        AND EXISTS (
+          SELECT 1 FROM ${organizationsToServices}
+          WHERE ${organizationsToServices.organizationSiret} = ${organizations.siret}
+        )
+      `;
     } else if (scope === "list-service") {
       // Group by service - show number of structures using each service with breakdown
       query = sql`
@@ -123,7 +142,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } else {
       return res.status(400).json({
         error:
-          "Invalid scope. Must be 'list-reg', 'list-dep', 'list-epci', 'list-commune', or 'list-service'",
+          "Invalid scope. Must be 'list-reg', 'list-dep', 'list-epci', 'list-commune', 'list-names', or 'list-service'",
       });
     }
 
