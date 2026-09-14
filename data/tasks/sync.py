@@ -4,6 +4,7 @@ import logging
 import os
 import re
 from collections import defaultdict
+from urllib.parse import urlparse
 
 from sentry_sdk.crons import monitor
 
@@ -650,11 +651,16 @@ def declared_domains(org: dict):
     become "google.com", which is on no list and would look like an owned domain).
 
     Read from the raw DILA values rather than from the conformance issues, so this
-    can run before conformance is computed."""
+    can run before conformance is computed. The URL is therefore parsed rather than
+    split on "/": it never went through WEBSITE_REGEX, so its host can still carry a
+    port or a userinfo, either of which would defeat the checks below."""
 
     website = org.get("_st_website") or ""
     email = org.get("_st_email") or ""
-    website_host = website.split("/")[2] if website.count("/") >= 2 else ""
+    try:
+        website_host = urlparse(website).hostname or ""
+    except ValueError:  # unbalanced brackets, "https://[::1/"
+        website_host = ""
     email_host = email.split("@")[1] if "@" in email else ""
 
     website_domain = None

@@ -52,9 +52,16 @@ def test_declared_domains():
     assert declared_domains(org(website="https://www.certines.fr")) == ("certines.fr", None)
     assert declared_domains(org(email="mairie@certines.grandbourg.fr")) == (None, "grandbourg.fr")
 
+    # The raw DILA value never went through WEBSITE_REGEX, so the host can carry a
+    # port or a userinfo that would otherwise end up in the domain
+    assert declared_domains(org(website="https://www.certines.fr:8443/")) == ("certines.fr", None)
+    assert declared_domains(org(website="https://mairie@certines.fr/")) == ("certines.fr", None)
+
     # Nothing usable: must not raise, and must not feed the index
     assert declared_domains(org()) == (None, None)
     assert declared_domains(org(website="not-a-url")) == (None, None)
+    assert declared_domains(org(website="https://[::1/")) == (None, None)
+    assert declared_domains(org(website="https:///x")) == (None, None)
     assert declared_domains(org(email="no-at-sign")) == (None, None)
     assert declared_domains(org(email="mairie@localhost")) == (None, None)
 
@@ -107,6 +114,12 @@ def test_generic_platform_under_a_subdomain():
     owners = index_domain_owners([epci])
     assert "google.com" not in owners
     assert validate_domain_ownership(commune, owners) == []
+
+    # An explicit port must not hide the platform behind a host the list cannot match
+    assert declared_domains(org(website="https://sites.google.com:443/view/certines")) == (
+        None,
+        None,
+    )
 
 
 def test_commune_on_its_epci_domain():
