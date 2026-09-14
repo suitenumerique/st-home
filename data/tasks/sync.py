@@ -9,7 +9,12 @@ from sentry_sdk.crons import monitor
 
 from broker import register_task
 
-from .conformance import Issues, get_rcpnt_conformance, validate_conformance
+from .conformance import (
+    Issues,
+    get_rcpnt_conformance,
+    registrable_domain,
+    validate_conformance,
+)
 from .db import (
     get_all_data_checks,
     get_data_checks_by_siret,
@@ -22,6 +27,8 @@ from .defs import (
     EXCLUDED_DEPARTEMENTS,
     EXCLUDED_REGIONS,
     FORCE_INCLUDE_SIRENE,
+    GENERIC_EMAIL_DOMAINS,
+    GENERIC_WEBSITE_DOMAINS,
     HARDCODED_COMMUNES,
     HARDCODED_DEPARTEMENT_SIRENS,
     HARDCODED_DILA_SIRETS,
@@ -633,12 +640,83 @@ def compute_slug_for_communes(orgs: list):
     )
 
 
+def declared_domains(org: dict):
+    """The registrable domains an org declares on Service-Public, as
+    (website, email). None for a value we cannot read a domain out of.
+
+    Read from the raw DILA values rather than from the conformance issues, so this
+    can run before conformance is computed."""
+
+    website = org.get("_st_website") or ""
+    email = org.get("_st_email") or ""
+    website_host = website.split("/")[2] if website.count("/") >= 2 else ""
+    email_host = email.split("@")[1] if "@" in email else ""
+
+    return (
+        registrable_domain(website_host) if "." in website_host else None,
+        registrable_domain(email_host) if "." in email_host else None,
+    )
+
+
+def index_domain_owners(orgs: list):
+    """Map each domain an EPCI, département or région declares to the SIRENs that
+    declare it, so a commune borrowing one can be told apart from its owner.
+
+    Derived from the declarations rather than hardcoded, so it follows mergers and
+    renamings on its own. Generic and shared domains are left out: an EPCI on
+    gmail.com owns it no more than its communes do."""
+
+    owners = defaultdict(set)
+    for org in orgs:
+        if org["type"] not in {"epci", "departement", "region"}:
+            continue
+        for domain in declared_domains(org):
+            if not domain or domain in GENERIC_EMAIL_DOMAINS or domain in GENERIC_WEBSITE_DOMAINS:
+                continue
+            owners[domain].add(org["siren"])
+
+    return owners
+
+
+def validate_domain_ownership(org: dict, domain_owners: dict):
+    """Issues for a commune declaring a domain that belongs to another collectivité,
+    typically its EPCI's: the domain carries neither its name nor its control.
+
+    Two cases are not borrowing and are left alone:
+      - the mairies d'arrondissement, établissements of a parent collectivité whose
+        domain they legitimately use — they share its SIREN;
+      - the ville-centre whose own domain its agglomération also declares, such as
+        Brest on brest.fr — recognised by the domain carrying the commune's name.
+    """
+
+    if org["type"] != "commune":
+        return []
+
+    website, email = declared_domains(org)
+    issues = []
+    for issue, domain in (
+        (Issues.WEBSITE_DOMAIN_OTHER_ORG, website),
+        (Issues.EMAIL_DOMAIN_OTHER_ORG, email),
+    ):
+        if not domain or not domain_owners.get(domain, set()) - {org["siren"]}:
+            continue
+        if normalize(org["name"]) == normalize(domain.rsplit(".", 1)[0]):
+            continue
+        issues.append(issue)
+
+    return issues
+
+
 def associate_conformance_to_orgs(orgs: list):
     """Associate conformance to orgs"""
 
     all_data_checks = get_all_data_checks()
 
     logger.info("Fetched data_checks for %d orgs", len(all_data_checks))
+
+    domain_owners = index_domain_owners(orgs)
+
+    logger.info("Indexed %d domains owned by an EPCI, département or région", len(domain_owners))
 
     for org in orgs:
         org["_st_conformite"] = [
@@ -647,6 +725,13 @@ def associate_conformance_to_orgs(orgs: list):
                 org.get("_st_email") or "", org.get("_st_website") or ""
             )
         ]
+
+        # A domain that belongs to another collectivité is judged across orgs, so it
+        # cannot be seen by validate_conformance. Added before the data checks are
+        # read, which key off the issue list.
+        org["_st_conformite"].extend(
+            str(issue) for issue in validate_domain_ownership(org, domain_owners)
+        )
 
         # Add the issues added in asynchronous checks
         issues, website_metadata, email_metadata, min_dt = get_data_checks_by_siret(
@@ -735,7 +820,12 @@ def create_new_dumps(orgs: list):
         website_official = None
         slug = None
         st_eligible = False
-        if not {"WEBSITE_MALFORMED", "WEBSITE_MISSING"}.intersection(org["_st_conformite"]):
+        if not {
+            "WEBSITE_MALFORMED",
+            "WEBSITE_MISSING",
+            "WEBSITE_DOMAIN_GENERIC",
+            "WEBSITE_DOMAIN_OTHER_ORG",
+        }.intersection(org["_st_conformite"]):
             website_domain = org["_st_website"].split("://")[1].split("/")[0]
             website_tld = website_domain.split(".")[-1]
             website_official = org["_st_website"]

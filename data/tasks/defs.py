@@ -219,6 +219,16 @@ HARDCODED_DILA_SIRETS = {
     "21750001600019": "34506f20-cf20-4c08-a9de-e56e680aa5ec",
 }
 
+# Email domains that never belong to the collectivité using them: consumer webmail,
+# ISPs, and the shared mailboxes distributed by a CDG, an agence technique
+# départementale or a syndicat numérique. They break RPNT criterion 2.2.
+#
+# Only list a domain no collectivité owns. "selonnet.fr" and "copler.fr" were removed
+# for that reason: they are the own domains of the commune of Selonnet and of the CC
+# du Pays Entre Loire et Rhône (COPLER), which the list was penalising.
+#
+# Matching is exact, so a domain shared through subdomains belongs in
+# GENERIC_WEBSITE_DOMAINS instead. Entries matching nothing today are kept as defences.
 GENERIC_EMAIL_DOMAINS = [
     "wanadoo.fr",
     "orange.fr",
@@ -240,7 +250,6 @@ GENERIC_EMAIL_DOMAINS = [
     "hotmail.com",
     "bbox.fr",
     "inforoutes-ardeche.fr",
-    "copler.fr",
     "9business.fr",
     "numericable.fr",
     "wibox.fr",
@@ -260,16 +269,36 @@ GENERIC_EMAIL_DOMAINS = [
     "lgtel.fr",
     "alsatis.net",
     "sivucesny.fr",
-    "selonnet.fr",
     "orange-business.fr",
     "telwan.fr",
     "icloud.com",
     "numericable.com",
     "vialis.net",
     "fr.oleane.com",
-    "collectivite47.fr",  # Distribués par le CDG47
-    "intramuros.org",
-    "info46.fr",
+    "netcourrier.fr",
+    "netcourrier.com",
+    "net-c.fr",
+    "online.fr",
+    "9online.fr",
+    "club.fr",
+    "club-internet.fr",
+    "mailo.com",
+    "gmail.fr",
+    "aol.com",
+    "keyyomail.com",
+    # Boîtes distribuées par un CDG, une agence technique départementale ou un
+    # syndicat numérique. Aucune collectivité n'est propriétaire de ces domaines.
+    "collectivite47.fr",  # CDG47
+    "info46.fr",  # Lot
+    "info82.com",  # Tarn-et-Garonne
+    "mairie19.fr",  # Corrèze
+    "correze.net",  # Corrèze
+    "ccsudgatine.fr",  # ex-CC Sud Gâtine, dissoute
+    "paysmellois.org",  # ex-Pays Mellois, dissous
+    "ennemane.net",
+    "sarthefibre.fr",
+    "alsacefibre.fr",
+    "ornethd.fr",
 ]
 
 DOMAIN_EXTENSIONS_ALLOWED = [
@@ -294,6 +323,83 @@ DOMAIN_EXTENSIONS_ALLOWED = [
     "pf",  # Polynésie française
     # "bl",  # Saint-Barthélemy
     # "mf",  # Saint-Martin
+]
+
+# The website counterpart of GENERIC_EMAIL_DOMAINS: domains shared by many
+# collectivités, which therefore carry none of their names — social networks, site
+# builders, blog platforms, municipal-info apps, commercial directories, the default
+# personal-page hosting of ISPs, and the mutualised platforms of some CDG. A site
+# declared on one of them is treated as no site at all (RPNT criterion 1.1), which
+# also spares it the check_website probes.
+#
+# Matching covers the domain and all its subdomains, so list the narrowest domain
+# that is always shared: "sites.google.com", not "google.com". Never list a domain
+# a collectivité may own — collectivite.fr is a State service and belongs in
+# WEBSITE_REDIRECT_DOMAINS_ALLOWED below, not here.
+GENERIC_WEBSITE_DOMAINS = [
+    # Réseaux sociaux
+    "facebook.com",
+    "instagram.com",
+    "twitter.com",
+    "x.com",
+    "linkedin.com",
+    "youtube.com",
+    "tiktok.com",
+    # Applications d'information municipale et annuaires commerciaux
+    "intramuros.org",
+    "appli-intramuros.com",
+    "appli-intramuros.fr",
+    "lapagelocale.fr",
+    "lapagelocale.com",
+    "illiwap.com",
+    "panneaupocket.com",
+    "maelis.info",
+    "la-mairie.com",
+    "ma-mairie.com",
+    "mairie.com",
+    "commune-mairie.fr",
+    "info-mairie.com",
+    "annuaire-mairie.fr",
+    # Constructeurs de sites et plateformes de blog
+    "wixsite.com",
+    "wix.com",
+    "e-monsite.com",
+    "jimdo.com",
+    "jimdofree.com",
+    "jimdoweb.com",
+    "jimdosite.com",
+    "wordpress.com",
+    "sites.google.com",
+    "blogspot.com",
+    "blogspot.fr",
+    "over-blog.com",
+    "neopse-site.com",
+    "neopse-site.fr",
+    "canalblog.com",
+    "sitew.fr",
+    "sitew.com",
+    "webnode.fr",
+    "webnode.com",
+    "sitego.fr",
+    "weebly.com",
+    "blog4ever.com",
+    "webself.net",
+    "webselfsite.net",
+    "asso-web.com",
+    "simplesite.com",
+    "live-website.com",
+    "reseaudescommunes.fr",
+    "wifeo.com",
+    # Plateformes mutualisées de centres de gestion, un sous-domaine par commune.
+    # Aucune collectivité n'est propriétaire du domaine racine.
+    "mairie54.fr",
+    "mairie49.fr",
+    # Pages perso et hébergements par défaut des FAI
+    "free.fr",
+    "pagesperso-orange.fr",
+    "monsite-orange.fr",
+    "online.fr",
+    "ovh.net",
 ]
 
 # Domains a declared website is allowed to redirect to — as a final target or as
