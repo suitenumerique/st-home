@@ -12,6 +12,7 @@ from broker import register_task
 from .conformance import (
     Issues,
     get_rcpnt_conformance,
+    is_generic_website_domain,
     registrable_domain,
     validate_conformance,
 )
@@ -644,6 +645,10 @@ def declared_domains(org: dict):
     """The registrable domains an org declares on Service-Public, as
     (website, email). None for a value we cannot read a domain out of.
 
+    A site on a shared platform yields no website domain: the host is tested before
+    being reduced, since the reduction can lose the match ("sites.google.com" would
+    become "google.com", which is on no list and would look like an owned domain).
+
     Read from the raw DILA values rather than from the conformance issues, so this
     can run before conformance is computed."""
 
@@ -652,8 +657,12 @@ def declared_domains(org: dict):
     website_host = website.split("/")[2] if website.count("/") >= 2 else ""
     email_host = email.split("@")[1] if "@" in email else ""
 
+    website_domain = None
+    if "." in website_host and not is_generic_website_domain(website_host):
+        website_domain = registrable_domain(website_host)
+
     return (
-        registrable_domain(website_host) if "." in website_host else None,
+        website_domain,
         registrable_domain(email_host) if "." in email_host else None,
     )
 

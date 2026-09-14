@@ -88,6 +88,27 @@ def test_index_ignores_generic_and_shared_domains():
     assert "gmail.com" not in owners
 
 
+def test_generic_platform_under_a_subdomain():
+    """A Google Sites page is on "sites.google.com", which reduces to "google.com":
+    a domain on no list, which would have been indexed as owned by the EPCI and
+    flagged as borrowed on every commune hosted there."""
+
+    epci = org(
+        type="epci",
+        name="CC de test",
+        siren="200070159",
+        siret="20007015900013",
+        website="https://sites.google.com/view/cc-de-test",
+    )
+    commune = org(website="https://sites.google.com/view/certines")
+
+    assert declared_domains(commune) == (None, None)
+
+    owners = index_domain_owners([epci])
+    assert "google.com" not in owners
+    assert validate_domain_ownership(commune, owners) == []
+
+
 def test_commune_on_its_epci_domain():
     owners = index_domain_owners([EPCI])
     commune = org(
