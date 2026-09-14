@@ -90,6 +90,8 @@ export default function CommuneInfo({
   const websiteMissing = !rcpnt.includes("1.1");
   const websiteCompliant = rcpnt.includes("1.a");
   const websiteInvalid = issues.includes("WEBSITE_MALFORMED");
+  const websiteGeneric = issues.includes("WEBSITE_DOMAIN_GENERIC");
+  const websiteOtherOrg = issues.includes("WEBSITE_DOMAIN_OTHER_ORG");
 
   const emailMissing = !rcpnt.includes("2.1");
   const emailCompliant = rcpnt.includes("2.a");
@@ -151,6 +153,42 @@ export default function CommuneInfo({
           correctement. Veuillez vérifier que votre site internet correspond au format{" "}
           <strong>https://domaine.extension</strong>.
         </MessageLine>
+      )}
+
+      {(websiteGeneric || websiteOtherOrg) && (
+        <>
+          {websiteGeneric && (
+            <MessageLine severity="error" rcpnt="1.1">
+              Le site internet déclaré pour la collectivité est une page hébergée sur une plateforme
+              partagée avec d&rsquo;autres collectivités (réseau social, créateur de sites,
+              application d&rsquo;information municipale). Il ne peut pas être considéré comme le
+              site officiel de la collectivité&nbsp;: son nom de domaine appartient à la plateforme.
+            </MessageLine>
+          )}
+
+          {websiteOtherOrg && (
+            <MessageLine severity="error" rcpnt="1.1">
+              Le site internet déclaré pour la collectivité utilise le nom de domaine d&rsquo;une
+              autre collectivité, le plus souvent son intercommunalité. Il ne peut pas être
+              considéré comme le site officiel de la collectivité.
+            </MessageLine>
+          )}
+
+          <MessageLine severity="info">
+            Si vous disposez d&rsquo;un site sur votre propre nom de domaine, vous devez le déclarer
+            sur {dilaUpdateLink}.
+          </MessageLine>
+
+          {isEligible && (
+            <li className={fr.cx("fr-text--bold")}>
+              <Badge severity="success" noIcon as="span">
+                Bonne nouvelle !
+              </Badge>{" "}
+              Si vous ne possédez pas de nom de domaine, la Suite territoriale peut vous accompagner
+              à en obtenir un.
+            </li>
+          )}
+        </>
       )}
 
       {rcpnt.includes("1.1") && (
@@ -359,10 +397,18 @@ export default function CommuneInfo({
             </MessageLine>
           )}
 
-          {!rcpnt.includes("2.2") && (
+          {!rcpnt.includes("2.2") && !issues.includes("EMAIL_DOMAIN_OTHER_ORG") && (
             <MessageLine severity="error" rcpnt="2.2">
               Le domaine <strong>{emailDomain}</strong> générique ne permet pas aux usagers de
               vérifier l&rsquo;authenticité de la messagerie.
+            </MessageLine>
+          )}
+
+          {issues.includes("EMAIL_DOMAIN_OTHER_ORG") && (
+            <MessageLine severity="error" rcpnt="2.2">
+              Le domaine <strong>{emailDomain}</strong> est celui d&rsquo;une autre collectivité, le
+              plus souvent votre intercommunalité. Il ne permet pas aux usagers d&rsquo;identifier
+              la commune.
             </MessageLine>
           )}
 
@@ -524,11 +570,13 @@ export default function CommuneInfo({
               <div className={fr.cx("fr-ml-2w", "fr-badges-group", "fr-badges-group--sm")}>
                 {websiteInvalid
                   ? getBadge("error", "Invalide")
-                  : websiteMissing
-                    ? getBadge("error", "Manquant")
-                    : websiteCompliant
-                      ? getBadge("success", "Conforme")
-                      : getBadge("error", "A risque")}
+                  : websiteGeneric || websiteOtherOrg
+                    ? getBadge("error", "Non officiel")
+                    : websiteMissing
+                      ? getBadge("error", "Manquant")
+                      : websiteCompliant
+                        ? getBadge("success", "Conforme")
+                        : getBadge("error", "A risque")}
                 {!inProgress && hasWebsiteRecommendations && getBadge("warning", "Recommandations")}
                 {inProgress && !websiteMissing && getBadge("warning", "Vérifications en cours")}
               </div>

@@ -3,7 +3,7 @@ from enum import Enum
 
 import idna
 
-from .defs import DOMAIN_EXTENSIONS_ALLOWED, GENERIC_EMAIL_DOMAINS
+from .defs import DOMAIN_EXTENSIONS_ALLOWED, GENERIC_EMAIL_DOMAINS, GENERIC_WEBSITE_DOMAINS
 
 
 class Issues(Enum):
@@ -12,9 +12,13 @@ class Issues(Enum):
     EMAIL_MALFORMED = "EMAIL_MALFORMED"  # Bad syntax
     WEBSITE_MISSING = "WEBSITE_MISSING"  # No known website
     WEBSITE_MALFORMED = "WEBSITE_MALFORMED"  # Bad syntax
+    WEBSITE_DOMAIN_GENERIC = "WEBSITE_DOMAIN_GENERIC"  # Website domain is generic
     WEBSITE_DECLARED_HTTP = "WEBSITE_DECLARED_HTTP"  # Website declared as HTTP
     EMAIL_DOMAIN_MISMATCH = "EMAIL_DOMAIN_MISMATCH"  # Email domain does not match website domain
     EMAIL_DOMAIN_GENERIC = "EMAIL_DOMAIN_GENERIC"  # Email domain is generic
+    # Domain declared by another collectivité (its EPCI, département or région)
+    EMAIL_DOMAIN_OTHER_ORG = "EMAIL_DOMAIN_OTHER_ORG"
+    WEBSITE_DOMAIN_OTHER_ORG = "WEBSITE_DOMAIN_OTHER_ORG"
     WEBSITE_DOMAIN_EXTENSION = "WEBSITE_DOMAIN_EXTENSION"  # Website domain extension not allowed
     EMAIL_DOMAIN_EXTENSION = "EMAIL_DOMAIN_EXTENSION"  # Email domain extension not allowed
     WEBSITE_DOMAIN_IDNA = "WEBSITE_DOMAIN_IDNA"  # Website domain is internationalized (IDNA)
@@ -91,6 +95,27 @@ def is_idna_domain(domain):
     return any(label.startswith("xn--") for label in domain.lower().split("."))
 
 
+def registrable_domain(host):
+    """The domain a collectivité registers, from any host it declares:
+    "certines.grandbourg.fr" -> "grandbourg.fr". Approximated as the last two labels,
+    which holds for the extensions of DOMAIN_EXTENSIONS_ALLOWED (no "co.uk" among them)."""
+
+    host = re.sub(r"^www\.", "", host.lower())
+    return ".".join(host.split(".")[-2:])
+
+
+def is_generic_website_domain(host):
+    """Whether a declared site sits on a domain shared by many collectivités, and
+    therefore carrying none of their names, rather than on the collectivité's own
+    domain. Matches the listed domains and any of their subdomains, so
+    "annoisin-chatelans.wixsite.com" is generic even though the host names Annoisin."""
+
+    host = re.sub(r"^www\.", "", host.lower())
+    return any(
+        host == generic or host.endswith("." + generic) for generic in GENERIC_WEBSITE_DOMAINS
+    )
+
+
 def to_punycode(domain):
     """ASCII form of a domain, so that both forms of an IDNA domain can be compared.
     Returned unchanged if already ASCII or not encodable.
@@ -120,15 +145,22 @@ def validate_conformance(email, website, bypass_website_regex=False):
     elif not EMAIL_REGEX.match(email):
         issues.append(Issues.EMAIL_MALFORMED)
     else:
-        email_domain = email.split("@")[1]
+        # Domains are case-insensitive, and DILA does send a few with capitals.
+        email_domain = email.split("@")[1].lower()
         email_domain_extension = email_domain.split(".")[-1]
 
     if len(website) == 0:
         issues.append(Issues.WEBSITE_MISSING)
     elif not WEBSITE_REGEX.match(website) and not bypass_website_regex:
         issues.append(Issues.WEBSITE_MALFORMED)
+    elif is_generic_website_domain(website.split("/")[2]):
+        # A page on a platform shared with other collectivités is not the
+        # collectivité's own site. Left without a website_domain on purpose: the
+        # domain is the platform's, so comparing it to the email domain or judging
+        # its extension would say nothing about the collectivité.
+        issues.append(Issues.WEBSITE_DOMAIN_GENERIC)
     else:
-        website_domain = re.sub(r"^www\.", "", website.split("/")[2])
+        website_domain = re.sub(r"^www\.", "", website.split("/")[2]).lower()
         website_domain_extension = website_domain.split(".")[-1]
 
         if website.startswith("http://"):
@@ -181,6 +213,8 @@ def data_checks_doable(conformance_issues):
             {
                 Issues.WEBSITE_MISSING.name,
                 Issues.WEBSITE_MALFORMED.name,
+                Issues.WEBSITE_DOMAIN_GENERIC.name,
+                Issues.WEBSITE_DOMAIN_OTHER_ORG.name,
             }.intersection([str(x) for x in conformance_issues])
         )
         == 0
@@ -223,6 +257,8 @@ def get_rcpnt_conformance(issue_list):
     if (
         str(Issues.WEBSITE_MISSING) in issues
         or str(Issues.WEBSITE_MALFORMED) in issues
+        or str(Issues.WEBSITE_DOMAIN_GENERIC) in issues
+        or str(Issues.WEBSITE_DOMAIN_OTHER_ORG) in issues
         or str(Issues.WEBSITE_DOMAIN_EXTENSION) in issues
         or str(Issues.WEBSITE_DOMAIN_IDNA) in issues
     ) and (
@@ -272,9 +308,37 @@ def get_rcpnt_conformance(issue_list):
             "1.8",
             "2.3",
         },
+        # A site on a shared platform is treated as no site: same criteria as
+        # WEBSITE_MISSING, so nothing downstream is credited to the platform.
+        str(Issues.WEBSITE_DOMAIN_GENERIC): {
+            "1.1",
+            "1.2",
+            "1.3",
+            "1.4",
+            "1.5",
+            "1.6",
+            "1.7",
+            "1.8",
+            "2.3",
+        },
+        # Same treatment for the site of another collectivité: the domain is not the
+        # org's, so nothing built on it can be credited to it.
+        str(Issues.WEBSITE_DOMAIN_OTHER_ORG): {
+            "1.1",
+            "1.2",
+            "1.3",
+            "1.4",
+            "1.5",
+            "1.6",
+            "1.7",
+            "1.8",
+            "2.3",
+        },
         str(Issues.WEBSITE_DECLARED_HTTP): {"1.8"},
         str(Issues.EMAIL_DOMAIN_MISMATCH): {"2.3"},
         str(Issues.EMAIL_DOMAIN_GENERIC): {"2.2", "2.3"},
+        # A mailbox on another collectivité's domain is generic for this one
+        str(Issues.EMAIL_DOMAIN_OTHER_ORG): {"2.2", "2.3"},
         str(Issues.WEBSITE_DOMAIN_EXTENSION): {"1.2"},
         str(Issues.WEBSITE_DOMAIN_IDNA): {"1.2"},
         str(Issues.EMAIL_DOMAIN_EXTENSION): {"2.3"},

@@ -3,10 +3,12 @@ from ..tasks.conformance import (
     RcpntRefs,
     data_checks_doable,
     get_rcpnt_conformance,
+    is_generic_website_domain,
     is_idna_domain,
     to_punycode,
     validate_conformance,
 )
+from ..tasks.defs import GENERIC_EMAIL_DOMAINS, GENERIC_WEBSITE_DOMAINS
 
 
 def test_strict_email_and_website():
@@ -96,6 +98,122 @@ def test_generic_email_domain():
 
     issues = validate_conformance("contact@mamairie.fr", "")
     assert Issues.EMAIL_DOMAIN_GENERIC not in issues
+
+    # Distributed by a CDG / agence technique départementale
+    issues = validate_conformance("balignac@info82.com", "")
+    assert Issues.EMAIL_DOMAIN_GENERIC in issues
+
+    # Domains are case-insensitive
+    issues = validate_conformance("contact@GMail.com", "")
+    assert Issues.EMAIL_DOMAIN_GENERIC in issues
+
+
+def test_is_generic_website_domain():
+    """Shared platforms match on the domain itself and on any subdomain"""
+    assert is_generic_website_domain("facebook.com")
+    assert is_generic_website_domain("www.facebook.com")
+    assert is_generic_website_domain("WWW.Facebook.COM")
+    assert is_generic_website_domain("annoisin-chatelans.wixsite.com")
+    assert is_generic_website_domain("station.illiwap.com")
+    assert is_generic_website_domain("mybujdp.cluster030.hosting.ovh.net")
+
+    # Plateformes mutualisées de CDG: a subdomain per commune, but the domain is
+    # the platform's. The .fr made them pass criterion 1.2 on the extension alone.
+    assert is_generic_website_domain("abbevillelesconflans.mairie54.fr")
+    assert is_generic_website_domain("somloire.mairie49.fr")
+    assert is_generic_website_domain("estagel.reseaudescommunes.fr")
+    assert is_generic_website_domain("communederonsenac.live-website.com")
+    assert is_generic_website_domain("arracourt.wifeo.com")
+
+    # A collectivité's own domain that merely ends with the same letters
+    assert not is_generic_website_domain("mairie-tudeils.fr")
+    assert not is_generic_website_domain("bilheres-mairie.com")
+    assert not is_generic_website_domain("mairiedelapleau-correze.net")
+    # Narrow entries must not swallow their parent domain
+    assert not is_generic_website_domain("google.com")
+    # A mairie d'arrondissement's own host, not a mairie54.fr-style platform
+    assert not is_generic_website_domain("mairie19.paris.fr")
+    # State service, allowed as a fallback site (WEBSITE_REDIRECT_DOMAINS_ALLOWED)
+    assert not is_generic_website_domain("collectivite.fr")
+
+
+def test_generic_website_domain():
+    """A site on a shared platform counts as no site at all"""
+    issues = validate_conformance(
+        "mairie@example.fr", "https://www.facebook.com/mairiedethimonville"
+    )
+    assert Issues.WEBSITE_DOMAIN_GENERIC in issues
+    # The platform's domain must not be judged in place of the collectivité's
+    assert Issues.WEBSITE_DOMAIN_EXTENSION not in issues
+    assert Issues.EMAIL_DOMAIN_MISMATCH not in issues
+    assert Issues.WEBSITE_MISSING not in issues
+
+    # .fr platforms used to pass criterion 1.2 on the extension alone
+    issues = validate_conformance("", "https://lapagelocale.fr/02130-saponay")
+    assert Issues.WEBSITE_DOMAIN_GENERIC in issues
+
+    issues = validate_conformance("", "https://www.mairie-tudeils.fr")
+    assert Issues.WEBSITE_DOMAIN_GENERIC not in issues
+
+
+def test_generic_website_domain_blocks_website_criteria():
+    """1.1 and everything that depends on the site fall with it, and no website
+    check is queued for a platform page"""
+    rcpnt = get_rcpnt_conformance([Issues.WEBSITE_DOMAIN_GENERIC])
+    for ref in ["1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "2.3"]:
+        assert ref not in rcpnt
+
+    assert "website" not in data_checks_doable([str(Issues.WEBSITE_DOMAIN_GENERIC)])
+    assert "dns" in data_checks_doable([str(Issues.WEBSITE_DOMAIN_GENERIC)])
+
+    # 2.3 is dropped from the messagerie groups rather than held against the
+    # collectivité, as it is for a missing site
+    assert "2.a" in rcpnt
+    assert "2.aa" in rcpnt
+
+
+def test_other_org_domains_block_criteria():
+    """Domains borrowed from another collectivité are detected in sync.py, but the
+    criteria they cost are decided here"""
+
+    rcpnt = get_rcpnt_conformance([Issues.WEBSITE_DOMAIN_OTHER_ORG])
+    for ref in ["1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "2.3"]:
+        assert ref not in rcpnt
+    assert "2.a" in rcpnt  # 2.3 dropped from the group, not held against the org
+    assert "website" not in data_checks_doable([str(Issues.WEBSITE_DOMAIN_OTHER_ORG)])
+
+    # A mailbox on another collectivité's domain is generic for this one
+    rcpnt = get_rcpnt_conformance([Issues.EMAIL_DOMAIN_OTHER_ORG])
+    assert "2.2" not in rcpnt
+    assert "2.3" not in rcpnt
+    assert "1.a" in rcpnt
+
+
+def test_website_domains_are_not_email_domains():
+    """The two lists are matched differently — exact for email, suffix for websites —
+    so a domain shared through subdomains belongs in only one of them. intramuros.org
+    sat in GENERIC_EMAIL_DOMAINS, where it matched nothing."""
+    assert "intramuros.org" in GENERIC_WEBSITE_DOMAINS
+    assert "intramuros.org" not in GENERIC_EMAIL_DOMAINS
+
+
+def test_consumer_webmail_domains_are_blocklisted():
+    """Webmail and ISP domains that are kept as defences even when nothing matches
+    them today, so a single commune moving to one is caught right away."""
+    for domain in [
+        "aol.com",
+        "club.fr",
+        "club-internet.fr",
+        "gmail.fr",
+        "mailo.com",
+        "netcourrier.fr",
+        "netcourrier.com",
+        "net-c.fr",
+        "online.fr",
+        "9online.fr",
+    ]:
+        assert domain in GENERIC_EMAIL_DOMAINS, domain
+        assert Issues.EMAIL_DOMAIN_GENERIC in validate_conformance(f"mairie@{domain}", "")
 
 
 def test_domain_extension():
