@@ -1,4 +1,8 @@
-import { type ServiceFeatureRow, type ServiceFeaturesBlock } from "@/lib/services/types";
+import {
+  CONTAINER_CONTENT_WIDTH,
+  type ServiceFeatureRow,
+  type ServiceFeaturesBlock,
+} from "@/lib/services/types";
 import styles from "@/styles/services.module.css";
 import { fr } from "@codegouvfr/react-dsfr";
 import Image from "next/image";
@@ -81,6 +85,9 @@ function FeatureRow({
             alt={screenshot.alt}
             width={screenshot.width}
             height={screenshot.height}
+            // Half of the container from the DSFR `md` breakpoint up, where the
+            // row splits in two, and its full width below.
+            sizes={`(min-width: 78rem) ${CONTAINER_CONTENT_WIDTH / 2}px, (min-width: 48em) 50vw, 100vw`}
             style={{ width: "100%", height: "auto" }}
           />
         </div>

@@ -69,16 +69,18 @@
  * submit square, no blue. Scoped to this wrapper so the search bars elsewhere
  * (homepage hero, cartographie) keep the standard DSFR look.
  *
- * The button is absolutely positioned at the right edge by react-dsfr and
- * overlays the input, which spans the full width. Hence the radius lives on the
- * input (its right corners end up hidden behind the button) rather than on the
- * bar with `overflow: hidden`, which would clip the input's focus outline.
- */
-/*
+ * react-dsfr gives its own button `position: absolute; right: 0` while leaving
+ * `.fr-search-bar` unpositioned, so this wrapper is the positioning context for
+ * both that button and the reset button `ServiceEligibility` renders in its
+ * place. Both overlay the input, which spans the full width; hence the radius
+ * lives on the input (its right corners end up hidden behind the button) rather
+ * than on the bar with `overflow: hidden`, which would clip the focus outline.
+ *
  * The field is wider than the wording it introduces, as in the mockup, and both
  * are centred under the hero screenshot.
  */
 .heroSearch {
+  position: relative;
   max-width: 44rem;
   margin: 0 auto;
 }
@@ -121,8 +123,17 @@
   color: var(--text-mention-grey);
 }
 
-.heroSearch :global(.fr-search-bar .fr-btn) {
+/*
+ * The two buttons that can occupy the right edge of the field: the search bar's
+ * own one while the input is empty and unfocused, and the reset button that
+ * takes over once a territory is picked. Same square, so nothing shifts between
+ * the two states.
+ */
+.heroSearch :global(.fr-search-bar .fr-btn),
+.heroSearchReset {
+  position: absolute;
   top: 0;
+  right: 0;
   bottom: 0;
   width: 3rem;
   max-width: 3rem;
@@ -161,33 +172,39 @@
 }
 
 /*
- * Once a territory is picked the field turns read-only and its button resets
- * the search, so it becomes the emphasised action of the block rather than a
- * discreet submit.
+ * Once a territory is picked, resetting the search is the emphasised action of
+ * the block rather than a discreet submit.
  */
-.heroSearchSelected :global(.fr-search-bar .fr-btn) {
+.heroSearchReset {
   background-color: var(--background-action-high-blue-france);
 }
 
-.heroSearchSelected :global(.fr-search-bar .fr-btn:hover) {
+.heroSearchReset:hover {
   background-color: var(--background-action-high-blue-france-hover);
 }
 
-.heroSearchSelected :global(.fr-search-bar .fr-btn:active) {
+.heroSearchReset:active {
   background-color: var(--background-action-high-blue-france-active);
 }
 
-.heroSearchSelected :global(.fr-search-bar .fr-btn::before) {
-  /* DSFR's own `icons/system/arrow-go-back-line.svg`, inlined as the search
-     button's icon is drawn by a mask rather than by an `fr-icon-*` class. */
+/*
+ * DSFR's own `icons/system/arrow-go-back-line.svg`, inlined to match the search
+ * button's icon, which is drawn by a mask rather than by an `fr-icon-*` class.
+ * Declared in full: the sizing DSFR gives that icon comes from its
+ * `.fr-search-bar .fr-btn::before` rule, and this button sits outside the bar.
+ */
+.heroSearchReset::before {
   --data-uri-svg: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="m5.828 7 2.536 2.536L6.95 10.95 2 6l4.95-4.95 1.414 1.414L5.828 5H13a8 8 0 1 1 0 16H4v-2h9a6 6 0 1 0 0-12H5.828Z"/></svg>');
 
+  content: "";
+  flex: 0 0 auto;
+  width: 1.5rem;
+  height: 1.5rem;
   background-color: #fff;
-}
-
-.heroSearchSelected :global(.fr-search-bar .fr-input) {
-  /* Read-only, so it should not read as an editable field. */
-  cursor: default;
+  -webkit-mask-image: var(--data-uri-svg);
+  mask-image: var(--data-uri-svg);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
 }
 
 /*

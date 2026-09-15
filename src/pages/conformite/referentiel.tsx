@@ -81,8 +81,21 @@ export const ReferentielConformite: ReferentielSection[] = [
         whyItsImportant: (
           <>
             <p>
-              Si la collectivité a un site internet, il doit être renseigné au sein de
-              l&rsquo;Annuaire de l&rsquo;administration sur {DILA_LINK}.
+              Si la collectivité a un site internet : il doit être renseigné au sein de
+              l&rsquo;Annuaire de l&rsquo;administration sur {DILA_LINK} et mis à jour en cas de
+              changement.
+            </p>
+            <p>
+              Si la collectivité n&rsquo;a pas de site web : elle peut opter pour une «&nbsp;page
+              parking&nbsp;» affichant des informations minimales. Retrouvez l&rsquo;intégralité
+              de la procédure sur{" "}
+              <Link
+                href="https://aide.suite.anct.gouv.fr/socle/domaines/afficher-une-page-sur-son-domaine-sans-avoir-de-site-internet"
+                target="_blank"
+              >
+                cet article
+              </Link>
+              .
             </p>
             <p>
               L&rsquo;ensemble des informations inscrites sur les pages de mairie de {DILA_LINK}{" "}
@@ -105,18 +118,6 @@ export const ReferentielConformite: ReferentielSection[] = [
               </li>
               <li>Envoyez votre demande. Elle sera examinée sous 48 heures.</li>
             </ol>
-            <p>
-              Les communes ne disposant pas de site web sont invitées à mettre en place la
-              redirection de leur nom de domaine vers leur page officielle sur l&rsquo;Annuaire de
-              l&rsquo;administration. La procédure est documentée{" "}
-              <Link
-                href="https://aide.suite.anct.gouv.fr/socle/domaines/utiliser-ma-page-collectivite-comme-site-internet"
-                target="_blank"
-              >
-                ici
-              </Link>
-              .
-            </p>
           </>
         ),
         type: "declarative",

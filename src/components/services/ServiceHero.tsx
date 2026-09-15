@@ -1,5 +1,6 @@
 import ServiceEligibility from "@/components/services/ServiceEligibility";
 import {
+  CONTAINER_CONTENT_WIDTH,
   DEFAULT_HERO_TEXT_COLUMNS,
   ELIGIBILITY_SEARCH_ANCHOR,
   HERO_COLUMN_SPLIT,
@@ -25,6 +26,15 @@ const TITLE_FONT_SIZE = 50;
 const TITLE_LINE_HEIGHT = 60;
 // Air around the eligibility block, inside its tinted band.
 const SEARCH_PADDING = 120;
+
+/**
+ * Width an image styled `width: auto` with a `max-height` settles at, which is
+ * what `sizes` has to state: without it next/image assumes the full declared
+ * width and serves several times the pixels the slot uses.
+ */
+function widthAtMaxHeight(image: { width: number; height: number }, maxHeight: number): number {
+  return Math.min(image.width, Math.round((maxHeight * image.width) / image.height));
+}
 
 export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
   const { eligibilitySearch, illustration, screenshot } = hero;
@@ -54,6 +64,7 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
                   alt={hero.name}
                   width={hero.logo.width}
                   height={hero.logo.height}
+                  sizes={`${widthAtMaxHeight(hero.logo, LOGO_MAX_HEIGHT)}px`}
                   priority
                   className={fr.cx("fr-mb-2w")}
                   style={{
@@ -94,6 +105,7 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
                 alt={illustration.alt}
                 width={illustration.width}
                 height={illustration.height}
+                sizes={`${widthAtMaxHeight(illustration, ILLUSTRATION_MAX_HEIGHT)}px`}
                 priority
                 style={{
                   width: "auto",
@@ -114,7 +126,7 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
             alt={screenshot.alt}
             width={screenshot.width}
             height={screenshot.height}
-            sizes="(min-width: 78rem) 1248px, 100vw"
+            sizes={`(min-width: 78rem) ${CONTAINER_CONTENT_WIDTH}px, 100vw`}
             priority
             style={{ display: "block", width: "100%", height: "auto" }}
           />

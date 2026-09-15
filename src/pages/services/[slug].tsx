@@ -12,6 +12,7 @@ import { getServicePage, getServicePageSlugs } from "@/lib/services";
 import { countAdoptingOrganizations } from "@/lib/services/deployment";
 import { GetStaticPaths, GetStaticProps } from "next";
 import { NextSeo } from "next-seo";
+import { Fragment } from "react";
 
 type ServicePageProps = {
   slug: string;
@@ -24,7 +25,11 @@ export default function ServicePage({ slug, adoptionCount }: ServicePageProps) {
   if (!service) return null;
 
   return (
-    <>
+    // Keyed on the slug: every service renders through this one component, so
+    // without a remount React reuses the <img> elements across a navigation and
+    // the browser keeps painting the previous service's images under the new
+    // text until the new ones decode.
+    <Fragment key={service.slug}>
       <NextSeo title={service.seo.title} description={service.seo.description} />
 
       <ServiceHero hero={service.hero} />
@@ -52,7 +57,7 @@ export default function ServicePage({ slug, adoptionCount }: ServicePageProps) {
       {service.faq && <ServiceFaq block={service.faq} />}
 
       <ServiceTrial service={service} />
-    </>
+    </Fragment>
   );
 }
 

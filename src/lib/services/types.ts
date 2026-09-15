@@ -22,6 +22,14 @@ export type ServiceIllustration = {
 export const ELIGIBILITY_SEARCH_ANCHOR = "modalites-acces";
 
 /**
+ * Widest a full-width image inside `fr-container` is ever laid out: the
+ * container caps at 78rem and keeps 1.5rem of padding on each side. `sizes`
+ * must state this rather than the 78rem, because 1200 is one of Next's
+ * `deviceSizes` and anything above it costs the 1920 variant instead.
+ */
+export const CONTAINER_CONTENT_WIDTH = 1248 - 48;
+
+/**
  * Width of the hero text and of the illustration facing it, as columns of the
  * twelve of the DSFR grid. Spelled out rather than computed: `fr.cx` takes the
  * class names as literals.

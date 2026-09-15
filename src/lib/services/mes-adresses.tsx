@@ -7,8 +7,6 @@ const PARTNERS_URL = "https://adresse.data.gouv.fr/communaute/charte-base-adress
 const SIGNALEMENTS_URL = "https://signalement.adresse.data.gouv.fr/";
 const DEPLOYMENT_MAP_URL = "/cartographie-deploiement?service_ids=1";
 const HELP_CENTRE_URL = "https://aide.suite.anct.gouv.fr/socle/mes-adresses";
-const PARTNER_CENTRE_URL =
-  "https://docs.numerique.gouv.fr/docs/a85b4b1f-790f-4e55-b097-91eac06d69a6/";
 const PUBLISHING_DOC_URL =
   "https://aide.suite.anct.gouv.fr/socle/mes-adresses/publier-une-base-adresse-locale/generalites-sur-la-publication";
 const DEPLOYMENT_BAL_URL = "https://adresse.data.gouv.fr/deploiement-bal";
@@ -47,13 +45,13 @@ const mesAdresses: ServicePage = {
       src: "/images/services-illlu/adresses-hero.webp",
       alt: "",
       width: 980,
-      height: 882,
+      height: 980,
     },
     screenshot: {
       src: "/images/services-illlu/adresses-top.webp",
       alt: "L’éditeur de Mes Adresses, avec la carte des voies de la commune et la liste des numéros",
       width: 1728,
-      height: 942,
+      height: 1077,
     },
   },
 
@@ -79,7 +77,7 @@ const mesAdresses: ServicePage = {
           src: "/images/services-illlu/adresses-features-1.webp",
           alt: "",
           width: 1162,
-          height: 764,
+          height: 802,
         },
       },
       {
@@ -96,7 +94,7 @@ const mesAdresses: ServicePage = {
           src: "/images/services-illlu/adresses-features-2.webp",
           alt: "",
           width: 1184,
-          height: 682,
+          height: 810,
         },
       },
       {
@@ -113,7 +111,7 @@ const mesAdresses: ServicePage = {
           src: "/images/services-illlu/adresses-features-3.webp",
           alt: "",
           width: 1116,
-          height: 714,
+          height: 764,
         },
       },
     ],

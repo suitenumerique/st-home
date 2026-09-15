@@ -41,13 +41,13 @@ const domaines: ServicePage = {
       src: "/images/services-illlu/domaines-hero.webp",
       alt: "",
       width: 1832,
-      height: 1504,
+      height: 1832,
     },
     screenshot: {
       src: "/images/services-illlu/domaines-top.webp",
       alt: "Le service Domaines, avec la recherche d’un nom de domaine pour la collectivité",
       width: 1728,
-      height: 1016,
+      height: 684,
     },
   },
 

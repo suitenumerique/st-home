@@ -71,7 +71,7 @@ const annuaire: ServicePage = {
       src: "/images/services-illlu/annuaire-top.webp",
       alt: "L’espace commune de l’Annuaire, avec les informations publiées de la collectivité",
       width: 3063,
-      height: 1869,
+      height: 2084,
     },
   },
 
@@ -97,7 +97,7 @@ const annuaire: ServicePage = {
           src: "/images/services-illlu/annuaire-features-1.webp",
           alt: "",
           width: 1174,
-          height: 902,
+          height: 791,
         },
       },
       {
@@ -115,7 +115,7 @@ const annuaire: ServicePage = {
           src: "/images/services-illlu/annuaire-features-2.webp",
           alt: "",
           width: 1174,
-          height: 902,
+          height: 810,
         },
       },
       {
@@ -136,7 +136,7 @@ const annuaire: ServicePage = {
           src: "/images/services-illlu/annuaire-features-3.webp",
           alt: "",
           width: 1174,
-          height: 902,
+          height: 813,
         },
       },
     ],

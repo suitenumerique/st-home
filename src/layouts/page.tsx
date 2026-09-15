@@ -1,4 +1,4 @@
-import { getServicesNavLinks } from "@/lib/services";
+import { getServicesNavLinks } from "@/lib/services/nav";
 import { Footer } from "@codegouvfr/react-dsfr/Footer";
 import { Header } from "@codegouvfr/react-dsfr/Header";
 import { SkipLinks } from "@codegouvfr/react-dsfr/SkipLinks";

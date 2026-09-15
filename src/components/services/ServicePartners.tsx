@@ -33,17 +33,23 @@ export default function ServicePartners({ block }: { block: ServicePartnersBlock
               overflowX: "auto",
             }}
           >
-            {block.logos.map((logo, index) => (
-              <li key={index} style={{ flex: "0 0 auto" }}>
-                <Image
-                  src={logo.src}
-                  alt={logo.alt}
-                  width={logo.width}
-                  height={logo.height}
-                  style={{ width: "auto", height: logo.displayHeight ?? LOGO_HEIGHT }}
-                />
-              </li>
-            ))}
+            {block.logos.map((logo, index) => {
+              const height = logo.displayHeight ?? LOGO_HEIGHT;
+
+              return (
+                <li key={index} style={{ flex: "0 0 auto" }}>
+                  <Image
+                    src={logo.src}
+                    alt={logo.alt}
+                    width={logo.width}
+                    height={logo.height}
+                    // Laid out to a fixed height, so the width follows the ratio.
+                    sizes={`${Math.round((height * logo.width) / logo.height)}px`}
+                    style={{ width: "auto", height }}
+                  />
+                </li>
+              );
+            })}
           </ul>
         </div>
       </div>

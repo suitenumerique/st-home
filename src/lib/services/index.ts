@@ -10,9 +10,10 @@ export * from "./types";
 
 /**
  * Services that have their own page under /services/<slug>, in header dropdown
- * order. Adding a service here creates its route and its dropdown entry.
+ * order. Adding a service here creates its route; its dropdown entry lives in
+ * `./nav`, which the layout imports instead of this module.
  */
-const servicePages: ServicePage[] = [
+export const servicePages: ServicePage[] = [
   domaines,
   messages,
   fichiers,
@@ -29,18 +30,4 @@ export function getServicePageSlugs(): string[] {
   return servicePages.map((page) => page.slug);
 }
 
-export type ServicesNavLink = {
-  text: string;
-  href: string;
-};
-
-/**
- * Entries of the "Services numériques" header dropdown: the legacy CMS-driven
- * overview page, then the services that already have a dedicated page.
- */
-export function getServicesNavLinks(): ServicesNavLink[] {
-  return [
-    { text: "Vue d'ensemble", href: "/services" },
-    ...servicePages.map((page) => ({ text: page.navLabel, href: `/services/${page.slug}` })),
-  ];
-}
+export * from "./nav";
