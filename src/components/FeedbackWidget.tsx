@@ -1,5 +1,34 @@
 import { useEffect } from "react";
 
+/**
+ * Opens the feedback panel, as clicking the floating button does.
+ *
+ * The widget exposes no API of its own: the loader script renders that button
+ * inside a shadow root of its own and keeps the whole open sequence there
+ * (loading feedback.js, then dispatching its `init` event). Rather than
+ * reimplement that sequence, this clicks the button.
+ *
+ * Returns false when the widget is not on the page — it is only mounted once
+ * NEXT_PUBLIC_FEEDBACK_WIDGET_CHANNEL and its two sibling variables are set —
+ * so callers can fall back to a plain link.
+ */
+export function openFeedbackWidget(): boolean {
+  if (typeof document === "undefined") return false;
+
+  const host = document.getElementById(`${WIDGET_SHADOW_ID_PREFIX}loader-shadow`);
+  const button = host?.shadowRoot?.querySelector<HTMLButtonElement>("button");
+
+  if (!button) return false;
+
+  // The button toggles, so clicking it while the panel is open would close it.
+  if (!button.classList.contains("opened")) button.click();
+
+  return true;
+}
+
+// The loader mounts its button as `<div id="stmsg-widget-loader-shadow">`.
+const WIDGET_SHADOW_ID_PREFIX = "stmsg-widget-";
+
 interface FeedbackWidgetProps {
   widget?: string;
 }
