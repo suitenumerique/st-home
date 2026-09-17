@@ -10,6 +10,10 @@ const ANNUAIRE_SERVICE_PUBLIC_URL = "https://lannuaire.service-public.gouv.fr/";
 const PARKING_PAGE_HELP_URL =
   "https://aide.suite.anct.gouv.fr/socle/domaines/afficher-une-page-sur-son-domaine-sans-avoir-de-site-internet";
 const AFNIC_URL = "https://www.afnic.fr/";
+// The Afnic list of registrars, behind the last step and the closing call to
+// action.
+const REGISTRARS_URL =
+  "https://www.afnic.fr/noms-de-domaine/tout-savoir/annuaire-bureaux-enregistrement/";
 
 // V1: the hero only. Features, verbatims and FAQ are still being written.
 const domaines: ServicePage = {
@@ -19,6 +23,7 @@ const domaines: ServicePage = {
   proConnect: false,
   foundations: false,
   trialHeading: { lead: "Concerné\u202f?", action: "Agissez\u202f!" },
+  trialCta: { text: "Obtenir un nom de domaine", href: REGISTRARS_URL },
   seo: {
     title: "Domaines, dotez votre commune d’un nom de domaine conforme",
     description:
@@ -77,7 +82,7 @@ const domaines: ServicePage = {
       {
         title: <>Réserver son nom de domaine</>,
         description: <>Trouvez le bureau d&rsquo;enregistrement qui vous convient.</>,
-        href: "https://www.afnic.fr/noms-de-domaine/tout-savoir/annuaire-bureaux-enregistrement/",
+        href: REGISTRARS_URL,
       },
     ],
     link: { text: "Consulter la conformité de ma commune", href: CONFORMITY_MAP_URL },
