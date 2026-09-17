@@ -17,7 +17,7 @@ const HERO_BACKGROUND = `linear-gradient(180deg, rgba(0, 0, 145, ${GRADIENT_ALPH
 // as in the mockup.
 const SEARCH_BACKGROUND = `linear-gradient(0deg, rgba(0, 0, 145, ${GRADIENT_ALPHA}) 0%, rgba(0, 0, 145, 0) 425px)`;
 const ILLUSTRATION_MAX_HEIGHT = 370;
-const LOGO_MAX_HEIGHT = 90;
+const LOGO_HEIGHT = 90;
 const CONTENT_PADDING_TOP = 94;
 // Air between the hero text and the screenshot spanning the page below it.
 const CONTENT_PADDING_BOTTOM = 60;
@@ -64,15 +64,18 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
                   alt={hero.name}
                   width={hero.logo.width}
                   height={hero.logo.height}
-                  sizes={`${widthAtMaxHeight(hero.logo, LOGO_MAX_HEIGHT)}px`}
+                  sizes={`${widthAtMaxHeight(hero.logo, LOGO_HEIGHT)}px`}
                   priority
                   className={fr.cx("fr-mb-2w")}
                   style={{
                     display: "block",
                     width: "auto",
-                    height: "auto",
+                    height: LOGO_HEIGHT,
+                    // Narrower than the logo, the column shrinks it inside its
+                    // box rather than squashing it.
                     maxWidth: "100%",
-                    maxHeight: `${LOGO_MAX_HEIGHT}px`,
+                    objectFit: "contain",
+                    objectPosition: "left center",
                   }}
                 />
               ) : (

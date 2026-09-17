@@ -95,6 +95,11 @@ export type ServiceLink = {
  */
 export type ServiceFeatureRow = {
   title: ReactNode;
+  /**
+   * Keep the title on one line on wide screens, where it may run into the
+   * spare column next to the screenshot. It still wraps below that.
+   */
+  titleOnOneLine?: boolean;
   description: ReactNode;
   /** Omitted for the rows that are prose only. */
   highlights?: ServiceFeatureHighlight[];

@@ -228,7 +228,7 @@ function Result({
           title: `Accéder à ${serviceName} avec ${operatorLabel(eligibility.operator)}`,
           description: (
             <>
-              La structure de mutualisation partenaire peut accompagner votre structure à la mise en
+              La structure de mutualisation partenaire peut accompagner votre collectivité à la mise en
               œuvre des services de la Suite territoriale.
             </>
           ),
@@ -254,7 +254,7 @@ function Result({
           description: (
             <>
               L&rsquo;Agence nationale de la cohésion des territoires (ANCT) peut accompagner votre
-              structure à la mise en œuvre des services de la Suite territoriale.
+              collectivité à la mise en œuvre des services de la Suite territoriale.
             </>
           ),
           primaryLink: contactLink(),
@@ -265,7 +265,7 @@ function Result({
           title: `Autohéberger ${serviceName} sur votre instance`,
           description: (
             <>
-              Votre structure dépasse les seuils d&rsquo;éligibilité. Installez et administrez{" "}
+              Votre collectivité dépasse les seuils d&rsquo;éligibilité. Installez et administrez{" "}
               {serviceName} directement sur votre propre infrastructure.
             </>
           ),

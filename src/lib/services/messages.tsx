@@ -36,15 +36,15 @@ const messages: ServicePage = {
   hero: {
     name: "Messages",
     logo: {
-      src: "/images/services-logos/messages.png",
+      src: "/images/services-logos/messages.svg",
       width: 568,
       height: 160,
     },
     tagline: <>Envoyez et recevez vos courriels professionnels</>,
     description: (
       <>
-        Envoyez et recevez vos courriels et gérez votre calendrier professionnel dans un
-        environnement sécurisé.
+        Créez des adresses nominatives ou partagées pour votre collectivité et
+        gérez vos courriels professionnels en équipe.
       </>
     ),
     illustration: {
@@ -76,7 +76,7 @@ const messages: ServicePage = {
           { icon: Download, label: <>Importer votre ancienne boîte aux lettres</> },
           {
             icon: Doc,
-            label: <>Créer et utiliser des modèles prêt à l&rsquo;emploi</>,
+            label: <>Créer et utiliser des modèles prêts à l&rsquo;emploi</>,
           },
           { icon: Retry, label: <>Programmer une réponse automatique</> },
         ],
@@ -189,6 +189,15 @@ const messages: ServicePage = {
           </>
         ),
         author: <>Commune de Saint-Goussaud (23)</>,
+      },
+      {
+        quote: (
+          <>
+            On avait très peur d&rsquo;être submergé au support. Finalement, le produit est
+            tellement bien conçu qu&rsquo;il n&rsquo;y en a quasiment pas.
+          </>
+        ),
+        author: <>Syndicat Mixte La Fibre64 (64)</>,
       },
     ],
   },

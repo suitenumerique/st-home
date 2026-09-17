@@ -20,6 +20,17 @@
 }
 
 /*
+ * From the full container width up, that spare column leaves room for a title
+ * slightly wider than its own column. Narrower, it would run into the
+ * screenshot or off the screen, so it wraps.
+ */
+@media (min-width: 78rem) {
+  .featureTitleOneLine {
+    white-space: nowrap;
+  }
+}
+
+/*
  * FAQ answers are written as plain paragraphs, so the last one's bottom margin
  * would stack on top of the accordion's own padding.
  */

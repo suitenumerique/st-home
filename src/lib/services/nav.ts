@@ -22,7 +22,7 @@ export const servicesNav: { slug: string; navLabel: string }[] = [
   { slug: "domaines", navLabel: "Domaines" },
   { slug: "messages", navLabel: "Messages" },
   { slug: "fichiers", navLabel: "Fichiers" },
-  { slug: "rendez-vous", navLabel: "Rendez-vous" },
+  { slug: "rendez-vous", navLabel: "Rendez-vous Service Public" },
   { slug: "annuaire", navLabel: "Annuaire des collectivités" },
   { slug: "mes-adresses", navLabel: "Mes Adresses" },
 ];
