@@ -10,8 +10,7 @@ const ANCT_THRESHOLDS: Record<string, number> = { commune: 3500, epci: 15000 };
 const PLACEHOLDER = "Entrez le nom de votre territoire ou son code postal";
 const PLACEHOLDER_SMALL_SCREEN = "Nom ou code postal";
 const CONTACT_EMAIL = "contact@suite.anct.gouv.fr";
-// Offered to the collectivités above the ANCT thresholds that have no OPSN in
-// their périmètre. One guide covers every service, so it lives here rather than
+// Offered to the collectivités above the ANCT thresholds. One guide covers every service, so it lives here rather than
 // with each service.
 const SELF_HOSTING_URL =
   "https://docs.numerique.gouv.fr/docs/440cb67a-093c-4901-ac88-702c7b298ff5/";
@@ -36,6 +35,7 @@ export type Organization = {
 export type Eligibility =
   | { kind: "operator"; operator: Operator }
   | { kind: "operator-soon"; operator: Operator }
+  | { kind: "operator-above-threshold"; operator: Operator }
   | { kind: "anct" }
   | { kind: "self-hosted" };
 
@@ -71,9 +71,13 @@ function partnerOperator(operators: Operator[]): Operator | null {
 }
 
 export function eligibilityOf(organization: Organization): Eligibility {
-  // An OPSN takes precedence over the thresholds: it accompanies the
-  // collectivité whatever its population.
   const operator = partnerOperator(organization.operators ?? []);
+  const threshold = ANCT_THRESHOLDS[organization.type];
+  const aboveThreshold = threshold !== undefined && organization.population >= threshold;
+
+  // Above the thresholds, the OPSN may still offer something, but self-hosting
+  // is an option too.
+  if (operator && aboveThreshold) return { kind: "operator-above-threshold", operator };
 
   if (operator) {
     return operator.status === WITH_SERVICES
@@ -81,11 +85,7 @@ export function eligibilityOf(organization: Organization): Eligibility {
       : { kind: "operator-soon", operator };
   }
 
-  const threshold = ANCT_THRESHOLDS[organization.type];
-
-  if (threshold !== undefined && organization.population >= threshold) {
-    return { kind: "self-hosted" };
-  }
+  if (aboveThreshold) return { kind: "self-hosted" };
 
   return { kind: "anct" };
 }
@@ -202,6 +202,8 @@ function Result({
   eligibility: Eligibility;
   serviceName: string;
 }) {
+  const contactUs = <a href={`mailto:${CONTACT_EMAIL}`}>contactez-nous</a>;
+
   const allServicesLink = {
     text: "Voir tous les services accessibles",
     href: `/bienvenue/${commune.siret}`,
@@ -210,7 +212,7 @@ function Result({
   // Passing the OPSN pre-checks it on the contact form, as the blocks of
   // /bienvenue/[siret] do.
   const contactLink = (operator?: Operator) => ({
-    text: "Contacter",
+    text: "Commencer",
     href: `/bienvenue/${commune.siret}/contact${
       operator ? `?operator=${encodeURIComponent(operator.id)}` : ""
     }`,
@@ -225,15 +227,15 @@ function Result({
     switch (eligibility.kind) {
       case "operator":
         return {
-          title: `Accéder à ${serviceName} avec ${operatorLabel(eligibility.operator)}`,
+          title: `Accédez à ${serviceName} avec ${operatorLabel(eligibility.operator)}`,
           description: (
             <>
-              La structure de mutualisation partenaire peut accompagner votre collectivité à la mise en
-              œuvre des services de la Suite territoriale.
+              La structure de mutualisation de votre territoire peut accompagner votre collectivité
+              à la mise en œuvre des services de la Suite territoriale.
             </>
           ),
           primaryLink: contactLink(eligibility.operator),
-          footnote: <>Si vous avez une question sur ce partenaire, </>,
+          footnote: <>Si vous avez une question sur ce partenaire, {contactUs}.</>,
         };
       case "operator-soon":
         return {
@@ -246,11 +248,32 @@ function Result({
             </>
           ),
           primaryLink: contactLink(eligibility.operator),
-          footnote: <>Si vous avez une question sur ce partenaire, </>,
+          footnote: <>Si vous avez une question sur ce partenaire, {contactUs}.</>,
+        };
+      case "operator-above-threshold":
+        return {
+          title: `Coopérez avec ${operatorLabel(eligibility.operator)} pour utiliser ${serviceName}`,
+          description: (
+            <>
+              Contactez la structure de mutualisation de votre territoire pour connaître les
+              possibilités disponibles pour votre collectivité ou autohébergez le service en
+              autonomie.
+            </>
+          ),
+          primaryLink: contactLink(eligibility.operator),
+          footnote: (
+            <>
+              Si vous souhaitez créer votre propre instance, consultez le{" "}
+              <a href={SELF_HOSTING_URL} target="_blank" rel="noopener noreferrer">
+                guide d&rsquo;autohébergement
+              </a>
+              .
+            </>
+          ),
         };
       case "anct":
         return {
-          title: `Accéder à ${serviceName} avec l’ANCT`,
+          title: `Accédez à ${serviceName} avec l’ANCT`,
           description: (
             <>
               L&rsquo;Agence nationale de la cohésion des territoires (ANCT) peut accompagner votre
@@ -262,7 +285,7 @@ function Result({
         };
       case "self-hosted":
         return {
-          title: `Autohéberger ${serviceName} sur votre instance`,
+          title: `Autohébergez ${serviceName} sur votre instance`,
           description: (
             <>
               Votre collectivité dépasse les seuils d&rsquo;éligibilité. Installez et administrez{" "}
@@ -270,7 +293,7 @@ function Result({
             </>
           ),
           primaryLink: { text: "Guide d’autohébergement", href: SELF_HOSTING_URL },
-          footnote: <>Si vous avez une question, </>,
+          footnote: <>Si vous avez une question, {contactUs}.</>,
         };
     }
   })();
@@ -300,7 +323,6 @@ function Result({
           style={{ color: "var(--text-mention-grey)" }}
         >
           {footnote}
-          <a href={`mailto:${CONTACT_EMAIL}`}>contactez-nous</a>.
         </p>
       )}
     </>

@@ -2,8 +2,9 @@ import { eligibilityOf, type Operator } from "@/components/services/ServiceEligi
 import { expect, test } from "vitest";
 
 // The hero block of a service page must give the same answer as
-// /bienvenue/[siret]: an OPSN in the périmètre wins over the ANCT fallback and
-// over the self-hosting thresholds, whatever its partnership status.
+// /bienvenue/[siret]: an OPSN in the périmètre wins over the ANCT fallback,
+// whatever its partnership status. Above the thresholds, self-hosting is offered
+// alongside it.
 
 const operator = (overrides: Partial<Operator> = {}): Operator => ({
   id: "op-1",
@@ -55,19 +56,20 @@ test("an operator with no partnership status is ignored", () => {
   expect(eligibilityOf(commune(859, [operator({ status: null })]))).toEqual({ kind: "anct" });
 });
 
-test("self-hosting is offered above the thresholds, but only without an OPSN", () => {
+test("self-hosting is offered above the thresholds without an OPSN", () => {
   expect(eligibilityOf(commune(3500, []))).toEqual({ kind: "self-hosted" });
   expect(eligibilityOf(commune(3499, []))).toEqual({ kind: "anct" });
-
-  expect(eligibilityOf(commune(3500, [operator()]))).toEqual({
-    kind: "operator",
-    operator: operator(),
-  });
-  expect(eligibilityOf(commune(3500, [operator({ status: "intention" })]))).toEqual({
-    kind: "operator-soon",
-    operator: operator({ status: "intention" }),
-  });
 });
+
+test.each(["partenaire_avec_services", "intention"])(
+  "above the thresholds, an OPSN with status %s is offered alongside self-hosting",
+  (status) => {
+    expect(eligibilityOf(commune(3500, [operator({ status })]))).toEqual({
+      kind: "operator-above-threshold",
+      operator: operator({ status }),
+    });
+  },
+);
 
 test("the epci threshold applies to epcis, and no threshold to the other types", () => {
   const epci = { siret: "200000172", type: "epci", population: 15000, operators: [] };
