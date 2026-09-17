@@ -39,7 +39,7 @@ const fichiers: ServicePage = {
   hero: {
     name: "Fichiers",
     logo: {
-      src: "/images/services-logos/fichiers.png",
+      src: "/images/services-logos/fichiers.svg",
       width: 504,
       height: 160,
     },
@@ -111,8 +111,8 @@ const fichiers: ServicePage = {
         title: <>Conçu pour un travail fluide</>,
         description: <>Transférez et stockez vos documents sans heurts lors de vos échanges.</>,
         highlights: [
-          { icon: Send, label: <>Envoyez et recevez les fichiers lourds avec Transferts</> },
-          { icon: Mail, label: <>Enregistrez directement vos pièces jointes depuis Messages</> },
+          { icon: Send, label: <>Envoyer et recevoir vos fichiers lourds avec Transferts</> },
+          { icon: Mail, label: <>Enregistrer directement vos pièces jointes depuis Messages</> },
         ],
         link: { text: "Voir toutes les fonctionnalités", href: ALL_FEATURES_URL },
         screenshot: {
@@ -139,6 +139,12 @@ const fichiers: ServicePage = {
           </>
         ),
         author: <>Commune de Huelgoat</>,
+      },
+      {
+        quote: (
+          <>L&rsquo;interface est très épurée, intuitive également. Chapeau aux développeurs !</>
+        ),
+        author: <>OPSN, Régie de Gestion des Données (RGD)</>,
       },
     ],
   },

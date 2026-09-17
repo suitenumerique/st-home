@@ -29,14 +29,14 @@ const mesAdresses: ServicePage = {
   hero: {
     name: "Mes Adresses",
     logo: {
-      src: "/images/services-logos/adresses.png",
+      src: "/images/services-logos/adresses.svg",
       width: 728,
       height: 160,
     },
     tagline: <>Référencez toutes les adresses de votre commune</>,
     description: (
       <>
-        Créer ou mettre à jour votre Base Adresse Locale (BAL) pour offrir de meilleurs services à
+        Créez ou mettez à jour votre Base Adresse Locale (BAL) pour offrir de meilleurs services à
         vos administrés.
       </>
     ),
@@ -177,7 +177,7 @@ const mesAdresses: ServicePage = {
         Pour en savoir plus, consultez le{" "}
         <Link href={HELP_CENTRE_URL} target="_blank" rel="noopener noreferrer">
           centre d&rsquo;aide
-        </Link>{" "}
+        </Link>
         .
       </>
     ),

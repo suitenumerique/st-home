@@ -36,7 +36,7 @@ const cards: ProConnectCard[] = [
     title: <>Adresses mails nominatives</>,
     slug: "messages",
     href: MESSAGES_URL,
-    description: <>Avec Messages, créez des adresses de messageries professionnelles.</>,
+    description: <>Avec Messages, créez des adresses de messagerie professionnelles.</>,
   },
 ];
 

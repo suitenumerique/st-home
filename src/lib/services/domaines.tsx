@@ -4,9 +4,11 @@ import { type ServicePage } from "./types";
 const REFERENTIEL_URL = "/conformite/referentiel";
 const CONFORMITY_MAP_URL = "/conformite/cartographie";
 const PARTNERS_MAP_URL = "/cartographie-deploiement";
-// The help centre, and the two references the FAQ points at.
+// The help centre, and the references the FAQ points at.
 const HELP_CENTRE_URL = "https://aide.suite.anct.gouv.fr/socle";
 const ANNUAIRE_SERVICE_PUBLIC_URL = "https://lannuaire.service-public.gouv.fr/";
+const PARKING_PAGE_HELP_URL =
+  "https://aide.suite.anct.gouv.fr/socle/domaines/afficher-une-page-sur-son-domaine-sans-avoir-de-site-internet";
 const AFNIC_URL = "https://www.afnic.fr/";
 
 // V1: the hero only. Features, verbatims and FAQ are still being written.
@@ -26,7 +28,7 @@ const domaines: ServicePage = {
   hero: {
     name: "Domaines",
     logo: {
-      src: "/images/services-logos/domaines.png",
+      src: "/images/services-logos/domaines.svg",
       width: 604,
       height: 160,
     },
@@ -163,15 +165,25 @@ const domaines: ServicePage = {
           <>Ma commune n&rsquo;a pas besoin de site web, un nom de domaine est-il nécessaire ?</>
         ),
         answer: (
-          <p>
-            Oui. Le nom de domaine ne sert pas seulement à héberger un site, il conditionne vos
-            adresses de messagerie professionnelles et votre authentification sur ProConnect. Il
-            peut par ailleurs rediriger vers la page officielle de votre commune sur{" "}
-            <Link href={ANNUAIRE_SERVICE_PUBLIC_URL} target="_blank" rel="noopener noreferrer">
-              l&rsquo;Annuaire du service public
-            </Link>
-            , qui regroupe toutes les informations utiles à vos administrés.
-          </p>
+          <>
+            <p>
+              Oui. Le nom de domaine ne sert pas seulement à héberger un site, il conditionne vos
+              adresses de messagerie professionnelles et votre authentification sur ProConnect.
+            </p>
+            <p>
+              Si la collectivité n&rsquo;a pas de site web : elle peut opter pour une
+              &laquo;&nbsp;page parking&nbsp;&raquo; qui affichera des informations minimales et
+              renverra vers{" "}
+              <Link href={ANNUAIRE_SERVICE_PUBLIC_URL} target="_blank" rel="noopener noreferrer">
+                l&rsquo;Annuaire de l&rsquo;administration
+              </Link>{" "}
+              sur service-public.gouv.fr. Retrouvez l&rsquo;intégralité de la procédure sur{" "}
+              <Link href={PARKING_PAGE_HELP_URL} target="_blank" rel="noopener noreferrer">
+                cet article
+              </Link>
+              .
+            </p>
+          </>
         ),
       },
       {
