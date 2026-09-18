@@ -105,7 +105,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ${organizations.siret} as id,
           ${organizations.name} as name
         FROM ${organizations}
-        WHERE ${organizations.insee_reg} = ${reg as string}
+        WHERE (
+          ${organizations.insee_reg} = ${reg as string}
+          -- An EPCI spanning several regions is displayed (and counted) in each of them,
+          -- even though its own seat lies in only one
+          OR (
+            ${organizations.type} = 'epci'
+            AND ${organizations.siren} IN (
+              SELECT ${organizations.epci_siren} FROM ${organizations}
+              WHERE ${organizations.insee_reg} = ${reg as string}
+            )
+          )
+        )
         AND EXISTS (
           SELECT 1 FROM ${organizationsToServices}
           WHERE ${organizationsToServices.organizationSiret} = ${organizations.siret}
