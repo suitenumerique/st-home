@@ -224,7 +224,9 @@ export default function Bienvenue(props: PageProps) {
         {GetMainContent()}
       </section>
       <section className={fr.cx("fr-py-15w", "fr-mb-15w")}>
-        <TrialContact signupUrl={`/bienvenue/${commune?.siret}/contact`} priority="primary" />
+        <TrialContact
+          primaryAction={{ text: "Commencer", href: `/bienvenue/${commune?.siret}/contact` }}
+        />
       </section>
       <section
         className={fr.cx("fr-mt-6w")}
