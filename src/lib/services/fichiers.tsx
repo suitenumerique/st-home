@@ -146,6 +146,18 @@ const fichiers: ServicePage = {
         ),
         author: <>OPSN, Régie de Gestion des Données (RGD)</>,
       },
+      {
+        quote: (
+          <>
+            Tout d&rsquo;abord, je veux vous faire part de notre entière satisfaction quant à
+            l&rsquo;utilisation de la Suite Territoriale. Cet outil s&rsquo;est rapidement intégré à
+            notre quotidien et nous permet de gagner en efficacité, tout en facilitant la gestion.
+            Nous apprécions particulièrement sa simplicité d&rsquo;utilisation, son côté intuitif et
+            les fonctionnalités proposées, qui répondent pleinement à nos besoins.
+          </>
+        ),
+        author: <>Commune de Trizac (15)</>,
+      },
     ],
   },
 
