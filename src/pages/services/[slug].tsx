@@ -1,10 +1,14 @@
 import ServiceBanner from "@/components/services/ServiceBanner";
+import ServiceCases from "@/components/services/ServiceCases";
+import ServiceCriteria from "@/components/services/ServiceCriteria";
 import ServiceFaq from "@/components/services/ServiceFaq";
 import ServiceFeatures from "@/components/services/ServiceFeatures";
 import ServiceFoundations from "@/components/services/ServiceFoundations";
+import ServiceHelp from "@/components/services/ServiceHelp";
 import ServiceHero from "@/components/services/ServiceHero";
 import ServicePartners from "@/components/services/ServicePartners";
 import ServiceProConnect from "@/components/services/ServiceProConnect";
+import ServiceShowcase from "@/components/services/ServiceShowcase";
 import ServiceSteps from "@/components/services/ServiceSteps";
 import ServiceTestimonials from "@/components/services/ServiceTestimonials";
 import ServiceTrial from "@/components/services/ServiceTrial";
@@ -25,14 +29,16 @@ export default function ServicePage({ slug, adoptionCount }: ServicePageProps) {
   if (!service) return null;
 
   return (
-    // Keyed on the slug: every service renders through this one component, so
-    // without a remount React reuses the <img> elements across a navigation and
-    // the browser keeps painting the previous service's images under the new
-    // text until the new ones decode.
     <Fragment key={service.slug}>
       <NextSeo title={service.seo.title} description={service.seo.description} />
 
       <ServiceHero hero={service.hero} />
+
+      {service.showcase && <ServiceShowcase block={service.showcase} />}
+
+      {service.cases && <ServiceCases block={service.cases} />}
+
+      {service.criteria && <ServiceCriteria block={service.criteria} />}
 
       {service.steps && <ServiceSteps block={service.steps} />}
 
@@ -40,10 +46,10 @@ export default function ServicePage({ slug, adoptionCount }: ServicePageProps) {
 
       {service.partners && <ServicePartners block={service.partners} />}
 
+      {service.help && <ServiceHelp block={service.help} />}
+
       {service.features && <ServiceFeatures block={service.features} />}
 
-      {/* On every service page but those that opt out: the content lives in the
-          component, only the choice to show it belongs to the service. */}
       {service.proConnect !== false && <ServiceProConnect service={service} />}
 
       {service.testimonials && (

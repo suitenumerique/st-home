@@ -232,3 +232,159 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/*
+ * The cases block: cards of situations the visitor may be in. Each column is a
+ * flex stack so that the single card of a column grows to the height of the two
+ * facing it, and each card is one too so that its action sits on its bottom
+ * edge whatever the length of the text above.
+ */
+.caseColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: 100%;
+}
+
+.caseCard {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  background-color: var(--background-alt-grey);
+  border-radius: 8px;
+}
+
+/* Pushed to the bottom of the card, and kept from stretching across it. */
+.caseCta {
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+/*
+ * The numbered steps of a case, on a vertical timeline: the number sits in a
+ * circle in the gutter, and the line joining two circles is drawn by the step
+ * above. The line of the last step trails off dotted, as in the mockup.
+ */
+.caseSteps {
+  counter-reset: case-step;
+}
+
+.caseStep {
+  position: relative;
+  /* Air down to the next step, as in the mockup. */
+  padding-bottom: 50px;
+  padding-left: 2.5rem;
+  counter-increment: case-step;
+}
+
+.caseStep:last-child {
+  /* Only the trailing dots of the line remain below the last step. */
+  padding-bottom: 1.5rem;
+}
+
+.caseStep::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--text-action-high-blue-france);
+  font-weight: 700;
+  font-size: 0.75rem;
+  background-color: var(--background-alt-grey);
+  border: 2px solid var(--text-action-high-blue-france);
+  border-radius: 50%;
+  content: counter(case-step);
+}
+
+.caseStep::after {
+  position: absolute;
+  /* From under the circle down to the circle of the next step. */
+  top: 1.5rem;
+  bottom: 0;
+  left: 0.75rem;
+  width: 2px;
+  background-color: var(--text-action-high-blue-france);
+  content: "";
+  transform: translateX(-1px);
+}
+
+/*
+ * The line of the last step trails off as dots rather than stopping short.
+ * Drawn as a gradient rather than a dotted border, which would space its dots
+ * by their own width alone.
+ */
+.caseStep:last-child::after {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--text-action-high-blue-france) 0 2px,
+    transparent 2px 8px
+  );
+  background-color: transparent;
+}
+
+/* Lighter than the bold DSFR heading it is built on, as in the mockup. */
+.caseStepTitle {
+  color: var(--text-action-high-blue-france);
+  font-weight: 500;
+}
+
+/*
+ * The criteria block: white cards whose illustration is cropped by their own
+ * bottom edge, as in the mockup. The cards of a row share their height, so the
+ * crop is the same across the row whatever the length of the text above it.
+ */
+.criterionCard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background-color: #fff;
+  border: 1px solid var(--border-default-grey);
+  border-radius: 8px;
+}
+
+/*
+ * The foot of the card: it keeps the left padding of the card, and crops the
+ * illustration on its right and bottom edges. Pushed to the bottom so that the
+ * illustrations of a row line up.
+ */
+.criterionMedia {
+  margin-top: auto;
+  padding-left: 1.5rem;
+  overflow: hidden;
+}
+
+/*
+ * Blue and bold, as in the mockup, rather than the black DSFR heading. The
+ * size is pinned here rather than left to an `fr-text--*` class, which the
+ * DSFR `h3` rule competes with, both being `!important`.
+ */
+.criterionTitle {
+  color: var(--text-action-high-blue-france);
+  font-size: 16px !important;
+  line-height: 24px !important;
+}
+
+/* Wider than its slot: the illustration runs past the right edge of the card. */
+.criterionImage {
+  width: 125%;
+  max-width: none;
+  height: auto;
+}
+
+/* A card of the help block: the same soft white card as the ProConnect ones. */
+.helpCard {
+  background-color: #fff;
+  border: 1px solid var(--border-default-grey);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 6%);
+}
+
+/* The article title carries the card, so it keeps the text colour of a title. */
+.helpCard h3 a {
+  color: inherit;
+}
