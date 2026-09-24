@@ -3,17 +3,14 @@ import domaines from "./domaines";
 import fichiers from "./fichiers";
 import mesAdresses from "./mes-adresses";
 import messages from "./messages";
+import proconnect from "./proconnect";
 import rendezVous from "./rendez-vous";
 import { type ServicePage } from "./types";
 
 export * from "./types";
 
-/**
- * Services that have their own page under /services/<slug>, in header dropdown
- * order. Adding a service here creates its route; its dropdown entry lives in
- * `./nav`, which the layout imports instead of this module.
- */
 export const servicePages: ServicePage[] = [
+  proconnect,
   domaines,
   messages,
   fichiers,

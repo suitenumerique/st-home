@@ -4,14 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 const SECTION_PADDING = 60;
-// Displayed size, whatever the intrinsic size of the asset.
 const ILLUSTRATION_WIDTH = 300;
 
-/**
- * A tinted band pointing somewhere off the page, with an illustration standing
- * on its bottom edge: the illustration overflows the band's bottom padding and
- * is cropped by it, as in the mockup.
- */
 export default function ServiceBanner({ block }: { block: ServiceBannerBlock }) {
   const { illustration } = block;
 
@@ -42,8 +36,6 @@ export default function ServiceBanner({ block }: { block: ServiceBannerBlock }) 
           {illustration && (
             <div
               className={fr.cx("fr-col-12", "fr-col-md-5")}
-              // Cancels the band's bottom padding: the illustration sits on the
-              // edge and is cropped by it.
               style={{ marginBottom: -SECTION_PADDING, display: "flex", justifyContent: "center" }}
             >
               <Image
