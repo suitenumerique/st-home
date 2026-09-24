@@ -4,7 +4,6 @@ import { type ServicePage } from "./types";
 const PROCONNECT_HELP_URL = "https://www.proconnect.gouv.fr/aide";
 const REFERENTIEL_URL = "/conformite/referentiel";
 const ANNUAIRE_ENTREPRISES_URL = "https://annuaire-entreprises.data.gouv.fr/";
-const ANNUAIRE_ADMINISTRATION_URL = "https://lannuaire.service-public.gouv.fr/";
 const SERVICE_PUBLIC_URL = "https://service-public.gouv.fr";
 const NOMENCLATURE_URL = "https://aide.suite.anct.gouv.fr/socle/domaines/creer-mon-nom-de-domaine";
 const PLACEHOLDER_SUMMARY = (
@@ -81,29 +80,22 @@ const proconnect: ServicePage = {
   },
 
   cases: {
-    title: <>Quel identifiant utiliser pour me connecter&nbsp;?</>,
+    title: <>Quelle adresse utiliser pour me connecter&nbsp;?</>,
     description: (
       <>
         ProConnect s&rsquo;appuie sur{" "}
         <Link href={ANNUAIRE_ENTREPRISES_URL} target="_blank" rel="noopener noreferrer">
           l&rsquo;Annuaire des entreprises
         </Link>{" "}
-        pour vérifier le SIRET de l&rsquo;organisation et sur{" "}
-        <Link href={ANNUAIRE_ADMINISTRATION_URL} target="_blank" rel="noopener noreferrer">
-          l&rsquo;Annuaire de l&rsquo;administration
-        </Link>{" "}
-        pour s&rsquo;assurer de la concordance entre votre adresse de messagerie professionnelle et
-        le nom de domaine (@domaine.fr) de l&rsquo;organisation.
+        pour vérifier le SIRET de l&rsquo;organisation et sur l&rsquo;Annuaire de
+        l&rsquo;administration pour s&rsquo;assurer de la concordance entre votre adresse de
+        messagerie professionnelle et le nom de domaine (@domaine.fr) de l&rsquo;organisation.
       </>
     ),
     columns: [
       [
         {
-          title: (
-            <>
-              Ma collectivité a un nom de domaine et des adresses courriel nominatives officielles
-            </>
-          ),
+          title: <>Ma commune a un nom de domaine et des adresses nominatives conformes</>,
           description: (
             <>
               Pour vous connecter ou créer un compte, utilisez votre adresse de messagerie, dont le
@@ -118,11 +110,7 @@ const proconnect: ServicePage = {
           cta: { text: "Découvrir mes services", href: TERRITOIRES_URL, priority: "secondary" },
         },
         {
-          title: (
-            <>
-              Ma collectivité n&rsquo;a pas d&rsquo;adresses courriel nominatives professionnelles
-            </>
-          ),
+          title: <>Ma commune n&rsquo;a pas d&rsquo;adresses nominatives professionnelles</>,
           description: (
             <>
               Vous avez un nom de domaine conforme, mais vous n&rsquo;avez pas d&rsquo;adresses
@@ -136,17 +124,14 @@ const proconnect: ServicePage = {
       ],
       [
         {
-          title: <>Ma collectivité n&rsquo;a pas de nom de domaine officiel</>,
+          title: <>Ma commune ne possède pas de nom de domaine conforme</>,
           steps: [
             {
               title: <>Obtenez votre nom de domaine</>,
               description: (
                 <>
-                  Réservez un nom de domaine avec la{" "}
-                  <Link href={NOMENCLATURE_URL} target="_blank" rel="noopener noreferrer">
-                    nomenclature adéquate
-                  </Link>{" "}
-                  auprès d&rsquo;un bureau d&rsquo;enregistrement agréé.
+                  Réservez un nom de domaine avec la nomenclature adéquate auprès d&rsquo;un bureau
+                  d&rsquo;enregistrement agréé.
                 </>
               ),
             },
@@ -154,15 +139,12 @@ const proconnect: ServicePage = {
               title: <>Renseignez-le sur l&rsquo;Annuaire de l&rsquo;administration</>,
               description: (
                 <>
-                  Déclarez votre nouveau nom de domaine sur{" "}
-                  <Link
-                    href={ANNUAIRE_ADMINISTRATION_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    l&rsquo;Annuaire de l&rsquo;administration
-                  </Link>{" "}
-                  de service-public.gouv.fr.
+                  Déclarez votre nouveau nom de domaine sur l&rsquo;Annuaire de
+                  l&rsquo;administration de{" "}
+                  <Link href={SERVICE_PUBLIC_URL} target="_blank" rel="noopener noreferrer">
+                    service-public.gouv.fr
+                  </Link>
+                  .
                 </>
               ),
             },
@@ -171,7 +153,7 @@ const proconnect: ServicePage = {
               description: (
                 <>
                   Créez les adresses de messagerie pour tous les membres de votre collectivité avec
-                  l&rsquo;outil de votre choix ou <Link href={MESSAGES_URL}>Messages</Link>.
+                  l&rsquo;outil de votre choix ou Messages.
                 </>
               ),
             },
