@@ -119,7 +119,7 @@ const domaines: ServicePage = {
         width: 131,
         height: 70,
       },
-      { src: "/images/logo-afnic.png", alt: "Afnic", width: 175, height: 70 },
+      { src: "/images/logo-afnic.png", alt: "Afnic", width: 108, height: 70 },
       { src: "/images/logo-declic.png", alt: "Déclic", width: 214, height: 41, displayHeight: 40 },
       { src: "/images/logo-anssi.png", alt: "ANSSI", width: 70, height: 70 },
     ],
