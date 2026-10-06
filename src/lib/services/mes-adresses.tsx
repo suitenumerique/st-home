@@ -44,14 +44,14 @@ const mesAdresses: ServicePage = {
     illustration: {
       src: "/images/services-illlu/adresses-hero.webp",
       alt: "",
-      width: 980,
-      height: 980,
+      width: 740,
+      height: 740,
     },
     screenshot: {
       src: "/images/services-illlu/adresses-top.webp",
       alt: "L’éditeur de Mes Adresses, avec la carte des voies de la commune et la liste des numéros",
-      width: 1728,
-      height: 1077,
+      width: 2400,
+      height: 1497,
     },
   },
 
@@ -76,8 +76,8 @@ const mesAdresses: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/adresses-features-1.webp",
           alt: "",
-          width: 1162,
-          height: 802,
+          width: 1200,
+          height: 828,
         },
       },
       {
@@ -93,8 +93,8 @@ const mesAdresses: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/adresses-features-2.webp",
           alt: "",
-          width: 1184,
-          height: 810,
+          width: 1200,
+          height: 822,
         },
       },
       {
@@ -110,8 +110,8 @@ const mesAdresses: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/adresses-features-3.webp",
           alt: "",
-          width: 1116,
-          height: 764,
+          width: 1200,
+          height: 822,
         },
       },
     ],

@@ -56,8 +56,8 @@ const messages: ServicePage = {
     screenshot: {
       src: "/images/services-illlu/messages-top.webp",
       alt: "La boîte de réception de Messages, avec la liste des courriels et la conversation ouverte",
-      width: 2412,
-      height: 1639,
+      width: 2400,
+      height: 1632,
     },
     eligibilitySearch: true,
   },
@@ -84,8 +84,8 @@ const messages: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/messages-features-1.webp",
           alt: "",
-          width: 1206,
-          height: 832,
+          width: 1200,
+          height: 828,
         },
       },
       {
@@ -106,8 +106,8 @@ const messages: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/messages-features-2.webp",
           alt: "",
-          width: 1206,
-          height: 822,
+          width: 1200,
+          height: 819,
         },
       },
       {
@@ -130,8 +130,8 @@ const messages: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/messages-features-3.webp",
           alt: "",
-          width: 1188,
-          height: 819,
+          width: 1200,
+          height: 828,
         },
       },
     ],

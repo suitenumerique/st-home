@@ -59,8 +59,8 @@ const fichiers: ServicePage = {
     screenshot: {
       src: "/images/services-illlu/fichiers-top.webp",
       alt: "L’espace de stockage de Fichiers, avec l’arborescence des dossiers de la collectivité",
-      width: 1920,
-      height: 1306,
+      width: 2400,
+      height: 1633,
     },
     eligibilitySearch: true,
   },
@@ -83,8 +83,8 @@ const fichiers: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/fichiers-features-1.webp",
           alt: "",
-          width: 1206,
-          height: 825,
+          width: 1200,
+          height: 821,
         },
       },
       {
@@ -103,8 +103,8 @@ const fichiers: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/fichiers-features-2.webp",
           alt: "",
-          width: 1206,
-          height: 832,
+          width: 1200,
+          height: 828,
         },
       },
       {
@@ -118,8 +118,8 @@ const fichiers: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/fichiers-features-3.webp",
           alt: "",
-          width: 1206,
-          height: 830,
+          width: 1200,
+          height: 826,
         },
       },
     ],

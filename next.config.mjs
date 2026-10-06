@@ -33,6 +33,13 @@ const moduleExports = {
         ? [new URL(process.env.DOCS_CMS_URL.replace(/\/+$/, "") + "/**")]
         : []),
     ],
+    // No 3840: resizing to it exceeds the container's memory quota.
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 2400],
+  },
+  experimental: {
+    // sharp otherwise uses one thread per core, each with its own buffers.
+    imgOptConcurrency: 1,
+    imgOptSequentialRead: true,
   },
 
   env: {

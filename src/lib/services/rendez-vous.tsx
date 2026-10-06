@@ -55,8 +55,8 @@ const rendezVous: ServicePage = {
     screenshot: {
       src: "/images/services-illlu/rdv-top.webp",
       alt: "L’agenda de Rendez-vous Service Public, avec les créneaux ouverts à la réservation",
-      width: 1920,
-      height: 1057,
+      width: 2400,
+      height: 1322,
     },
   },
 
@@ -79,8 +79,8 @@ const rendezVous: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/rdv-features-1.webp",
           alt: "",
-          width: 1206,
-          height: 830,
+          width: 1200,
+          height: 827,
         },
       },
       {
@@ -99,8 +99,8 @@ const rendezVous: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/rdv-features-2.webp",
           alt: "",
-          width: 1206,
-          height: 846,
+          width: 1200,
+          height: 842,
         },
       },
       {
@@ -120,8 +120,8 @@ const rendezVous: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/rdv-features-3.webp",
           alt: "",
-          width: 1206,
-          height: 829,
+          width: 1200,
+          height: 826,
         },
       },
     ],
