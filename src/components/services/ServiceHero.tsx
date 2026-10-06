@@ -53,7 +53,11 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
         <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters", "fr-grid-row--middle")}>
           {/* As many columns as the tagline needs next to the illustration,
               the whole row without. */}
-          <div className={fr.cx("fr-col-12", illustration ? textColumn : "fr-col-md-12")}>
+          <div
+            className={fr.cx("fr-col-12", illustration ? textColumn : "fr-col-md-12")}
+            // At the top whether or not there is a CTA, so logos line up across services.
+            style={{ alignSelf: "flex-start" }}
+          >
             <h1
               className={fr.cx("fr-mb-2w")}
               style={{ fontSize: TITLE_FONT_SIZE, lineHeight: `${TITLE_LINE_HEIGHT}px` }}
