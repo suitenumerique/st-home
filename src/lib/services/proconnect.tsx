@@ -58,8 +58,8 @@ const proconnect: ServicePage = {
     illustration: {
       src: "/images/services-illlu/proconnect-hero.png",
       alt: "",
-      width: 1520,
-      height: 1472,
+      width: 740,
+      height: 716,
     },
   },
 
@@ -74,8 +74,8 @@ const proconnect: ServicePage = {
     illustration: {
       src: "/images/services-illlu/proconnect-access.png",
       alt: "",
-      width: 4732,
-      height: 584,
+      width: 2400,
+      height: 296,
     },
   },
 
