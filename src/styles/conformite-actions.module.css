@@ -1,0 +1,76 @@
+/* Figures of the previous selection while the new one loads */
+.loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.share {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 1rem 0 0.75rem;
+}
+
+.shareValue {
+  font-size: 2rem;
+  line-height: 1.1;
+  color: var(--text-title-blue-france);
+}
+
+.shareDetail {
+  font-size: 0.875rem;
+  color: var(--text-mention-grey);
+}
+
+/* Keeps the modal at its full height while the first page loads, to avoid a resize */
+.listLoading {
+  min-height: 100vh;
+}
+
+.listTable th:nth-child(1) {
+  width: 55%;
+}
+
+.listTable th:nth-child(2) {
+  width: 20%;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+}
+
+.pagination :global(.fr-pagination__list) {
+  flex-wrap: nowrap;
+}
+
+/* Arrows only, the labels do not fit in the modal width (still read by screen readers) */
+.pagination :global(.fr-pagination__link--prev),
+.pagination :global(.fr-pagination__link--next) {
+  font-size: 0;
+}
+
+.pagination :global(.fr-pagination__link--prev)::before,
+.pagination :global(.fr-pagination__link--next)::before,
+.pagination :global(.fr-pagination__link--prev)::after,
+.pagination :global(.fr-pagination__link--next)::after {
+  margin: 0 !important;
+}
+
+.sortButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  color: inherit;
+  cursor: pointer;
+}
+
+.criterion {
+  background-image: none;
+}
+
+.criterion::after {
+  display: none;
+}
