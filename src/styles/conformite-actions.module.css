@@ -8,6 +8,13 @@
   text-align: center;
 }
 
+@media (max-width: 47.98em) {
+  .title {
+    font-size: 1.75rem;
+    line-height: 2.25rem;
+  }
+}
+
 /* Smaller than the default h1 (2.5rem) so the title fits on one line in a 1200px container */
 @media (min-width: 62em) {
   .title {

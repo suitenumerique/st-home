@@ -96,6 +96,12 @@ export function PageLayout({ children }: LayoutProps) {
           },
         },
         {
+          text: "Actions",
+          linkProps: {
+            href: "/conformite/actions",
+          },
+        },
+        {
           text: "Données",
           linkProps: {
             href: "https://www.data.gouv.fr/datasets/donnees-de-la-presence-numerique-des-territoires/",

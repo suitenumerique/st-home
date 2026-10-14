@@ -477,8 +477,6 @@ const ConformiteActions: NextPage = () => {
       <NextSeo
         title="Actions prioritaires pour la présence numérique des territoires"
         description="Les actions prioritaires portées par l'ANCT et ses partenaires pour accompagner les collectivités jusqu'à atteindre 100 % de conformité au RPNT"
-        noindex
-        nofollow
       />
       <div className={fr.cx("fr-container", "fr-my-6w")}>
         <h1 className={styles.title}>

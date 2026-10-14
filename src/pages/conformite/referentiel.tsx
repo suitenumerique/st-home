@@ -86,9 +86,9 @@ export const ReferentielConformite: ReferentielSection[] = [
               changement.
             </p>
             <p>
-              Si la collectivité n&rsquo;a pas de site web : elle peut opter pour une «&nbsp;page
-              parking&nbsp;» affichant des informations minimales. Retrouvez l&rsquo;intégralité
-              de la procédure sur{" "}
+              Si la collectivité n&rsquo;a pas de site web : elle peut opter pour une page de
+              présence minimale (aussi appelée «&nbsp;page parking&nbsp;») affichant quelques
+              informations. Retrouvez l&rsquo;intégralité de la procédure sur{" "}
               <Link
                 href="https://aide.suite.anct.gouv.fr/socle/domaines/afficher-une-page-sur-son-domaine-sans-avoir-de-site-internet"
                 target="_blank"
