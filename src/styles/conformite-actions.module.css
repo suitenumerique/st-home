@@ -4,6 +4,25 @@
   pointer-events: none;
 }
 
+.title {
+  text-align: center;
+}
+
+/* Smaller than the default h1 (2.5rem) so the title fits on one line in a 1200px container */
+@media (min-width: 62em) {
+  .title {
+    font-size: 2.25rem;
+    line-height: 2.75rem;
+  }
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
 .share {
   display: flex;
   flex-direction: column;

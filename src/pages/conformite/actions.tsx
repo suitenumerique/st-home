@@ -20,6 +20,7 @@ import { Select } from "@codegouvfr/react-dsfr/Select";
 import { Table } from "@codegouvfr/react-dsfr/Table";
 import { NextPage } from "next";
 import { NextSeo } from "next-seo";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
@@ -28,12 +29,33 @@ import styles from "../../styles/conformite-actions.module.css";
 import type { ActionsGroup, ActionsResponse } from "../api/rcpnt/actions";
 import type { ActionsListResponse } from "../api/rcpnt/actions-list";
 
-type OperatorOption = { id: string; name: string; status: string | null; departments: string[] };
+type OperatorOption = {
+  id: string;
+  name: string;
+  name_with_article: string | null;
+  status: string | null;
+  departments: string[];
+};
+
+// "de" + name_with_article ("l'Adico", "le CDG09", "Gironde Numérique"): "de l'Adico", "du CDG09"
+const adherentsLabel = (op: OperatorOption) => {
+  const name = op.name_with_article || op.name;
+  const prefix = name.startsWith("le ")
+    ? "du "
+    : name.startsWith("les ")
+      ? "des "
+      : name.startsWith("la ") || name.startsWith("l'")
+        ? "de "
+        : /^[aeiouyàâéèêîôûœ]/i.test(name)
+          ? "d'"
+          : "de ";
+  return `Adhérentes ${prefix}${name.replace(/^(le|les) /, "")}`;
+};
 
 // An action belongs to the section of its first criterion
 const SECTIONS = [
-  { title: "Nom de domaine et site internet", prefix: "1." },
-  { title: "Messagerie", prefix: "2." },
+  { title: "Nom de domaine et site internet", prefix: "1.", logo: "/images/rcpnt-site.svg" },
+  { title: "Messagerie", prefix: "2.", logo: "/images/rcpnt-messagerie.svg" },
 ];
 
 const departmentNames: Record<string, string> = Object.fromEntries(
@@ -55,7 +77,7 @@ const sortLabel = (label: string, active: boolean, desc: boolean) =>
   `Trier par ${label.toLowerCase()}${active ? `, tri actuel ${desc ? "décroissant" : "croissant"}` : ""}`;
 
 const departmentLabel = (group: ActionsGroup) =>
-  `${group.id} ${departmentNames[group.id] ?? ""}`.trim();
+  `${group.id} - ${departmentNames[group.id] ?? ""}`.replace(/ - $/, "");
 
 const detailModal = createModal({ id: "rpnt-action-detail", isOpenedByDefault: false });
 
@@ -125,7 +147,7 @@ type Tab = Breakdown | "list";
 
 const TAB_LABELS: Record<Tab, string> = {
   groups: "Par département",
-  operators: "Par partenaire",
+  operators: "Par structure de mutualisation",
   list: "Liste complète",
 };
 
@@ -305,14 +327,14 @@ const ActionCard = ({
       desc={
         <>
           {action.description}
-          {action.helpUrl && (
-            <>
-              <br />
-              <a href={action.helpUrl} target="_blank" rel="noopener noreferrer">
-                Procédure détaillée
-              </a>
-            </>
-          )}
+          <br />
+          <a
+            href={action.helpUrl ?? `/conformite/referentiel#${action.criteria[0]}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Procédure détaillée
+          </a>
           <span className={styles.share}>
             <strong className={styles.shareValue}>
               {formatPercent(percent(concerned, total))}
@@ -418,6 +440,8 @@ const ConformiteActions: NextPage = () => {
     [],
   );
 
+  const chosenOperator = operators.find((op) => op.id === operator);
+
   const operatorOptions = operators
     .filter((op) => !dep || op.departments?.includes(dep))
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -440,6 +464,7 @@ const ConformiteActions: NextPage = () => {
   const exportQuery = `${filterQuery}&scope=${scope}`;
 
   const uncovered = data?.groups.reduce((sum, group) => sum + group.uncovered, 0) ?? 0;
+  const total = data?.groups.reduce((sum, group) => sum + group.total, 0) ?? 0;
 
   // Per-département breakdown only makes sense unfiltered; per-partner unless one OPSN is chosen
   const breakdowns: Breakdown[] = [
@@ -450,29 +475,31 @@ const ConformiteActions: NextPage = () => {
   return (
     <>
       <NextSeo
-        title="Actions pour atteindre 100 % de conformité au RPNT"
-        description="Actions identifiées pour amener les collectivités à 100 % de conformité au RPNT"
+        title="Actions prioritaires pour la présence numérique des territoires"
+        description="Les actions prioritaires portées par l'ANCT et ses partenaires pour accompagner les collectivités jusqu'à atteindre 100 % de conformité au RPNT"
         noindex
         nofollow
       />
       <div className={fr.cx("fr-container", "fr-my-6w")}>
-        <h1>Actions pour atteindre 100&nbsp;% de conformité au RPNT</h1>
+        <h1 className={styles.title}>
+          Actions prioritaires pour la présence numérique des territoires
+        </h1>
         <p>
-          Chaque carte décrit une action qui rapproche les collectivités de la conformité au{" "}
+          À travers la Suite territoriale, l&rsquo;ANCT et les{" "}
+          <Link href="/partenaires">structures de mutualisation partenaires</Link> poursuivent un
+          objectif commun&nbsp;: accompagner les collectivités jusqu&rsquo;à atteindre{" "}
+          <strong>100&nbsp;% de conformité</strong> au{" "}
           <Link href="/conformite/referentiel">
-            référentiel de la Présence Numérique des Territoires
-          </Link>
-          . La part affichée est celle des collectivités concernées par l&rsquo;action parmi celles
-          du périmètre choisi. Une collectivité peut relever de plusieurs actions.
+            Référentiel de la présence numérique des territoires (RPNT)
+          </Link>{" "}
+          à l&rsquo;échelle nationale.
         </p>
         <p>
-          Seuls les critères «&nbsp;Essentiel&nbsp;» du{" "}
-          <Link href="/conformite/referentiel#referentiel">référentiel</Link> sont pris en
-          compte&nbsp;: ils correspondent au niveau minimal de sécurité attendu d&rsquo;une
-          collectivité. Une collectivité est à 100&nbsp;% de conformité lorsqu&rsquo;elle les
-          remplit tous. Le filtre «&nbsp;OPSN partenaire&nbsp;» restreint l&rsquo;analyse aux
-          collectivités du périmètre d&rsquo;un des <Link href="/partenaires">partenaires</Link> de
-          la Suite territoriale.
+          Pour y parvenir, les{" "}
+          <strong>Actions prioritaires pour la présence numérique des territoires (APNT)</strong>{" "}
+          traduisent ce référentiel en gestes concrets. Seuls ses critères «&nbsp;Essentiel&nbsp;»
+          sont pris en compte&nbsp;: ils correspondent au niveau minimal de sécurité attendu. Une
+          collectivité est «&nbsp;Conforme&nbsp;» lorsqu&rsquo;elle les remplit tous.
         </p>
 
         <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters", "fr-mb-4w")}>
@@ -487,20 +514,20 @@ const ConformiteActions: NextPage = () => {
               <option value="">Tous les départements</option>
               {departmentOptions.map(({ code, name }) => (
                 <option key={code} value={code}>
-                  {code} {name}
+                  {code} - {name}
                 </option>
               ))}
             </Select>
           </div>
           <div className={fr.cx("fr-col-12", "fr-col-md-4")}>
             <Select
-              label="OPSN partenaire"
+              label="Structure de mutualisation partenaire"
               nativeSelectProps={{
                 value: operator,
                 onChange: (e) => setFilter("operator", e.target.value),
               }}
             >
-              <option value="">Tous les partenaires</option>
+              <option value="">Toutes les structures de mutualisation</option>
               {operatorOptions.map((op) => (
                 <option key={op.id} value={op.id}>
                   {op.name}
@@ -521,7 +548,7 @@ const ConformiteActions: NextPage = () => {
                 .filter(([key]) => operator || key !== "adherents")
                 .map(([key, label]) => (
                   <option key={key} value={key}>
-                    {label}
+                    {key === "adherents" && chosenOperator ? adherentsLabel(chosenOperator) : label}
                   </option>
                 ))}
             </Select>
@@ -539,6 +566,15 @@ const ConformiteActions: NextPage = () => {
         {!data && !error && <p>Chargement…</p>}
 
         <div aria-busy={loading} className={loading ? styles.loading : undefined}>
+          {data && scope === "adherents" && !dep && total === 0 && (
+            <Alert
+              severity="info"
+              small
+              description="Cette structure de mutualisation ne nous a pas encore fait parvenir la liste de ses adhérents."
+              className={fr.cx("fr-mb-4w")}
+            />
+          )}
+
           {data && uncovered > 0 && (
             <Alert
               severity="info"
@@ -551,7 +587,10 @@ const ConformiteActions: NextPage = () => {
           {data &&
             sections.map(({ section, actions }) => (
               <section key={section.title} className={fr.cx("fr-mb-6w")}>
-                <h2>{section.title}</h2>
+                <div className={styles.sectionHeader}>
+                  <Image src={section.logo} alt="" width={60} height={60} aria-hidden="true" />
+                  <h2 className={fr.cx("fr-mb-0")}>{section.title}</h2>
+                </div>
                 <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters")}>
                   {actions.map((action) => (
                     <div

@@ -11,8 +11,9 @@ export const SCOPE_LABELS = {
   "communes-3500": "Communes de moins de 3 500 habitants",
   epcis: "EPCI",
   "epcis-15000": "EPCI de moins de 15 000 habitants",
-  // Communes and EPCI adherent to the chosen OPSN (or to any OPSN), instead of in its périmètre
-  adherents: "Adhérentes de l'OPSN",
+  // Communes and EPCI adherent to the chosen OPSN (or to any OPSN), instead of in its périmètre.
+  // The page replaces this label with the name of the chosen OPSN.
+  adherents: "Adhérentes de la structure de mutualisation",
 };
 
 export type Scope = keyof typeof SCOPE_LABELS;

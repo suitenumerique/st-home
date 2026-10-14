@@ -92,101 +92,107 @@ const PARKING_HELP_URL =
 export const RPNT_ACTIONS: RpntAction[] = [
   {
     id: "parking",
-    title: "Ajouter une page de parking sur le domaine existant",
+    title: "Publier une page de présence minimale sur le domaine existant",
     description:
-      "La collectivité a un nom de domaine (celui de sa messagerie) mais pas de site internet.",
+      "La collectivité dispose d'un nom de domaine (celui de sa messagerie) mais d'aucun site internet. Une page de présence minimale (aussi appelée « page parking »), affichée sur ce domaine, suffit à rendre sa présence en ligne officielle sans créer de site complet.",
     criteria: ["1.1"],
     helpUrl: PARKING_HELP_URL,
     matches: sql`(${siteAbsent} AND ${emailDomainOwn})`,
   },
   {
     id: "acheter-domaine",
-    title: "Acheter un nom de domaine pour la collectivité",
+    title: "Réserver un nom de domaine pour la collectivité",
     description:
-      "Ni site internet, ni nom de domaine propre : la messagerie est absente ou sur un domaine générique, étranger ou non souverain.",
+      "La collectivité ne dispose pas de nom de domaine conforme, ni pour un site internet ni pour sa messagerie, actuellement absente ou hébergée sur un domaine générique (gmail, orange...).",
     criteria: ["1.1", "2.2"],
-    helpUrl: "https://www.afnic.fr/noms-de-domaine/tout-savoir/creer-un-nom-de-domaine/",
+    helpUrl: "https://suiteterritoriale.anct.gouv.fr/services/domaines",
     matches: sql`(${siteAbsent} AND NOT ${emailDomainOwn})`,
   },
   {
     id: "corriger-url-site",
-    title: "Corriger l'adresse du site déclarée sur Service-Public.gouv.fr",
-    description: "L'adresse du site est déclarée dans un format invalide.",
+    title: "Corriger l'adresse du site internet déclarée sur Service-Public.gouv.fr",
+    description:
+      "L'adresse du site internet déclarée sur Service-Public.gouv.fr n'est pas une URL valide. Elle doit être corrigée pour renvoyer vers le site de la collectivité.",
     criteria: ["1.1"],
     matches: has("WEBSITE_MALFORMED"),
   },
   {
     id: "site-souverain",
-    title: "Passer le site sur une extension de domaine souveraine",
+    title: "Migrer le site internet sur une extension souveraine",
     description:
-      "Le site utilise une extension non conforme (.com, .org...) ou un domaine à accents.",
+      "Le site internet utilise une extension générique ou étrangère (.com, .org, .net...). Le domaine doit être réservé sous une extension souveraine (.fr, .eu, extension régionale) et l'ancienne adresse redirigée vers la nouvelle.",
     criteria: ["1.2"],
-    helpUrl: "https://www.afnic.fr/noms-de-domaine/tout-savoir/creer-un-nom-de-domaine/",
     matches: has("WEBSITE_DOMAIN_EXTENSION", "WEBSITE_DOMAIN_IDNA"),
   },
   {
     id: "site-hors-ligne",
-    title: "Remettre en ligne le site internet",
+    title: "Rétablir l'accès au site internet",
     description:
-      "Le site est injoignable (erreur, délai dépassé ou page blanche). S'il ne peut pas être remis en ligne, afficher à la place une page de parking sur le domaine.",
+      "Le site internet est injoignable (erreur, délai dépassé ou page blanche). Il doit être réparé ou remis en service. Si ce n'est pas possible, une page de présence minimale doit être affichée sur le domaine en attendant la résolution.",
     criteria: ["1.3"],
-    helpUrl: PARKING_HELP_URL,
     matches: has("WEBSITE_DOWN"),
   },
   {
     id: "https",
-    title: "Rediriger le site de HTTP vers HTTPS",
-    description: "Le site n'est pas servi en HTTPS.",
+    title: "Rediriger le site internet HTTP vers HTTPS",
+    description:
+      "Le site internet reste accessible en HTTP, sans redirection automatique vers la version sécurisée HTTPS : les échanges avec les visiteurs ne sont pas chiffrés.",
     criteria: ["1.4"],
     matches: has("WEBSITE_HTTP_REDIRECT"),
   },
   {
     id: "certificat-ssl",
-    title: "Renouveler le certificat SSL du site",
-    description: "Le certificat SSL est invalide, expiré ou ne correspond pas au domaine.",
+    title: "Renouveler le certificat SSL du site internet",
+    description:
+      "Le certificat SSL du site internet est invalide, expiré ou ne correspond pas au domaine.",
     criteria: ["1.5"],
     matches: has("WEBSITE_SSL"),
   },
   {
     id: "aligner-redirection",
-    title: "Aligner l'adresse déclarée et la destination du site",
-    description: "Le site déclaré redirige vers un autre nom de domaine.",
+    title: "Déclarer l'adresse réelle du site internet",
+    description:
+      "L'adresse du site internet déclarée par la collectivité (sur Service-Public.gouv.fr) redirige vers un autre nom de domaine. L'adresse déclarée doit être celle sur laquelle le site internet est réellement publié.",
     criteria: ["1.6"],
     matches: has("WEBSITE_DOMAIN_REDIRECT"),
   },
   {
     id: "declarer-messagerie",
     title: "Déclarer une adresse de messagerie sur Service-Public.gouv.fr",
-    description: "Aucune adresse de messagerie valide n'est déclarée.",
+    description:
+      "Aucune adresse de messagerie n'est déclarée dans l'Annuaire de l'administration, ou l'adresse renseignée est erronée.",
     criteria: ["2.1"],
     matches: has("EMAIL_MISSING", "EMAIL_MALFORMED"),
   },
   {
     id: "messagerie-domaine-site",
-    title: "Créer une messagerie sur le domaine du site",
+    title: "Créer une messagerie sur le domaine du site internet",
     description:
-      "La messagerie déclarée est sur un domaine générique (gmail, orange...), étranger ou non souverain, alors que la collectivité a un site.",
+      "La messagerie déclarée est hébergée sur un domaine générique (gmail, orange...) ou non souverain alors que la collectivité dispose déjà d'un nom de domaine via son site.",
     criteria: ["2.2"],
     matches: sql`(${emailDomainBad} AND NOT ${siteAbsent})`,
   },
   {
     id: "aligner-domaines",
-    title: "Aligner le domaine de la messagerie sur celui du site",
-    description: "La messagerie et le site utilisent deux domaines différents.",
+    title: "Aligner le domaine de la messagerie sur celui du site internet",
+    description:
+      "La collectivité dispose d'un nom de domaine propre pour sa messagerie et d'un autre pour son site internet. Les deux doivent coïncider afin que les usagers identifient une seule identité en ligne.",
     criteria: ["2.3"],
     matches: sql`(${has("EMAIL_DOMAIN_MISMATCH")} AND NOT ${emailDomainBad})`,
   },
   {
     id: "mx",
-    title: "Configurer l'enregistrement MX du domaine de messagerie",
-    description: "Le domaine de messagerie ne répond pas ou n'a pas d'enregistrement MX.",
+    title: "Rendre le domaine de messagerie fonctionnel",
+    description:
+      "Le domaine de la messagerie ne répond pas ou n'indique pas de serveur de messagerie (enregistrement MX) : la collectivité ne peut pas recevoir de messages.",
     criteria: ["2.4"],
     matches: has("DNS_DOWN", "DNS_MX_MISSING"),
   },
   {
     id: "messagerie-ue",
     title: "Héberger la messagerie dans l'Union européenne",
-    description: "Le serveur de messagerie est situé hors de l'Union européenne.",
+    description:
+      "Le serveur de messagerie de la collectivité est situé hors de l'Union européenne. La messagerie doit être migrée vers un hébergeur européen pour garantir la protection des données.",
     criteria: ["2.8"],
     matches: has("DNS_MX_OUTSIDE_EU"),
   },
