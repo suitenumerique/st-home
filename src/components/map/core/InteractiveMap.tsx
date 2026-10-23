@@ -6,7 +6,7 @@ import * as turf from "@turf/turf";
 import { mapStyles } from "carte-facile";
 import "carte-facile/carte-facile.css";
 import * as d3 from "d3";
-import maplibregl, { MapLayerMouseEvent, StyleSpecification } from "maplibre-gl";
+import type { MapLayerMouseEvent, Map as MaplibreMap, StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -207,7 +207,7 @@ export const InteractiveMap = ({
     }
   };
 
-  const clearHoverState = useCallback((map: maplibregl.Map) => {
+  const clearHoverState = useCallback((map: MaplibreMap) => {
     if (hoveredDeptIdRef.current !== null && map.getSource("operators-depts")) {
       try {
         map.setFeatureState(
