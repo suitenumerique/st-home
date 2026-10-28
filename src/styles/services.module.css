@@ -376,15 +376,112 @@
   height: auto;
 }
 
-/* A card of the help block: the same soft white card as the ProConnect ones. */
-.helpCard {
+/*
+ * Steps along a horizontal line: each item draws its share of the line across
+ * its whole width, gutters included, so the shares join up into one line
+ * running behind the numbers. Stacked on mobile, the line goes.
+ */
+.timelineStep {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 48em) {
+  .timelineStep::before {
+    position: absolute;
+    /* Through the middle of the number: the DSFR gutter padding, half the number. */
+    top: calc(0.75rem + 0.75rem - 1px);
+    right: 0;
+    left: 0;
+    border-top: 2px solid var(--background-action-low-blue-france);
+    content: "";
+  }
+}
+
+.timelineNumber {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: 0 auto 1.5rem;
+  color: var(--text-action-high-blue-france);
+  font-weight: 700;
+  font-size: 0.75rem;
+  background-color: var(--background-action-low-blue-france);
+  border-radius: 50%;
+}
+
+.timelineCard {
+  flex: 1;
   background-color: #fff;
   border: 1px solid var(--border-default-grey);
   border-radius: 8px;
   box-shadow: 0 2px 6px rgb(0 0 0 / 6%);
 }
 
-/* The article title carries the card, so it keeps the text colour of a title. */
-.helpCard h3 a {
-  color: inherit;
+/*
+ * ProConnect email check: the field of the hero search, narrower, its button
+ * blue from the start.
+ */
+.emailCheckTitle {
+  max-width: 30rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.emailCheck {
+  max-width: 29rem;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.emailCheckField {
+  position: relative;
+  background-color: #fff;
+  border: 1px solid var(--border-default-grey);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 6%);
+}
+
+.emailCheckField :global(.fr-input) {
+  height: 3rem;
+  max-height: 3rem;
+  margin-top: 0;
+  padding-left: 1rem;
+  padding-right: 4rem;
+  background-color: transparent;
+  border-radius: 8px;
+  /* Neither the DSFR underline nor its focus outline, outside the states below. */
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+:global(.fr-input-group--error) .emailCheckField :global(.fr-input) {
+  box-shadow: inset 0 -2px 0 0 var(--border-plain-error) !important;
+}
+
+:global(.fr-input-group--info) .emailCheckField :global(.fr-input) {
+  box-shadow: inset 0 -2px 0 0 var(--border-plain-info) !important;
+}
+
+.emailCheckField :global(.fr-input::placeholder) {
+  color: var(--text-mention-grey);
+}
+
+/* DSFR's own `icons/system/arrow-right-line.svg`, in place of the reset arrow. */
+.emailCheckSubmit::before {
+  -webkit-mask-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M16.172 11 10.808 5.636l1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2h12.172Z"/></svg>');
+  mask-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M16.172 11 10.808 5.636l1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2h12.172Z"/></svg>');
+}
+
+.emailCheckStatus {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.5rem 2rem;
+  align-items: center;
+  justify-content: center;
+  text-align: left;
 }

@@ -6,8 +6,14 @@ import Link from "next/link";
 const SECTION_PADDING = 60;
 const LOGOS_GAP = 40;
 const LOGO_HEIGHT = 70;
+const COLUMN_SPLIT = {
+  4: ["fr-col-md-4", "fr-col-md-8"],
+  5: ["fr-col-md-5", "fr-col-md-7"],
+} as const;
 
 export default function ServicePartners({ block }: { block: ServicePartnersBlock }) {
+  const [textColumn, logosColumn] = COLUMN_SPLIT[block.textColumns ?? 4];
+
   return (
     <section style={block.tinted ? { backgroundColor: "var(--background-alt-grey)" } : undefined}>
       <div
@@ -15,7 +21,7 @@ export default function ServicePartners({ block }: { block: ServicePartnersBlock
         style={{ paddingTop: SECTION_PADDING, paddingBottom: SECTION_PADDING }}
       >
         <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters", "fr-grid-row--middle")}>
-          <div className={fr.cx("fr-col-12", "fr-col-md-4")}>
+          <div className={fr.cx("fr-col-12", textColumn)}>
             <h2 className={fr.cx("fr-text--lg", "fr-text--bold", "fr-mb-1w")}>{block.title}</h2>
             <p className={fr.cx("fr-text--sm", "fr-mb-0")}>{block.description}</p>
 
@@ -35,7 +41,7 @@ export default function ServicePartners({ block }: { block: ServicePartnersBlock
             )}
           </div>
 
-          <div className={fr.cx("fr-col-12", "fr-col-md-8")}>
+          <div className={fr.cx("fr-col-12", logosColumn)}>
             <ul
               className={fr.cx("fr-raw-list")}
               style={{

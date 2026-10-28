@@ -78,10 +78,37 @@ export type ServiceStepsBlock = {
   link?: ServiceLink;
 };
 
+export type ServiceTimelineBlock = {
+  title: ReactNode;
+  description: ReactNode;
+  steps: ServiceLink[];
+};
+
+export type DeploymentStatKey = "identityProviders" | "proconnectedOrganizations";
+
+export type DeploymentStats = Record<DeploymentStatKey, number>;
+
+export type ServiceShowcaseStat = {
+  stat: DeploymentStatKey;
+  label: ReactNode;
+};
+
 export type ServiceShowcaseBlock = {
   title: ReactNode;
   description: ReactNode;
-  illustration: ServiceIllustration;
+  card: {
+    title: ReactNode;
+    description: ReactNode;
+    stats: ServiceShowcaseStat[];
+    background: ServiceIllustration;
+  };
+};
+
+export type ServicePrerequisitesBlock = {
+  title: ReactNode;
+  description: ReactNode;
+  /** The cards are drawn in the images, titles included: the alt text carries them. */
+  illustrations: ServiceIllustration[];
 };
 
 export type ServiceCaseStep = {
@@ -115,18 +142,6 @@ export type ServiceCriteriaBlock = {
   link?: ServiceLink;
 };
 
-export type ServiceHelpArticle = {
-  title: ReactNode;
-  description?: ReactNode;
-  href: string;
-};
-
-export type ServiceHelpBlock = {
-  title: ReactNode;
-  description: ReactNode;
-  articles: ServiceHelpArticle[];
-};
-
 export type ServiceBannerBlock = {
   title: ReactNode;
   description: ReactNode;
@@ -145,6 +160,8 @@ export type ServicePartnersBlock = {
   link?: ServiceLink;
   tinted?: boolean;
   logosAlign?: "spread" | "right";
+  /** Columns out of 12 for the text on a wide screen, 4 by default. */
+  textColumns?: 4 | 5;
 };
 
 export type ServiceTestimonial = {
@@ -192,9 +209,12 @@ export type ServicePage = {
   trialCta?: ServiceLink;
   hero: ServiceHeroBlock;
   showcase?: ServiceShowcaseBlock;
+  prerequisites?: ServicePrerequisitesBlock;
+  timeline?: ServiceTimelineBlock;
+  /** The ProConnect email check, under the timeline. */
+  emailCheck?: boolean;
   cases?: ServiceCasesBlock;
   criteria?: ServiceCriteriaBlock;
-  help?: ServiceHelpBlock;
   steps?: ServiceStepsBlock;
   banner?: ServiceBannerBlock;
   partners?: ServicePartnersBlock;

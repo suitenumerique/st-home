@@ -24,6 +24,7 @@ const CONTENT_PADDING_BOTTOM = 60;
 // Larger than the DSFR h1, as in the mockup.
 const TITLE_FONT_SIZE = 50;
 const TITLE_LINE_HEIGHT = 60;
+const DESCRIPTION_MAX_WIDTH = 576;
 // Air around the eligibility block, inside its tinted band.
 const SEARCH_PADDING = 120;
 
@@ -88,7 +89,12 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
               <span style={{ display: "block", fontWeight: 400 }}>{hero.tagline}</span>
             </h1>
 
-            <p className={fr.cx("fr-text--md", "fr-mb-0")}>{hero.description}</p>
+            <p
+              className={fr.cx("fr-text--md", "fr-mb-0")}
+              style={{ maxWidth: DESCRIPTION_MAX_WIDTH }}
+            >
+              {hero.description}
+            </p>
 
             {hero.cta && (
               <Link
