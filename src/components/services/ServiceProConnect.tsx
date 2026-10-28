@@ -77,7 +77,7 @@ export default function ServiceProConnect({ service }: { service: ServicePage })
           {cards.map((card, index) => (
             <div key={index} className={fr.cx("fr-col-12", "fr-col-sm-6")}>
               <div
-                className={`${fr.cx("fr-p-3w")} ${styles.linkCard} ${styles.proConnectCard}`}
+                className={`${fr.cx("fr-p-3w")} ${styles.linkCard} ${styles.interactiveCard}`}
                 style={{
                   height: "100%",
                   display: "flex",

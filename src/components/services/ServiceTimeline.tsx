@@ -17,7 +17,9 @@ export default function ServiceTimeline({ block }: { block: ServiceTimelineBlock
             <span className={styles.timelineNumber} aria-hidden="true">
               {index + 1}
             </span>
-            <div className={`${fr.cx("fr-p-2w")} ${styles.linkCard} ${styles.timelineCard}`}>
+            <div
+              className={`${fr.cx("fr-p-2w")} ${styles.linkCard} ${styles.timelineCard} ${styles.interactiveCard}`}
+            >
               <p className={fr.cx("fr-text--md", "fr-text--bold", "fr-mb-0")}>
                 <Link
                   href={step.href}
