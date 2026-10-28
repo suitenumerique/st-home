@@ -78,6 +78,29 @@ export type ServiceStepsBlock = {
   link?: ServiceLink;
 };
 
+export type ServiceOfferItem = {
+  label: ReactNode;
+  tooltip?: ReactNode;
+};
+
+export type ServiceOffer = {
+  name: ReactNode;
+  tagline: ReactNode;
+  price: ReactNode;
+  yearlyPrice: ReactNode;
+  included: ServiceOfferItem[];
+  options?: ServiceOfferItem[];
+  link: ServiceLink;
+};
+
+export type ServiceOffersBlock = {
+  id: string;
+  title: ReactNode;
+  description: ReactNode;
+  offers: ServiceOffer[];
+  link?: ServiceLink;
+};
+
 export type ServiceTimelineBlock = {
   title: ReactNode;
   description: ReactNode;
@@ -108,7 +131,7 @@ export type ServicePrerequisitesBlock = {
   title: ReactNode;
   description: ReactNode;
   /** The cards are drawn in the images, titles included: the alt text carries them. */
-  illustrations: ServiceIllustration[];
+  illustrations: (ServiceIllustration & { fullWidth?: boolean })[];
 };
 
 export type ServiceCaseStep = {
@@ -151,6 +174,7 @@ export type ServiceBannerBlock = {
 
 export type ServicePartnerLogo = ServiceIllustration & {
   displayHeight?: number;
+  href?: string;
 };
 
 export type ServicePartnersBlock = {
@@ -213,9 +237,12 @@ export type ServicePage = {
   timeline?: ServiceTimelineBlock;
   /** The ProConnect email check, under the timeline. */
   emailCheck?: boolean;
+  /** The domain check, under the prerequisites, its links pointing at this anchor. */
+  domainCheck?: { offersHref: string };
   cases?: ServiceCasesBlock;
   criteria?: ServiceCriteriaBlock;
   steps?: ServiceStepsBlock;
+  offers?: ServiceOffersBlock;
   banner?: ServiceBannerBlock;
   partners?: ServicePartnersBlock;
   features?: ServiceFeaturesBlock;

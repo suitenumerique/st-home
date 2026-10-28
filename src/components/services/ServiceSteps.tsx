@@ -35,7 +35,7 @@ export default function ServiceSteps({ block }: { block: ServiceStepsBlock }) {
           return (
             <li key={index} className={fr.cx("fr-col-12", "fr-col-md-4")}>
               <div
-                className={`${fr.cx("fr-p-3w")} ${styles.linkCard}`}
+                className={`${fr.cx("fr-p-3w")} ${styles.linkCard} ${step.href ? styles.interactiveCard : ""}`}
                 style={{
                   height: "100%",
                   border: "1px solid var(--border-default-grey)",
@@ -59,13 +59,16 @@ export default function ServiceSteps({ block }: { block: ServiceStepsBlock }) {
                     // the title as the card's target.
                     <Link
                       href={step.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      {...(step.href.startsWith("#")
+                        ? {}
+                        : { target: "_blank", rel: "noopener noreferrer" })}
                       className={fr.cx(
                         "fr-link",
                         "fr-raw-link",
                         "fr-link--icon-right",
-                        "fr-icon-arrow-right-up-line",
+                        step.href.startsWith("#")
+                          ? "fr-icon-arrow-down-line"
+                          : "fr-icon-arrow-right-up-line",
                       )}
                     >
                       <span className={styles.linkCardOverlay} aria-hidden="true" />

@@ -55,17 +55,31 @@ export default function ServicePartners({ block }: { block: ServicePartnersBlock
             >
               {block.logos.map((logo, index) => {
                 const height = logo.displayHeight ?? LOGO_HEIGHT;
+                const image = (
+                  <Image
+                    src={logo.src}
+                    alt={logo.alt}
+                    width={logo.width}
+                    height={logo.height}
+                    sizes={`${Math.round((height * logo.width) / logo.height)}px`}
+                    style={{ display: "block", width: "auto", height }}
+                  />
+                );
 
                 return (
                   <li key={index} style={{ flex: "0 0 auto" }}>
-                    <Image
-                      src={logo.src}
-                      alt={logo.alt}
-                      width={logo.width}
-                      height={logo.height}
-                      sizes={`${Math.round((height * logo.width) / logo.height)}px`}
-                      style={{ width: "auto", height }}
-                    />
+                    {logo.href ? (
+                      <Link
+                        href={logo.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={fr.cx("fr-raw-link")}
+                      >
+                        {image}
+                      </Link>
+                    ) : (
+                      image
+                    )}
                   </li>
                 );
               })}

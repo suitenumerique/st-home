@@ -12,13 +12,20 @@ export default function ServicePrerequisites({ block }: { block: ServicePrerequi
 
       <ul className={fr.cx("fr-raw-list", "fr-grid-row", "fr-grid-row--gutters")}>
         {block.illustrations.map((illustration) => (
-          <li key={illustration.src} className={fr.cx("fr-col-12", "fr-col-md-6")}>
+          <li
+            key={illustration.src}
+            className={fr.cx("fr-col-12", !illustration.fullWidth && "fr-col-md-6")}
+          >
             <Image
               src={illustration.src}
               alt={illustration.alt}
               width={illustration.width}
               height={illustration.height}
-              sizes={`(min-width: 78rem) ${CONTAINER_CONTENT_WIDTH / 2}px, (min-width: 48rem) 50vw, 100vw`}
+              sizes={
+                illustration.fullWidth
+                  ? `(min-width: 78rem) ${CONTAINER_CONTENT_WIDTH}px, 100vw`
+                  : `(min-width: 78rem) ${CONTAINER_CONTENT_WIDTH / 2}px, (min-width: 48rem) 50vw, 100vw`
+              }
               style={{ display: "block", width: "100%", height: "auto" }}
             />
           </li>

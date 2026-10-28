@@ -1,3 +1,4 @@
+import DomainCheck from "@/components/services/DomainCheck";
 import ProConnectEmailCheck from "@/components/services/ProConnectEmailCheck";
 import ServiceBanner from "@/components/services/ServiceBanner";
 import ServiceCases from "@/components/services/ServiceCases";
@@ -6,6 +7,7 @@ import ServiceFaq from "@/components/services/ServiceFaq";
 import ServiceFeatures from "@/components/services/ServiceFeatures";
 import ServiceFoundations from "@/components/services/ServiceFoundations";
 import ServiceHero from "@/components/services/ServiceHero";
+import ServiceOffers from "@/components/services/ServiceOffers";
 import ServicePartners from "@/components/services/ServicePartners";
 import ServicePrerequisites from "@/components/services/ServicePrerequisites";
 import ServiceProConnect from "@/components/services/ServiceProConnect";
@@ -42,6 +44,8 @@ export default function ServicePage({ slug, adoptionCount, deploymentStats }: Se
 
       {service.prerequisites && <ServicePrerequisites block={service.prerequisites} />}
 
+      {service.domainCheck && <DomainCheck offersHref={service.domainCheck.offersHref} />}
+
       {service.timeline && <ServiceTimeline block={service.timeline} />}
 
       {service.emailCheck && <ProConnectEmailCheck />}
@@ -51,6 +55,8 @@ export default function ServicePage({ slug, adoptionCount, deploymentStats }: Se
       {service.criteria && <ServiceCriteria block={service.criteria} />}
 
       {service.steps && <ServiceSteps block={service.steps} />}
+
+      {service.offers && <ServiceOffers block={service.offers} />}
 
       {service.banner && <ServiceBanner block={service.banner} />}
 
