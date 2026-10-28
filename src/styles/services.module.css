@@ -68,6 +68,14 @@
   inset: 0;
 }
 
+.proConnectCard:hover {
+  background-color: var(--background-default-grey-hover);
+}
+
+.proConnectCard:active {
+  background-color: var(--background-default-grey-active);
+}
+
 /* Links inside the description stay reachable above that overlay. */
 .linkCard p :global(a) {
   position: relative;
