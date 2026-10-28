@@ -120,7 +120,7 @@ const messages: ServicePage = {
         ),
         highlights: [
           { icon: Calendrier, label: <>Gérer vos évènements avec Calendrier</> },
-          { icon: Contacts, label: <>Créer vos groupes avec Contacts</> },
+          { icon: Contacts, label: <>Créer vos groupes avec Contacts (à venir)</> },
           {
             icon: LinkIcon,
             label: <>Configurer des intégrations (clé API, widget, webhook)</>,
