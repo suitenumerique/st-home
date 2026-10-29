@@ -269,7 +269,7 @@ function Result({
               Bonne nouvelle&nbsp;! Le nom de domaine respecte les critères du Référentiel de la
               présence numérique des territoires.
               <br />
-              Découvrez vos services selon votre administration et sa localité.
+              Découvrez vos services selon votre administration et sa localisation.
             </>
           ),
           actions: startServices(false),

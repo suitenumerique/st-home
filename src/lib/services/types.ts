@@ -84,7 +84,9 @@ export type ServiceOfferItem = {
 };
 
 export type ServiceOffer = {
-  name: ReactNode;
+  /** Displayed in capitals next to the logo. */
+  name: string;
+  logo: Omit<ServiceIllustration, "alt">;
   tagline: ReactNode;
   price: ReactNode;
   yearlyPrice: ReactNode;
@@ -98,7 +100,10 @@ export type ServiceOffersBlock = {
   title: ReactNode;
   description: ReactNode;
   offers: ServiceOffer[];
-  link?: ServiceLink;
+  /** Next to each price, its asterisk pointing at the footnote. */
+  priceTerms: ReactNode;
+  footnote: ReactNode;
+  link?: ServiceLink & { lead: ReactNode };
 };
 
 export type ServiceTimelineBlock = {

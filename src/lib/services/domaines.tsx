@@ -1,4 +1,3 @@
-import { Tooltip } from "@codegouvfr/react-dsfr/Tooltip";
 import Link from "next/link";
 import { type ServicePage } from "./types";
 
@@ -9,12 +8,12 @@ const PARTNERS_MAP_URL = "/cartographie-deploiement";
 const HELP_CENTRE_URL = "https://aide.suite.anct.gouv.fr/socle";
 const ANNUAIRE_SERVICE_PUBLIC_URL = "https://lannuaire.service-public.gouv.fr/";
 const AFNIC_URL = "https://www.afnic.fr/";
+const SOLIDNAMES_URL = "https://solidnames.fr/nom-de-domaine-souverain-pour-les-communes/";
 // The Afnic list of registrars, behind the last step and the closing call to
 // action.
 const REGISTRARS_URL =
   "https://www.afnic.fr/noms-de-domaine/tout-savoir/annuaire-bureaux-enregistrement/";
 
-// V1: the hero only. Features, verbatims and FAQ are still being written.
 const OFFERS_ANCHOR = "bureaux-enregistrement";
 const ADMINISTRATIVE_STEPS = {
   label: <>Démarches administratives</>,
@@ -126,27 +125,18 @@ const domaines: ServicePage = {
     title: <>Obtenez votre nom de domaine</>,
     description: (
       <>
-        L&rsquo;Afnic
-        <Tooltip
-          kind="click"
-          title={
-            <>
-              L&rsquo;Association française pour le nommage Internet en coopération (Afnic) gère le
-              registre des noms de domaine en France.
-            </>
-          }
-        />{" "}
-        a choisi trois bureaux d&rsquo;enregistrement indépendants à l&rsquo;issue d&rsquo;un appel
-        à candidatures. Chaque partenaire s&rsquo;engage à proposer une offre pour le montant
-        indiqué ci-dessous, elle s&rsquo;applique uniquement pour l&rsquo;extension .fr. Pour
-        obtenir une extension régionale, consultez directement les offres existantes.
+        L&rsquo;Association française pour le nommage Internet en coopération (Afnic), en charge des
+        noms de domaine en France, a retenu trois bureaux d&rsquo;enregistrement indépendants à
+        l&rsquo;issue d&rsquo;un appel à candidatures.
       </>
     ),
+    priceTerms: <>HT pour 10&nbsp;ans*</>,
     offers: [
       {
-        name: <>NETIM</>,
-        tagline: <>Réservez, posez vos questions par courriel</>,
-        price: <>70&nbsp;€ HT pour 10&nbsp;ans</>,
+        name: "Netim",
+        logo: { src: "/images/logo-netim.png", width: 75, height: 75 },
+        tagline: <>Pour les collectivités qui peuvent fonctionner de manière autonome.</>,
+        price: <>70&nbsp;€</>,
         yearlyPrice: <>soit 7&nbsp;€ par an</>,
         included: [
           { label: <>Réservation du nom de domaine</> },
@@ -155,14 +145,15 @@ const domaines: ServicePage = {
           { label: <>Outil de gestion en ligne</> },
         ],
         link: {
-          text: "Accéder à l’offre de NETIM",
+          text: "Accéder à l’offre Netim",
           href: "https://www.netim.com/fr/nom-domaine/collectivite",
         },
       },
       {
-        name: <>Numérian</>,
-        tagline: <>Choisissez grâce à nos conseils, appelez si besoin</>,
-        price: <>150&nbsp;€ HT pour 10&nbsp;ans</>,
+        name: "Numérian",
+        logo: { src: "/images/logo-numerian.png", width: 65, height: 75 },
+        tagline: <>Pour les collectivités qui souhaitent plus d&rsquo;accompagnement.</>,
+        price: <>150&nbsp;€</>,
         yearlyPrice: <>soit 15&nbsp;€ par an</>,
         included: [
           { label: <>Réservation du nom de domaine</> },
@@ -171,17 +162,18 @@ const domaines: ServicePage = {
           { label: <>Outil de gestion en ligne</> },
           { label: <>Accompagnement et conseils</> },
         ],
-        options: [{ label: <>Site internet clé en main</> }],
+        options: [{ label: <>Site internet clé en main, sur devis</> }],
         link: {
-          text: "Accéder à l’offre de Numérian",
+          text: "Accéder à l’offre Numérian",
           href: "https://numerian.fr/noms-de-domaine/",
         },
       },
       {
-        name: <>Solidnames</>,
-        tagline: <>Profitez d&rsquo;un interlocuteur dédié et d&rsquo;un audit</>,
-        price: <>288&nbsp;€ HT pour 10&nbsp;ans</>,
-        yearlyPrice: <>soit 28,80&nbsp;€ par an</>,
+        name: "Solidnames",
+        logo: { src: "/images/logo-solidnames.png", width: 59, height: 59 },
+        tagline: <>Pour les collectivités qui souhaitent un accompagnement avec un expert dédié.</>,
+        price: <>288&nbsp;€</>,
+        yearlyPrice: <>soit 28,8&nbsp;€ par an</>,
         included: [
           { label: <>Réservation du nom de domaine</> },
           ADMINISTRATIVE_STEPS,
@@ -196,16 +188,38 @@ const domaines: ServicePage = {
           },
         ],
         options: [
-          { label: <>Site internet clé en main</> },
+          {
+            label: (
+              <>
+                Site internet clé en main,{" "}
+                <Link href={SOLIDNAMES_URL} target="_blank" rel="noopener noreferrer">
+                  voir l&rsquo;offre
+                </Link>
+              </>
+            ),
+          },
           { label: <>Protection contre l&rsquo;usurpation du domaine</> },
         ],
         link: {
-          text: "Accéder à l’offre de Solidnames",
-          href: "https://solidnames.fr/nom-de-domaine-souverain-pour-les-communes/",
+          text: "Accéder à l’offre Solidnames",
+          href: SOLIDNAMES_URL,
         },
       },
     ],
-    link: { text: "Annuaire des bureaux d’enregistrement", href: REGISTRARS_URL },
+    footnote: (
+      <>
+        *Chaque partenaire s&rsquo;engage sur les tarifs indiqués, ils concernent uniquement
+        l&rsquo;extension .fr.
+        <br />
+        Pour obtenir une extension d&rsquo;outre-mer ou régionale, rapprochez-vous du bureau
+        d&rsquo;enregistrement choisi pour obtenir un devis.
+      </>
+    ),
+    link: {
+      lead: <>La collectivité a la liberté de choisir un autre bureau d&rsquo;enregistrement.</>,
+      text: "Voir la liste complète",
+      href: REGISTRARS_URL,
+    },
   },
 
   banner: {
@@ -339,8 +353,9 @@ const domaines: ServicePage = {
               numéro de votre département : nomdelacommune71.fr.
             </p>
             <p>
-              Il est recommandé de réserver tous les noms de domaine proches de celui qui sera
-              utilisé.
+              Pensez à réserver aussi les noms de domaine proches de celui que vous utiliserez, par
+              exemple avec d&rsquo;autres extensions. Cela évite qu&rsquo;un tiers s&rsquo;en serve
+              pour se faire passer pour votre commune.
             </p>
           </>
         ),
@@ -380,10 +395,12 @@ const domaines: ServicePage = {
         question: <>Si je change de nom de domaine, quel impact sur ma messagerie ?</>,
         answer: (
           <p>
-            Vos adresses actuelles continuent de fonctionner. Les nouvelles adresses avec votre nom
-            de domaine (<em>mairie@nom-de-votre-commune.fr</em>) sont créées avec les services de la
-            Suite territoriale, et le passage de l&rsquo;ancienne à la nouvelle se fait
-            progressivement, avec l&rsquo;équipe de la Suite territoriale ou nos partenaires locaux.
+            Votre messagerie continue de fonctionner. Vos adresses actuelles restent utilisables
+            pendant la transition, tant que vous conservez votre ancien nom de domaine. Vous créez
+            ensuite vos nouvelles adresses sur le nouveau nom de domaine, avec votre outil de
+            messagerie habituel ou avec Messages, la messagerie de La Suite territoriale. Le passage
+            se fait progressivement, avec l&rsquo;équipe de La Suite territoriale ou ses partenaires
+            locaux. Pensez à prévenir vos correspondants de votre nouvelle adresse.
           </p>
         ),
       },
