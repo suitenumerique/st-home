@@ -53,6 +53,9 @@ export default function DomainCheck({ offersHref }: { offersHref: string }) {
   };
 
   const error = state.status === "invalid";
+  const wide =
+    state.status === "result" &&
+    (state.check.kind === "accent" || state.check.kind === "compliant");
   const empty = state.status === "idle" && value.trim() === "";
 
   return (
@@ -61,7 +64,7 @@ export default function DomainCheck({ offersHref }: { offersHref: string }) {
         className={fr.cx("fr-container")}
         style={{ paddingTop: SECTION_PADDING_TOP, paddingBottom: SECTION_PADDING_BOTTOM }}
       >
-        <div className={styles.heroSearchText}>
+        <div className={`${styles.heroSearchText} ${wide ? styles.heroSearchTextWide : ""}`}>
           <h2 className={fr.cx("fr-h3", "fr-mb-2w")}>
             Vérifier le nom de domaine de ma collectivité
           </h2>

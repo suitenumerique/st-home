@@ -55,8 +55,8 @@ export default function ServiceSteps({ block }: { block: ServiceStepsBlock }) {
                 )}
                 <h3 className={fr.cx("fr-text--md", "fr-text--bold", "fr-mb-1w")}>
                   {step.href ? (
-                    // `fr-raw-link` drops the underline: the arrow already marks
-                    // the title as the card's target.
+                    // `fr-raw-link` drops the underline: the card's hover already
+                    // marks the title as its target.
                     <Link
                       href={step.href}
                       {...(step.href.startsWith("#")
@@ -65,10 +65,9 @@ export default function ServiceSteps({ block }: { block: ServiceStepsBlock }) {
                       className={fr.cx(
                         "fr-link",
                         "fr-raw-link",
-                        "fr-link--icon-right",
-                        step.href.startsWith("#")
-                          ? "fr-icon-arrow-down-line"
-                          : "fr-icon-arrow-right-up-line",
+                        ...(step.href.startsWith("#")
+                          ? []
+                          : (["fr-link--icon-right", "fr-icon-arrow-right-up-line"] as const)),
                       )}
                     >
                       <span className={styles.linkCardOverlay} aria-hidden="true" />

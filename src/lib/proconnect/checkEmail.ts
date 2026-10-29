@@ -1,5 +1,5 @@
 export type EmailCheck =
-  | { kind: "compliant"; provider: string }
+  | { kind: "compliant"; provider: string; siret: string }
   | { kind: "shared"; provider: string }
   | {
       kind: "generic";

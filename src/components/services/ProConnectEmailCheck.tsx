@@ -9,11 +9,10 @@ import { type FormEvent, type ReactNode, useId, useRef, useState } from "react";
 
 const SECTION_BACKGROUND =
   "linear-gradient(180deg, rgba(246, 246, 246, 0) 0%, var(--background-alt-grey) 50%)";
-const SECTION_PADDING = 120;
+// The timeline above already ends on 120px of air.
+const SECTION_PADDING_TOP = 24;
+const SECTION_PADDING_BOTTOM = 120;
 const CONTACT_EMAIL = "contact@suite.anct.gouv.fr";
-const ACCOUNT_CREATION_URL =
-  "https://proconnect.crisp.help/fr/article/comment-creer-un-compte-sur-proconnect-q4h0ci/#3-vous-faites-partie-dune-administration-ou-structure-partenaire";
-const TERRITOIRES_URL = "/territoires";
 const MESSAGES_URL = "/services/messages";
 const DOMAINES_URL = "/services/domaines";
 const COMMUNE_PLACEHOLDER = "Entrez le nom de votre territoire ou son code postal";
@@ -88,7 +87,10 @@ export default function ProConnectEmailCheck() {
           L&rsquo;adresse <strong>{state.email}</strong>&nbsp;n&rsquo;est rattachée à aucune
           collectivité dans nos annuaires, veuillez préciser le nom de votre collectivité.
         </p>
-        <div className={styles.heroSearch} style={{ textAlign: "left" }}>
+        <div
+          className={`${styles.heroSearch} ${styles.heroSearchArrowRight}`}
+          style={{ textAlign: "left" }}
+        >
           <CommuneSearch
             smallButton
             placeholder={isSmallScreen ? COMMUNE_PLACEHOLDER_SMALL_SCREEN : COMMUNE_PLACEHOLDER}
@@ -111,7 +113,7 @@ export default function ProConnectEmailCheck() {
   const unavailable = state.status === "unavailable";
 
   return (
-    <Section>
+    <Section wide={check?.kind === "generic"}>
       {(state.status !== "result" || error) && (
         <p className={`${fr.cx("fr-text--md", "fr-mb-3w")} ${styles.heroSearchLead}`}>
           Pour connaître votre fournisseur d&rsquo;identité et vérifier la conformité de votre
@@ -198,14 +200,14 @@ export default function ProConnectEmailCheck() {
   );
 }
 
-function Section({ children }: { children: ReactNode }) {
+function Section({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
   return (
     <section style={{ backgroundImage: SECTION_BACKGROUND }}>
       <div
         className={fr.cx("fr-container")}
-        style={{ paddingTop: SECTION_PADDING, paddingBottom: SECTION_PADDING }}
+        style={{ paddingTop: SECTION_PADDING_TOP, paddingBottom: SECTION_PADDING_BOTTOM }}
       >
-        <div className={styles.heroSearchText}>
+        <div className={`${styles.heroSearchText} ${wide ? styles.heroSearchTextWide : ""}`}>
           <h2 className={`${fr.cx("fr-h3", "fr-mb-2w")} ${styles.emailCheckTitle}`}>
             Vérifier mon adresse de messagerie pour l&rsquo;authentification ProConnect
           </h2>
@@ -288,15 +290,7 @@ function Result({
             ProConnect avec cette adresse auprès de votre fournisseur d&rsquo;identité.
           </p>
           <Actions>
-            <Link
-              href={ACCOUNT_CREATION_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={fr.cx("fr-btn")}
-            >
-              Créer mon compte ProConnect
-            </Link>
-            <Link href={TERRITOIRES_URL} className={fr.cx("fr-btn", "fr-btn--secondary")}>
+            <Link href={`/bienvenue/${check.siret}`} className={fr.cx("fr-btn")}>
               Découvrir mes services
             </Link>
           </Actions>

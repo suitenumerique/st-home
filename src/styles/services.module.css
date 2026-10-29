@@ -190,6 +190,11 @@
   mask-image: var(--data-uri-svg);
 }
 
+/* The same search, with a right arrow instead of the upward one. */
+.heroSearchArrowRight :global(.fr-search-bar .fr-btn::before) {
+  --data-uri-svg: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M16.172 11 10.808 5.636l1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2h12.172Z"/></svg>');
+}
+
 /*
  * Once a territory is picked, resetting the search is the emphasised action of
  * the block rather than a discreet submit.
@@ -493,6 +498,11 @@
 
 .domainCheckSubmitEmpty::before {
   background-color: var(--text-mention-grey);
+}
+
+/* Wide enough for the longer results to read on two or three lines. */
+.heroSearchTextWide {
+  max-width: 62rem;
 }
 
 .emailCheckStatus {

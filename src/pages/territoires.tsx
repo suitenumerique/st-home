@@ -63,7 +63,7 @@ export default function Territoires() {
             Découvrez des services simples, souverains et sécurisés
           </p>
 
-          <div className={styles.heroSearch}>
+          <div className={`${styles.heroSearch} ${styles.heroSearchArrowRight}`}>
             <CommuneSearch
               smallButton
               placeholder={isSmallScreen ? PLACEHOLDER_SMALL_SCREEN : PLACEHOLDER}

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { type ServicePage } from "./types";
 
 const REFERENTIEL_URL = "/conformite/referentiel";
-const CONFORMITY_MAP_URL = "/conformite/cartographie";
 const PARTNERS_MAP_URL = "/cartographie-deploiement";
 // The help centre, and the references the FAQ points at.
 const HELP_CENTRE_URL = "https://aide.suite.anct.gouv.fr/socle";
@@ -117,7 +116,6 @@ const domaines: ServicePage = {
         href: `#${OFFERS_ANCHOR}`,
       },
     ],
-    link: { text: "Consulter la conformité de ma commune", href: CONFORMITY_MAP_URL },
   },
 
   offers: {

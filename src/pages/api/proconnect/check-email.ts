@@ -10,13 +10,14 @@ const PROVIDER_PREFIX = /^FI\s+/i;
 // A collectivité with no provider of its own is served by the ANCT one.
 const DEFAULT_PROVIDER = "ANCT";
 
-type Match = { name: string; provider: string };
+type Match = { siret: string; name: string; provider: string };
 
 async function findOrganization(where: SQL): Promise<Match | null> {
   const { rows } = await db.execute(sql`
-    SELECT name, provider
+    SELECT siret, name, provider
     FROM (
       SELECT
+        ${organizations.siret} AS siret,
         ${organizations.name} AS name,
         ${organizations.type} AS type,
         ${organizations.population} AS population,
@@ -38,10 +39,14 @@ async function findOrganization(where: SQL): Promise<Match | null> {
     LIMIT 1
   `);
 
-  const row = rows[0] as { name: string; provider: string | null } | undefined;
+  const row = rows[0] as { siret: string; name: string; provider: string | null } | undefined;
 
   return row
-    ? { name: row.name, provider: row.provider?.replace(PROVIDER_PREFIX, "") ?? DEFAULT_PROVIDER }
+    ? {
+        siret: row.siret,
+        name: row.name,
+        provider: row.provider?.replace(PROVIDER_PREFIX, "") ?? DEFAULT_PROVIDER,
+      }
     : null;
 }
 
@@ -91,7 +96,9 @@ export default async function handler(
 
     if (!organization) return res.status(200).json({ kind: "unknown" });
 
-    return res.status(200).json({ kind: "compliant", provider: organization.provider });
+    return res
+      .status(200)
+      .json({ kind: "compliant", provider: organization.provider, siret: organization.siret });
   } catch (error) {
     console.error("Error checking a ProConnect address:", error);
     return res.status(500).json({ error: "Internal server error" });
