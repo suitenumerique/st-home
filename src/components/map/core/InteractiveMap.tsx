@@ -6,7 +6,12 @@ import * as turf from "@turf/turf";
 import { mapStyles } from "carte-facile";
 import "carte-facile/carte-facile.css";
 import * as d3 from "d3";
-import maplibregl, { MapLayerMouseEvent, StyleSpecification } from "maplibre-gl";
+import {
+  setWorkerUrl,
+  type MapLayerMouseEvent,
+  type Map as MaplibreMap,
+  type StyleSpecification,
+} from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -62,6 +67,10 @@ export interface InteractiveMapProps {
     props?: any;
   }>;
 }
+
+// maplibre-gl 6 resolves its worker relative to its own module URL, which is a bundler
+// chunk here. Let the bundler emit the worker file and point maplibre at it.
+setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).href);
 
 const WATER_COLOR = "#ffffff";
 const MAX_CIRCLE_LABELS = 10;
@@ -228,7 +237,7 @@ export const InteractiveMap = ({
     }
   };
 
-  const clearHoverState = useCallback((map: maplibregl.Map) => {
+  const clearHoverState = useCallback((map: MaplibreMap) => {
     if (hoveredDeptIdRef.current !== null && map.getSource("operators-depts")) {
       try {
         map.setFeatureState(

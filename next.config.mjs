@@ -15,6 +15,11 @@ const moduleExports = {
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx", "md"],
   poweredByHeader: false,
   bundlePagesRouterDependencies: true,
+
+  experimental: {
+    // Next 16.4 inlines the Turbopack bootstrap script in the HTML, which our CSP blocks.
+    turbopackSharedRuntime: false,
+  },
   productionBrowserSourceMaps: process.env.PRODUCTION_SOURCE_MAPS === "1",
 
   // This causes double-renders of pages in developement to avoid concurrency bugs!
