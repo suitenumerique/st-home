@@ -133,7 +133,7 @@ const domaines: ServicePage = {
       {
         name: "Netim",
         logo: { src: "/images/logo-netim.png", width: 75, height: 75 },
-        tagline: <>Pour les collectivités qui peuvent fonctionner de manière autonome.</>,
+        tagline: <>Pour les collectivités qui veulent fonctionner de manière autonome.</>,
         price: <>70&nbsp;€</>,
         yearlyPrice: <>soit 7&nbsp;€ par an</>,
         included: [
