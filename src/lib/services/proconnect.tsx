@@ -50,8 +50,8 @@ const proconnect: ServicePage = {
     description: (
       <>
         ProConnect fédère les différents fournisseurs d&rsquo;identité des organisations publiques.
-        Ils maintiennent à jour leurs annuaires qui répertorient les informations des agents publics
-        et des élus&nbsp;: nom, prénom, fonction et adresse de messagerie professionnelle.
+        Ils maintiennent ces annuaires qui répertorient les informations des agents publics et des
+        élus&nbsp;: nom, prénom, fonction et adresse de messagerie professionnelle.
       </>
     ),
     card: {

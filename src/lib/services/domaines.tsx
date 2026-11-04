@@ -6,12 +6,11 @@ import { type ServicePage } from "./types";
 const REFERENTIEL_URL = "/conformite/referentiel";
 const PARTNERS_MAP_URL = "/cartographie-deploiement";
 // The help centre, and the references the FAQ points at.
-const HELP_CENTRE_URL = "https://aide.suite.anct.gouv.fr/socle";
+const HELP_CENTRE_URL = "https://aide.suite.anct.gouv.fr/socle/domaines";
 const ANNUAIRE_SERVICE_PUBLIC_URL = "https://lannuaire.service-public.gouv.fr/";
 const AFNIC_URL = "https://www.afnic.fr/";
 const SOLIDNAMES_URL = "https://solidnames.fr/nom-de-domaine-souverain-pour-les-communes/";
-// The Afnic list of registrars, behind the offers' full list link and the
-// closing call to action.
+// The Afnic list of registrars, behind the offers' full list link.
 const REGISTRARS_URL =
   "https://www.afnic.fr/noms-de-domaine/tout-savoir/annuaire-bureaux-enregistrement/";
 
@@ -28,7 +27,7 @@ const domaines: ServicePage = {
   proConnect: false,
   foundations: false,
   trialHeading: { lead: "Concerné\u202f?", action: "Agissez\u202f!" },
-  trialCta: { text: "Obtenir un nom de domaine", href: REGISTRARS_URL },
+  trialCta: { text: "Obtenir un nom de domaine", href: `#${OFFERS_ANCHOR}` },
   seo: {
     title: "Domaines, dotez votre collectivité d’un nom de domaine conforme",
     description:
@@ -61,9 +60,9 @@ const domaines: ServicePage = {
     title: <>Sécurisez votre présence numérique</>,
     description: (
       <>
-        Un nom de domaine est l&rsquo;adresse numérique de votre collectivité (<u>nomdemairie.fr</u>
-        ). Il est indispensable pour identifier officiellement la mairie dans toutes ses
-        communications en ligne&nbsp;: via son site internet et ses adresses de messagerie.
+        Un nom de domaine est l&rsquo;adresse numérique de votre collectivité (nomdemairie.fr). Il
+        est indispensable pour identifier officiellement la mairie dans toutes ses communications en
+        ligne&nbsp;: via son site internet et ses adresses de messagerie.
       </>
     ),
     illustrations: [
