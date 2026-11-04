@@ -28,11 +28,6 @@ export const nameKey = (name: AnyColumn) => sql`regexp_replace(
   '[^a-z0-9]', '', 'g'
 )`;
 
-/** The declared domains as compared by `declaresDomain`: DILA's come in any case, with or without "www.". */
-export const emailDomainKey = (domain: AnyColumn) => sql`lower(${domain})`;
-export const websiteDomainKey = (domain: AnyColumn) =>
-  sql`regexp_replace(lower(${domain}), '^www\\.', '')`;
-
 // Organization table
 export const organizations = pgTable(
   "st_organizations",
@@ -82,11 +77,8 @@ export const organizations = pgTable(
     index("st_organizations_zipcode").using("btree", table.zipcode),
     index("st_organizations_name_unaccent").using("btree", table.name_unaccent),
     index("st_organizations_slug_index").using("btree", table.slug),
-    index("st_organizations_email_domain_key").using("btree", emailDomainKey(table.email_domain)),
-    index("st_organizations_website_domain_key").using(
-      "btree",
-      websiteDomainKey(table.website_domain),
-    ),
+    index("st_organizations_email_domain").using("btree", table.email_domain),
+    index("st_organizations_website_domain").using("btree", table.website_domain),
     index("st_organizations_commune_name_key")
       .using("btree", nameKey(table.name))
       .where(sql`${table.type} = 'commune'`),

@@ -841,11 +841,11 @@ def create_new_dumps(orgs: list):
             "WEBSITE_DOMAIN_GENERIC",
             "WEBSITE_DOMAIN_OTHER_ORG",
         }.intersection(org["_st_conformite"]):
-            website_domain = org["_st_website"].split("://")[1].split("/")[0]
+            website_domain = org["_st_website"].split("://")[1].split("/")[0].lower()
             website_tld = website_domain.split(".")[-1]
             website_official = org["_st_website"]
         if not {"EMAIL_MALFORMED", "EMAIL_MISSING"}.intersection(org["_st_conformite"]):
-            email_domain = org["_st_email"].split("@")[1]
+            email_domain = org["_st_email"].split("@")[1].lower()
             email_tld = email_domain.split(".")[-1]
             email_official = org["_st_email"]
 

@@ -1,14 +1,15 @@
 import { db } from "@/lib/db";
-import { emailDomainKey, nameKey, organizations, websiteDomainKey } from "@/lib/schema";
+import { nameKey, organizations } from "@/lib/schema";
 import { sql } from "drizzle-orm";
 
 /**
- * Organizations declaring the domain for their email or their website. Both
- * sides are the expressions of the indexes of `st_organizations`, to hit them.
+ * Organizations declaring the domain for their email or their website, which
+ * may carry a "www.". The data pipeline stores both lowercase, so the domain is
+ * compared as is, on the columns' indexes.
  */
 export const declaresDomain = (domain: string) => sql`(
-  ${emailDomainKey(organizations.email_domain)} = ${domain}
-  OR ${websiteDomainKey(organizations.website_domain)} = ${domain}
+  ${organizations.email_domain} = ${domain}
+  OR ${organizations.website_domain} IN (${domain}, ${`www.${domain}`})
 )`;
 
 /** The commune first, then the most populated: a commune and its EPCI may share a domain. */

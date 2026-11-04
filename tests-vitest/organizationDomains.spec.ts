@@ -60,8 +60,9 @@ beforeAll(async () => {
   const { apply } = await pushSchema(schema, db as never);
   await apply();
 
-  await insert({ siret: "owner-email", email_domain: "MAIRIE-X.fr" });
+  await insert({ siret: "owner-email", email_domain: "mairie-x.fr" });
   await insert({ siret: "owner-website", website_domain: "www.y.fr" });
+  await insert({ siret: "owner-website-bare", website_domain: "z.fr" });
   await insert({
     siret: "epci",
     type: "epci",
@@ -82,9 +83,10 @@ beforeAll(async () => {
   await insert({ name: "La-Grand" });
 });
 
-test("a domain is found whatever the case and the www of the declared one", async () => {
+test("a domain is found by the email or the website, with or without www", async () => {
   expect(await findDomainOwner("mairie-x.fr")).toBe("owner-email");
   expect(await findDomainOwner("y.fr")).toBe("owner-website");
+  expect(await findDomainOwner("z.fr")).toBe("owner-website-bare");
   expect(await findDomainOwner("unknown.fr")).toBeNull();
 });
 
@@ -107,8 +109,9 @@ test("a prefix that is part of the name is not stripped off the homonyms", async
 test("the domain query reads the indexes", async () => {
   const text = await plan(domainOwnerQuery("y.fr"));
 
-  expect(text).toContain("st_organizations_email_domain_key");
-  expect(text).toContain("st_organizations_website_domain_key");
+  expect(text).toContain("st_organizations_email_domain");
+  expect(text).toContain("st_organizations_website_domain");
+  expect(text).not.toContain("Seq Scan");
 });
 
 test("the homonym query reads its index", async () => {
