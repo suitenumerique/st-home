@@ -513,3 +513,15 @@
   justify-content: center;
   text-align: left;
 }
+
+/* An acronym with a tooltip, inside a line of text: a button looking like the text around it. */
+.acronym {
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  text-decoration: underline dashed;
+  text-underline-offset: 0.25em;
+  cursor: help;
+}

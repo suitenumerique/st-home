@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
-import { GENERIC_DOMAINS } from "@/lib/genericDomains";
+import { isGenericEmailDomain } from "@/lib/domains";
+import { declaresDomain } from "@/lib/organizationDomains";
 import { EMAIL_FORMAT, type EmailCheck } from "@/lib/proconnect/checkEmail";
 import { organizations, organizationsToServices, services } from "@/lib/schema";
 import { sql, type SQL } from "drizzle-orm";
@@ -7,6 +8,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 const PROCONNECT_TYPE = "proconnect";
 const PROVIDER_PREFIX = /^FI\s+/i;
+const MAX_EMAIL_LENGTH = 254;
 // A collectivité with no provider of its own is served by the ANCT one.
 const DEFAULT_PROVIDER = "ANCT";
 
@@ -67,10 +69,12 @@ export default async function handler(
 
   const address = email.trim().toLowerCase();
 
-  if (!EMAIL_FORMAT.test(address)) return res.status(200).json({ kind: "invalid" });
+  if (address.length > MAX_EMAIL_LENGTH || !EMAIL_FORMAT.test(address)) {
+    return res.status(200).json({ kind: "invalid" });
+  }
 
   const domain = address.split("@")[1];
-  const genericDomain = GENERIC_DOMAINS.includes(domain);
+  const genericDomain = isGenericEmailDomain(domain);
 
   try {
     if (siret) {
@@ -89,10 +93,7 @@ export default async function handler(
 
     if (genericDomain) return res.status(200).json({ kind: "unknown" });
 
-    const organization = await findOrganization(sql`
-      lower(${organizations.email_domain}) = ${domain}
-      OR regexp_replace(lower(${organizations.website_domain}), '^www\\.', '') = ${domain}
-    `);
+    const organization = await findOrganization(declaresDomain(domain));
 
     if (!organization) return res.status(200).json({ kind: "unknown" });
 

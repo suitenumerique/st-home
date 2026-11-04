@@ -228,7 +228,7 @@ const servicesConfig: Record<string, ServiceConfig> = {
     order: 7,
     anct_threshold_active: false,
   },
-  "Rendez-vous Service Public": {
+  "Rendez-vous": {
     id: 49,
     visible: true,
     socle: true,

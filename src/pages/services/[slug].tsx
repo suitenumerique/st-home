@@ -35,6 +35,10 @@ export default function ServicePage({ slug, adoptionCount, deploymentStats }: Se
   if (!service) return null;
 
   return (
+    // Keyed on the slug: every service renders through this one component, so
+    // without a remount React reuses the <img> elements across a navigation and
+    // the browser keeps painting the previous service's images under the new
+    // text until the new ones decode.
     <Fragment key={service.slug}>
       <NextSeo title={service.seo.title} description={service.seo.description} />
 
@@ -64,6 +68,8 @@ export default function ServicePage({ slug, adoptionCount, deploymentStats }: Se
 
       {service.features && <ServiceFeatures block={service.features} />}
 
+      {/* On every service page but those that opt out: the content lives in the
+          component, only the choice to show it belongs to the service. */}
       {service.proConnect !== false && <ServiceProConnect service={service} />}
 
       {service.testimonials && (

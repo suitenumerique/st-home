@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { type ServicePage } from "./types";
 
-const TERRITOIRES_URL = "/territoires";
+const HOME_URL = "/";
 const PARTNER_SPACE_URL = "https://partenaires.proconnect.gouv.fr/";
 const DOMAINES_URL = "/services/domaines";
 const MESSAGES_URL = "/services/messages";
@@ -16,7 +16,7 @@ const proconnect: ServicePage = {
   proConnect: false,
   foundations: false,
   trialHeading: { lead: "ProConnecté ?", action: "Cliquez !" },
-  trialCta: { text: "Découvrir mes services", href: TERRITOIRES_URL },
+  trialCta: { text: "Découvrir mes services", href: HOME_URL },
   seo: {
     title: "ProConnect, l’identité numérique des agents publics et des élus",
     description:
@@ -89,35 +89,39 @@ const proconnect: ServicePage = {
         alt: "Un nom de domaine institutionnel et conforme pour votre collectivité",
         width: 2336,
         height: 984,
+        href: DOMAINES_URL,
       },
       {
         src: "/images/services-illlu/proconnect-middle-2.webp",
         alt: "Une adresse de messagerie nominative et professionnelle",
         width: 2336,
         height: 984,
+        href: MESSAGES_URL,
       },
     ],
   },
 
-  timeline: {
-    title: <>Comment créer mon compte ProConnect&nbsp;?</>,
-    description: (
-      <>
-        L&rsquo;ANCT et les structures de mutualisation des territoires peuvent vous accompagner, à
-        chaque étape, dans la création de votre compte ProConnect.
-      </>
-    ),
-    steps: [
-      { text: "Obtenir un nom de domaine conforme pour ma collectivité", href: DOMAINES_URL },
-      { text: "Créer mon adresse de messagerie nominative", href: MESSAGES_URL },
-      {
-        text: "Créer mon compte ProConnect avec mon fournisseur d’identité",
-        href: TERRITOIRES_URL,
-      },
-    ],
-  },
+  // Disabled for now: "Comment créer mon compte ProConnect ?"
+  // timeline: {
+  //   title: <>Comment créer mon compte ProConnect&nbsp;?</>,
+  //   description: (
+  //     <>
+  //       L&rsquo;ANCT et les structures de mutualisation des territoires peuvent vous accompagner, à
+  //       chaque étape, dans la création de votre compte ProConnect.
+  //     </>
+  //   ),
+  //   steps: [
+  //     { text: "Obtenir un nom de domaine conforme pour ma collectivité", href: DOMAINES_URL },
+  //     { text: "Créer mon adresse de messagerie nominative", href: MESSAGES_URL },
+  //     {
+  //       text: "Créer mon compte ProConnect avec mon fournisseur d’identité",
+  //       href: HOME_URL,
+  //     },
+  //   ],
+  // },
 
-  emailCheck: true,
+  // Disabled for now: "Vérifier mon adresse de messagerie pour l’authentification ProConnect"
+  // emailCheck: true,
 
   partners: {
     title: <>Toujours plus de partenaires</>,

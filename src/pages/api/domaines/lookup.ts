@@ -1,11 +1,6 @@
-import { db } from "@/lib/db";
-import { type DomainLookup, homonymKey, parseDomain } from "@/lib/domaines/checkDomain";
-import { organizations } from "@/lib/schema";
-import { sql } from "drizzle-orm";
+import { type DomainLookup, homonymKeys, parseDomain } from "@/lib/domaines/checkDomain";
+import { findDomainOwner, findHomonym } from "@/lib/organizationDomains";
 import { NextApiRequest, NextApiResponse } from "next";
-
-const ACCENTED = "àáâäãåçèéêëìíîïñòóôöõùúûüýÿ";
-const UNACCENTED = "aaaaaaceeeeiiiinooooouuuuyy";
 
 export default async function handler(
   req: NextApiRequest,
@@ -21,44 +16,15 @@ export default async function handler(
 
   const domain = parseDomain(input);
   if (!domain) return res.status(200).json({ homonym: null, siret: null });
-  const key = homonymKey(domain);
+  const keys = homonymKeys(domain);
 
   try {
-    const [owner, homonyms] = await Promise.all([
-      db.execute(sql`
-        SELECT ${organizations.siret} AS siret
-        FROM ${organizations}
-        WHERE lower(${organizations.email_domain}) = ${domain}
-          OR regexp_replace(lower(${organizations.website_domain}), '^www\\.', '') = ${domain}
-        -- A commune and its EPCI may share a domain: the commune first.
-        ORDER BY ${organizations.type} = 'commune' DESC, ${organizations.population} DESC
-        LIMIT 1
-      `),
-      key
-        ? db.execute(sql`
-            SELECT ${organizations.name} AS name, count(*) OVER () AS count
-            FROM ${organizations}
-            WHERE ${organizations.type} = 'commune'
-              AND regexp_replace(
-                translate(
-                  replace(replace(lower(${organizations.name}), 'œ', 'oe'), 'æ', 'ae'),
-                  ${ACCENTED},
-                  ${UNACCENTED}
-                ),
-                '[^a-z0-9]', '', 'g'
-              ) = ${key}
-            LIMIT 1
-          `)
-        : null,
+    const [siret, homonym] = await Promise.all([
+      findDomainOwner(domain),
+      keys.length > 0 ? findHomonym(keys) : null,
     ]);
 
-    const siret = (owner.rows[0] as { siret: string } | undefined)?.siret ?? null;
-    const homonym = homonyms?.rows[0] as { name: string; count: string | number } | undefined;
-
-    return res.status(200).json({
-      homonym: homonym && Number(homonym.count) > 1 ? homonym.name : null,
-      siret,
-    });
+    return res.status(200).json({ homonym, siret });
   } catch (error) {
     console.error("Error looking up a domain:", error);
     return res.status(500).json({ error: "Internal server error" });

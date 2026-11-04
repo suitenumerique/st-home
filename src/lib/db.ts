@@ -128,6 +128,12 @@ export async function searchOrganizations(query: string, type: string, limit = 1
     .orderBy(desc(organizations.population))
     .limit(100);
 
+  // Exact zip code match: no limit, every collectivité sharing the code must be listed.
+  const exactZipQuery = db
+    .select(columns)
+    .from(organizations)
+    .orderBy(desc(organizations.population));
+
   const baseQuery = db
     .select(columns)
     .from(organizations)
@@ -144,6 +150,7 @@ export async function searchOrganizations(query: string, type: string, limit = 1
   // Do all searches sequentially, then concatenate the results and filter by unique siret
   const allResults = [
     ...(await exactQuery.where(and(...addWhere, eq(organizations.name_unaccent, unaccentQuery)))),
+    ...(await exactZipQuery.where(and(...addWhere, eq(organizations.zipcode, searchQuery)))),
   ];
   for (const whereSearch of whereSearches) {
     const results = await baseQuery.where(and(...addWhere, whereSearch));

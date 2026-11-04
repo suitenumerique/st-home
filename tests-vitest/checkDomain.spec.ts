@@ -1,4 +1,4 @@
-import { checkDomainFormat, homonymKey, parseDomain } from "@/lib/domaines/checkDomain";
+import { checkDomainFormat, homonymKeys, parseDomain } from "@/lib/domaines/checkDomain";
 import { expect, test } from "vitest";
 
 test.each([
@@ -12,14 +12,22 @@ test.each([
   expect(parseDomain(input)).toBe(domain);
 });
 
-test.each(["contac", "contact@", "brigny", "brigny .fr", ""])("%s has no domain", (input) => {
-  expect(parseDomain(input)).toBeNull();
-});
+test.each(["contac", "contact@", "brigny", "brigny .fr", "", `${"a".repeat(251)}.fr`])(
+  "%s has no domain",
+  (input) => {
+    expect(parseDomain(input)).toBeNull();
+  },
+);
 
 test.each([
   ["brigny.fr", "compliant"],
   ["brigny.bzh", "compliant"],
   ["brigny.yt", "compliant"],
+  ["brigny.eu", "compliant"],
+  ["brigny.eus", "invalid"],
+  ["brigny.bl", "invalid"],
+  ["brigny.free.fr", "generic"],
+  ["brigny.wixsite.com", "generic"],
   ["brigny.com", "extension"],
   ["mairie-brégny.fr", "accent"],
   ["xn--mairie-brgny-dhb.fr", "accent"],
@@ -31,11 +39,12 @@ test.each([
 });
 
 test.each([
-  ["brigny.fr", "brigny"],
-  ["mairie-brigny.fr", "brigny"],
-  ["ville-saint-denis.fr", "saintdenis"],
-  ["brigny71.fr", null],
-  ["mairie-brigny-71.fr", null],
-])("%s compares as %s", (domain, key) => {
-  expect(homonymKey(domain)).toBe(key);
+  ["brigny.fr", ["brigny"]],
+  ["mairie-brigny.fr", ["mairiebrigny", "brigny"]],
+  ["ville-saint-denis.fr", ["villesaintdenis", "saintdenis"]],
+  ["ville-sur-tourbe.fr", ["villesurtourbe", "surtourbe"]],
+  ["brigny71.fr", []],
+  ["mairie-brigny-71.fr", []],
+])("%s compares as %j", (domain, keys) => {
+  expect(homonymKeys(domain)).toEqual(keys);
 });

@@ -276,7 +276,7 @@
     },
     {
         "id": 49,
-        "nom": "Rendez-vous Service Public",
+        "nom": "Rendez-vous",
         "description": "Gérer la prise de rendez-vous avec un système de rappel intégré",
         "url": "https://rdv.anct.gouv.fr/",
         "type": "rdvsp",

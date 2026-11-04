@@ -88,6 +88,8 @@ const emailDomainOwn = sql`(o.email_domain IS NOT NULL AND NOT ${emailDomainBad}
 
 const PARKING_HELP_URL =
   "https://aide.suite.anct.gouv.fr/socle/domaines/afficher-une-page-sur-son-domaine-sans-avoir-de-site-internet";
+const DOMAINES_URL = "/services/domaines";
+const MESSAGES_URL = "/services/messages";
 
 export const RPNT_ACTIONS: RpntAction[] = [
   {
@@ -105,7 +107,7 @@ export const RPNT_ACTIONS: RpntAction[] = [
     description:
       "La collectivité ne dispose pas de nom de domaine conforme, ni pour un site internet ni pour sa messagerie, actuellement absente ou hébergée sur un domaine générique (gmail, orange...).",
     criteria: ["1.1", "2.2"],
-    helpUrl: "https://suiteterritoriale.anct.gouv.fr/services/domaines",
+    helpUrl: DOMAINES_URL,
     matches: sql`(${siteAbsent} AND NOT ${emailDomainOwn})`,
   },
   {
@@ -122,6 +124,7 @@ export const RPNT_ACTIONS: RpntAction[] = [
     description:
       "Le site internet utilise une extension générique ou étrangère (.com, .org, .net...). Le domaine doit être réservé sous une extension souveraine (.fr, .eu, extension régionale) et l'ancienne adresse redirigée vers la nouvelle.",
     criteria: ["1.2"],
+    helpUrl: DOMAINES_URL,
     matches: has("WEBSITE_DOMAIN_EXTENSION", "WEBSITE_DOMAIN_IDNA"),
   },
   {
@@ -170,6 +173,7 @@ export const RPNT_ACTIONS: RpntAction[] = [
     description:
       "La messagerie déclarée est hébergée sur un domaine générique (gmail, orange...) ou non souverain alors que la collectivité dispose déjà d'un nom de domaine via son site.",
     criteria: ["2.2"],
+    helpUrl: MESSAGES_URL,
     matches: sql`(${emailDomainBad} AND NOT ${siteAbsent})`,
   },
   {
@@ -178,6 +182,7 @@ export const RPNT_ACTIONS: RpntAction[] = [
     description:
       "La collectivité dispose d'un nom de domaine propre pour sa messagerie et d'un autre pour son site internet. Les deux doivent coïncider afin que les usagers identifient une seule identité en ligne.",
     criteria: ["2.3"],
+    helpUrl: MESSAGES_URL,
     matches: sql`(${has("EMAIL_DOMAIN_MISMATCH")} AND NOT ${emailDomainBad})`,
   },
   {

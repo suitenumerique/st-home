@@ -1,3 +1,5 @@
+import styles from "@/styles/services.module.css";
+import { Tooltip } from "@codegouvfr/react-dsfr/Tooltip";
 import Link from "next/link";
 import { type ServicePage } from "./types";
 
@@ -8,8 +10,8 @@ const HELP_CENTRE_URL = "https://aide.suite.anct.gouv.fr/socle";
 const ANNUAIRE_SERVICE_PUBLIC_URL = "https://lannuaire.service-public.gouv.fr/";
 const AFNIC_URL = "https://www.afnic.fr/";
 const SOLIDNAMES_URL = "https://solidnames.fr/nom-de-domaine-souverain-pour-les-communes/";
-// The Afnic list of registrars, behind the last step and the closing call to
-// action.
+// The Afnic list of registrars, behind the offers' full list link and the
+// closing call to action.
 const REGISTRARS_URL =
   "https://www.afnic.fr/noms-de-domaine/tout-savoir/annuaire-bureaux-enregistrement/";
 
@@ -22,7 +24,7 @@ const ADMINISTRATIVE_STEPS = {
 const domaines: ServicePage = {
   slug: "domaines",
   navLabel: "Domaines",
-  // The page opens on its own steps, without the two shared blocks.
+  // Without the ProConnect and "fondements" blocks of the other service pages.
   proConnect: false,
   foundations: false,
   trialHeading: { lead: "Concerné\u202f?", action: "Agissez\u202f!" },
@@ -123,9 +125,20 @@ const domaines: ServicePage = {
     title: <>Obtenez votre nom de domaine</>,
     description: (
       <>
-        L&rsquo;Association française pour le nommage Internet en coopération (Afnic), en charge des
-        noms de domaine en France, a retenu trois bureaux d&rsquo;enregistrement indépendants à
-        l&rsquo;issue d&rsquo;un appel à candidatures.
+        L&rsquo;
+        <Tooltip title="Agence nationale de la cohésion des territoires">
+          <button type="button" className={styles.acronym}>
+            ANCT
+          </button>
+        </Tooltip>{" "}
+        et l&rsquo;
+        <Tooltip title="Association française pour le nommage Internet en coopération">
+          <button type="button" className={styles.acronym}>
+            Afnic
+          </button>
+        </Tooltip>{" "}
+        (en charge des noms de domaine en France) ont retenu trois bureaux d&rsquo;enregistrement
+        indépendants à l&rsquo;issue d&rsquo;un appel à candidatures.
       </>
     ),
     priceTerms: <>HT pour 10&nbsp;ans*</>,

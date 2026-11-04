@@ -140,8 +140,8 @@ export default function CommuneInfo({
               <Badge severity="success" noIcon as="span">
                 Bonne nouvelle !
               </Badge>{" "}
-              Si vous ne possédez pas de nom de domaine, la Suite territoriale peut vous accompagner
-              à en obtenir un.
+              Si vous ne possédez pas de nom de domaine, la Suite territoriale peut vous accompagner{" "}
+              <Link href="/services/domaines">à en obtenir un</Link>.
             </li>
           )}
         </>
@@ -184,8 +184,8 @@ export default function CommuneInfo({
               <Badge severity="success" noIcon as="span">
                 Bonne nouvelle !
               </Badge>{" "}
-              Si vous ne possédez pas de nom de domaine, la Suite territoriale peut vous accompagner
-              à en obtenir un.
+              Si vous ne possédez pas de nom de domaine, la Suite territoriale peut vous accompagner{" "}
+              <Link href="/services/domaines">à en obtenir un</Link>.
             </li>
           )}
         </>
@@ -540,7 +540,8 @@ export default function CommuneInfo({
               <Badge severity="success" noIcon as="span">
                 Bonne nouvelle !
               </Badge>{" "}
-              La Suite territoriale peut vous aider à obtenir une adresse de messagerie conforme.
+              La Suite territoriale peut vous aider à{" "}
+              <Link href="/services/messages">obtenir une adresse de messagerie conforme</Link>.
             </li>
           )}
 

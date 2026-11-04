@@ -1,4 +1,4 @@
-import { type InferSelectModel, relations, sql } from "drizzle-orm";
+import { type AnyColumn, type InferSelectModel, relations, sql } from "drizzle-orm";
 import {
   boolean,
   date,
@@ -10,6 +10,28 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
+
+const ACCENTED = "àáâäãåçèéêëìíîïñòóôöõùúûüýÿ";
+const UNACCENTED = "aaaaaaceeeeiiiinooooouuuuyy";
+
+/**
+ * A name as a domain label spells it: no accent, separator or apostrophe
+ * ("L'Haÿ-les-Roses" is "lhaylesroses"). Used by an index below and by the
+ * queries that must hit it, which have to state the exact same expression.
+ */
+export const nameKey = (name: AnyColumn) => sql`regexp_replace(
+  translate(
+    replace(replace(lower(${name}), 'œ', 'oe'), 'æ', 'ae'),
+    ${sql.raw(`'${ACCENTED}'`)},
+    ${sql.raw(`'${UNACCENTED}'`)}
+  ),
+  '[^a-z0-9]', '', 'g'
+)`;
+
+/** The declared domains as compared by `declaresDomain`: DILA's come in any case, with or without "www.". */
+export const emailDomainKey = (domain: AnyColumn) => sql`lower(${domain})`;
+export const websiteDomainKey = (domain: AnyColumn) =>
+  sql`regexp_replace(lower(${domain}), '^www\\.', '')`;
 
 // Organization table
 export const organizations = pgTable(
@@ -60,6 +82,14 @@ export const organizations = pgTable(
     index("st_organizations_zipcode").using("btree", table.zipcode),
     index("st_organizations_name_unaccent").using("btree", table.name_unaccent),
     index("st_organizations_slug_index").using("btree", table.slug),
+    index("st_organizations_email_domain_key").using("btree", emailDomainKey(table.email_domain)),
+    index("st_organizations_website_domain_key").using(
+      "btree",
+      websiteDomainKey(table.website_domain),
+    ),
+    index("st_organizations_commune_name_key")
+      .using("btree", nameKey(table.name))
+      .where(sql`${table.type} = 'commune'`),
   ],
 );
 

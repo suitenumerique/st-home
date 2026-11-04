@@ -5,12 +5,14 @@ import Link from "next/link";
 
 const SECTION_PADDING = 60;
 const LOGOS_GAP = 40;
+// Every logo is laid out to the same height, its width following its ratio.
 const LOGO_HEIGHT = 70;
 const COLUMN_SPLIT = {
   4: ["fr-col-md-4", "fr-col-md-8"],
   5: ["fr-col-md-5", "fr-col-md-7"],
 } as const;
 
+/** The national partners of a service, as a row of logos next to a short text. */
 export default function ServicePartners({ block }: { block: ServicePartnersBlock }) {
   const [textColumn, logosColumn] = COLUMN_SPLIT[block.textColumns ?? 4];
 
@@ -49,6 +51,8 @@ export default function ServicePartners({ block }: { block: ServicePartnersBlock
                 alignItems: "center",
                 justifyContent: block.logosAlign === "right" ? "flex-end" : "space-between",
                 gap: block.logosAlign === "right" ? LOGOS_GAP : "2rem",
+                // One row, whatever the width: below the container it scrolls
+                // rather than wrapping or overflowing the page.
                 flexWrap: "nowrap",
                 overflowX: "auto",
               }}
@@ -61,6 +65,7 @@ export default function ServicePartners({ block }: { block: ServicePartnersBlock
                     alt={logo.alt}
                     width={logo.width}
                     height={logo.height}
+                    // Laid out to a fixed height, so the width follows the ratio.
                     sizes={`${Math.round((height * logo.width) / logo.height)}px`}
                     style={{ display: "block", width: "auto", height }}
                   />

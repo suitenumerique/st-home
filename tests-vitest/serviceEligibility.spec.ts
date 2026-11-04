@@ -1,10 +1,11 @@
 import { eligibilityOf, type Operator } from "@/components/services/ServiceEligibility";
 import { expect, test } from "vitest";
 
-// The hero block of a service page must give the same answer as
-// /bienvenue/[siret]: an OPSN in the périmètre wins over the ANCT fallback,
-// whatever its partnership status. Above the thresholds, self-hosting is offered
-// alongside it.
+// The hero block of a service page follows /bienvenue/[siret]: an OPSN in the
+// périmètre wins over the ANCT fallback, whatever its partnership status. It
+// departs from it above the thresholds, where self-hosting is offered alongside
+// the OPSN: /bienvenue/[siret] only lists the OPSN there, until it gets a
+// self-hosting block too (see the TODO in its getServerSideProps).
 
 const operator = (overrides: Partial<Operator> = {}): Operator => ({
   id: "op-1",

@@ -9,6 +9,11 @@ import { type ServicePage } from "./types";
 
 export * from "./types";
 
+/**
+ * Services that have their own page under /services/<slug>, in header dropdown
+ * order. Adding a service here creates its route; its dropdown entry lives in
+ * `./nav`, which the layout imports instead of this module.
+ */
 export const servicePages: ServicePage[] = [
   proconnect,
   domaines,

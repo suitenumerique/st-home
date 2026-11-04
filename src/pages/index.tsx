@@ -41,7 +41,7 @@ export default function Home() {
         <>pour les agents publics et les élus locaux de toutes les collectivités territoriales</>
       ),
       imageSrc: "/images/logo-proconnect.svg",
-      link: "/services#proconnect",
+      link: "/services/proconnect",
     },
     {
       id: "socle-services",

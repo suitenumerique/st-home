@@ -43,8 +43,8 @@ const messages: ServicePage = {
     tagline: <>Envoyez et recevez vos courriels professionnels</>,
     description: (
       <>
-        Créez des adresses nominatives ou partagées pour votre collectivité et
-        gérez vos courriels professionnels en équipe.
+        Créez des adresses nominatives ou partagées pour votre collectivité et gérez vos courriels
+        professionnels en équipe.
       </>
     ),
     illustration: {

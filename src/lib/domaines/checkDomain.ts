@@ -1,4 +1,4 @@
-import { GENERIC_DOMAINS } from "@/lib/genericDomains";
+import { ALLOWED_EXTENSIONS, isGenericEmailDomain, isGenericWebsiteDomain } from "@/lib/domains";
 
 export type DomainCheck =
   | { kind: "compliant"; siret?: string }
@@ -10,35 +10,12 @@ export type DomainCheck =
 
 export type DomainLookup = { homonym: string | null; siret: string | null };
 
-// The .fr and the extensions of the regions and overseas territories.
-const COMPLIANT_EXTENSIONS = [
-  "fr",
-  "re",
-  "yt",
-  "pm",
-  "wf",
-  "tf",
-  "gp",
-  "mq",
-  "gf",
-  "nc",
-  "pf",
-  "bl",
-  "mf",
-  "bzh",
-  "alsace",
-  "corsica",
-  "paris",
-  "eus",
-];
-
-// Real extensions, just not meant for a collectivité. Any other one is taken
-// for a typo.
+// Real extensions, just not allowed by the RPNT. Any other one is taken for a
+// typo.
 const OTHER_EXTENSIONS = [
   "com",
   "net",
   "org",
-  "eu",
   "info",
   "biz",
   "io",
@@ -58,6 +35,7 @@ const OTHER_EXTENSIONS = [
 ];
 
 const HOSTNAME = /^[\p{L}\p{N}-]+(\.[\p{L}\p{N}-]+)+$/u;
+const MAX_DOMAIN_LENGTH = 253;
 const NAME_PREFIX = /^(mairie|ville|commune)-/;
 
 /** The domain of an email address or a website, or null when it has none. */
@@ -70,34 +48,41 @@ export function parseDomain(input: string): string | null {
         .split(/[/?#:]/)[0]
         .replace(/^www\./, "");
 
-  return HOSTNAME.test(domain) ? domain : null;
+  return domain.length <= MAX_DOMAIN_LENGTH && HOSTNAME.test(domain) ? domain : null;
 }
 
 /** Every check but the homonym one, which needs the list of communes. */
 export function checkDomainFormat(domain: string): DomainCheck {
   const extension = domain.slice(domain.lastIndexOf(".") + 1);
 
-  if (!COMPLIANT_EXTENSIONS.includes(extension) && !OTHER_EXTENSIONS.includes(extension)) {
+  if (!ALLOWED_EXTENSIONS.includes(extension) && !OTHER_EXTENSIONS.includes(extension)) {
     return { kind: "invalid" };
   }
-  if (GENERIC_DOMAINS.includes(domain)) return { kind: "generic", domain };
+  if (isGenericEmailDomain(domain) || isGenericWebsiteDomain(domain)) {
+    return { kind: "generic", domain };
+  }
   if (/[^\x00-\x7f]/.test(domain) || domain.split(".").some((label) => label.startsWith("xn--"))) {
     return { kind: "accent" };
   }
-  if (!COMPLIANT_EXTENSIONS.includes(extension)) return { kind: "extension", extension };
+  if (!ALLOWED_EXTENSIONS.includes(extension)) return { kind: "extension", extension };
 
   return { kind: "compliant" };
 }
 
 /**
- * The commune name the domain spells, compared without accents or separators,
- * or null when a department number already sets it apart.
+ * The commune names the domain may spell, compared without accents or
+ * separators, or none when a department number already sets it apart. The
+ * prefix of "mairie-brigny" is not part of the name, but that of "ville-la-grand"
+ * is: both spellings are candidates.
  */
-export function homonymKey(domain: string): string | null {
+export function homonymKeys(domain: string): string[] {
   const labels = domain.split(".");
-  const name = labels[labels.length - 2].replace(NAME_PREFIX, "");
+  const label = labels[labels.length - 2];
+  if (/\d$/.test(label)) return [];
 
-  return /\d$/.test(name) ? null : name.replace(/[^a-z0-9]/g, "");
+  const compact = (name: string) => name.replace(/[^a-z0-9]/g, "");
+
+  return [...new Set([compact(label), compact(label.replace(NAME_PREFIX, ""))])];
 }
 
 /**

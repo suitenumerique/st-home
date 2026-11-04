@@ -10,8 +10,8 @@ const ANCT_THRESHOLDS: Record<string, number> = { commune: 3500, epci: 15000 };
 const PLACEHOLDER = "Entrez le nom de votre territoire ou son code postal";
 const PLACEHOLDER_SMALL_SCREEN = "Nom ou code postal";
 const CONTACT_EMAIL = "contact@suite.anct.gouv.fr";
-// Offered to the collectivités above the ANCT thresholds. One guide covers every service, so it lives here rather than
-// with each service.
+// Offered to the collectivités above the ANCT thresholds. One guide covers every
+// service, so it lives here rather than with each service.
 const SELF_HOSTING_URL =
   "https://docs.numerique.gouv.fr/docs/440cb67a-093c-4901-ac88-702c7b298ff5/";
 
@@ -75,8 +75,9 @@ export function eligibilityOf(organization: Organization): Eligibility {
   const threshold = ANCT_THRESHOLDS[organization.type];
   const aboveThreshold = threshold !== undefined && organization.population >= threshold;
 
-  // Above the thresholds, the OPSN may still offer something, but self-hosting
-  // is an option too.
+  // An OPSN takes precedence over the ANCT fallback: it accompanies the
+  // collectivité whatever its population. Above the thresholds self-hosting is
+  // offered alongside it, whatever its partnership status.
   if (operator && aboveThreshold) return { kind: "operator-above-threshold", operator };
 
   if (operator) {

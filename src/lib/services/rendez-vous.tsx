@@ -136,8 +136,8 @@ const rendezVous: ServicePage = {
       {
         quote: (
           <>
-            Rendez-vous Service Public est très simple à utiliser. Le rappel de SMS est un plus qui est
-            apprécié par les usagers. De manière générale, on est très satisfaites du logiciel.
+            Rendez-vous Service Public est très simple à utiliser. Le rappel de SMS est un plus qui
+            est apprécié par les usagers. De manière générale, on est très satisfaites du logiciel.
           </>
         ),
         author: <>Commune de Chomérac (07)</>,
@@ -176,8 +176,8 @@ const rendezVous: ServicePage = {
             Ces trois services reposent sur une même solution logicielle libre développée par
             l&rsquo;État et les départements, mais s&rsquo;adressent à des besoins distincts. RDV
             Solidarités et RDV Insertion couvrent les rendez-vous des services sociaux
-            départementaux et les parcours d&rsquo;insertion. Rendez-vous Service Public est dédié aux
-            démarches administratives des collectivités.
+            départementaux et les parcours d&rsquo;insertion. Rendez-vous Service Public est dédié
+            aux démarches administratives des collectivités.
           </p>
         ),
       },
