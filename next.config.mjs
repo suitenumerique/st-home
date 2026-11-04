@@ -14,12 +14,10 @@ const moduleExports = {
   crossOrigin: "anonymous",
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx", "md"],
   poweredByHeader: false,
+  // `next dev` otherwise writes an AGENTS.md when it detects an AI agent.
+  agentRules: false,
   bundlePagesRouterDependencies: true,
 
-  experimental: {
-    // Next 16.4 inlines the Turbopack bootstrap script in the HTML, which our CSP blocks.
-    turbopackSharedRuntime: false,
-  },
   productionBrowserSourceMaps: process.env.PRODUCTION_SOURCE_MAPS === "1",
 
   // This causes double-renders of pages in developement to avoid concurrency bugs!
@@ -42,6 +40,8 @@ const moduleExports = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 2400],
   },
   experimental: {
+    // Next 16.4 inlines the Turbopack bootstrap script in the HTML, which our CSP blocks.
+    turbopackSharedRuntime: false,
     // sharp otherwise uses one thread per core, each with its own buffers.
     imgOptConcurrency: 1,
     imgOptSequentialRead: true,
