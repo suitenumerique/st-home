@@ -16,27 +16,25 @@ const DEMO_URL = "https://rdv.anct.gouv.fr/onboarding/step_2";
 const ALL_FEATURES_URL =
   "https://projets.suite.anct.gouv.fr/boards/1785606084149380144?labels=1785610033128539208";
 const API_DOC_URL = "https://www.rdv-solidarites.fr/api-docs/index.html";
-// The deployment map, filtered on RDV Service Public.
 const DEPLOYMENT_MAP_URL = "/cartographie-deploiement?service_ids=49";
-// The help centre, filtered on RDV Service Public.
 const HELP_CENTRE_URL = "https://aide.suite.anct.gouv.fr/socle/rdv-service-public";
 
 const rendezVous: ServicePage = {
   slug: "rendez-vous",
-  navLabel: "Rendez-vous",
+  navLabel: "Rendez-vous Service Public",
   // Matches the service_ids filter of DEPLOYMENT_MAP_URL above.
   deploymentServiceId: 49,
   repositoryUrl: "https://github.com/betagouv/rdv-service-public",
   seo: {
-    title: "RDV Service Public, facilitez la prise de rendez-vous",
+    title: "Rendez-vous Service Public, facilitez la prise de rendez-vous",
     description:
       "Ouvrez la prise de rendez-vous en ligne pour les cartes nationales d’identité et les passeports, avec rappels automatiques par SMS et courriel et suivi de votre activité.",
   },
 
   hero: {
-    name: "RDV Service Public",
+    name: "Rendez-vous Service Public",
     logo: {
-      src: "/images/services-logos/rdv.png",
+      src: "/images/services-logos/rdv.svg",
       width: 710,
       height: 160,
     },
@@ -56,9 +54,9 @@ const rendezVous: ServicePage = {
     },
     screenshot: {
       src: "/images/services-illlu/rdv-top.webp",
-      alt: "L’agenda de RDV Service Public, avec les créneaux ouverts à la réservation",
-      width: 1920,
-      height: 1057,
+      alt: "L’agenda de Rendez-vous Service Public, avec les créneaux ouverts à la réservation",
+      width: 2400,
+      height: 1322,
     },
   },
 
@@ -81,15 +79,15 @@ const rendezVous: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/rdv-features-1.webp",
           alt: "",
-          width: 1206,
-          height: 830,
+          width: 1200,
+          height: 827,
         },
       },
       {
         title: <>Organisé pour la ponctualité</>,
         description: (
           <>
-            Fini les rendez-vous non honorés : des notifications SMS et emails sont envoyées
+            Fini les rendez-vous non honorés : des notifications SMS et courriels sont envoyées
             automatiquement aux usagers.
           </>
         ),
@@ -101,15 +99,15 @@ const rendezVous: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/rdv-features-2.webp",
           alt: "",
-          width: 1206,
-          height: 846,
+          width: 1200,
+          height: 842,
         },
       },
       {
         title: <>Adapté pour le suivi de près</>,
         description: (
           <>
-            Visualiser ou exporter les données de votre administration pour générer vos
+            Visualisez ou exportez les données de votre administration pour générer vos
             comptes-rendus.
           </>
         ),
@@ -122,8 +120,8 @@ const rendezVous: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/rdv-features-3.webp",
           alt: "",
-          width: 1206,
-          height: 829,
+          width: 1200,
+          height: 826,
         },
       },
     ],
@@ -138,8 +136,8 @@ const rendezVous: ServicePage = {
       {
         quote: (
           <>
-            RDV Service Public est très simple à utiliser. Le rappel de SMS est un plus qui est
-            apprécié par les usagers. De manière générale, on est très satisfaites du logiciel.
+            Rendez-vous Service Public est très simple à utiliser. Le rappel de SMS est un plus qui
+            est apprécié par les usagers. De manière générale, on est très satisfaites du logiciel.
           </>
         ),
         author: <>Commune de Chomérac (07)</>,
@@ -160,7 +158,7 @@ const rendezVous: ServicePage = {
     ),
     items: [
       {
-        question: <>Quelles collectivités peuvent utiliser RDV Service Public ?</>,
+        question: <>Quelles collectivités peuvent utiliser Rendez-vous Service Public ?</>,
         answer: (
           <p>
             Rendez-vous Service Public est historiquement créé, financé et utilisé par les
@@ -178,8 +176,8 @@ const rendezVous: ServicePage = {
             Ces trois services reposent sur une même solution logicielle libre développée par
             l&rsquo;État et les départements, mais s&rsquo;adressent à des besoins distincts. RDV
             Solidarités et RDV Insertion couvrent les rendez-vous des services sociaux
-            départementaux et les parcours d&rsquo;insertion. RDV Service Public est dédié aux
-            démarches administratives des collectivités.
+            départementaux et les parcours d&rsquo;insertion. Rendez-vous Service Public est dédié
+            aux démarches administratives des collectivités.
           </p>
         ),
       },
@@ -222,7 +220,7 @@ const rendezVous: ServicePage = {
         ),
       },
       {
-        question: <>Comment intégrer l&rsquo;API de RDV Service Public ?</>,
+        question: <>Comment intégrer l&rsquo;API de Rendez-vous Service Public ?</>,
         answer: (
           <p>
             Une API permet d&rsquo;intégrer la brique de prise de rendez-vous dans les applications

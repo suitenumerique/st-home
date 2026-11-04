@@ -6,7 +6,11 @@ import { type ComponentType, type ReactNode } from "react";
 // only when the service declares it. New blocks get a type here and a component
 // in src/components/services/, wired once in src/pages/services/[slug].tsx.
 
-/** Illustration displayed next to the hero text. */
+/**
+ * Illustration displayed next to the hero text. `width` and `height` are the
+ * file's; the file is exported at twice its displayed width, no more (see
+ * "Images des pages services" in the README).
+ */
 export type ServiceIllustration = {
   src: string;
   /** Empty string when the illustration is purely decorative. */
@@ -49,7 +53,7 @@ export const DEFAULT_HERO_TEXT_COLUMNS: HeroTextColumns = 7;
 export type ServiceHeroBlock = {
   /**
    * Service name. Displayed as the emphasized first line of the <h1>, unless
-   * `logo` is set — it then only names the service for assistive technologies.
+   * `logo` is set: it then only names the service for assistive technologies.
    */
   name: string;
   /** Logotype replacing the service name at the top of the <h1>. */
@@ -95,6 +99,8 @@ export type ServiceLink = {
  */
 export type ServiceFeatureRow = {
   title: ReactNode;
+  /** Keep the title on one line from the full container width up. */
+  titleOnOneLine?: boolean;
   description: ReactNode;
   /** Omitted for the rows that are prose only. */
   highlights?: ServiceFeatureHighlight[];
@@ -129,6 +135,99 @@ export type ServiceStepsBlock = {
   link?: ServiceLink;
 };
 
+export type ServiceOfferItem = {
+  label: ReactNode;
+  tooltip?: ReactNode;
+};
+
+export type ServiceOffer = {
+  /** Displayed in capitals next to the logo. */
+  name: string;
+  logo: Omit<ServiceIllustration, "alt">;
+  tagline: ReactNode;
+  price: ReactNode;
+  yearlyPrice: ReactNode;
+  included: ServiceOfferItem[];
+  options?: ServiceOfferItem[];
+  link: ServiceLink;
+};
+
+export type ServiceOffersBlock = {
+  /** Anchor of the block, for the links of the page pointing at the offers. */
+  id: string;
+  title: ReactNode;
+  description: ReactNode;
+  offers: ServiceOffer[];
+  /** Next to each price, its asterisk pointing at the footnote. */
+  priceTerms: ReactNode;
+  footnote: ReactNode;
+  link?: ServiceLink & { lead: ReactNode };
+};
+
+export type ServiceTimelineBlock = {
+  title: ReactNode;
+  description: ReactNode;
+  steps: ServiceLink[];
+};
+
+export type DeploymentStatKey = "identityProviders" | "proconnectedOrganizations";
+
+export type DeploymentStats = Record<DeploymentStatKey, number>;
+
+export type ServiceShowcaseStat = {
+  stat: DeploymentStatKey;
+  label: ReactNode;
+};
+
+export type ServiceShowcaseBlock = {
+  title: ReactNode;
+  description: ReactNode;
+  card: {
+    title: ReactNode;
+    description: ReactNode;
+    stats: ServiceShowcaseStat[];
+    background: ServiceIllustration;
+  };
+};
+
+export type ServicePrerequisitesBlock = {
+  title: ReactNode;
+  description: ReactNode;
+  /** The cards are drawn in the images, titles included: the alt text carries them. */
+  illustrations: (ServiceIllustration & { fullWidth?: boolean; href?: string })[];
+};
+
+export type ServiceCaseStep = {
+  title: ReactNode;
+  description: ReactNode;
+};
+
+export type ServiceCase = {
+  title: ReactNode;
+  description?: ReactNode;
+  steps?: ServiceCaseStep[];
+  cta?: ServiceLink & { priority?: "primary" | "secondary" };
+};
+
+export type ServiceCasesBlock = {
+  title: ReactNode;
+  description: ReactNode;
+  columns: ServiceCase[][];
+};
+
+export type ServiceCriterion = {
+  title: ReactNode;
+  description: ReactNode;
+  illustration: ServiceIllustration;
+};
+
+export type ServiceCriteriaBlock = {
+  title: ReactNode;
+  description: ReactNode;
+  criteria: ServiceCriterion[];
+  link?: ServiceLink;
+};
+
 /**
  * A tinted band pointing somewhere off the page, between two sections. Its
  * illustration stands on the bottom edge of the band.
@@ -147,12 +246,19 @@ export type ServiceBannerBlock = {
 export type ServicePartnerLogo = ServiceIllustration & {
   /** Displayed height, for the logos that do not sit on the shared one. */
   displayHeight?: number;
+  /** Makes the logo a link to the partner's site. */
+  href?: string;
 };
 
 export type ServicePartnersBlock = {
   title: ReactNode;
   description: ReactNode;
   logos: ServicePartnerLogo[];
+  link?: ServiceLink;
+  tinted?: boolean;
+  logosAlign?: "spread" | "right";
+  /** Columns out of 12 for the text on a wide screen, 4 by default. */
+  textColumns?: 4 | 5;
 };
 
 export type ServiceTestimonial = {
@@ -235,7 +341,17 @@ export type ServicePage = {
   trialCta?: ServiceLink;
   /** The only mandatory block. */
   hero: ServiceHeroBlock;
+  showcase?: ServiceShowcaseBlock;
+  prerequisites?: ServicePrerequisitesBlock;
+  timeline?: ServiceTimelineBlock;
+  /** The ProConnect email check, under the timeline. */
+  emailCheck?: boolean;
+  /** The domain check, under the prerequisites, its links pointing at this anchor. */
+  domainCheck?: { offersHref: string };
+  cases?: ServiceCasesBlock;
+  criteria?: ServiceCriteriaBlock;
   steps?: ServiceStepsBlock;
+  offers?: ServiceOffersBlock;
   banner?: ServiceBannerBlock;
   partners?: ServicePartnersBlock;
   features?: ServiceFeaturesBlock;

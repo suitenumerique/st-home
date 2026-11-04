@@ -20,6 +20,17 @@
 }
 
 /*
+ * From the full container width up, that spare column leaves room for a title
+ * slightly wider than its own column. Narrower, it would run into the
+ * screenshot or off the screen, so it wraps.
+ */
+@media (min-width: 78rem) {
+  .featureTitleOneLine {
+    white-space: nowrap;
+  }
+}
+
+/*
  * FAQ answers are written as plain paragraphs, so the last one's bottom margin
  * would stack on top of the accordion's own padding.
  */
@@ -55,6 +66,14 @@
 .linkCardOverlay {
   position: absolute;
   inset: 0;
+}
+
+.interactiveCard:hover {
+  background-color: var(--background-default-grey-hover);
+}
+
+.interactiveCard:active {
+  background-color: var(--background-default-grey-active);
 }
 
 /* Links inside the description stay reachable above that overlay. */
@@ -171,6 +190,11 @@
   mask-image: var(--data-uri-svg);
 }
 
+/* The same search, with a right arrow instead of the upward one. */
+.heroSearchArrowRight :global(.fr-search-bar .fr-btn::before) {
+  --data-uri-svg: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M16.172 11 10.808 5.636l1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2h12.172Z"/></svg>');
+}
+
 /*
  * Once a territory is picked, resetting the search is the emphasised action of
  * the block rather than a discreet submit.
@@ -220,4 +244,284 @@
   .featureHighlightsTwoColumns {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+/*
+ * The cases block: cards of situations the visitor may be in. Each column is a
+ * flex stack so that the single card of a column grows to the height of the two
+ * facing it, and each card is one too so that its action sits on its bottom
+ * edge whatever the length of the text above.
+ */
+.caseColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: 100%;
+}
+
+.caseCard {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  background-color: var(--background-alt-grey);
+  border-radius: 8px;
+}
+
+/* Pushed to the bottom of the card, and kept from stretching across it. */
+.caseCta {
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+/*
+ * The numbered steps of a case, on a vertical timeline: the number sits in a
+ * circle in the gutter, and the line joining two circles is drawn by the step
+ * above. The line of the last step trails off dotted, as in the mockup.
+ */
+.caseSteps {
+  counter-reset: case-step;
+}
+
+.caseStep {
+  position: relative;
+  /* Air down to the next step, as in the mockup. */
+  padding-bottom: 50px;
+  padding-left: 2.5rem;
+  counter-increment: case-step;
+}
+
+.caseStep:last-child {
+  /* Only the trailing dots of the line remain below the last step. */
+  padding-bottom: 1.5rem;
+}
+
+.caseStep::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--text-action-high-blue-france);
+  font-weight: 700;
+  font-size: 0.75rem;
+  background-color: var(--background-alt-grey);
+  border: 2px solid var(--text-action-high-blue-france);
+  border-radius: 50%;
+  content: counter(case-step);
+}
+
+.caseStep::after {
+  position: absolute;
+  /* From under the circle down to the circle of the next step. */
+  top: 1.5rem;
+  bottom: 0;
+  left: 0.75rem;
+  width: 2px;
+  background-color: var(--text-action-high-blue-france);
+  content: "";
+  transform: translateX(-1px);
+}
+
+/*
+ * The line of the last step trails off as dots rather than stopping short.
+ * Drawn as a gradient rather than a dotted border, which would space its dots
+ * by their own width alone.
+ */
+.caseStep:last-child::after {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--text-action-high-blue-france) 0 2px,
+    transparent 2px 8px
+  );
+  background-color: transparent;
+}
+
+/* Lighter than the bold DSFR heading it is built on, as in the mockup. */
+.caseStepTitle {
+  color: var(--text-action-high-blue-france);
+  font-weight: 500;
+}
+
+/*
+ * The criteria block: white cards whose illustration is cropped by their own
+ * bottom edge, as in the mockup. The cards of a row share their height, so the
+ * crop is the same across the row whatever the length of the text above it.
+ */
+.criterionCard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background-color: #fff;
+  border: 1px solid var(--border-default-grey);
+  border-radius: 8px;
+}
+
+/*
+ * The foot of the card: it keeps the left padding of the card, and crops the
+ * illustration on its right and bottom edges. Pushed to the bottom so that the
+ * illustrations of a row line up.
+ */
+.criterionMedia {
+  margin-top: auto;
+  padding-left: 1.5rem;
+  overflow: hidden;
+}
+
+/*
+ * Blue and bold, as in the mockup, rather than the black DSFR heading. The
+ * size is pinned here rather than left to an `fr-text--*` class, which the
+ * DSFR `h3` rule competes with, both being `!important`.
+ */
+.criterionTitle {
+  color: var(--text-action-high-blue-france);
+  font-size: 16px !important;
+  line-height: 24px !important;
+}
+
+/* Wider than its slot: the illustration runs past the right edge of the card. */
+.criterionImage {
+  width: 125%;
+  max-width: none;
+  height: auto;
+}
+
+/*
+ * Steps along a horizontal line: each item draws its share of the line across
+ * its whole width, gutters included, so the shares join up into one line
+ * running behind the numbers. Stacked on mobile, the line goes.
+ */
+.timelineStep {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 48em) {
+  .timelineStep::before {
+    position: absolute;
+    /* Through the middle of the number: the DSFR gutter padding, half the number. */
+    top: calc(0.75rem + 0.75rem - 1px);
+    right: 0;
+    left: 0;
+    border-top: 2px solid var(--background-action-low-blue-france);
+    content: "";
+  }
+}
+
+.timelineNumber {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: 0 auto 1.5rem;
+  color: var(--text-action-high-blue-france);
+  font-weight: 700;
+  font-size: 0.75rem;
+  background-color: var(--background-action-low-blue-france);
+  border-radius: 50%;
+}
+
+.timelineCard {
+  flex: 1;
+  background-color: #fff;
+  border: 1px solid var(--border-default-grey);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 6%);
+}
+
+/*
+ * ProConnect email check: the field of the hero search, narrower, its button
+ * blue from the start.
+ */
+.emailCheckTitle {
+  max-width: 30rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.emailCheck {
+  max-width: 29rem;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.emailCheckField {
+  position: relative;
+  background-color: #fff;
+  border: 1px solid var(--border-default-grey);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 6%);
+}
+
+.emailCheckField :global(.fr-input) {
+  height: 3rem;
+  max-height: 3rem;
+  margin-top: 0;
+  padding-left: 1rem;
+  padding-right: 4rem;
+  background-color: transparent;
+  border-radius: 8px;
+  /* Neither the DSFR underline nor its focus outline, outside the states below. */
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+:global(.fr-input-group--error) .emailCheckField :global(.fr-input) {
+  box-shadow: inset 0 -2px 0 0 var(--border-plain-error) !important;
+}
+
+:global(.fr-input-group--info) .emailCheckField :global(.fr-input) {
+  box-shadow: inset 0 -2px 0 0 var(--border-plain-info) !important;
+}
+
+.emailCheckField :global(.fr-input::placeholder) {
+  color: var(--text-mention-grey);
+}
+
+/* DSFR's own `icons/system/arrow-right-line.svg`, in place of the reset arrow. */
+.emailCheckSubmit::before {
+  -webkit-mask-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M16.172 11 10.808 5.636l1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2h12.172Z"/></svg>');
+  mask-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M16.172 11 10.808 5.636l1.414-1.414L20 12l-7.778 7.778-1.414-1.414L16.172 13H4v-2h12.172Z"/></svg>');
+}
+
+/* The domain check's submit button, greyed out until something is typed. */
+.domainCheckSubmitEmpty,
+.domainCheckSubmitEmpty:hover {
+  background-color: var(--background-contrast-grey);
+}
+
+.domainCheckSubmitEmpty::before {
+  background-color: var(--text-mention-grey);
+}
+
+/* Wide enough for the longer results to read on two or three lines. */
+.heroSearchTextWide {
+  max-width: 62rem;
+}
+
+.emailCheckStatus {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.5rem 2rem;
+  align-items: center;
+  justify-content: center;
+  text-align: left;
+}
+
+/* An acronym with a tooltip, inside a line of text: a button looking like the text around it. */
+.acronym {
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  text-decoration: underline dashed;
+  text-underline-offset: 0.25em;
+  cursor: help;
 }

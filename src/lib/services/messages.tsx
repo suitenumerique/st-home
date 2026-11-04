@@ -36,15 +36,15 @@ const messages: ServicePage = {
   hero: {
     name: "Messages",
     logo: {
-      src: "/images/services-logos/messages.png",
+      src: "/images/services-logos/messages.svg",
       width: 568,
       height: 160,
     },
     tagline: <>Envoyez et recevez vos courriels professionnels</>,
     description: (
       <>
-        Envoyez et recevez vos courriels et gérez votre calendrier professionnel dans un
-        environnement sécurisé.
+        Créez des adresses nominatives ou partagées pour votre collectivité et gérez vos courriels
+        professionnels en équipe.
       </>
     ),
     illustration: {
@@ -56,8 +56,8 @@ const messages: ServicePage = {
     screenshot: {
       src: "/images/services-illlu/messages-top.webp",
       alt: "La boîte de réception de Messages, avec la liste des courriels et la conversation ouverte",
-      width: 2412,
-      height: 1639,
+      width: 2400,
+      height: 1632,
     },
     eligibilitySearch: true,
   },
@@ -76,7 +76,7 @@ const messages: ServicePage = {
           { icon: Download, label: <>Importer votre ancienne boîte aux lettres</> },
           {
             icon: Doc,
-            label: <>Créer et utiliser des modèles prêt à l&rsquo;emploi</>,
+            label: <>Créer et utiliser des modèles prêts à l&rsquo;emploi</>,
           },
           { icon: Retry, label: <>Programmer une réponse automatique</> },
         ],
@@ -84,8 +84,8 @@ const messages: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/messages-features-1.webp",
           alt: "",
-          width: 1206,
-          height: 832,
+          width: 1200,
+          height: 828,
         },
       },
       {
@@ -106,8 +106,8 @@ const messages: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/messages-features-2.webp",
           alt: "",
-          width: 1206,
-          height: 822,
+          width: 1200,
+          height: 819,
         },
       },
       {
@@ -120,7 +120,7 @@ const messages: ServicePage = {
         ),
         highlights: [
           { icon: Calendrier, label: <>Gérer vos évènements avec Calendrier</> },
-          { icon: Contacts, label: <>Créer vos groupes avec Contacts</> },
+          { icon: Contacts, label: <>Créer vos groupes avec Contacts (à venir)</> },
           {
             icon: LinkIcon,
             label: <>Configurer des intégrations (clé API, widget, webhook)</>,
@@ -130,8 +130,8 @@ const messages: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/messages-features-3.webp",
           alt: "",
-          width: 1188,
-          height: 819,
+          width: 1200,
+          height: 828,
         },
       },
     ],
@@ -189,6 +189,15 @@ const messages: ServicePage = {
           </>
         ),
         author: <>Commune de Saint-Goussaud (23)</>,
+      },
+      {
+        quote: (
+          <>
+            On avait très peur d&rsquo;être submergé au support. Finalement, le produit est
+            tellement bien conçu qu&rsquo;il n&rsquo;y en a quasiment pas.
+          </>
+        ),
+        author: <>Syndicat Mixte La Fibre64 (64)</>,
       },
     ],
   },

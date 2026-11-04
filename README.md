@@ -135,6 +135,19 @@ En cas d'ajout de colonnes gérées par Drizzle dans la base de données Postgre
 
 Ces étapes sont à répéter en staging puis en prod.
 
+### Images des pages services
+
+Les images de `public/images/services-illlu/` sont exportées au double de la largeur à laquelle elles s'affichent (écrans rétina 2x), pas plus : un fichier plus grand ne se voit pas mais coûte de la mémoire à l'optimiseur d'images de Next, ce qui a déjà fait tomber le conteneur de staging.
+
+| Emplacement                                    | Affichée | Fichier |
+| ---------------------------------------------- | -------- | ------- |
+| Illustration du hero                           | 370 px   | 740 px  |
+| Capture ou illustration pleine largeur         | 1200 px  | 2400 px |
+| Deux images côte à côte (fonctionnalités, etc) | 600 px   | 1200 px |
+| Bannière                                       | 300 px   | 600 px  |
+
+Le `width` et le `height` déclarés dans `src/lib/services/*.tsx` sont ceux du fichier. 1200 px est la largeur utile maximale du contenu du conteneur (`CONTAINER_CONTENT_WIDTH`), et non la largeur extérieure du conteneur.
+
 ### Tests
 
 ```

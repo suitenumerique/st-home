@@ -43,7 +43,7 @@ const annuaire: ServicePage = {
   hero: {
     name: "Annuaire des collectivités",
     logo: {
-      src: "/images/services-logos/annuaire.png",
+      src: "/images/services-logos/annuaire.svg",
       width: 1248,
       height: 160,
     },
@@ -70,8 +70,8 @@ const annuaire: ServicePage = {
     screenshot: {
       src: "/images/services-illlu/annuaire-top.webp",
       alt: "L’espace commune de l’Annuaire, avec les informations publiées de la collectivité",
-      width: 3063,
-      height: 2084,
+      width: 2400,
+      height: 1634,
     },
   },
 
@@ -96,8 +96,8 @@ const annuaire: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/annuaire-features-1.webp",
           alt: "",
-          width: 1174,
-          height: 791,
+          width: 1200,
+          height: 809,
         },
       },
       {
@@ -114,12 +114,13 @@ const annuaire: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/annuaire-features-2.webp",
           alt: "",
-          width: 1174,
-          height: 810,
+          width: 1200,
+          height: 828,
         },
       },
       {
-        title: <>Facilitez l&rsquo;ouverture des données</>,
+        title: <>L&rsquo;ouverture des données facilitée</>,
+        titleOnOneLine: true,
         description: (
           <>
             Certifiez vos informations pour garantir la diffusion de jeux de données publiques
@@ -135,8 +136,8 @@ const annuaire: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/annuaire-features-3.webp",
           alt: "",
-          width: 1174,
-          height: 813,
+          width: 1200,
+          height: 831,
         },
       },
     ],
@@ -162,7 +163,7 @@ const annuaire: ServicePage = {
         quote: (
           <>
             L&rsquo;Annuaire des Collectivités est un outil facile, percutant et à jour. À partir du
-            moment ou l&rsquo;on récupère notre code d&rsquo;accès le tour est joué ! C&rsquo;est
+            moment où l&rsquo;on récupère notre code d&rsquo;accès le tour est joué ! C&rsquo;est
             très facile de l&rsquo;utiliser.
           </>
         ),
@@ -197,7 +198,7 @@ const annuaire: ServicePage = {
         question: (
           <>
             Quelle est la différence avec l&rsquo;Annuaire de l&rsquo;administration de
-            Service-Public.gouv.fr ?
+            service-public.gouv.fr ?
           </>
         ),
         answer: (
@@ -257,7 +258,7 @@ const annuaire: ServicePage = {
       {
         question: (
           <>
-            Puis-je réutiliser les données publiques de ma collectivité <em>via</em> l&rsquo;API de
+            Puis-je réutiliser les données publiques de ma collectivité via l&rsquo;API de
             collectivite.fr ?
           </>
         ),

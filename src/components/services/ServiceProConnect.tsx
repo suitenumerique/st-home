@@ -36,7 +36,7 @@ const cards: ProConnectCard[] = [
     title: <>Adresses mails nominatives</>,
     slug: "messages",
     href: MESSAGES_URL,
-    description: <>Avec Messages, créez des adresses de messageries professionnelles.</>,
+    description: <>Avec Messages, créez des adresses de messagerie professionnelles.</>,
   },
 ];
 
@@ -77,7 +77,7 @@ export default function ServiceProConnect({ service }: { service: ServicePage })
           {cards.map((card, index) => (
             <div key={index} className={fr.cx("fr-col-12", "fr-col-sm-6")}>
               <div
-                className={`${fr.cx("fr-p-3w")} ${styles.linkCard}`}
+                className={`${fr.cx("fr-p-3w")} ${styles.linkCard} ${styles.interactiveCard}`}
                 style={{
                   height: "100%",
                   display: "flex",

@@ -17,8 +17,8 @@ export default function ServiceTestimonials({
   const { testimonials, link } = block;
   const [current, setCurrent] = useState(0);
 
-  const go = (step: number) =>
-    setCurrent((i) => (i + step + testimonials.length) % testimonials.length);
+  const isFirst = current === 0;
+  const isLast = current === testimonials.length - 1;
 
   return (
     <section style={{ backgroundColor: "var(--background-alt-blue-france)" }}>
@@ -81,7 +81,8 @@ export default function ServiceTestimonials({
             >
               <button
                 type="button"
-                onClick={() => go(-1)}
+                onClick={() => setCurrent(current - 1)}
+                disabled={isFirst}
                 title="Verbatim précédent"
                 className={fr.cx(
                   "fr-btn",
@@ -91,7 +92,8 @@ export default function ServiceTestimonials({
               />
               <button
                 type="button"
-                onClick={() => go(1)}
+                onClick={() => setCurrent(current + 1)}
+                disabled={isLast}
                 title="Verbatim suivant"
                 className={fr.cx(
                   "fr-btn",

@@ -27,7 +27,6 @@
     "test:links": "start-server-and-test 'npm run dev' 8950 'linkinator 'http://localhost:8950' --recurse --skip \"^(?!http://localhost:8950)\"'",
     "test:e2e:install": "playwright install",
     "test:e2e": "playwright test",
-    "test:playwright": "NEXT_PUBLIC_BASE_PATH='' NODE_ENV=production npm run build && playwright test",
     "db:drop": "tsx scripts/db-drop.ts",
     "db:browse": "drizzle-kit studio --host=0.0.0.0 --port=8954",
     "db:push": "drizzle-kit push",
@@ -68,7 +67,7 @@
     "husky": "^9.1.7",
     "leaflet": "^1.9.4",
     "maplibre-gl": "^6.15.0",
-    "next": "16.4.3",
+    "next": "16.4.5",
     "next-seo": "^6.8.0",
     "pg": "^8.16.3",
     "prop-types": "^15.8.1",
@@ -84,6 +83,7 @@
     "unified": "^11.0.5"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.11",
     "@playwright/test": "1.57.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.0",
@@ -96,7 +96,7 @@
     "@vitejs/plugin-react": "^6.0.4",
     "cheerio": "^1.1.2",
     "eslint": "9.32.0",
-    "eslint-config-next": "16.4.3",
+    "eslint-config-next": "16.4.5",
     "glob": "^13.0.6",
     "jsdom": "^26.1.0",
     "linkinator": "^7.5.0",

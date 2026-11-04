@@ -15,7 +15,15 @@ import {
 import "maplibre-gl/dist/maplibre-gl.css";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Map, { Layer, LayerProps, MapRef, Popup, ScaleControl, Source } from "react-map-gl/maplibre";
+import Map, {
+  Layer,
+  LayerProps,
+  MapRef,
+  Marker,
+  Popup,
+  ScaleControl,
+  Source,
+} from "react-map-gl/maplibre";
 import parentAreas from "../../../../public/parent_areas.json";
 import CommuneSearch from "../../CommuneSearch";
 import { useMapContext } from "../context/MapContext";
@@ -26,8 +34,12 @@ import { FeatureProperties } from "../types";
 import MapButton from "../ui/MapButton";
 
 export interface InteractiveMapProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data?: Record<string, { value?: number; score?: number; color?: string; [key: string]: any }>;
+  data?: Record<
+    string,
+    // `labels` are listed when hovering the area's circle value (see displayCircleValue)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    { value?: number; score?: number; color?: string; labels?: string[]; [key: string]: any }
+  >;
   gradientColors: string[];
   showGradientLegend?: boolean;
   displayCircleValue?: boolean;
@@ -40,6 +52,7 @@ export interface InteractiveMapProps {
   neighbourClickOnly?: boolean;
   additionalInteractiveLayerIds?: string[];
   hideBaseLayer?: boolean;
+  renderTooltip?: (properties: FeatureProperties) => React.ReactNode;
   customLayers?: Array<{
     id: string;
     source?: {
@@ -60,6 +73,7 @@ export interface InteractiveMapProps {
 setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).href);
 
 const WATER_COLOR = "#ffffff";
+const MAX_CIRCLE_LABELS = 10;
 export const customMapStyle = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ...(mapStyles.desaturated as any),
@@ -90,6 +104,7 @@ export const InteractiveMap = ({
   neighbourClickOnly = false,
   additionalInteractiveLayerIds = [],
   hideBaseLayer = false,
+  renderTooltip,
   customLayers,
 }: InteractiveMapProps) => {
   const { mapState, selectLevel, goBack, handleQuickNav, nextLevel } = useMapContext();
@@ -104,6 +119,12 @@ export const InteractiveMap = ({
     longitude: number;
     latitude: number;
     properties: FeatureProperties;
+  } | null>(null);
+  const [hoveredCircle, setHoveredCircle] = useState<{
+    longitude: number;
+    latitude: number;
+    value: number;
+    labels: string[];
   } | null>(null);
   const [hoveredFeatureScore, setHoveredFeatureScore] = useState<number | null>(null);
   const [hoveredFeatureCode, setHoveredFeatureCode] = useState<string | null>(null);
@@ -252,8 +273,29 @@ export const InteractiveMap = ({
     }
   }, []);
 
+  // Circles are not interactive layers (clicks go through to the area below), so they are
+  // looked up under the cursor to list the area's labels on hover
+  const updateHoveredCircle = useCallback(
+    (event: MapLayerMouseEvent) => {
+      const map = mapRef.current?.getMap();
+      const circle = map?.getLayer("feature-circles")
+        ? map.queryRenderedFeatures(event.point, { layers: ["feature-circles"] })[0]
+        : undefined;
+      const code = circle?.properties?.INSEE_GEO || circle?.properties?.SIRET;
+      const labels = code ? data?.[code]?.labels : undefined;
+      if (!circle || !labels?.length) {
+        setHoveredCircle(null);
+        return;
+      }
+      const [longitude, latitude] = (circle.geometry as GeoJSON.Point).coordinates;
+      setHoveredCircle({ longitude, latitude, value: circle.properties.circleValue, labels });
+    },
+    [data],
+  );
+
   const onMouseMove = useCallback(
     (event: MapLayerMouseEvent) => {
+      updateHoveredCircle(event);
       if (event.features && event.features.length > 0) {
         const map = mapRef.current?.getMap();
         const feature = event.features[0];
@@ -353,7 +395,7 @@ export const InteractiveMap = ({
         setPopupInfo(null);
       }
     },
-    [clearHoverState],
+    [clearHoverState, updateHoveredCircle],
   );
 
   const onMouseLeave = useCallback(() => {
@@ -361,6 +403,7 @@ export const InteractiveMap = ({
     if (map) {
       clearHoverState(map);
     }
+    setHoveredCircle(null);
     setHoveredFeatureCode(null);
     setHoveredFeatureScore(null);
     setPopupInfo(null);
@@ -642,7 +685,23 @@ export const InteractiveMap = ({
           }
         }}
       >
-        {popupInfo && (
+        {hoveredCircle && (
+          <Marker
+            longitude={hoveredCircle.longitude}
+            latitude={hoveredCircle.latitude}
+            anchor="center"
+            style={{ pointerEvents: "none" }}
+          >
+            <div className="map-circle-tooltip">
+              <p className="map-circle-tooltip-value">{hoveredCircle.value}</p>
+              <p className="map-circle-tooltip-labels">
+                {hoveredCircle.labels.slice(0, MAX_CIRCLE_LABELS).join(", ")}
+                {hoveredCircle.labels.length > MAX_CIRCLE_LABELS && ", …"}
+              </p>
+            </div>
+          </Marker>
+        )}
+        {popupInfo && !hoveredCircle && (
           <Popup
             longitude={popupInfo.longitude}
             latitude={popupInfo.latitude}
@@ -653,6 +712,7 @@ export const InteractiveMap = ({
           >
             <div className="map-tooltip-content">
               <p className="map-tooltip-title">{popupInfo.properties.NAME}</p>
+              {renderTooltip?.(popupInfo.properties)}
               {((mapState.currentLevel === "department" && mapState.departmentView === "city") ||
                 mapState.currentLevel === "epci") && (
                 <p style={{ fontSize: "0.8rem", color: "#64748B", marginBottom: "0" }}>

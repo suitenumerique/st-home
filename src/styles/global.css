@@ -553,9 +553,9 @@ path.leaflet-interactive:focus {
 /* Cartographie */
 
 .map-side-panel {
-  width: 460px;
-  min-width: 460px;
-  max-width: 460px;
+  width: 480px;
+  min-width: 480px;
+  max-width: 480px;
   background: #fff;
   border-right: 1px solid #e5e7eb;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
@@ -629,6 +629,57 @@ path.leaflet-interactive:focus {
   font-size: 1rem;
   color: #1e293b;
   margin-bottom: 0;
+}
+
+/* Same look as the hovered circle value it replaces (see feature-circles in InteractiveMap) */
+.map-circle-tooltip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  min-width: 56px;
+  max-width: 260px;
+  min-height: 56px;
+  padding: 0.35rem 0.9rem;
+  background: #ececfe;
+  border: 6px solid rgba(0, 0, 145, 0.4);
+  border-radius: 28px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  color: #000091;
+  font-family: Marianne, arial, sans-serif;
+  text-align: center;
+}
+
+.map-circle-tooltip-value {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.25rem;
+  margin: 0;
+}
+
+.map-circle-tooltip-labels {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  margin: 0.25rem 0 0;
+}
+
+.map-tooltip-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: #1e293b;
+  margin: 0.25rem 0 0;
+}
+
+.map-tooltip-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .map-gradient {

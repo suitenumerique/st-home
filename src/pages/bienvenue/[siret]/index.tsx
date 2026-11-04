@@ -224,7 +224,9 @@ export default function Bienvenue(props: PageProps) {
         {GetMainContent()}
       </section>
       <section className={fr.cx("fr-py-15w", "fr-mb-15w")}>
-        <TrialContact signupUrl={`/bienvenue/${commune?.siret}/contact`} priority="primary" />
+        <TrialContact
+          primaryAction={{ text: "Commencer", href: `/bienvenue/${commune?.siret}/contact` }}
+        />
       </section>
       <section
         className={fr.cx("fr-mt-6w")}
@@ -275,6 +277,8 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
 
   // ANCT services flagged anct_threshold_active are targeted at small collectivities
   // (commune < 3500, epci < 15000) and should be hidden from the ANCT block above that.
+  // TODO: above the thresholds, add a self-hosting block (guide: SELF_HOSTING_URL in
+  // ServiceEligibility), as the service pages already offer it.
   const isAboveAnctThreshold =
     commune.type === "commune"
       ? commune.population >= 3500

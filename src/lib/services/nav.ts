@@ -3,12 +3,12 @@
  * CMS-driven overview page, then the services that already have a dedicated
  * page under /services/<slug>.
  *
- * Deliberately kept out of `./index`, which holds the full content of all six
+ * Deliberately kept out of `./index`, which holds the full content of all the
  * service pages: `PageLayout` needs these links on every page of the site, so
- * importing `./index` there would put every service definition — FAQs,
- * testimonials, the ui-kit icons — in the shared `_app` bundle.
+ * importing `./index` there would put every service definition (FAQs,
+ * testimonials, the ui-kit icons) in the shared `_app` bundle.
  *
- * `tests-vitest/servicesNav.test.ts` keeps this list in sync with the service
+ * `tests-vitest/servicesNav.spec.ts` keeps this list in sync with the service
  * pages themselves.
  */
 
@@ -19,10 +19,11 @@ export type ServicesNavLink = {
 
 /** Slug and dropdown label of each service page, in dropdown order. */
 export const servicesNav: { slug: string; navLabel: string }[] = [
+  { slug: "proconnect", navLabel: "ProConnect" },
   { slug: "domaines", navLabel: "Domaines" },
   { slug: "messages", navLabel: "Messages" },
   { slug: "fichiers", navLabel: "Fichiers" },
-  { slug: "rendez-vous", navLabel: "Rendez-vous" },
+  { slug: "rendez-vous", navLabel: "Rendez-vous Service Public" },
   { slug: "annuaire", navLabel: "Annuaire des collectivités" },
   { slug: "mes-adresses", navLabel: "Mes Adresses" },
 ];

@@ -202,7 +202,7 @@ const SidePanelContent = ({ container, mapState, selectLevel, setMapState, goBac
     </div>
   );
 
-  const orgTypeLabel = { all: 'Toutes structures', commune: 'Communes', epci: 'Intercommunalités', department: 'Départements', region: 'Région' }[orgType];
+  const orgTypeLabel = { all: 'Toutes collectivités', commune: 'Communes', epci: 'Intercommunalités', department: 'Départements', region: 'Région' }[orgType];
 
   const filters = () => {
     if (activeTab === 'partenaires') {
@@ -260,7 +260,7 @@ const SidePanelContent = ({ container, mapState, selectLevel, setMapState, goBac
           </button>
           {openDropdown === 'structure' && (
             <ul className={styles.filterDropdownMenu}>
-              {[['all', 'Toutes structures'], ['commune', 'Communes'], ['epci', 'Intercommunalités'], ['department', 'Départements'], ['region', 'Régions']].map(([val, label], index) => (
+              {[['all', 'Toutes collectivités'], ['commune', 'Communes'], ['epci', 'Intercommunalités'], ['department', 'Départements'], ['region', 'Régions']].map(([val, label], index) => (
                 <li
                   key={val}
                   className={`${styles.filterDropdownOption} ${index === 0 ? styles.filterDropdownOptionFirst : ''}`}
@@ -355,7 +355,7 @@ const serviceDetails = (service, stats) => {
                       {service.maturity.toUpperCase()}
                     </span>
                   )}
-                  <span className={styles.serviceCount}>{formatNumber(count)} structure{count !== 1 ? 's' : ''}</span>
+                  <span className={styles.serviceCount}>{formatNumber(count)} collectivité{count !== 1 ? 's' : ''}</span>
                 </div>
                 <div className={styles.serviceHeaderRight}>
                   <div
@@ -420,7 +420,7 @@ const serviceDetails = (service, stats) => {
       <div>
         <h3 className={styles.serviceListTitle}>Services</h3>
         {visibleUsedServices.length === 0 ? (
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-mention-grey)' }}>Aucun service utilisé par cette structure.</p>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-mention-grey)' }}>Aucun service utilisé par cette collectivité.</p>
         ) : (
           visibleUsedServices.map((service) => (
             <div key={service.id} className={styles.cityServiceItem}>
@@ -451,7 +451,7 @@ const serviceDetails = (service, stats) => {
       <div>
         <h3 className={styles.serviceListTitle}>Services</h3>
         {visibleUsedServices.length === 0 ? (
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-mention-grey)' }}>Aucun service utilisé par cette structure.</p>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-mention-grey)' }}>Aucun service utilisé par cette collectivité.</p>
         ) : (
           visibleUsedServices.map((service) => (
             <div key={service.id} className={styles.cityServiceItem}>
@@ -496,8 +496,8 @@ const serviceDetails = (service, stats) => {
       </div>
       <p className={styles.headerDescription}>
         {activeTab === 'utilisateurs'
-          ? "Cette carte permet d'identifier les structures qui utilisent les services de la suite territoriale."
-          : "Voici les structures qui déploient les services de la suite territoriale. Vous souhaitez les distribuer ?"}
+          ? "Cette carte permet d'identifier les collectivités qui utilisent les services de la suite territoriale."
+          : "Voici les collectivités qui déploient les services de la suite territoriale. Vous souhaitez les distribuer ?"}
       </p>
       {activeTab === 'partenaires' && (
         <a href="mailto:contact@suite.anct.gouv.fr" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-action-high-blue-france)', fontWeight: '400', fontSize: '16px', textDecoration: 'none' }}>

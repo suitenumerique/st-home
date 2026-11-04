@@ -41,7 +41,14 @@ function FeatureRow({
       }
     >
       <div className={fr.cx("fr-col-12", "fr-col-md-5")}>
-        <h2 className={fr.cx("fr-h2", "fr-mb-2w")}>{row.title}</h2>
+        <h2
+          className={
+            fr.cx("fr-h2", "fr-mb-2w") +
+            (row.titleOnOneLine ? ` ${styles.featureTitleOneLine}` : "")
+          }
+        >
+          {row.title}
+        </h2>
         <p className={fr.cx("fr-text--md", "fr-mb-4w")}>{row.description}</p>
 
         {row.highlights && (

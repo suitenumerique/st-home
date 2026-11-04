@@ -1,6 +1,7 @@
 import { getServiceConfig } from "@/components/map/features/deploiement/servicesConfig";
 import { db } from "@/lib/db";
-import { organizations, organizationsToServices } from "@/lib/schema";
+import { organizations, organizationsToServices, services } from "@/lib/schema";
+import { type DeploymentStats } from "@/lib/services/types";
 import { sql } from "drizzle-orm";
 
 // The ANCT thresholds, as the deployment map applies them in
@@ -56,6 +57,42 @@ export async function countAdoptingOrganizations(serviceId: number): Promise<num
     return typeof count === "number" ? count : null;
   } catch (error) {
     console.error(`Could not count the collectivités using service ${serviceId}:`, error);
+    return null;
+  }
+}
+
+// Every identity provider is a service of this type in the deployment data; the
+// map merges them into a single ProConnect line.
+const PROCONNECT_TYPE = "proconnect";
+
+/**
+ * The ProConnect figures of the deployment map: its identity providers, and the
+ * collectivités linked to at least one of them. Null when the database is
+ * unreachable, as for `countAdoptingOrganizations`.
+ */
+export async function getDeploymentStats(): Promise<DeploymentStats | null> {
+  try {
+    const { rows } = await db.execute(sql`
+      SELECT
+        (SELECT COUNT(*) FROM ${services} WHERE ${services.type} = ${PROCONNECT_TYPE})::int
+          AS "identityProviders",
+        (
+          SELECT COUNT(DISTINCT ${organizationsToServices.organizationSiret})
+          FROM ${organizationsToServices}
+          INNER JOIN ${services} ON ${services.id} = ${organizationsToServices.serviceId}
+          WHERE ${services.type} = ${PROCONNECT_TYPE}
+        )::int AS "proconnectedOrganizations"
+    `);
+
+    const { identityProviders, proconnectedOrganizations } = rows[0] ?? {};
+
+    if (typeof identityProviders !== "number" || typeof proconnectedOrganizations !== "number") {
+      return null;
+    }
+
+    return { identityProviders, proconnectedOrganizations };
+  } catch (error) {
+    console.error("Could not compute the ProConnect deployment figures:", error);
     return null;
   }
 }

@@ -3,6 +3,7 @@ import domaines from "./domaines";
 import fichiers from "./fichiers";
 import mesAdresses from "./mes-adresses";
 import messages from "./messages";
+import proconnect from "./proconnect";
 import rendezVous from "./rendez-vous";
 import { type ServicePage } from "./types";
 
@@ -14,6 +15,7 @@ export * from "./types";
  * `./nav`, which the layout imports instead of this module.
  */
 export const servicePages: ServicePage[] = [
+  proconnect,
   domaines,
   messages,
   fichiers,

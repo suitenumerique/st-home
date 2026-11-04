@@ -17,13 +17,14 @@ const HERO_BACKGROUND = `linear-gradient(180deg, rgba(0, 0, 145, ${GRADIENT_ALPH
 // as in the mockup.
 const SEARCH_BACKGROUND = `linear-gradient(0deg, rgba(0, 0, 145, ${GRADIENT_ALPHA}) 0%, rgba(0, 0, 145, 0) 425px)`;
 const ILLUSTRATION_MAX_HEIGHT = 370;
-const LOGO_MAX_HEIGHT = 90;
+const LOGO_HEIGHT = 90;
 const CONTENT_PADDING_TOP = 94;
 // Air between the hero text and the screenshot spanning the page below it.
 const CONTENT_PADDING_BOTTOM = 60;
 // Larger than the DSFR h1, as in the mockup.
 const TITLE_FONT_SIZE = 50;
 const TITLE_LINE_HEIGHT = 60;
+const DESCRIPTION_MAX_WIDTH = 576;
 // Air around the eligibility block, inside its tinted band.
 const SEARCH_PADDING = 120;
 
@@ -53,7 +54,11 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
         <div className={fr.cx("fr-grid-row", "fr-grid-row--gutters", "fr-grid-row--middle")}>
           {/* As many columns as the tagline needs next to the illustration,
               the whole row without. */}
-          <div className={fr.cx("fr-col-12", illustration ? textColumn : "fr-col-md-12")}>
+          <div
+            className={fr.cx("fr-col-12", illustration ? textColumn : "fr-col-md-12")}
+            // At the top whether or not there is a CTA, so logos line up across services.
+            style={{ alignSelf: "flex-start" }}
+          >
             <h1
               className={fr.cx("fr-mb-2w")}
               style={{ fontSize: TITLE_FONT_SIZE, lineHeight: `${TITLE_LINE_HEIGHT}px` }}
@@ -64,15 +69,18 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
                   alt={hero.name}
                   width={hero.logo.width}
                   height={hero.logo.height}
-                  sizes={`${widthAtMaxHeight(hero.logo, LOGO_MAX_HEIGHT)}px`}
+                  sizes={`${widthAtMaxHeight(hero.logo, LOGO_HEIGHT)}px`}
                   priority
                   className={fr.cx("fr-mb-2w")}
                   style={{
                     display: "block",
                     width: "auto",
-                    height: "auto",
+                    height: LOGO_HEIGHT,
+                    // Narrower than the logo, the column shrinks it inside its
+                    // box rather than squashing it.
                     maxWidth: "100%",
-                    maxHeight: `${LOGO_MAX_HEIGHT}px`,
+                    objectFit: "contain",
+                    objectPosition: "left center",
                   }}
                 />
               ) : (
@@ -81,7 +89,12 @@ export default function ServiceHero({ hero }: { hero: ServiceHeroBlock }) {
               <span style={{ display: "block", fontWeight: 400 }}>{hero.tagline}</span>
             </h1>
 
-            <p className={fr.cx("fr-text--md", "fr-mb-0")}>{hero.description}</p>
+            <p
+              className={fr.cx("fr-text--md", "fr-mb-0")}
+              style={{ maxWidth: DESCRIPTION_MAX_WIDTH }}
+            >
+              {hero.description}
+            </p>
 
             {hero.cta && (
               <Link

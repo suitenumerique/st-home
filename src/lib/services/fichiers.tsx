@@ -39,7 +39,7 @@ const fichiers: ServicePage = {
   hero: {
     name: "Fichiers",
     logo: {
-      src: "/images/services-logos/fichiers.png",
+      src: "/images/services-logos/fichiers.svg",
       width: 504,
       height: 160,
     },
@@ -59,8 +59,8 @@ const fichiers: ServicePage = {
     screenshot: {
       src: "/images/services-illlu/fichiers-top.webp",
       alt: "L’espace de stockage de Fichiers, avec l’arborescence des dossiers de la collectivité",
-      width: 1920,
-      height: 1306,
+      width: 2400,
+      height: 1633,
     },
     eligibilitySearch: true,
   },
@@ -83,8 +83,8 @@ const fichiers: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/fichiers-features-1.webp",
           alt: "",
-          width: 1206,
-          height: 825,
+          width: 1200,
+          height: 821,
         },
       },
       {
@@ -103,23 +103,23 @@ const fichiers: ServicePage = {
         screenshot: {
           src: "/images/services-illlu/fichiers-features-2.webp",
           alt: "",
-          width: 1206,
-          height: 832,
+          width: 1200,
+          height: 828,
         },
       },
       {
         title: <>Conçu pour un travail fluide</>,
         description: <>Transférez et stockez vos documents sans heurts lors de vos échanges.</>,
         highlights: [
-          { icon: Send, label: <>Envoyez et recevez les fichiers lourds avec Transferts</> },
-          { icon: Mail, label: <>Enregistrez directement vos pièces jointes depuis Messages</> },
+          { icon: Send, label: <>Envoyer et recevoir vos fichiers lourds avec Transferts</> },
+          { icon: Mail, label: <>Enregistrer directement vos pièces jointes depuis Messages</> },
         ],
         link: { text: "Voir toutes les fonctionnalités", href: ALL_FEATURES_URL },
         screenshot: {
           src: "/images/services-illlu/fichiers-features-3.webp",
           alt: "",
-          width: 1206,
-          height: 830,
+          width: 1200,
+          height: 826,
         },
       },
     ],
@@ -139,6 +139,24 @@ const fichiers: ServicePage = {
           </>
         ),
         author: <>Commune de Huelgoat</>,
+      },
+      {
+        quote: (
+          <>L&rsquo;interface est très épurée, intuitive également. Chapeau aux développeurs !</>
+        ),
+        author: <>OPSN, Régie de Gestion des Données (RGD)</>,
+      },
+      {
+        quote: (
+          <>
+            Tout d&rsquo;abord, je veux vous faire part de notre entière satisfaction quant à
+            l&rsquo;utilisation de la Suite Territoriale. Cet outil s&rsquo;est rapidement intégré à
+            notre quotidien et nous permet de gagner en efficacité, tout en facilitant la gestion.
+            Nous apprécions particulièrement sa simplicité d&rsquo;utilisation, son côté intuitif et
+            les fonctionnalités proposées, qui répondent pleinement à nos besoins.
+          </>
+        ),
+        author: <>Commune de Trizac (15)</>,
       },
     ],
   },

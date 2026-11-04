@@ -56,4 +56,4 @@ echo "-----> Cleaning up Go toolchain"
 chmod -R u+w "${GOPATH}" 2>/dev/null || true
 rm -rf /tmp/go /tmp/go.tar.gz /tmp/xcaddy "${GOPATH}"
 
-echo "3.13" > .python-version
+echo "3.14" > .python-version

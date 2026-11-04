@@ -1,13 +1,36 @@
 export const capitalizeFirst = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
+/**
+ * A name as it is searched and compared: ASCII words in lowercase, single
+ * spaced. Ligatures are spelled out, apostrophes dropped, "St", "Ste" and
+ * "Mt" expanded, "Isle" written "Ile" and "lez" "les" ("L'Haÿ-les-Roses" is
+ * "lhay les roses", "Œuilly" is "oeuilly", "St.-Alban" is "saint alban",
+ * "L'Isle-Adam" is "lile adam"), as people type and register them.
+ */
 export function unaccent(text: string) {
   return text
+    .replace(/[œŒ]/g, "oe")
+    .replace(/[æÆ]/g, "ae")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9]/g, " ")
-    .replace(/\bst\b/, "saint")
     .toLowerCase()
+    .replace(/\bisle(s?)\b/g, "ile$1")
+    .replace(/\blez\b/g, "les")
+    .replace(/\bmt\b/g, "mont")
+    .replace(/['\u2019]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\bst\b/g, "saint")
+    .replace(/\bste\b/g, "sainte")
     .trim();
+}
+
+/**
+ * `unaccent` without the spaces, to compare "bourgenbresse" with "Bourg-en-Bresse".
+ * "isle" is written "ile" wherever it is, as "lisleadam" has no word to find it in:
+ * `compactNameColumn` does the same in SQL.
+ */
+export function compactName(text: string) {
+  return unaccent(text).replace(/ /g, "").replace(/isle/g, "ile");
 }
 
 export interface Organization {
