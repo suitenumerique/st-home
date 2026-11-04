@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-// Only meaningful against a production build (`npm run test:playwright`): the dev server
-// allows inline scripts, so a CSP violation never shows up there.
+// Playwright serves the production build: the dev server allows inline scripts, so a CSP
+// violation would never show up there.
 test("the page runs under the CSP and the header menus open", async ({ page }) => {
   const errors: string[] = [];
   page.on("console", (message) => {

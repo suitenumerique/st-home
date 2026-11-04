@@ -146,7 +146,7 @@ Les images de `public/images/services-illlu/` sont exportées au double de la la
 | Deux images côte à côte (fonctionnalités, etc) | 600 px   | 1200 px |
 | Bannière                                       | 300 px   | 600 px  |
 
-Le `width` et le `height` déclarés dans `src/lib/services/*.tsx` sont ceux du fichier. 1200 px est la largeur du conteneur (`CONTAINER_CONTENT_WIDTH`).
+Le `width` et le `height` déclarés dans `src/lib/services/*.tsx` sont ceux du fichier. 1200 px est la largeur utile maximale du contenu du conteneur (`CONTAINER_CONTENT_WIDTH`), et non la largeur extérieure du conteneur.
 
 ### Tests
 

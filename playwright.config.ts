@@ -68,11 +68,11 @@ export default defineConfig({
     // },
   ],
 
-  /* Run your local dev server before starting the tests */
+  /* Serve the production build: the dev server's CSP allows inline scripts, the real one does not. */
   webServer: {
-    command: "npm run dev",
+    command: "NEXT_PUBLIC_BASE_PATH='' npm run build && npm run start",
     url: "http://127.0.0.1:3000",
-    reuseExistingServer: !process.env.CI,
-    timeout: 180 * 1000,
+    reuseExistingServer: false,
+    timeout: 600 * 1000,
   },
 });

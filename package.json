@@ -27,7 +27,6 @@
     "test:links": "start-server-and-test 'npm run dev' 8950 'linkinator 'http://localhost:8950' --recurse --skip \"^(?!http://localhost:8950)\"'",
     "test:e2e:install": "playwright install",
     "test:e2e": "playwright test",
-    "test:playwright": "NEXT_PUBLIC_BASE_PATH='' NODE_ENV=production npm run build && playwright test",
     "db:drop": "tsx scripts/db-drop.ts",
     "db:browse": "drizzle-kit studio --host=0.0.0.0 --port=8954",
     "db:push": "drizzle-kit push",
