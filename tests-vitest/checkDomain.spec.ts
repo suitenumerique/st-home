@@ -1,4 +1,4 @@
-import { checkDomainFormat, homonymKeys, parseDomain } from "@/lib/domaines/checkDomain";
+import { checkDomainFormat, parseDomain } from "@/lib/domaines/checkDomain";
 import { expect, test } from "vitest";
 
 test.each([
@@ -24,7 +24,12 @@ test.each([
   ["brigny.bzh", "compliant"],
   ["brigny.yt", "compliant"],
   ["brigny.eu", "compliant"],
-  ["brigny.eus", "invalid"],
+  ["louhossoa.eus", "extension"],
+  ["commune.bio", "extension"],
+  ["monvillage.cafe", "extension"],
+  ["lemanoirsurseine.ovh", "extension"],
+  ["monthurel.fr.gd", "extension"],
+  ["kernascleden.dzh", "invalid"],
   ["brigny.bl", "invalid"],
   ["brigny.free.fr", "generic"],
   ["brigny.wixsite.com", "generic"],
@@ -36,15 +41,4 @@ test.each([
   ["brigny.ff", "invalid"],
 ])("%s is %s", (domain, kind) => {
   expect(checkDomainFormat(domain).kind).toBe(kind);
-});
-
-test.each([
-  ["brigny.fr", ["brigny"]],
-  ["mairie-brigny.fr", ["mairiebrigny", "brigny"]],
-  ["ville-saint-denis.fr", ["villesaintdenis", "saintdenis"]],
-  ["ville-sur-tourbe.fr", ["villesurtourbe", "surtourbe"]],
-  ["brigny71.fr", []],
-  ["mairie-brigny-71.fr", []],
-])("%s compares as %j", (domain, keys) => {
-  expect(homonymKeys(domain)).toEqual(keys);
 });

@@ -6,7 +6,11 @@ import { type ComponentType, type ReactNode } from "react";
 // only when the service declares it. New blocks get a type here and a component
 // in src/components/services/, wired once in src/pages/services/[slug].tsx.
 
-/** Illustration displayed next to the hero text. */
+/**
+ * Illustration displayed next to the hero text. `width` and `height` are the
+ * file's; the file is exported at twice its displayed width, no more (see
+ * "Images des pages services" in the README).
+ */
 export type ServiceIllustration = {
   src: string;
   /** Empty string when the illustration is purely decorative. */

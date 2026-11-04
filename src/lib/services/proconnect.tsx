@@ -40,8 +40,8 @@ const proconnect: ServicePage = {
     illustration: {
       src: "/images/services-illlu/proconnect-hero.webp",
       alt: "",
-      width: 1480,
-      height: 1480,
+      width: 740,
+      height: 740,
     },
   },
 
@@ -69,8 +69,8 @@ const proconnect: ServicePage = {
       background: {
         src: "/images/services-illlu/proconnect-top.webp",
         alt: "",
-        width: 4800,
-        height: 988,
+        width: 2400,
+        height: 494,
       },
     },
   },
@@ -87,15 +87,15 @@ const proconnect: ServicePage = {
       {
         src: "/images/services-illlu/proconnect-middle-1.webp",
         alt: "Un nom de domaine institutionnel et conforme pour votre collectivité",
-        width: 2336,
-        height: 984,
+        width: 1200,
+        height: 505,
         href: DOMAINES_URL,
       },
       {
         src: "/images/services-illlu/proconnect-middle-2.webp",
         alt: "Une adresse de messagerie nominative et professionnelle",
-        width: 2336,
-        height: 984,
+        width: 1200,
+        height: 505,
         href: MESSAGES_URL,
       },
     ],

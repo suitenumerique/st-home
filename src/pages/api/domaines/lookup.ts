@@ -1,4 +1,5 @@
-import { type DomainLookup, homonymKeys, parseDomain } from "@/lib/domaines/checkDomain";
+import { type DomainLookup, parseDomain } from "@/lib/domaines/checkDomain";
+import { homonymKeys } from "@/lib/domaines/homonyms";
 import { findDomainOwner, findHomonym } from "@/lib/organizationDomains";
 import { NextApiRequest, NextApiResponse } from "next";
 

@@ -19,6 +19,7 @@ vi.mock("drizzle-orm/node-postgres", async () => {
 });
 
 import { db } from "@/lib/db";
+import { homonymKeys } from "@/lib/domaines/homonyms";
 import {
   domainOwnerQuery,
   findDomainOwner,
@@ -27,6 +28,7 @@ import {
 } from "@/lib/organizationDomains";
 import * as schema from "@/lib/schema";
 import { organizations } from "@/lib/schema";
+import { unaccent } from "@/lib/string";
 import { type SQL } from "drizzle-orm";
 import { PgDialect } from "drizzle-orm/pg-core";
 
@@ -41,7 +43,7 @@ async function insert(values: Partial<typeof organizations.$inferInsert>) {
     slug: `slug-${count}`,
     type: "commune",
     name: `Commune ${count}`,
-    name_unaccent: `commune ${count}`,
+    name_unaccent: unaccent(values.name ?? `Commune ${count}`),
     population: 100,
     ...values,
   });
@@ -77,10 +79,24 @@ beforeAll(async () => {
   await insert({ name: "Œuilly" });
   await insert({ name: "L'Haÿ-les-Roses" });
   await insert({ name: "Saint-Denis", type: "epci" });
+  await insert({ name: "L'Isle-Adam" });
+  await insert({ name: "L'Isle-Adam" });
   await insert({ name: "Ville-sur-Tourbe" });
   await insert({ name: "Ville-sur-Tourbe" });
   await insert({ name: "Ville-la-Grand" });
   await insert({ name: "La-Grand" });
+  await insert({ name: "Bourg-en-Bresse" });
+  await insert({ name: "Bourg-en-Bresse" });
+  await insert({ name: "Villedoux" });
+  await insert({ name: "Doux" });
+  await insert({ name: "Doux" });
+  await insert({ name: "Boisleux" });
+  await insert({ name: "Boisleux" });
+  await insert({ name: "Marquette-lez-Lille" });
+  await insert({ name: "Marquette-lez-Lille" });
+  await insert({ name: "Druillat" });
+  await insert({ name: "Ruillat" });
+  await insert({ name: "Ruillat" });
 });
 
 test("a domain is found by the email or the website, with or without www", async () => {
@@ -94,16 +110,40 @@ test("the commune wins over the EPCI sharing the domain, however small", async (
   expect(await findDomainOwner("shared.fr")).toBe("commune-shared");
 });
 
-test("a name spelled the same by two communes is a homonym, accents and separators aside", async () => {
-  expect(await findHomonym(["saintdenis"])).toBe("Saint-Denis");
-  expect(await findHomonym(["oeuilly"])).toBe("Œuilly");
-  expect(await findHomonym(["lhaylesroses"])).toBeNull();
-  expect(await findHomonym(["unknown"])).toBeNull();
+const homonymOf = (domain: string) => findHomonym(homonymKeys(domain));
+
+test("a name spelled the same by two communes is a homonym, however the domain spells it", async () => {
+  expect(await homonymOf("saint-denis.fr")).toBe("Saint-Denis");
+  expect(await homonymOf("mairie-saint-denis.fr")).toBe("Saint-Denis");
+  expect(await homonymOf("st-denis.fr")).toBe("Saint-Denis");
+  expect(await homonymOf("oeuilly.fr")).toBe("Œuilly");
+  expect(await homonymOf("lisle-adam.fr")).toBe("L'Isle-Adam");
+  expect(await homonymOf("l-isle-adam.fr")).toBe("L'Isle-Adam");
+  expect(await homonymOf("lhay-les-roses.fr")).toBeNull();
+  expect(await homonymOf("unknown.fr")).toBeNull();
+});
+
+test("a name written as one word, or with a prefix, is found too", async () => {
+  expect(await homonymOf("bourgenbresse.fr")).toBe("Bourg-en-Bresse");
+  expect(await homonymOf("mairiebourgenbresse.fr")).toBe("Bourg-en-Bresse");
+  expect(await homonymOf("mairiedebourgenbresse.fr")).toBe("Bourg-en-Bresse");
+  expect(await homonymOf("mairie-de-saint-denis.fr")).toBe("Saint-Denis");
+  expect(await homonymOf("boisleux.fr")).toBe("Boisleux");
+  expect(await homonymOf("marquette-lez-lille.fr")).toBe("Marquette-lez-Lille");
+  expect(await homonymOf("marquette-les-lille.fr")).toBe("Marquette-lez-Lille");
+  expect(await homonymOf("saint-denis-mairie.fr")).toBe("Saint-Denis");
 });
 
 test("a prefix that is part of the name is not stripped off the homonyms", async () => {
-  expect(await findHomonym(["villesurtourbe", "surtourbe"])).toBe("Ville-sur-Tourbe");
-  expect(await findHomonym(["villelagrand", "lagrand"])).toBeNull();
+  expect(await homonymOf("ville-sur-tourbe.fr")).toBe("Ville-sur-Tourbe");
+  expect(await homonymOf("ville-la-grand.fr")).toBeNull();
+});
+
+test("the first spelling a commune has settles it, so a name starting like a prefix is not a homonym", async () => {
+  // Villedoux is one commune: "Doux", which two communes share, is not what the domain spells.
+  expect(await homonymOf("villedoux.fr")).toBeNull();
+  // "mairiedruillat" is Druillat (one commune), not "Ruillat" (two) behind a "mairied".
+  expect(await homonymOf("mairiedruillat.fr")).toBeNull();
 });
 
 test("the domain query reads the indexes", async () => {
@@ -116,6 +156,6 @@ test("the domain query reads the indexes", async () => {
 
 test("the homonym query reads its index", async () => {
   expect(await plan(homonymQuery(["saintdenis", "other"]))).toContain(
-    "st_organizations_commune_name_key",
+    "st_organizations_name_compact",
   );
 });

@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, like, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, like, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import { normalizeSslMode } from "./dbUrl";
@@ -6,6 +6,7 @@ import { departmentsRegion } from "./departmentsRegion";
 import type { Commune } from "./schema";
 import * as schema from "./schema";
 import {
+  compactNameColumn,
   operators,
   organizations,
   organizationsToOperators,
@@ -13,7 +14,7 @@ import {
   services,
   servicesToOperators,
 } from "./schema";
-import { unaccent } from "./string";
+import { compactName, unaccent } from "./string";
 
 function getConnectionString() {
   const dbUrl = process.env.DATABASE_URL;
@@ -140,16 +141,27 @@ export async function searchOrganizations(query: string, type: string, limit = 1
     .orderBy(desc(organizations.population))
     .limit(limit);
 
+  // The query without its spaces finds names typed as one word ("bourgenbresse") or with a
+  // space where there is an apostrophe ("l isle adam").
+  const compactQuery = compactName(searchQuery);
+  const compactColumn = compactNameColumn(organizations.name_unaccent);
+
   const whereSearches = [
     like(organizations.zipcode, `${searchQuery}%`),
     like(organizations.name_unaccent, `${unaccentQuery}%`),
     like(organizations.name_unaccent, `%${unaccentQuery}%`),
+    like(compactColumn, `%${compactQuery}%`),
     sql`to_tsvector('french', ${organizations.name_unaccent}) @@ plainto_tsquery('french', ${unaccentQuery})`,
   ];
 
   // Do all searches sequentially, then concatenate the results and filter by unique siret
   const allResults = [
-    ...(await exactQuery.where(and(...addWhere, eq(organizations.name_unaccent, unaccentQuery)))),
+    ...(await exactQuery.where(
+      and(
+        ...addWhere,
+        or(eq(organizations.name_unaccent, unaccentQuery), sql`${compactColumn} = ${compactQuery}`),
+      ),
+    )),
     ...(await exactZipQuery.where(and(...addWhere, eq(organizations.zipcode, searchQuery)))),
   ];
   for (const whereSearch of whereSearches) {

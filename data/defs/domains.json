@@ -1,0 +1,201 @@
+{
+  "extensions_allowed": {
+    "comment": "Extensions a collectivité may use for its website and its email domain. Not listed: bl (Saint-Barthélemy) and mf (Saint-Martin).",
+    "groups": [
+      {
+        "comment": "National",
+        "items": [{ "value": "fr" }]
+      },
+      {
+        "comment": "Régional",
+        "items": [
+          { "value": "alsace" },
+          { "value": "bzh" },
+          { "value": "corsica" },
+          { "value": "paris" },
+          { "value": "eu" }
+        ]
+      },
+      {
+        "comment": "Outre-mer",
+        "items": [
+          { "value": "gp", "comment": "Guadeloupe" },
+          { "value": "gf", "comment": "Guyane" },
+          { "value": "mq", "comment": "Martinique" },
+          { "value": "re", "comment": "Réunion" },
+          { "value": "yt", "comment": "Mayotte" },
+          { "value": "pm", "comment": "Saint-Pierre-et-Miquelon" },
+          { "value": "wf", "comment": "Wallis-et-Futuna" },
+          { "value": "tf", "comment": "Terres australes françaises" },
+          { "value": "nc", "comment": "Nouvelle-Calédonie" },
+          { "value": "pf", "comment": "Polynésie française" }
+        ]
+      }
+    ]
+  },
+  "generic_email_domains": {
+    "comment": "Email domains that never belong to the collectivité using them: consumer webmail, ISPs, and the shared mailboxes distributed by a CDG, an agence technique départementale or a syndicat numérique. They break RPNT criterion 2.2. Only list a domain no collectivité owns. \"selonnet.fr\" and \"copler.fr\" were removed for that reason: they are the own domains of the commune of Selonnet and of the CC du Pays Entre Loire et Rhône (COPLER), which the list was penalising. Matching is exact, so a domain shared through subdomains belongs in generic_website_domains instead. Entries matching nothing today are kept as defences.",
+    "groups": [
+      {
+        "items": [
+          { "value": "wanadoo.fr" },
+          { "value": "orange.fr" },
+          { "value": "gmail.com" },
+          { "value": "laposte.net" },
+          { "value": "free.fr" },
+          { "value": "outlook.fr" },
+          { "value": "nordnet.fr" },
+          { "value": "yahoo.fr" },
+          { "value": "sfr.fr" },
+          { "value": "hotmail.fr" },
+          { "value": "ozone.net" },
+          { "value": "west-telecom.com" },
+          { "value": "mcom.fr" },
+          { "value": "cegetel.net" },
+          { "value": "akeonet.com" },
+          { "value": "neuf.fr" },
+          { "value": "outlook.com" },
+          { "value": "hotmail.com" },
+          { "value": "bbox.fr" },
+          { "value": "inforoutes-ardeche.fr" },
+          { "value": "9business.fr" },
+          { "value": "numericable.fr" },
+          { "value": "wibox.fr" },
+          { "value": "inforoutes.fr" },
+          { "value": "yahoo.com" },
+          { "value": "evc.net" },
+          { "value": "live.fr" },
+          { "value": "gmx.fr" },
+          { "value": "tubeo.eu" },
+          { "value": "adeli.biz" },
+          { "value": "aricia.fr" },
+          { "value": "pole-secretariat.fr" },
+          { "value": "ovh.fr" },
+          { "value": "tv-com.net" },
+          { "value": "idyle-telecom.com" },
+          { "value": "rtvc.fr" },
+          { "value": "lgtel.fr" },
+          { "value": "alsatis.net" },
+          { "value": "sivucesny.fr" },
+          { "value": "orange-business.fr" },
+          { "value": "telwan.fr" },
+          { "value": "icloud.com" },
+          { "value": "numericable.com" },
+          { "value": "vialis.net" },
+          { "value": "fr.oleane.com" },
+          { "value": "netcourrier.fr" },
+          { "value": "netcourrier.com" },
+          { "value": "net-c.fr" },
+          { "value": "online.fr" },
+          { "value": "9online.fr" },
+          { "value": "club.fr" },
+          { "value": "club-internet.fr" },
+          { "value": "mailo.com" },
+          { "value": "gmail.fr" },
+          { "value": "aol.com" },
+          { "value": "keyyomail.com" }
+        ]
+      },
+      {
+        "comment": "Boîtes distribuées par un CDG, une agence technique départementale ou un syndicat numérique. Aucune collectivité n'est propriétaire de ces domaines.",
+        "items": [
+          { "value": "collectivite47.fr", "comment": "CDG47" },
+          { "value": "info46.fr", "comment": "Lot" },
+          { "value": "info82.com", "comment": "Tarn-et-Garonne" },
+          { "value": "mairie19.fr", "comment": "Corrèze" },
+          { "value": "correze.net", "comment": "Corrèze" },
+          { "value": "ccsudgatine.fr", "comment": "ex-CC Sud Gâtine, dissoute" },
+          { "value": "paysmellois.org", "comment": "ex-Pays Mellois, dissous" },
+          { "value": "ennemane.net" },
+          { "value": "sarthefibre.fr" },
+          { "value": "alsacefibre.fr" },
+          { "value": "ornethd.fr" }
+        ]
+      }
+    ]
+  },
+  "generic_website_domains": {
+    "comment": "The website counterpart of generic_email_domains: domains shared by many collectivités, which therefore carry none of their names: social networks, site builders, blog platforms, municipal-info apps, commercial directories, the default personal-page hosting of ISPs, and the mutualised platforms of some CDG. A site declared on one of them is treated as no site at all (RPNT criterion 1.1), which also spares it the check_website probes. Matching covers the domain and all its subdomains, so list the narrowest domain that is always shared: \"sites.google.com\", not \"google.com\". Never list a domain a collectivité may own: collectivite.fr is a State service and belongs in WEBSITE_REDIRECT_DOMAINS_ALLOWED (tasks/defs.py), not here.",
+    "groups": [
+      {
+        "comment": "Réseaux sociaux",
+        "items": [
+          { "value": "facebook.com" },
+          { "value": "instagram.com" },
+          { "value": "twitter.com" },
+          { "value": "x.com" },
+          { "value": "linkedin.com" },
+          { "value": "youtube.com" },
+          { "value": "tiktok.com" }
+        ]
+      },
+      {
+        "comment": "Applications d'information municipale et annuaires commerciaux",
+        "items": [
+          { "value": "intramuros.org" },
+          { "value": "appli-intramuros.com" },
+          { "value": "appli-intramuros.fr" },
+          { "value": "lapagelocale.fr" },
+          { "value": "lapagelocale.com" },
+          { "value": "illiwap.com" },
+          { "value": "panneaupocket.com" },
+          { "value": "maelis.info" },
+          { "value": "la-mairie.com" },
+          { "value": "ma-mairie.com" },
+          { "value": "mairie.com" },
+          { "value": "commune-mairie.fr" },
+          { "value": "info-mairie.com" },
+          { "value": "annuaire-mairie.fr" }
+        ]
+      },
+      {
+        "comment": "Constructeurs de sites et plateformes de blog",
+        "items": [
+          { "value": "wixsite.com" },
+          { "value": "wix.com" },
+          { "value": "e-monsite.com" },
+          { "value": "jimdo.com" },
+          { "value": "jimdofree.com" },
+          { "value": "jimdoweb.com" },
+          { "value": "jimdosite.com" },
+          { "value": "wordpress.com" },
+          { "value": "sites.google.com" },
+          { "value": "blogspot.com" },
+          { "value": "blogspot.fr" },
+          { "value": "over-blog.com" },
+          { "value": "neopse-site.com" },
+          { "value": "neopse-site.fr" },
+          { "value": "canalblog.com" },
+          { "value": "sitew.fr" },
+          { "value": "sitew.com" },
+          { "value": "webnode.fr" },
+          { "value": "webnode.com" },
+          { "value": "sitego.fr" },
+          { "value": "weebly.com" },
+          { "value": "blog4ever.com" },
+          { "value": "webself.net" },
+          { "value": "webselfsite.net" },
+          { "value": "asso-web.com" },
+          { "value": "simplesite.com" },
+          { "value": "live-website.com" },
+          { "value": "reseaudescommunes.fr" },
+          { "value": "wifeo.com" }
+        ]
+      },
+      {
+        "comment": "Plateformes mutualisées de centres de gestion, un sous-domaine par commune. Aucune collectivité n'est propriétaire du domaine racine.",
+        "items": [{ "value": "mairie54.fr" }, { "value": "mairie49.fr" }]
+      },
+      {
+        "comment": "Pages perso et hébergements par défaut des FAI",
+        "items": [
+          { "value": "free.fr" },
+          { "value": "pagesperso-orange.fr" },
+          { "value": "monsite-orange.fr" },
+          { "value": "online.fr" },
+          { "value": "ovh.net" }
+        ]
+      }
+    ]
+  }
+}

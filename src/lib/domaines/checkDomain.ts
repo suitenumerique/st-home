@@ -32,11 +32,15 @@ const OTHER_EXTENSIONS = [
   "it",
   "uk",
   "ca",
+  "eus",
+  "bio",
+  "cafe",
+  "ovh",
+  "gd",
 ];
 
 const HOSTNAME = /^[\p{L}\p{N}-]+(\.[\p{L}\p{N}-]+)+$/u;
 const MAX_DOMAIN_LENGTH = 253;
-const NAME_PREFIX = /^(mairie|ville|commune)-/;
 
 /** The domain of an email address or a website, or null when it has none. */
 export function parseDomain(input: string): string | null {
@@ -67,22 +71,6 @@ export function checkDomainFormat(domain: string): DomainCheck {
   if (!ALLOWED_EXTENSIONS.includes(extension)) return { kind: "extension", extension };
 
   return { kind: "compliant" };
-}
-
-/**
- * The commune names the domain may spell, compared without accents or
- * separators, or none when a department number already sets it apart. The
- * prefix of "mairie-brigny" is not part of the name, but that of "ville-la-grand"
- * is: both spellings are candidates.
- */
-export function homonymKeys(domain: string): string[] {
-  const labels = domain.split(".");
-  const label = labels[labels.length - 2];
-  if (/\d$/.test(label)) return [];
-
-  const compact = (name: string) => name.replace(/[^a-z0-9]/g, "");
-
-  return [...new Set([compact(label), compact(label.replace(NAME_PREFIX, ""))])];
 }
 
 /**

@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { nameKey, organizations } from "@/lib/schema";
+import { compactNameColumn, organizations } from "@/lib/schema";
 import { sql } from "drizzle-orm";
 
 /**
@@ -22,13 +22,16 @@ export const domainOwnerQuery = (domain: string) => sql`
 `;
 
 export const homonymQuery = (keys: string[]) => sql`
-  SELECT ${organizations.name} AS name, count(*) OVER (PARTITION BY ${nameKey(organizations.name)}) AS count
+  SELECT ${compactNameColumn(organizations.name_unaccent)} AS key,
+    min(${organizations.name}) AS name,
+    count(*) AS count
   FROM ${organizations}
   WHERE ${organizations.type} = 'commune'
-    AND ${nameKey(organizations.name)} IN (${sql.join(
+    AND ${compactNameColumn(organizations.name_unaccent)} IN (${sql.join(
       keys.map((key) => sql`${key}`),
       sql`, `,
     )})
+  GROUP BY 1
 `;
 
 /** SIRET of the collectivité declaring the domain. */
@@ -38,12 +41,21 @@ export async function findDomainOwner(domain: string): Promise<string | null> {
   return (rows[0] as { siret: string } | undefined)?.siret ?? null;
 }
 
-/** Name of a commune sharing its spelling (one of `keys`, see `nameKey`) with another, else null. */
+/**
+ * Name of the communes the domain is named after, when several share it. `keys` are in
+ * order of likelihood and the first one any commune has settles it: "villedoux" is
+ * Villedoux, not a homonym of "Doux".
+ */
 export async function findHomonym(keys: string[]): Promise<string | null> {
   const { rows } = await db.execute(homonymQuery(keys));
-  const homonym = (rows as { name: string; count: string | number }[]).find(
-    (row) => Number(row.count) > 1,
+  const found = new Map(
+    (rows as { key: string; name: string; count: string | number }[]).map((row) => [row.key, row]),
   );
 
-  return homonym?.name ?? null;
+  for (const key of keys) {
+    const commune = found.get(key);
+    if (commune) return Number(commune.count) > 1 ? commune.name : null;
+  }
+
+  return null;
 }

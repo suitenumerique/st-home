@@ -11,22 +11,13 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 
-const ACCENTED = "àáâäãåçèéêëìíîïñòóôöõùúûüýÿ";
-const UNACCENTED = "aaaaaaceeeeiiiinooooouuuuyy";
-
 /**
- * A name as a domain label spells it: no accent, separator or apostrophe
- * ("L'Haÿ-les-Roses" is "lhaylesroses"). Used by an index below and by the
- * queries that must hit it, which have to state the exact same expression.
+ * `name_unaccent` without its spaces ("bourgenbresse"), as domains spell names.
+ * Same as `compactName` in src/lib/string.ts. Used by an index below and by the
+ * queries that must hit it, which have to state the same expression.
  */
-export const nameKey = (name: AnyColumn) => sql`regexp_replace(
-  translate(
-    replace(replace(lower(${name}), 'œ', 'oe'), 'æ', 'ae'),
-    ${sql.raw(`'${ACCENTED}'`)},
-    ${sql.raw(`'${UNACCENTED}'`)}
-  ),
-  '[^a-z0-9]', '', 'g'
-)`;
+export const compactNameColumn = (nameUnaccent: AnyColumn) =>
+  sql`replace(replace(${nameUnaccent}, ' ', ''), 'isle', 'ile')`;
 
 // Organization table
 export const organizations = pgTable(
@@ -79,9 +70,7 @@ export const organizations = pgTable(
     index("st_organizations_slug_index").using("btree", table.slug),
     index("st_organizations_email_domain").using("btree", table.email_domain),
     index("st_organizations_website_domain").using("btree", table.website_domain),
-    index("st_organizations_commune_name_key")
-      .using("btree", nameKey(table.name))
-      .where(sql`${table.type} = 'commune'`),
+    index("st_organizations_name_compact").using("btree", compactNameColumn(table.name_unaccent)),
   ],
 );
 
