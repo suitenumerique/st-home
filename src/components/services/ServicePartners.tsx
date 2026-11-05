@@ -30,6 +30,8 @@ export default function ServicePartners({ block }: { block: ServicePartnersBlock
             {block.link && (
               <Link
                 href={block.link.href}
+                target="_blank"
+                rel="noopener noreferrer"
                 className={fr.cx(
                   "fr-btn",
                   "fr-btn--secondary",

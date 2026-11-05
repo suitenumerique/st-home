@@ -1,3 +1,4 @@
+import { operatorDepartments } from "@/lib/operatorScope";
 import {
   DEFAULT_SCOPE,
   EXCLUDED_OPERATOR_NAMES,
@@ -35,6 +36,7 @@ type OperatorOption = {
   name_with_article: string | null;
   status: string | null;
   departments: string[];
+  epci_departments: string[];
 };
 
 // "de" + name_with_article ("l'Adico", "le CDG09", "Gironde Numérique"): "de l'Adico", "du CDG09"
@@ -423,7 +425,7 @@ const ConformiteActions: NextPage = () => {
 
     // An OPSN outside the new département is no longer selectable
     const chosen = operators.find((op) => op.id === query.operator);
-    if (key === "dep" && value && chosen && !chosen.departments?.includes(value)) {
+    if (key === "dep" && value && chosen && !operatorDepartments(chosen).includes(value)) {
       delete query.operator;
     }
     // "adherents" only exists relative to an OPSN
@@ -443,7 +445,7 @@ const ConformiteActions: NextPage = () => {
   const chosenOperator = operators.find((op) => op.id === operator);
 
   const operatorOptions = operators
-    .filter((op) => !dep || op.departments?.includes(dep))
+    .filter((op) => !dep || operatorDepartments(op).includes(dep))
     .sort((a, b) => a.name.localeCompare(b.name));
 
   const filterQuery =

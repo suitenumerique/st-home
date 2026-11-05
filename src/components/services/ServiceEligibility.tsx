@@ -1,5 +1,6 @@
 import CommuneSearch, { type Commune } from "@/components/CommuneSearch";
 import { useSmallScreen } from "@/lib/hooks";
+import { firstPerimetreOperator, WITH_SERVICES_STATUS } from "@/lib/perimetreOperators";
 import { capitalizeFirst } from "@/lib/string";
 import styles from "@/styles/services.module.css";
 import { fr } from "@codegouvfr/react-dsfr";
@@ -22,6 +23,7 @@ export type Operator = {
   name_with_article: string | null;
   status: string | null;
   departments: string[] | null;
+  epcis?: string[] | null;
   isPerimetre: boolean | null;
 };
 
@@ -39,39 +41,14 @@ export type Eligibility =
   | { kind: "anct" }
   | { kind: "self-hosted" };
 
-// A collectivité is in the périmètre of an OPSN that either already offers the
-// services ("partenaire_avec_services") or is on its way to ("partenaire",
-// "intention"). /bienvenue/[siret] shows both, so this block must too.
-const WITH_SERVICES = "partenaire_avec_services";
-const PARTNER_STATUSES = [WITH_SERVICES, "partenaire", "intention"];
-
 type State =
   | { status: "idle" }
   | { status: "loading"; commune: Commune }
   | { status: "ready"; commune: Commune; eligibility: Eligibility }
   | { status: "error"; commune: Commune };
 
-// Same ordering as the OPSN blocks of /bienvenue/[siret]: narrowest perimeter
-// first, then the ones already offering the services. Both pages must name the
-// same OPSN for a collectivité covered by several.
-function partnerOperator(operators: Operator[]): Operator | null {
-  const partners = operators
-    .filter((op) => op.isPerimetre && op.status !== null && PARTNER_STATUSES.includes(op.status))
-    .sort((a, b) => {
-      const departments = (a.departments?.length ?? 0) - (b.departments?.length ?? 0);
-      if (departments !== 0) return departments;
-
-      const services = (b.status === WITH_SERVICES ? 1 : 0) - (a.status === WITH_SERVICES ? 1 : 0);
-      if (services !== 0) return services;
-
-      return a.id.localeCompare(b.id);
-    });
-
-  return partners[0] ?? null;
-}
-
 export function eligibilityOf(organization: Organization): Eligibility {
-  const operator = partnerOperator(organization.operators ?? []);
+  const operator = firstPerimetreOperator(organization.operators ?? []);
   const threshold = ANCT_THRESHOLDS[organization.type];
   const aboveThreshold = threshold !== undefined && organization.population >= threshold;
 
@@ -81,7 +58,7 @@ export function eligibilityOf(organization: Organization): Eligibility {
   if (operator && aboveThreshold) return { kind: "operator-above-threshold", operator };
 
   if (operator) {
-    return operator.status === WITH_SERVICES
+    return operator.status === WITH_SERVICES_STATUS
       ? { kind: "operator", operator }
       : { kind: "operator-soon", operator };
   }

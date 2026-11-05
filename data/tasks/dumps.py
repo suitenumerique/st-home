@@ -444,6 +444,8 @@ def dump_operators():
             "siret": row.get("siret") or None,
             "services": [int(x) for x in row["services"].split(",") if x],
             "departements": [x for x in row["departements"].split(",") if x],
+            # SIRENs of the EPCIs
+            "epcis": [x for x in row.get("epcis", "").split(",") if x],
         }
         for row in csv.DictReader(r.content.decode("utf-8").splitlines(), delimiter=";")
     ]

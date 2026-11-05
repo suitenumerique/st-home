@@ -27,6 +27,9 @@ const COMMUNE_PLACEHOLDER_SMALL_SCREEN = "Nom ou code postal";
 const UNAVAILABLE_MESSAGE =
   "Le service de vérification est momentanément indisponible. Réessayez dans quelques minutes.";
 
+const INSTITUTIONAL_DOMAIN_NEED =
+  "La collectivité doit disposer d’un nom de domaine institutionnel (nomdemairie.fr) et des adresses nominatives (prenom.nom@nomdemairie.fr).";
+
 type State =
   | { status: "idle" }
   | { status: "loading"; email: string }
@@ -123,7 +126,7 @@ export default function ProConnectEmailCheck() {
   const unavailable = state.status === "unavailable";
 
   return (
-    <Section wide={check?.kind === "generic"}>
+    <Section wide={check?.kind === "generic" || check?.kind === "official"}>
       {(state.status !== "result" || error) && (
         <CheckLead>
           Pour connaître votre fournisseur d&rsquo;identité et vérifier la conformité de votre
@@ -165,10 +168,23 @@ export default function ProConnectEmailCheck() {
 
       {error && <CheckRetryActions onRetry={() => reset({ keepEmail: true })} />}
 
-      {check && check.kind !== "invalid" && check.kind !== "unknown" && (
-        <Result check={check} onReset={() => reset()} />
-      )}
+      {state.status === "result" &&
+        state.check.kind !== "invalid" &&
+        state.check.kind !== "unknown" && <Result check={state.check} onReset={() => reset()} />}
     </Section>
+  );
+}
+
+function RecognizedActions({ siret }: { siret: string }) {
+  return (
+    <CheckActions>
+      <Link href={DOMAINES_URL} className={fr.cx("fr-btn")}>
+        Obtenir un nom de domaine
+      </Link>
+      <Link href={`/bienvenue/${siret}`} className={fr.cx("fr-btn", "fr-btn--secondary")}>
+        Découvrir mes services
+      </Link>
+    </CheckActions>
   );
 }
 
@@ -239,6 +255,27 @@ function Result({
           </CheckActions>
         </>
       );
+    case "official":
+      return (
+        <>
+          <CheckStatus
+            rows={[
+              {
+                label: "Nom de domaine",
+                badge: <CheckBadge severity="error">Générique</CheckBadge>,
+              },
+              provider,
+            ]}
+          />
+          <p className={fr.cx("fr-text--md", "fr-mb-0")}>
+            Cette adresse correspond bien à celle de <strong>{check.organizationName}</strong> dans
+            l&rsquo;Annuaire de l&rsquo;administration, mais {check.domain}&nbsp;est un domaine
+            générique. ProConnect ne peut pas l&rsquo;utiliser pour identifier vos agents et élus.{" "}
+            {INSTITUTIONAL_DOMAIN_NEED}
+          </p>
+          <RecognizedActions siret={check.siret} />
+        </>
+      );
     case "generic":
       return (
         <>
@@ -257,25 +294,17 @@ function Result({
           />
           <p className={fr.cx("fr-text--md", "fr-mb-0")}>
             {check.genericDomain ? (
-              <>
-                Le domaine {check.domain}&nbsp;est générique et utilisé par de nombreuses personnes.
-              </>
+              <>{check.domain}&nbsp;est un domaine générique.</>
             ) : (
               <>
                 Le domaine {check.domain}&nbsp;n&rsquo;est pas celui de votre collectivité dans
                 l&rsquo;Annuaire de l&rsquo;administration.
               </>
             )}{" "}
-            ProConnect ne peut pas l&rsquo;associer à <strong>{check.organizationName}</strong>.
-            Pour créer votre compte, votre collectivité doit disposer d&rsquo;un nom de domaine
-            institutionnel (nomdemairie.fr) et d&rsquo;une adresse nominative sur ce domaine
-            (prenom.nom@nomdemairie.fr).
+            ProConnect ne peut pas l&rsquo;associer à <strong>{check.organizationName}</strong>.{" "}
+            {INSTITUTIONAL_DOMAIN_NEED}
           </p>
-          <CheckActions>
-            <Link href={DOMAINES_URL} className={fr.cx("fr-btn")}>
-              Obtenir un nom de domaine
-            </Link>
-          </CheckActions>
+          <RecognizedActions siret={check.siret} />
         </>
       );
   }

@@ -1,55 +1,40 @@
-import { db } from "@/lib/db";
+import { db, findOrganizationsWithOperators } from "@/lib/db";
 import { isGenericEmailDomain } from "@/lib/domains";
-import { declaresDomain } from "@/lib/organizationDomains";
+import { declaresDomain, declaresEmail } from "@/lib/organizationDomains";
+import { firstPerimetreOperator } from "@/lib/perimetreOperators";
 import { EMAIL_FORMAT, type EmailCheck } from "@/lib/proconnect/checkEmail";
-import { organizations, organizationsToServices, services } from "@/lib/schema";
+import { organizations } from "@/lib/schema";
 import { sql, type SQL } from "drizzle-orm";
 import { NextApiRequest, NextApiResponse } from "next";
 
-const PROCONNECT_TYPE = "proconnect";
-const PROVIDER_PREFIX = /^FI\s+/i;
 const MAX_EMAIL_LENGTH = 254;
-// A collectivité with no provider of its own is served by the ANCT one.
+// A collectivité in the périmètre of no OPSN is served by the ANCT.
 const DEFAULT_PROVIDER = "ANCT";
 
 type Match = { siret: string; name: string; provider: string };
 
+// The OPSN that /bienvenue/[siret] proposes first: the one covering the département,
+// not one the collectivité is an adherent of. Named whether or not it runs a
+// ProConnect provider of its own.
+async function findProvider(siret: string): Promise<string> {
+  const organization = await findOrganizationsWithOperators(siret);
+
+  return firstPerimetreOperator(organization?.operators ?? [])?.name ?? DEFAULT_PROVIDER;
+}
+
 async function findOrganization(where: SQL): Promise<Match | null> {
-  const { rows } = await db.execute(sql`
-    SELECT siret, name, provider
-    FROM (
-      SELECT
-        ${organizations.siret} AS siret,
-        ${organizations.name} AS name,
-        ${organizations.type} AS type,
-        ${organizations.population} AS population,
-        (
-          SELECT ${services.instance_name}
-          FROM ${organizationsToServices}
-          INNER JOIN ${services} ON ${services.id} = ${organizationsToServices.serviceId}
-          WHERE ${organizationsToServices.organizationSiret} = ${organizations.siret}
-            AND ${services.type} = ${PROCONNECT_TYPE}
-          ORDER BY ${services.id}
-          LIMIT 1
-        ) AS provider
-      FROM ${organizations}
-      WHERE ${where}
-    ) matches
-    -- A commune and its EPCI may share a domain: the one with a provider first,
-    -- then the commune.
-    ORDER BY provider IS NULL, type = 'commune' DESC, population DESC
+  const {
+    rows: [row],
+  } = await db.execute<{ siret: string; name: string }>(sql`
+    SELECT ${organizations.siret} AS siret, ${organizations.name} AS name
+    FROM ${organizations}
+    WHERE ${where}
+    -- A commune and its EPCI may share a domain: the commune first.
+    ORDER BY ${organizations.type} = 'commune' DESC, ${organizations.population} DESC
     LIMIT 1
   `);
 
-  const row = rows[0] as { siret: string; name: string; provider: string | null } | undefined;
-
-  return row
-    ? {
-        siret: row.siret,
-        name: row.name,
-        provider: row.provider?.replace(PROVIDER_PREFIX, "") ?? DEFAULT_PROVIDER,
-      }
-    : null;
+  return row ? { siret: row.siret, name: row.name, provider: await findProvider(row.siret) } : null;
 }
 
 export default async function handler(
@@ -86,12 +71,27 @@ export default async function handler(
         kind: "generic",
         domain,
         genericDomain,
+        siret: organization.siret,
         organizationName: organization.name,
         provider: organization.provider,
       });
     }
 
-    if (genericDomain) return res.status(200).json({ kind: "unknown" });
+    if (genericDomain) {
+      const official = await findOrganization(declaresEmail(address));
+
+      return res.status(200).json(
+        official
+          ? {
+              kind: "official",
+              domain,
+              siret: official.siret,
+              organizationName: official.name,
+              provider: official.provider,
+            }
+          : { kind: "unknown" },
+      );
+    }
 
     const organization = await findOrganization(declaresDomain(domain));
 

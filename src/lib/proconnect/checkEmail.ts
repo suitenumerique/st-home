@@ -6,6 +6,15 @@ export type EmailCheck =
       domain: string;
       /** False when the domain is a custom one, just not the collectivité's. */
       genericDomain: boolean;
+      siret: string;
+      organizationName: string;
+      provider: string;
+    }
+  | {
+      /** The official address of a collectivité, on a generic domain. */
+      kind: "official";
+      domain: string;
+      siret: string;
       organizationName: string;
       provider: string;
     }

@@ -344,7 +344,7 @@ export type ServicePage = {
   showcase?: ServiceShowcaseBlock;
   prerequisites?: ServicePrerequisitesBlock;
   timeline?: ServiceTimelineBlock;
-  /** The ProConnect email check, under the timeline. */
+  /** The ProConnect email check, under the timeline if the page has one. */
   emailCheck?: boolean;
   /** The domain check, under the prerequisites, its links pointing at this anchor. */
   domainCheck?: { offersHref: string };

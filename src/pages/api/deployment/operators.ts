@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { operators, services, servicesToOperators } from "@/lib/schema";
+import { operators, organizations, services, servicesToOperators } from "@/lib/schema";
 import { sql } from "drizzle-orm";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -20,6 +20,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         o.website,
         o.siret,
         o.departments,
+        o.epcis,
+        -- The départements the EPCIs span, through their communes. The cardinality
+        -- test keeps the scan of every organization for the OPSNs that have EPCIs.
+        COALESCE(
+          (
+            SELECT ARRAY_AGG(DISTINCT c.insee_dep)
+            FROM ${organizations} c
+            WHERE CARDINALITY(o.epcis) > 0
+              AND c.epci_siren = ANY(o.epcis) AND c.insee_dep IS NOT NULL
+          ),
+          '{}'
+        ) AS epci_departments,
         COALESCE(
           JSON_AGG(DISTINCT JSONB_BUILD_OBJECT('id', s.id, 'name', s.name, 'logo_url', s.logo_url, 'type', s.type))
           FILTER (WHERE s.id IS NOT NULL),
@@ -28,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       FROM ${operators} o
       LEFT JOIN ${servicesToOperators} sto ON o.id = sto.operator_id
       LEFT JOIN ${services} s ON sto.service_id = s.id
-      GROUP BY o.id, o.name, o.shortname, o.name_with_article, o.type, o.status, o.website, o.siret, o.departments
+      GROUP BY o.id, o.name, o.shortname, o.name_with_article, o.type, o.status, o.website, o.siret, o.departments, o.epcis
       ORDER BY o.name ASC
     `);
 

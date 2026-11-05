@@ -4,7 +4,7 @@ import Link from "next/link";
 import { type ServicePage } from "./types";
 
 const REFERENTIEL_URL = "/conformite/referentiel";
-const PARTNERS_MAP_URL = "/cartographie-deploiement";
+const PARTNERS_MAP_URL = "/cartographie-deploiement?active_tab=partenaires";
 // The help centre, and the references the FAQ points at.
 const HELP_CENTRE_URL = "https://aide.suite.anct.gouv.fr/socle/domaines";
 const ANNUAIRE_SERVICE_PUBLIC_URL = "https://lannuaire.service-public.gouv.fr/";
@@ -135,9 +135,10 @@ const domaines: ServicePage = {
           <button type="button" className={styles.acronym}>
             Afnic
           </button>
-        </Tooltip>{" "}
-        (en charge des noms de domaine en France) ont retenu trois bureaux d&rsquo;enregistrement
-        indépendants à l&rsquo;issue d&rsquo;un appel à candidatures.
+        </Tooltip>
+        , en charge des noms de domaine en France, s&rsquo;appuient sur trois bureaux
+        d&rsquo;enregistrement français et indépendants qui proposent des offres complémentaires,
+        spécifiquement conçues pour les collectivités territoriales.
       </>
     ),
     priceTerms: <>HT pour 10&nbsp;ans*</>,
@@ -285,10 +286,11 @@ const domaines: ServicePage = {
         href: "https://www.asso-declic.fr/",
       },
       {
-        src: "/images/logo-anssi.png",
+        src: "/images/logo-anssi-rf.webp",
         alt: "ANSSI",
-        width: 70,
-        height: 70,
+        width: 336,
+        height: 160,
+        displayHeight: 80,
         href: "https://cyber.gouv.fr/",
       },
     ],

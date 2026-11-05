@@ -22,7 +22,14 @@ import OrganisationPresenceView from "@/components/onboarding/OrganisationPresen
 import UsedServicesView from "@/components/onboarding/UsedServicesView";
 import TrialContact from "@/components/TrialContact";
 
-import { type Commune, type Operator, type OperatorWithRole, type Service } from "@/lib/schema";
+import { splitPerimetreOperators } from "@/lib/perimetreOperators";
+import {
+  PROCONNECT_SERVICE_TYPE,
+  type Commune,
+  type Operator,
+  type OperatorWithRole,
+  type Service,
+} from "@/lib/schema";
 
 /**
  * One block per (operator, isSocle) pair. Each operator with services contributes
@@ -303,8 +310,8 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
 
   // Pin ProConnect first; otherwise preserve input order (= seed position).
   const proconnectFirst = (list: Service[]): Service[] => {
-    const pc = list.filter((s) => s.type === "proconnect");
-    const rest = list.filter((s) => s.type !== "proconnect");
+    const pc = list.filter((s) => s.type === PROCONNECT_SERVICE_TYPE);
+    const rest = list.filter((s) => s.type !== PROCONNECT_SERVICE_TYPE);
     return [...pc, ...rest];
   };
 
@@ -312,8 +319,8 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
   const usedServiceIds = new Set(organizationServices.map((s) => s.id));
 
   // Perimetre operators (the ones rendered as OPSN blocks)
-  const perimetreOperators = (commune.operators || []).filter((op) => op.isPerimetre);
-  const perimetreOperatorIds = perimetreOperators.map((op) => op.id);
+  const { withServices, withoutServices } = splitPerimetreOperators(commune.operators || []);
+  const perimetreOperatorIds = [...withServices, ...withoutServices].map((op) => op.id);
   const operatorServicesResult = await findServicesByOperatorIds(perimetreOperatorIds);
 
   const servicesByOperatorId = new Map<string, Service[]>();
@@ -323,25 +330,12 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
     servicesByOperatorId.set(row.operatorId, existing);
   }
 
-  // Sort perimetre operators: department-scoped first, then partenaire_avec_services first,
-  // then by id. Matches the prior ordering.
-  const sortedPerimetre = [...perimetreOperators].sort((a, b) => {
-    const aDeptCount = a.departments?.length ?? 0;
-    const bDeptCount = b.departments?.length ?? 0;
-    if (aDeptCount !== bDeptCount) return aDeptCount - bDeptCount;
-    const aHasServices = a.status === "partenaire_avec_services" ? 1 : 0;
-    const bHasServices = b.status === "partenaire_avec_services" ? 1 : 0;
-    if (aHasServices !== bHasServices) return bHasServices - aHasServices;
-    return a.id.localeCompare(b.id);
-  });
-
   // Build OPSN blocks (one per operator with status partenaire_avec_services).
   // Within each block, services keep their st_services_to_operators.position order
   // (seeded), with ProConnect pinned first.
   const opsnBlocks: OpServices[] = [];
   const shownKeys = new Set<number>();
-  for (const op of sortedPerimetre) {
-    if (op.status !== "partenaire_avec_services") continue;
+  for (const op of withServices) {
     const opServices = dedupeByKey(
       (servicesByOperatorId.get(op.id) || []).filter((s) => !HIDDEN_SERVICE_IDS.has(s.id)),
     );
@@ -352,9 +346,7 @@ export const getServerSideProps: GetServerSideProps<PageProps> = async (context)
     opsnBlocks.push({ op, socle, nonSocle });
   }
 
-  const opsnWithoutServices = sortedPerimetre.filter(
-    (op) => op.status === "intention" || op.status === "partenaire",
-  );
+  const opsnWithoutServices = withoutServices;
 
   // ANCT block:
   // - If the commune has perimetre OPSN(s), show ANCT's remaining services (those

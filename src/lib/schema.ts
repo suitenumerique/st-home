@@ -88,6 +88,8 @@ export const operators = pgTable(
     website: text("website"),
     siret: text("siret"),
     departments: text("departments").array(),
+    // SIRENs of the EPCIs, covered in union with the départements
+    epcis: text("epcis").array(),
   },
   (table) => [
     index("st_operators_name_search_index").using(
@@ -117,6 +119,10 @@ export const organizationsToOperators = pgTable(
     };
   },
 );
+
+// Every ProConnect identity provider is a service of this type, merged into one
+// ProConnect line wherever the services are listed.
+export const PROCONNECT_SERVICE_TYPE = "proconnect";
 
 // Services table
 export const services = pgTable(
@@ -232,7 +238,15 @@ export type Service = InferSelectModel<typeof services>;
 
 export type OperatorWithRole = Pick<
   Operator,
-  "id" | "name" | "shortname" | "name_with_article" | "type" | "website" | "status" | "departments"
+  | "id"
+  | "name"
+  | "shortname"
+  | "name_with_article"
+  | "type"
+  | "website"
+  | "status"
+  | "departments"
+  | "epcis"
 > & {
   isPerimetre: boolean;
   isAdherent: boolean;

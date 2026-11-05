@@ -12,6 +12,16 @@ export const declaresDomain = (domain: string) => sql`(
   OR ${organizations.website_domain} IN (${domain}, ${`www.${domain}`})
 )`;
 
+/**
+ * Organizations whose official address, as declared on the Annuaire de l'administration,
+ * is this one. `address` is lowercase, unlike some of the stored addresses; the domain
+ * narrows it down on the index.
+ */
+export const declaresEmail = (address: string) => sql`(
+  ${organizations.email_domain} = ${address.split("@")[1]}
+  AND lower(${organizations.email_official}) = ${address}
+)`;
+
 /** The commune first, then the most populated: a commune and its EPCI may share a domain. */
 export const domainOwnerQuery = (domain: string) => sql`
   SELECT ${organizations.siret} AS siret

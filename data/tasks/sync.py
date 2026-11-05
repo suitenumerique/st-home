@@ -553,15 +553,19 @@ def associate_dila_to_organizations(orgs: list):
 
 
 def associate_operators_to_orgs(orgs: list):
-    """Associate operators to orgs based on perimetre (department coverage) and adherent status"""
+    """Associate operators to orgs based on perimetre (department and EPCI coverage, in
+    union) and adherent status"""
 
     operators = {str(x["id"]): x for x in iter_operators()}
 
-    # Build perimetre index: which operators cover which departments
+    # Build perimetre indexes: which operators cover which departments and EPCIs (by SIREN)
     operators_by_departement = defaultdict(list)
+    operators_by_epci = defaultdict(list)
     for operator_id, operator in operators.items():
         for dep in operator.get("departements", []):
             operators_by_departement[dep].append(operator_id)
+        for epci_siren in operator.get("epcis", []):
+            operators_by_epci[epci_siren].append(operator_id)
 
     # Build adherent index: (siret, operator_id) pairs from the adherents dataset
     adherent_pairs = set()
@@ -586,8 +590,14 @@ def associate_operators_to_orgs(orgs: list):
         # Collect all operator links with their flags
         operator_links = {}
 
-        # Perimetre: operators covering this department
-        for operator_id in operators_by_departement.get(org["insee_dep"], []):
+        # Perimetre: operators covering this department, or this EPCI (the org itself
+        # when it is one, its EPCI when it is a commune)
+        epci_siren = (
+            org["siren"] if org["type"] == "epci" else org.get("_st_epci", {}).get("siren")
+        )
+        for operator_id in operators_by_departement.get(org["insee_dep"], []) + (
+            operators_by_epci.get(epci_siren, [])
+        ):
             operator_links[operator_id] = {"is_perimetre": True, "is_adherent": False}
 
         # Adherent: operators this org is an adherent of

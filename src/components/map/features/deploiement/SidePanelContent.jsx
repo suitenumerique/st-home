@@ -14,6 +14,10 @@ const DEPT_NAMES = Object.fromEntries(
   parentAreas.filter(a => a.type === 'department').map(a => [a.insee_geo, a.name])
 );
 
+const EPCI_NAMES = Object.fromEntries(
+  parentAreas.filter((a) => a.type === "epci").map((a) => [a.insee_geo, a.name]),
+);
+
 const SidePanelContent = ({ container, mapState, selectLevel, setMapState, goBack, handleQuickNav, isMobile, panelState, activeTab, setActiveTab, operators = [], allServices = [], selectedServiceFilter, setSelectedServiceFilter, selectedAreaOwnServices = new Set(), isLSTMode = true }) => {
 
   const [linkCopied, setLinkCopied] = useState(false);
@@ -556,6 +560,11 @@ const serviceDetails = (service, stats) => {
                   {depts.length > 0 && (
                     <p className={styles.operatorDepts}>
                       {depts.map((d) => `${DEPT_NAMES[d] || 'Département'} (${d})`).join(' · ')}
+                    </p>
+                  )}
+                  {(op.epcis || []).length > 0 && (
+                    <p className={styles.operatorDepts}>
+                      {op.epcis.map((siren) => EPCI_NAMES[siren] || `EPCI ${siren}`).join(" · ")}
                     </p>
                   )}
                   {op.status === 'partenaire_avec_services' && (op.services || []).length > 0 && (

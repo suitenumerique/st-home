@@ -101,27 +101,7 @@ const proconnect: ServicePage = {
     ],
   },
 
-  // Disabled for now: "Comment créer mon compte ProConnect ?"
-  // timeline: {
-  //   title: <>Comment créer mon compte ProConnect&nbsp;?</>,
-  //   description: (
-  //     <>
-  //       L&rsquo;ANCT et les structures de mutualisation des territoires peuvent vous accompagner, à
-  //       chaque étape, dans la création de votre compte ProConnect.
-  //     </>
-  //   ),
-  //   steps: [
-  //     { text: "Obtenir un nom de domaine conforme pour ma collectivité", href: DOMAINES_URL },
-  //     { text: "Créer mon adresse de messagerie nominative", href: MESSAGES_URL },
-  //     {
-  //       text: "Créer mon compte ProConnect avec mon fournisseur d’identité",
-  //       href: HOME_URL,
-  //     },
-  //   ],
-  // },
-
-  // Disabled for now: "Vérifier mon adresse de messagerie pour l’authentification ProConnect"
-  // emailCheck: true,
+  emailCheck: true,
 
   partners: {
     title: <>Toujours plus de partenaires</>,
@@ -133,19 +113,47 @@ const proconnect: ServicePage = {
     ),
     link: { text: "Accéder à l’espace partenaire", href: PARTNER_SPACE_URL },
     logosAlign: "right",
-    textColumns: 5,
     logos: [
-      { src: "/images/logo-anct-small.png", alt: "ANCT", width: 58, height: 70, displayHeight: 60 },
-      { src: "/images/logo-anssi.png", alt: "ANSSI", width: 70, height: 70, displayHeight: 60 },
-      { src: "/images/logo-ign.png", alt: "IGN", width: 116, height: 56, displayHeight: 56 },
+      {
+        src: "/images/logo-anct-small.png",
+        alt: "ANCT",
+        width: 58,
+        height: 70,
+        displayHeight: 60,
+        href: "https://anct.gouv.fr/",
+      },
+      {
+        src: "/images/logo-anssi-rf.webp",
+        alt: "ANSSI",
+        width: 336,
+        height: 160,
+        displayHeight: 80,
+        href: "https://cyber.gouv.fr/",
+      },
+      {
+        src: "/images/logo-ign.png",
+        alt: "IGN",
+        width: 116,
+        height: 56,
+        displayHeight: 56,
+        href: "https://www.ign.fr/",
+      },
       {
         src: "/images/logo-gendarmerie.png",
         alt: "Gendarmerie nationale",
         width: 155,
         height: 32,
         displayHeight: 32,
+        href: "https://www.gendarmerie.interieur.gouv.fr/",
       },
-      { src: "/images/logo-pix.png", alt: "Pix", width: 96, height: 80, displayHeight: 50 },
+      {
+        src: "/images/logo-pix.png",
+        alt: "Pix",
+        width: 96,
+        height: 80,
+        displayHeight: 50,
+        href: "https://pix.fr/",
+      },
     ],
   },
 

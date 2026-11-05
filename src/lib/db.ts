@@ -11,6 +11,7 @@ import {
   organizations,
   organizationsToOperators,
   organizationsToServices,
+  PROCONNECT_SERVICE_TYPE,
   services,
   servicesToOperators,
 } from "./schema";
@@ -77,6 +78,7 @@ export async function findOrganizationsWithOperators(siret: string): Promise<Com
       website: operators.website,
       status: operators.status,
       departments: operators.departments,
+      epcis: operators.epcis,
       isPerimetre: organizationsToOperators.isPerimetre,
       isAdherent: organizationsToOperators.isAdherent,
     })
@@ -181,7 +183,7 @@ export async function searchOrganizations(query: string, type: string, limit = 1
 }
 
 // Service types where only the first (lowest ID) should be kept
-const DEDUPLICATED_SERVICE_TYPES = ["proconnect", "messages", "drive", "meet", "esd"];
+const DEDUPLICATED_SERVICE_TYPES = [PROCONNECT_SERVICE_TYPE, "messages", "drive", "meet", "esd"];
 
 export async function findAllServices() {
   const allServices = await db
@@ -245,7 +247,10 @@ export async function fetchPartenairesRegions(): Promise<PartenairesRegionResult
   const results: PartenairesRegionResult[] = [];
 
   const proConnectServiceIds = (
-    await db.select({ id: services.id }).from(services).where(eq(services.type, "proconnect"))
+    await db
+      .select({ id: services.id })
+      .from(services)
+      .where(eq(services.type, PROCONNECT_SERVICE_TYPE))
   ).map(({ id }) => id);
 
   const proConnectServiceIdsSql = sql.join(
@@ -276,7 +281,13 @@ export async function fetchPartenairesRegions(): Promise<PartenairesRegionResult
       WHERE
         o.type = 'operator'
         AND o.status IS NOT NULL
-        AND o.departments && ARRAY[${regionDepartments}]::text[]
+        AND (
+          o.departments && ARRAY[${regionDepartments}]::text[]
+          OR EXISTS (
+            SELECT 1 FROM ${organizations} c
+            WHERE c.epci_siren = ANY(o.epcis) AND c.insee_dep IN (${regionDepartments})
+          )
+        )
       ORDER BY o.name ASC;
     `);
 

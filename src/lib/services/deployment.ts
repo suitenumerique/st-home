@@ -1,6 +1,11 @@
 import { getServiceConfig } from "@/components/map/features/deploiement/servicesConfig";
 import { db } from "@/lib/db";
-import { organizations, organizationsToServices, services } from "@/lib/schema";
+import {
+  organizations,
+  organizationsToServices,
+  PROCONNECT_SERVICE_TYPE,
+  services,
+} from "@/lib/schema";
 import { type DeploymentStats } from "@/lib/services/types";
 import { sql } from "drizzle-orm";
 
@@ -61,10 +66,6 @@ export async function countAdoptingOrganizations(serviceId: number): Promise<num
   }
 }
 
-// Every identity provider is a service of this type in the deployment data; the
-// map merges them into a single ProConnect line.
-const PROCONNECT_TYPE = "proconnect";
-
 /**
  * The ProConnect figures of the deployment map: its identity providers, and the
  * collectivités linked to at least one of them. Null when the database is
@@ -74,13 +75,13 @@ export async function getDeploymentStats(): Promise<DeploymentStats | null> {
   try {
     const { rows } = await db.execute(sql`
       SELECT
-        (SELECT COUNT(*) FROM ${services} WHERE ${services.type} = ${PROCONNECT_TYPE})::int
+        (SELECT COUNT(*) FROM ${services} WHERE ${services.type} = ${PROCONNECT_SERVICE_TYPE})::int
           AS "identityProviders",
         (
           SELECT COUNT(DISTINCT ${organizationsToServices.organizationSiret})
           FROM ${organizationsToServices}
           INNER JOIN ${services} ON ${services.id} = ${organizationsToServices.serviceId}
-          WHERE ${services.type} = ${PROCONNECT_TYPE}
+          WHERE ${services.type} = ${PROCONNECT_SERVICE_TYPE}
         )::int AS "proconnectedOrganizations"
     `);
 

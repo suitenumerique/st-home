@@ -5,6 +5,8 @@ import { MapLayoutProvider, useMapLayoutContext } from "@/components/map/context
 import { customMapStyle, InteractiveMap } from "@/components/map/core/InteractiveMap";
 import { MapLayout } from "@/components/map/core/MapLayout";
 import { useDisplayedGeoJSON } from "@/components/map/hooks/useDisplayedGeoJSON";
+import { operatorDepartments } from "@/lib/operatorScope";
+import * as turf from "@turf/turf";
 import * as d3 from "d3";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import parentAreas from "../../../../../public/parent_areas.json";
@@ -80,6 +82,52 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
       setAllDeptsGeoJSON({ type: "FeatureCollection", features });
     });
   }, [activeTab, allDeptsGeoJSON]);
+
+  // The EPCIs an OPSN is scoped to, outlined from their communes, with the status of
+  // the OPSNs covering them. Départements are coloured from the `departments` of the
+  // OPSNs only: an OPSN scoped to EPCIs colours its EPCIs, not their département.
+  const [epcisGeoJSON, setEpcisGeoJSON] = useState<GeoJSON.FeatureCollection | null>(null);
+
+  useEffect(() => {
+    if (activeTab !== "partenaires" || epcisGeoJSON || operators.length === 0) return;
+
+    const epciStatus: Record<string, string> = {};
+    const departments = new Set<string>();
+    for (const op of operators) {
+      if (!op.status) continue;
+      for (const siren of op.epcis || []) {
+        const isGreen =
+          epciStatus[siren] === "partenaire" || epciStatus[siren] === "partenaire_avec_services";
+        if (!isGreen) epciStatus[siren] = op.status;
+      }
+      for (const dept of op.epci_departments || []) departments.add(dept);
+    }
+
+    Promise.all(
+      [...departments].map((dept) =>
+        fetch(`/geojson/communes_par_departement/${dept}.json`).then((r) => r.json()),
+      ),
+    ).then((results) => {
+      const communes = results
+        .flatMap((fc: GeoJSON.FeatureCollection) => fc.features)
+        .filter((f) => (f.properties?.EPCI_SIREN as string) in epciStatus);
+      const features = Array.from(
+        d3.group(communes, (f) => f.properties?.EPCI_SIREN as string),
+        ([siren, members]) => {
+          const merged =
+            members.length === 1
+              ? members[0]
+              : turf.union(turf.featureCollection(members as GeoJSON.Feature<GeoJSON.Polygon>[]));
+
+          return {
+            ...merged,
+            properties: { EPCI_SIREN: siren, operator_status: epciStatus[siren] },
+          } as GeoJSON.Feature;
+        },
+      );
+      setEpcisGeoJSON({ type: "FeatureCollection", features });
+    });
+  }, [activeTab, epcisGeoJSON, operators]);
 
   useEffect(() => {
     if (operators.length > 0) return;
@@ -684,10 +732,10 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
           .map((f) => (f.properties as { INSEE_GEO: string }).INSEE_GEO),
       );
       result = result.filter((op) =>
-        (op.departments || []).some((dept: string) => deptsInRegion.has(dept)),
+        operatorDepartments(op).some((dept: string) => deptsInRegion.has(dept)),
       );
     } else if (["department", "epci", "city"].includes(currentLevel) && selectedDepCode) {
-      result = result.filter((op) => (op.departments || []).includes(selectedDepCode));
+      result = result.filter((op) => operatorDepartments(op).includes(selectedDepCode));
     }
 
     return result;
@@ -850,6 +898,33 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
       },
     ];
 
+    if (epcisGeoJSON && epcisGeoJSON.features.length > 0) {
+      layers.push({
+        id: "operators-epcis-layer",
+        source: { id: "operators-epcis", type: "geojson" as const, data: epcisGeoJSON },
+        layers: [
+          {
+            id: "operators-epcis-fill",
+            type: "fill",
+            paint: {
+              "fill-color": [
+                "case",
+                ["==", ["get", "operator_status"], "intention"],
+                "#E7AC2E",
+                "#009081",
+              ],
+              "fill-opacity": 0.8,
+            },
+          } as import("react-map-gl/maplibre").LayerProps,
+          {
+            id: "operators-epcis-stroke",
+            type: "line",
+            paint: { "line-color": "#ffffff", "line-width": 1, "line-opacity": 1 },
+          } as import("react-map-gl/maplibre").LayerProps,
+        ],
+      });
+    }
+
     // EPCI borders overlay when an EPCI or city is selected
     // geoJSONEPCI is typed as Feature[] but processGeoJSONEPCI returns a FeatureCollection
     const epciGeoJSON = (selectedAreas.department as SelectedArea)?.geoJSONEPCI as unknown as
@@ -924,7 +999,7 @@ const DeploiementMap = ({ isLSTMode }: { isLSTMode: boolean }) => {
     }
 
     return layers;
-  }, [activeTab, allDeptsGeoJSON, operatorsForMap, mapState, coordMap]);
+  }, [activeTab, allDeptsGeoJSON, epcisGeoJSON, operatorsForMap, mapState, coordMap]);
 
   return stats ? (
     <MapLayout

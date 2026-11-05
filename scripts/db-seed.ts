@@ -54,6 +54,7 @@ interface Operator {
   siret: string | null;
   services: number[];
   departements: string[];
+  epcis?: string[];
 }
 
 interface Service {
@@ -133,6 +134,7 @@ async function importOrganizations(dumpsDir: string) {
       website: operator.url,
       siret: operator.siret,
       departments: operator.departements || [],
+      epcis: operator.epcis || [],
     }));
 
     // Keep track of valid organizations and operators

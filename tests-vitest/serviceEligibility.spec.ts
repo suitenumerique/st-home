@@ -82,19 +82,28 @@ test("the epci threshold applies to epcis, and no threshold to the other types",
   });
 });
 
-test("the narrowest OPSN wins, then the one already offering the services", () => {
+test("an OPSN scoped to EPCIs comes before one scoped to départements", () => {
+  const departement = operator({ id: "a-departement", departments: ["01"] });
+  const epci = operator({ id: "z-epci", departments: ["01", "38"], epcis: ["200070118"] });
+
+  expect(
+    (eligibilityOf(commune(859, [departement, epci])) as { operator: Operator }).operator.id,
+  ).toBe("z-epci");
+});
+
+test("the OPSN already offering the services wins, then the narrowest", () => {
   const regional = operator({ id: "a-regional", departments: ["01", "38", "69"] });
   const local = operator({ id: "z-local", status: "intention", departments: ["01"] });
 
-  expect(eligibilityOf(commune(859, [regional, local])).kind).toBe("operator-soon");
+  expect(eligibilityOf(commune(859, [regional, local])).kind).toBe("operator");
   expect(
     (eligibilityOf(commune(859, [regional, local])) as { operator: Operator }).operator.id,
-  ).toBe("z-local");
+  ).toBe("a-regional");
 
-  const sameScope = operator({ id: "a-soon", status: "intention" });
-  const withServices = operator({ id: "z-services" });
+  const wide = operator({ id: "a-wide", status: "intention", departments: ["01", "38"] });
+  const narrow = operator({ id: "z-narrow", status: "intention" });
 
-  expect(
-    (eligibilityOf(commune(859, [sameScope, withServices])) as { operator: Operator }).operator.id,
-  ).toBe("z-services");
+  expect((eligibilityOf(commune(859, [wide, narrow])) as { operator: Operator }).operator.id).toBe(
+    "z-narrow",
+  );
 });
